@@ -6,7 +6,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Users, Handshake } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Users, Handshake, Zap } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -24,6 +24,11 @@ const mainNavItems: NavItem[] = [
         title: 'Mitra',
         href: '/mitras',
         icon: Handshake,
+    },
+    {
+        title: 'Brand',
+        href: '/brands',
+        icon: Zap,
     },
 ];
 

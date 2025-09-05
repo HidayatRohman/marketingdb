@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BrandController;
 use App\Http\Controllers\MitraController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -24,14 +25,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'followup' => \App\Models\Mitra::where('chat', 'followup')->count(),
         ];
 
+        $brandStats = [
+            'total' => \App\Models\Brand::count(),
+        ];
+
         return Inertia::render('Dashboard', [
             'userStats' => $userStats,
             'mitraStats' => $mitraStats,
+            'brandStats' => $brandStats,
         ]);
     })->name('dashboard');
 
     Route::resource('users', UserController::class);
     Route::resource('mitras', MitraController::class);
+    Route::resource('brands', BrandController::class);
 });
 
 require __DIR__.'/settings.php';
