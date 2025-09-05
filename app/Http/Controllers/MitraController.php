@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mitra;
+use App\Models\Brand;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -13,7 +14,7 @@ class MitraController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Mitra::query();
+        $query = Mitra::with('brand');
 
         // Apply search filter
         if ($request->has('search') && $request->search) {
@@ -21,9 +22,11 @@ class MitraController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
                   ->orWhere('no_telp', 'like', "%{$search}%")
-                  ->orWhere('produk', 'like', "%{$search}%")
                   ->orWhere('kota', 'like', "%{$search}%")
-                  ->orWhere('provinsi', 'like', "%{$search}%");
+                  ->orWhere('provinsi', 'like', "%{$search}%")
+                  ->orWhereHas('brand', function ($brandQuery) use ($search) {
+                      $brandQuery->where('nama', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -33,9 +36,11 @@ class MitraController extends Controller
         }
 
         $mitras = $query->latest()->paginate(10)->withQueryString();
+        $brands = Brand::all();
         
         return Inertia::render('Mitra/Index', [
             'mitras' => $mitras,
+            'brands' => $brands,
             'filters' => [
                 'search' => $request->search,
                 'chat' => $request->chat,
@@ -59,7 +64,7 @@ class MitraController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'no_telp' => 'required|string|max:20',
-            'produk' => 'required|string|max:255',
+            'brand_id' => 'required|exists:brands,id',
             'chat' => 'required|in:masuk,followup',
             'kota' => 'required|string|max:255',
             'provinsi' => 'required|string|max:255',
@@ -105,7 +110,7 @@ class MitraController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'no_telp' => 'required|string|max:20',
-            'produk' => 'required|string|max:255',
+            'brand_id' => 'required|exists:brands,id',
             'chat' => 'required|in:masuk,followup',
             'kota' => 'required|string|max:255',
             'provinsi' => 'required|string|max:255',

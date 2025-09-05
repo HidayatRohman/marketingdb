@@ -4,11 +4,19 @@ import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/vue3';
 import { AlertTriangle, Loader2 } from 'lucide-vue-next';
 
+interface Brand {
+    id: number;
+    nama: string;
+    logo?: string;
+    logo_url?: string;
+}
+
 interface Mitra {
     id: number;
     nama: string;
     no_telp: string;
-    produk: string;
+    brand_id: number;
+    brand?: Brand;
     chat: 'masuk' | 'followup';
     kota: string;
     provinsi: string;
@@ -64,7 +72,7 @@ const deleteMitra = () => {
                     <div class="text-sm text-muted-foreground space-y-1">
                         <p><span class="font-medium">Nama:</span> {{ mitra.nama }}</p>
                         <p><span class="font-medium">Telepon:</span> {{ mitra.no_telp }}</p>
-                        <p><span class="font-medium">Produk:</span> {{ mitra.produk }}</p>
+                        <p><span class="font-medium">Brand:</span> {{ mitra.brand?.nama || 'N/A' }}</p>
                         <p><span class="font-medium">Lokasi:</span> {{ mitra.kota }}, {{ mitra.provinsi }}</p>
                     </div>
                 </div>

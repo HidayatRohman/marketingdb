@@ -11,11 +11,19 @@ import { Head, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import { Search, Plus, Edit, Trash2, Eye, Building2, Filter, MoreHorizontal } from 'lucide-vue-next';
 
+interface Brand {
+    id: number;
+    nama: string;
+    logo?: string;
+    logo_url?: string;
+}
+
 interface Mitra {
     id: number;
     nama: string;
     no_telp: string;
-    produk: string;
+    brand_id: number;
+    brand: Brand;
     chat: 'masuk' | 'followup';
     kota: string;
     provinsi: string;
@@ -35,6 +43,7 @@ interface Props {
         prev_page_url: string | null;
         next_page_url: string | null;
     };
+    brands: Brand[];
     filters: {
         search?: string;
         chat?: string;
@@ -265,7 +274,7 @@ const getChatBadgeVariant = (chat: string) => {
                             <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                             <Input
                                 v-model="search"
-                                placeholder="Cari berdasarkan nama, telepon, produk, atau lokasi..."
+                                placeholder="Cari berdasarkan nama, telepon, brand, atau lokasi..."
                                 class="pl-10 h-11"
                             />
                         </div>
@@ -299,7 +308,7 @@ const getChatBadgeVariant = (chat: string) => {
                                     <TableRow class="hover:bg-transparent border-b border-border">
                                         <TableHead class="font-semibold text-foreground">Nama</TableHead>
                                         <TableHead class="font-semibold text-foreground">Kontak</TableHead>
-                                        <TableHead class="font-semibold text-foreground">Produk</TableHead>
+                                        <TableHead class="font-semibold text-foreground">Brand</TableHead>
                                         <TableHead class="font-semibold text-foreground">Chat</TableHead>
                                         <TableHead class="font-semibold text-foreground">Lokasi</TableHead>
                                         <TableHead class="font-semibold text-foreground">Transaksi</TableHead>
@@ -327,7 +336,7 @@ const getChatBadgeVariant = (chat: string) => {
                                                 <span>{{ mitra.no_telp }}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell>{{ mitra.produk }}</TableCell>
+                                        <TableCell>{{ mitra.brand.nama }}</TableCell>
                                         <TableCell>
                                             <Badge :variant="getChatBadgeVariant(mitra.chat)">
                                                 {{ chatLabels[mitra.chat] }}
@@ -419,6 +428,7 @@ const getChatBadgeVariant = (chat: string) => {
             :open="mitraModal.open"
             :mode="mitraModal.mode"
             :mitra="mitraModal.mitra"
+            :brands="brands"
             @close="closeMitraModal"
             @success="handleModalSuccess"
         />

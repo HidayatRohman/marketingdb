@@ -8,11 +8,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from '@inertiajs/vue3';
 import { Loader2, Building2, Phone, Package, MessageSquare, MapPin, DollarSign, FileText } from 'lucide-vue-next';
 
+interface Brand {
+    id: number;
+    nama: string;
+    logo?: string;
+    logo_url?: string;
+}
+
 interface Mitra {
     id?: number;
     nama: string;
     no_telp: string;
-    produk: string;
+    brand_id: number;
+    brand?: Brand;
     chat: 'masuk' | 'followup';
     kota: string;
     provinsi: string;
@@ -24,6 +32,7 @@ interface Props {
     open: boolean;
     mode: 'create' | 'edit' | 'view';
     mitra?: Mitra;
+    brands: Brand[];
 }
 
 const props = defineProps<Props>();
@@ -35,7 +44,7 @@ const emit = defineEmits<{
 const form = useForm({
     nama: '',
     no_telp: '',
-    produk: '',
+    brand_id: null as number | null,
     chat: 'masuk' as 'masuk' | 'followup',
     kota: '',
     provinsi: '',
@@ -48,7 +57,7 @@ watch(() => props.mitra, (newMitra) => {
     if (newMitra) {
         form.nama = newMitra.nama || '';
         form.no_telp = newMitra.no_telp || '';
-        form.produk = newMitra.produk || '';
+        form.brand_id = newMitra.brand_id || null;
         form.chat = newMitra.chat || 'masuk';
         form.kota = newMitra.kota || '';
         form.provinsi = newMitra.provinsi || '';
@@ -168,19 +177,28 @@ const displayCurrency = (value: number | null) => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="produk" class="flex items-center gap-2">
+                        <Label for="brand_id" class="flex items-center gap-2">
                             <Package class="h-3 w-3" />
-                            Produk *
+                            Brand *
                         </Label>
-                        <Input
-                            id="produk"
-                            v-model="form.produk"
+                        <select
+                            id="brand_id"
+                            v-model="form.brand_id"
                             :disabled="mode === 'view'"
-                            placeholder="Masukkan nama produk"
-                            :class="{ 'border-destructive': form.errors.produk }"
-                        />
-                        <p v-if="form.errors.produk" class="text-sm text-destructive">
-                            {{ form.errors.produk }}
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            :class="{ 'border-destructive': form.errors.brand_id }"
+                        >
+                            <option value="">Pilih brand</option>
+                            <option 
+                                v-for="brand in brands" 
+                                :key="brand.id" 
+                                :value="brand.id"
+                            >
+                                {{ brand.nama }}
+                            </option>
+                        </select>
+                        <p v-if="form.errors.brand_id" class="text-sm text-destructive">
+                            {{ form.errors.brand_id }}
                         </p>
                     </div>
 
