@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from '@inertiajs/vue3';
 import { Loader2, Building2, Phone, Package, MessageSquare, MapPin, DollarSign, FileText } from 'lucide-vue-next';
 
@@ -190,15 +189,19 @@ const displayCurrency = (value: number | null) => {
                             <MessageSquare class="h-3 w-3" />
                             Status Chat *
                         </Label>
-                        <Select v-model="form.chat" :disabled="mode === 'view'">
-                            <SelectTrigger :class="{ 'border-destructive': form.errors.chat }">
-                                <SelectValue placeholder="Pilih status chat" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="masuk">Masuk</SelectItem>
-                                <SelectItem value="followup">Follow Up</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <select
+                            id="chat"
+                            v-model="form.chat"
+                            :disabled="mode === 'view'"
+                            :class="[
+                                'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+                                { 'border-destructive': form.errors.chat }
+                            ]"
+                        >
+                            <option value="">Pilih status chat</option>
+                            <option value="masuk">Masuk</option>
+                            <option value="followup">Follow Up</option>
+                        </select>
                         <p v-if="form.errors.chat" class="text-sm text-destructive">
                             {{ form.errors.chat }}
                         </p>

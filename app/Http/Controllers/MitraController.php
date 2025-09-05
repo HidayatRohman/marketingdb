@@ -11,12 +11,35 @@ class MitraController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $mitras = Mitra::latest()->paginate(10);
+        $query = Mitra::query();
+
+        // Apply search filter
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('no_telp', 'like', "%{$search}%")
+                  ->orWhere('produk', 'like', "%{$search}%")
+                  ->orWhere('kota', 'like', "%{$search}%")
+                  ->orWhere('provinsi', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply chat filter
+        if ($request->has('chat') && $request->chat) {
+            $query->where('chat', $request->chat);
+        }
+
+        $mitras = $query->latest()->paginate(10)->withQueryString();
         
         return Inertia::render('Mitra/Index', [
             'mitras' => $mitras,
+            'filters' => [
+                'search' => $request->search,
+                'chat' => $request->chat,
+            ],
         ]);
     }
 
@@ -45,6 +68,10 @@ class MitraController extends Controller
         ]);
 
         Mitra::create($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Mitra berhasil ditambahkan.']);
+        }
 
         return redirect()->route('mitras.index')
             ->with('success', 'Mitra berhasil ditambahkan.');
@@ -88,6 +115,10 @@ class MitraController extends Controller
 
         $mitra->update($validated);
 
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Mitra berhasil diperbarui.']);
+        }
+
         return redirect()->route('mitras.index')
             ->with('success', 'Mitra berhasil diperbarui.');
     }
@@ -98,6 +129,10 @@ class MitraController extends Controller
     public function destroy(Mitra $mitra)
     {
         $mitra->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json(['message' => 'Mitra berhasil dihapus.']);
+        }
 
         return redirect()->route('mitras.index')
             ->with('success', 'Mitra berhasil dihapus.');
