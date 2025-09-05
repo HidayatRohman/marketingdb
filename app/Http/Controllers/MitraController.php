@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Mitra;
 use App\Models\Brand;
+use App\Models\Label;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -14,7 +15,7 @@ class MitraController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Mitra::with('brand');
+        $query = Mitra::with(['brand', 'label']);
 
         // Apply search filter
         if ($request->has('search') && $request->search) {
@@ -26,6 +27,9 @@ class MitraController extends Controller
                   ->orWhere('provinsi', 'like', "%{$search}%")
                   ->orWhereHas('brand', function ($brandQuery) use ($search) {
                       $brandQuery->where('nama', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('label', function ($labelQuery) use ($search) {
+                      $labelQuery->where('nama', 'like', "%{$search}%");
                   });
             });
         }
@@ -35,15 +39,23 @@ class MitraController extends Controller
             $query->where('chat', $request->chat);
         }
 
+        // Apply label filter
+        if ($request->has('label') && $request->label) {
+            $query->where('label_id', $request->label);
+        }
+
         $mitras = $query->latest()->paginate(10)->withQueryString();
         $brands = Brand::all();
+        $labels = Label::all();
         
         return Inertia::render('Mitra/Index', [
             'mitras' => $mitras,
             'brands' => $brands,
+            'labels' => $labels,
             'filters' => [
                 'search' => $request->search,
                 'chat' => $request->chat,
+                'label' => $request->label,
             ],
         ]);
     }
@@ -65,10 +77,10 @@ class MitraController extends Controller
             'nama' => 'required|string|max:255',
             'no_telp' => 'required|string|max:20',
             'brand_id' => 'required|exists:brands,id',
+            'label_id' => 'nullable|exists:labels,id',
             'chat' => 'required|in:masuk,followup',
             'kota' => 'required|string|max:255',
             'provinsi' => 'required|string|max:255',
-            'transaksi' => 'nullable|numeric|min:0',
             'komentar' => 'nullable|string',
         ]);
 
@@ -111,10 +123,10 @@ class MitraController extends Controller
             'nama' => 'required|string|max:255',
             'no_telp' => 'required|string|max:20',
             'brand_id' => 'required|exists:brands,id',
+            'label_id' => 'nullable|exists:labels,id',
             'chat' => 'required|in:masuk,followup',
             'kota' => 'required|string|max:255',
             'provinsi' => 'required|string|max:255',
-            'transaksi' => 'nullable|numeric|min:0',
             'komentar' => 'nullable|string',
         ]);
 

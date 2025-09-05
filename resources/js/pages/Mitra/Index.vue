@@ -18,16 +18,23 @@ interface Brand {
     logo_url?: string;
 }
 
+interface Label {
+    id: number;
+    nama: string;
+    warna: string;
+}
+
 interface Mitra {
     id: number;
     nama: string;
     no_telp: string;
     brand_id: number;
     brand: Brand;
+    label_id: number | null;
+    label: Label | null;
     chat: 'masuk' | 'followup';
     kota: string;
     provinsi: string;
-    transaksi: number | null;
     komentar: string | null;
     created_at: string;
     updated_at: string;
@@ -44,9 +51,11 @@ interface Props {
         next_page_url: string | null;
     };
     brands: Brand[];
+    labels: Label[];
     filters: {
         search?: string;
         chat?: string;
+        label?: string;
     };
 }
 
@@ -148,15 +157,6 @@ const closeDeleteModal = () => {
 const handleModalSuccess = () => {
     // Refresh the page data
     router.reload({ only: ['mitras'] });
-};
-
-const formatCurrency = (amount: number | null) => {
-    if (!amount) return 'Rp 0';
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-    }).format(amount);
 };
 
 const formatDate = (dateString: string) => {
@@ -311,7 +311,7 @@ const getChatBadgeVariant = (chat: string) => {
                                         <TableHead class="font-semibold text-foreground">Brand</TableHead>
                                         <TableHead class="font-semibold text-foreground">Chat</TableHead>
                                         <TableHead class="font-semibold text-foreground">Lokasi</TableHead>
-                                        <TableHead class="font-semibold text-foreground">Transaksi</TableHead>
+                                        <TableHead class="font-semibold text-foreground">Label</TableHead>
                                         <TableHead class="font-semibold text-foreground">Tanggal</TableHead>
                                         <TableHead class="font-semibold text-foreground text-center w-[120px]">Aksi</TableHead>
                                     </TableRow>
@@ -343,7 +343,21 @@ const getChatBadgeVariant = (chat: string) => {
                                             </Badge>
                                         </TableCell>
                                         <TableCell>{{ mitra.kota }}, {{ mitra.provinsi }}</TableCell>
-                                        <TableCell>{{ formatCurrency(mitra.transaksi) }}</TableCell>
+                                        <TableCell>
+                                            <div v-if="mitra.label" class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
+                                                 :style="{ 
+                                                     backgroundColor: mitra.label.warna + '20', 
+                                                     color: mitra.label.warna,
+                                                     border: `1px solid ${mitra.label.warna}40`
+                                                 }">
+                                                <div 
+                                                    class="w-2 h-2 rounded-full" 
+                                                    :style="{ backgroundColor: mitra.label.warna }"
+                                                ></div>
+                                                {{ mitra.label.nama }}
+                                            </div>
+                                            <span v-else class="text-muted-foreground text-sm">-</span>
+                                        </TableCell>
                                         <TableCell>
                                             <div class="flex items-center gap-2">
                                                 <div class="p-1 bg-gray-100 dark:bg-gray-800 rounded">
@@ -429,6 +443,7 @@ const getChatBadgeVariant = (chat: string) => {
             :mode="mitraModal.mode"
             :mitra="mitraModal.mitra"
             :brands="brands"
+            :labels="labels"
             @close="closeMitraModal"
             @success="handleModalSuccess"
         />

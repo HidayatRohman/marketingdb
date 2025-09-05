@@ -11,16 +11,23 @@ interface Brand {
     logo_url?: string;
 }
 
+interface Label {
+    id: number;
+    nama: string;
+    warna: string;
+}
+
 interface Mitra {
     id: number;
     nama: string;
     no_telp: string;
     brand_id: number;
     brand?: Brand;
+    label_id: number | null;
+    label?: Label | null;
     chat: 'masuk' | 'followup';
     kota: string;
     provinsi: string;
-    transaksi: number | null;
     komentar: string | null;
 }
 

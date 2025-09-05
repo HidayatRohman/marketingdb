@@ -18,6 +18,9 @@ class DatabaseSeeder extends Seeder
             SuperAdminSeeder::class,
             AdminSeeder::class,
             MarketingSeeder::class,
+            LabelSeeder::class,
+            BrandSeeder::class,
+            MitraSeeder::class,
         ]);
 
         // Buat test user tambahan jika diperlukan

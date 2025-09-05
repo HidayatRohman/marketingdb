@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from '@inertiajs/vue3';
-import { Loader2, Building2, Phone, Package, MessageSquare, MapPin, DollarSign, FileText } from 'lucide-vue-next';
+import { Loader2, Building2, Phone, Package, MessageSquare, MapPin, Tag, FileText } from 'lucide-vue-next';
 
 interface Brand {
     id: number;
@@ -15,16 +15,23 @@ interface Brand {
     logo_url?: string;
 }
 
+interface Label {
+    id: number;
+    nama: string;
+    warna: string;
+}
+
 interface Mitra {
     id?: number;
     nama: string;
     no_telp: string;
     brand_id: number;
     brand?: Brand;
+    label_id: number | null;
+    label?: Label | null;
     chat: 'masuk' | 'followup';
     kota: string;
     provinsi: string;
-    transaksi: number | null;
     komentar: string | null;
 }
 
@@ -33,6 +40,7 @@ interface Props {
     mode: 'create' | 'edit' | 'view';
     mitra?: Mitra;
     brands: Brand[];
+    labels: Label[];
 }
 
 const props = defineProps<Props>();
@@ -45,10 +53,10 @@ const form = useForm({
     nama: '',
     no_telp: '',
     brand_id: null as number | null,
+    label_id: null as number | null,
     chat: 'masuk' as 'masuk' | 'followup',
     kota: '',
     provinsi: '',
-    transaksi: null as number | null,
     komentar: '',
 });
 
@@ -58,10 +66,10 @@ watch(() => props.mitra, (newMitra) => {
         form.nama = newMitra.nama || '';
         form.no_telp = newMitra.no_telp || '';
         form.brand_id = newMitra.brand_id || null;
+        form.label_id = newMitra.label_id || null;
         form.chat = newMitra.chat || 'masuk';
         form.kota = newMitra.kota || '';
         form.provinsi = newMitra.provinsi || '';
-        form.transaksi = newMitra.transaksi;
         form.komentar = newMitra.komentar || '';
     } else {
         form.reset();
@@ -97,21 +105,6 @@ const submit = () => {
 const chatLabels = {
     masuk: 'Masuk',
     followup: 'Follow Up',
-};
-
-const formatCurrency = (value: string) => {
-    // Remove non-numeric characters except decimal point
-    const numericValue = value.replace(/[^\d]/g, '');
-    if (numericValue) {
-        form.transaksi = parseInt(numericValue);
-    } else {
-        form.transaksi = null;
-    }
-};
-
-const displayCurrency = (value: number | null) => {
-    if (!value) return '';
-    return new Intl.NumberFormat('id-ID').format(value);
 };
 </script>
 
@@ -270,29 +263,36 @@ const displayCurrency = (value: number | null) => {
                     </div>
                 </div>
 
-                <!-- Transaksi & Komentar -->
+                <!-- Label & Komentar -->
                 <div class="space-y-4">
                     <h3 class="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                        <DollarSign class="h-4 w-4" />
+                        <Tag class="h-4 w-4" />
                         Informasi Tambahan
                     </h3>
 
                     <div class="space-y-2">
-                        <Label for="transaksi" class="flex items-center gap-2">
-                            <DollarSign class="h-3 w-3" />
-                            Nilai Transaksi (Opsional)
+                        <Label for="label_id" class="flex items-center gap-2">
+                            <Tag class="h-3 w-3" />
+                            Label (Opsional)
                         </Label>
-                        <Input
-                            id="transaksi"
-                            :value="displayCurrency(form.transaksi)"
-                            @input="formatCurrency($event.target.value)"
+                        <select
+                            id="label_id"
+                            v-model="form.label_id"
                             :disabled="mode === 'view'"
-                            placeholder="Contoh: 1000000"
-                            :class="{ 'border-destructive': form.errors.transaksi }"
-                        />
-                        <p class="text-xs text-muted-foreground">Masukkan angka tanpa titik atau koma</p>
-                        <p v-if="form.errors.transaksi" class="text-sm text-destructive">
-                            {{ form.errors.transaksi }}
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            :class="{ 'border-destructive': form.errors.label_id }"
+                        >
+                            <option value="">Pilih label</option>
+                            <option 
+                                v-for="label in labels" 
+                                :key="label.id" 
+                                :value="label.id"
+                            >
+                                {{ label.nama }}
+                            </option>
+                        </select>
+                        <p v-if="form.errors.label_id" class="text-sm text-destructive">
+                            {{ form.errors.label_id }}
                         </p>
                     </div>
 

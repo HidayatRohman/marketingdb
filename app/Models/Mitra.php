@@ -13,15 +13,15 @@ class Mitra extends Model
         'nama',
         'no_telp',
         'brand_id',
+        'label_id',
         'chat',
         'kota',
         'provinsi',
-        'transaksi',
         'komentar',
     ];
 
     protected $casts = [
-        'transaksi' => 'decimal:2',
+        // Removed transaksi cast since we're removing the field
     ];
 
     /**
@@ -30,5 +30,13 @@ class Mitra extends Model
     public function brand()
     {
         return $this->belongsTo(Brand::class);
+    }
+
+    /**
+     * Get the label that belongs to the mitra.
+     */
+    public function label()
+    {
+        return $this->belongsTo(Label::class);
     }
 }
