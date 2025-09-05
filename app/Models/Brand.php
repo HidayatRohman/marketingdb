@@ -26,4 +26,12 @@ class Brand extends Model
         }
         return null;
     }
+
+    /**
+     * Get the mitras for the brand.
+     */
+    public function mitras()
+    {
+        return $this->hasMany(Mitra::class);
+    }
 }

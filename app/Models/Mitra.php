@@ -12,7 +12,7 @@ class Mitra extends Model
     protected $fillable = [
         'nama',
         'no_telp',
-        'produk',
+        'brand_id',
         'chat',
         'kota',
         'provinsi',
@@ -23,4 +23,12 @@ class Mitra extends Model
     protected $casts = [
         'transaksi' => 'decimal:2',
     ];
+
+    /**
+     * Get the brand that owns the mitra.
+     */
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
 }
