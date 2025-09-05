@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from '@inertiajs/vue3';
-import { Loader2, Building2, Phone, Package, MessageSquare, MapPin, Tag, FileText } from 'lucide-vue-next';
+import { Loader2, Building2, Phone, Package, MessageSquare, MapPin, Tag, FileText, Calendar } from 'lucide-vue-next';
 
 interface Brand {
     id: number;
@@ -25,6 +25,7 @@ interface Mitra {
     id?: number;
     nama: string;
     no_telp: string;
+    tanggal_lead: string;
     brand_id: number;
     brand?: Brand;
     label_id: number | null;
@@ -52,6 +53,7 @@ const emit = defineEmits<{
 const form = useForm({
     nama: '',
     no_telp: '',
+    tanggal_lead: new Date().toISOString().split('T')[0], // Default to today
     brand_id: null as number | null,
     label_id: null as number | null,
     chat: 'masuk' as 'masuk' | 'followup',
@@ -65,6 +67,7 @@ watch(() => props.mitra, (newMitra) => {
     if (newMitra) {
         form.nama = newMitra.nama || '';
         form.no_telp = newMitra.no_telp || '';
+        form.tanggal_lead = newMitra.tanggal_lead || new Date().toISOString().split('T')[0];
         form.brand_id = newMitra.brand_id || null;
         form.label_id = newMitra.label_id || null;
         form.chat = newMitra.chat || 'masuk';
@@ -73,6 +76,7 @@ watch(() => props.mitra, (newMitra) => {
         form.komentar = newMitra.komentar || '';
     } else {
         form.reset();
+        form.tanggal_lead = new Date().toISOString().split('T')[0]; // Reset to today's date
     }
 }, { immediate: true });
 
@@ -80,6 +84,7 @@ watch(() => props.mitra, (newMitra) => {
 watch(() => props.open, (isOpen) => {
     if (!isOpen) {
         form.reset();
+        form.tanggal_lead = new Date().toISOString().split('T')[0]; // Reset to today's date
         form.clearErrors();
     }
 });
@@ -133,7 +138,7 @@ const chatLabels = {
                         Informasi Dasar
                     </h3>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="space-y-2">
                             <Label for="nama" class="flex items-center gap-2">
                                 <Building2 class="h-3 w-3" />
@@ -165,6 +170,23 @@ const chatLabels = {
                             />
                             <p v-if="form.errors.no_telp" class="text-sm text-destructive">
                                 {{ form.errors.no_telp }}
+                            </p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="tanggal_lead" class="flex items-center gap-2">
+                                <Calendar class="h-3 w-3" />
+                                Tanggal Lead *
+                            </Label>
+                            <Input
+                                id="tanggal_lead"
+                                v-model="form.tanggal_lead"
+                                type="date"
+                                :disabled="mode === 'view'"
+                                :class="{ 'border-destructive': form.errors.tanggal_lead }"
+                            />
+                            <p v-if="form.errors.tanggal_lead" class="text-sm text-destructive">
+                                {{ form.errors.tanggal_lead }}
                             </p>
                         </div>
                     </div>

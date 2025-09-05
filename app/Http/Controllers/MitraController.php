@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Mitra;
 use App\Models\Brand;
 use App\Models\Label;
+use App\Http\Requests\StoreMitraRequest;
+use App\Http\Requests\UpdateMitraRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -71,18 +73,9 @@ class MitraController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreMitraRequest $request)
     {
-        $validated = $request->validate([
-            'nama' => 'required|string|max:255',
-            'no_telp' => 'required|string|max:20',
-            'brand_id' => 'required|exists:brands,id',
-            'label_id' => 'nullable|exists:labels,id',
-            'chat' => 'required|in:masuk,followup',
-            'kota' => 'required|string|max:255',
-            'provinsi' => 'required|string|max:255',
-            'komentar' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         Mitra::create($validated);
 
@@ -117,18 +110,9 @@ class MitraController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Mitra $mitra)
+    public function update(UpdateMitraRequest $request, Mitra $mitra)
     {
-        $validated = $request->validate([
-            'nama' => 'required|string|max:255',
-            'no_telp' => 'required|string|max:20',
-            'brand_id' => 'required|exists:brands,id',
-            'label_id' => 'nullable|exists:labels,id',
-            'chat' => 'required|in:masuk,followup',
-            'kota' => 'required|string|max:255',
-            'provinsi' => 'required|string|max:255',
-            'komentar' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         $mitra->update($validated);
 

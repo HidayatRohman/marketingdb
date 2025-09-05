@@ -12,6 +12,7 @@ class Mitra extends Model
     protected $fillable = [
         'nama',
         'no_telp',
+        'tanggal_lead',
         'brand_id',
         'label_id',
         'chat',
@@ -21,6 +22,7 @@ class Mitra extends Model
     ];
 
     protected $casts = [
+        'tanggal_lead' => 'date',
         // Removed transaksi cast since we're removing the field
     ];
 
