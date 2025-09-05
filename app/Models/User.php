@@ -46,4 +46,49 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Check if user has specific role
+     */
+    public function hasRole(string $role): bool
+    {
+        return $this->role === $role;
+    }
+
+    /**
+     * Check if user is super admin
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('super_admin');
+    }
+
+    /**
+     * Check if user is admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    /**
+     * Check if user is marketing
+     */
+    public function isMarketing(): bool
+    {
+        return $this->hasRole('marketing');
+    }
+
+    /**
+     * Get role label
+     */
+    public function getRoleLabelAttribute(): string
+    {
+        return match($this->role) {
+            'super_admin' => 'Super Admin',
+            'admin' => 'Admin',
+            'marketing' => 'Marketing',
+            default => ucfirst($this->role),
+        };
+    }
 }
