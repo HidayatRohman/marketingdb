@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MitraController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -17,12 +18,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'marketing' => \App\Models\User::where('role', 'marketing')->count(),
         ];
 
+        $mitraStats = [
+            'total' => \App\Models\Mitra::count(),
+            'masuk' => \App\Models\Mitra::where('chat', 'masuk')->count(),
+            'followup' => \App\Models\Mitra::where('chat', 'followup')->count(),
+        ];
+
         return Inertia::render('Dashboard', [
             'userStats' => $userStats,
+            'mitraStats' => $mitraStats,
         ]);
     })->name('dashboard');
 
     Route::resource('users', UserController::class);
+    Route::resource('mitras', MitraController::class);
 });
 
 require __DIR__.'/settings.php';
