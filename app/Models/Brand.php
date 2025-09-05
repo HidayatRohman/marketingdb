@@ -13,4 +13,17 @@ class Brand extends Model
         'nama',
         'logo',
     ];
+
+    protected $appends = ['logo_url'];
+
+    /**
+     * Get the full URL for the logo
+     */
+    public function getLogoUrlAttribute()
+    {
+        if ($this->logo) {
+            return asset('storage/' . $this->logo);
+        }
+        return null;
+    }
 }

@@ -46,10 +46,18 @@ class BrandController extends Controller
     {
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
-            'logo' => 'nullable|string|max:255',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        Brand::create($validated);
+        $logoPath = null;
+        if ($request->hasFile('logo')) {
+            $logoPath = $request->file('logo')->store('brands', 'public');
+        }
+
+        Brand::create([
+            'nama' => $validated['nama'],
+            'logo' => $logoPath,
+        ]);
 
         if ($request->expectsJson()) {
             return response()->json(['message' => 'Brand berhasil ditambahkan.']);
@@ -86,10 +94,22 @@ class BrandController extends Controller
     {
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
-            'logo' => 'nullable|string|max:255',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        $brand->update($validated);
+        $logoPath = $brand->logo;
+        if ($request->hasFile('logo')) {
+            // Delete old logo if exists
+            if ($brand->logo && \Storage::disk('public')->exists($brand->logo)) {
+                \Storage::disk('public')->delete($brand->logo);
+            }
+            $logoPath = $request->file('logo')->store('brands', 'public');
+        }
+
+        $brand->update([
+            'nama' => $validated['nama'],
+            'logo' => $logoPath,
+        ]);
 
         if ($request->expectsJson()) {
             return response()->json(['message' => 'Brand berhasil diperbarui.']);
@@ -104,6 +124,11 @@ class BrandController extends Controller
      */
     public function destroy(Brand $brand)
     {
+        // Delete logo file if exists
+        if ($brand->logo && \Storage::disk('public')->exists($brand->logo)) {
+            \Storage::disk('public')->delete($brand->logo);
+        }
+        
         $brand->delete();
 
         if (request()->expectsJson()) {

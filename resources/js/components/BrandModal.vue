@@ -5,12 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
-import { Zap, Upload } from 'lucide-vue-next';
+import { Zap, Upload, X, ImageIcon } from 'lucide-vue-next';
 
 interface Brand {
     id: number;
     nama: string;
     logo: string | null;
+    logo_url: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -31,22 +32,50 @@ const emit = defineEmits<Emits>();
 
 const form = useForm({
     nama: '',
-    logo: '',
+    logo: null as File | null,
 });
 
 const isSubmitting = ref(false);
+const logoPreview = ref<string | null>(null);
+const fileInputRef = ref<HTMLInputElement | null>(null);
 
 // Reset form when modal opens/closes or brand changes
 watch([() => props.open, () => props.brand], () => {
     if (props.open) {
         if (props.mode === 'create') {
             form.reset();
+            logoPreview.value = null;
         } else if (props.brand) {
             form.nama = props.brand.nama;
-            form.logo = props.brand.logo || '';
+            form.logo = null; // Reset file input
+            logoPreview.value = props.brand.logo_url || null;
         }
     }
 });
+
+const handleFileChange = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    
+    if (file) {
+        form.logo = file;
+        
+        // Create preview URL
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            logoPreview.value = e.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+    }
+};
+
+const removeLogo = () => {
+    form.logo = null;
+    logoPreview.value = null;
+    if (fileInputRef.value) {
+        fileInputRef.value.value = '';
+    }
+};
 
 const handleSubmit = async () => {
     if (props.mode === 'view') return;
@@ -57,6 +86,7 @@ const handleSubmit = async () => {
         if (props.mode === 'create') {
             await form.post('/brands', {
                 preserveScroll: true,
+                forceFormData: true,
                 onSuccess: () => {
                     emit('success');
                     emit('close');
@@ -69,8 +99,15 @@ const handleSubmit = async () => {
                 }
             });
         } else if (props.mode === 'edit' && props.brand) {
-            await form.put(`/brands/${props.brand.id}`, {
+            // For edit, we need to add _method=PUT for Laravel
+            form.transform((data) => ({
+                ...data,
+                _method: 'PUT'
+            }));
+            
+            await form.post(`/brands/${props.brand.id}`, {
                 preserveScroll: true,
+                forceFormData: true,
                 onSuccess: () => {
                     emit('success');
                     emit('close');
@@ -161,24 +198,27 @@ const getDescription = () => {
                     <!-- Logo -->
                     <div class="space-y-2">
                         <Label for="logo" class="text-sm font-medium">
-                            Logo URL
+                            Logo Brand
                         </Label>
                         <div class="space-y-3">
-                            <Input
-                                id="logo"
-                                v-model="form.logo"
-                                type="url"
-                                placeholder="https://example.com/logo.png"
-                                :disabled="mode === 'view' || isSubmitting"
-                                :class="form.errors.logo ? 'border-red-500' : ''"
-                                class="h-11"
-                            />
+                            <!-- File Input -->
+                            <div v-if="mode !== 'view'" class="space-y-2">
+                                <input
+                                    ref="fileInputRef"
+                                    id="logo"
+                                    type="file"
+                                    accept="image/*"
+                                    @change="handleFileChange"
+                                    :disabled="isSubmitting"
+                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 dark:file:bg-violet-900/20 dark:file:text-violet-400"
+                                />
+                            </div>
                             
                             <!-- Logo Preview -->
-                            <div v-if="form.logo" class="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border">
+                            <div v-if="logoPreview" class="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border">
                                 <div class="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center border shadow-sm">
                                     <img 
-                                        :src="form.logo" 
+                                        :src="logoPreview" 
                                         :alt="form.nama || 'Logo preview'" 
                                         class="w-10 h-10 object-contain rounded"
                                         @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
@@ -186,7 +226,27 @@ const getDescription = () => {
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium truncate">Preview Logo</p>
-                                    <p class="text-xs text-muted-foreground truncate">{{ form.logo }}</p>
+                                    <p class="text-xs text-muted-foreground truncate">
+                                        {{ form.logo ? form.logo.name : 'Logo saat ini' }}
+                                    </p>
+                                </div>
+                                <Button
+                                    v-if="mode !== 'view'"
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    @click="removeLogo"
+                                    class="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                    <X class="h-4 w-4" />
+                                </Button>
+                            </div>
+                            
+                            <!-- Empty State -->
+                            <div v-if="!logoPreview" class="flex items-center justify-center h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                                <div class="text-center">
+                                    <ImageIcon class="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                                    <p class="text-sm text-gray-500">Tidak ada logo</p>
                                 </div>
                             </div>
                             
@@ -196,7 +256,7 @@ const getDescription = () => {
                             
                             <div class="text-xs text-muted-foreground">
                                 <Upload class="h-3 w-3 inline mr-1" />
-                                Masukkan URL gambar logo brand (opsional)
+                                Upload gambar logo brand (JPG, PNG, GIF, SVG - maks. 2MB)
                             </div>
                         </div>
                     </div>

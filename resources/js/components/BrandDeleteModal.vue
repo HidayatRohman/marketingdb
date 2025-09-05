@@ -9,6 +9,7 @@ interface Brand {
     id: number;
     nama: string;
     logo: string | null;
+    logo_url: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -73,9 +74,9 @@ const handleClose = () => {
             <div v-if="brand" class="py-4">
                 <div class="flex items-center gap-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
                     <div class="flex-shrink-0">
-                        <div v-if="brand.logo" class="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center border shadow-sm">
+                        <div v-if="brand.logo_url" class="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center border shadow-sm">
                             <img 
-                                :src="brand.logo" 
+                                :src="brand.logo_url" 
                                 :alt="brand.nama" 
                                 class="w-10 h-10 object-contain rounded"
                                 @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
@@ -88,7 +89,7 @@ const handleClose = () => {
                     <div class="flex-1 min-w-0">
                         <h3 class="font-semibold text-red-900 dark:text-red-100">{{ brand.nama }}</h3>
                         <p class="text-sm text-red-700 dark:text-red-300">
-                            {{ brand.logo ? 'Dengan logo' : 'Tanpa logo' }}
+                            {{ brand.logo_url ? 'Dengan logo' : 'Tanpa logo' }}
                         </p>
                     </div>
                 </div>
@@ -97,7 +98,7 @@ const handleClose = () => {
                     <p>Brand yang akan dihapus:</p>
                     <ul class="mt-2 ml-4 list-disc space-y-1">
                         <li>Nama: <strong>{{ brand.nama }}</strong></li>
-                        <li>Status logo: <strong>{{ brand.logo ? 'Ada' : 'Tidak ada' }}</strong></li>
+                        <li>Status logo: <strong>{{ brand.logo_url ? 'Ada' : 'Tidak ada' }}</strong></li>
                     </ul>
                 </div>
             </div>

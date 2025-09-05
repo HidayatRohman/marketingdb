@@ -14,6 +14,7 @@ interface Brand {
     id: number;
     nama: string;
     logo: string | null;
+    logo_url: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -258,14 +259,14 @@ const formatDate = (dateString: string) => {
                                         </TableCell>
                                         <TableCell>
                                             <div class="flex items-center gap-2">
-                                                <div v-if="brand.logo" class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
-                                                    <img :src="brand.logo" :alt="brand.nama" class="w-6 h-6 object-contain" />
+                                                <div v-if="brand.logo_url" class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
+                                                    <img :src="brand.logo_url" :alt="brand.nama" class="w-6 h-6 object-contain" />
                                                 </div>
                                                 <div v-else class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
                                                     <Zap class="h-4 w-4 text-gray-400" />
                                                 </div>
                                                 <span class="text-sm text-muted-foreground">
-                                                    {{ brand.logo ? 'Ada' : 'Tidak ada' }}
+                                                    {{ brand.logo_url ? 'Ada' : 'Tidak ada' }}
                                                 </span>
                                             </div>
                                         </TableCell>
