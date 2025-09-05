@@ -99,87 +99,129 @@ const handleModalSuccess = () => {
     <Head title="Kelola Label" />
     
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6">
-            <!-- Header -->
-            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold tracking-tight">Kelola Label</h1>
-                    <p class="text-muted-foreground">
-                        Kelola label untuk kategorisasi mitra bisnis
-                    </p>
+        <div class="space-y-8">
+            <!-- Header Section -->
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-8 text-white">
+                <div class="relative z-10">
+                    <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h1 class="text-4xl font-bold tracking-tight mb-2 flex items-center gap-3">
+                                <Tag class="h-10 w-10" />
+                                Kelola Label
+                            </h1>
+                            <p class="text-xl text-blue-100">
+                                Kelola label untuk kategorisasi mitra bisnis dengan mudah
+                            </p>
+                        </div>
+                        <Button 
+                            @click="openCreateModal" 
+                            size="lg"
+                            class="bg-white text-blue-600 hover:bg-blue-50 font-semibold gap-2"
+                        >
+                            <Plus class="h-5 w-5" />
+                            Tambah Label
+                        </Button>
+                    </div>
                 </div>
-                <Button @click="openCreateModal" class="gap-2">
-                    <Plus class="h-4 w-4" />
-                    Tambah Label
-                </Button>
+                <!-- Background decoration -->
+                <div class="absolute inset-0 opacity-20">
+                    <div class="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                </div>
             </div>
 
             <!-- Label Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                <Card 
-                    v-for="label in labels" 
-                    :key="label.id" 
-                    class="hover:shadow-md transition-shadow cursor-pointer"
-                    @click="openViewModal(label)"
-                >
-                    <CardHeader class="pb-3">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <div 
-                                    class="w-4 h-4 rounded-full border-2 border-white shadow-sm" 
-                                    :style="{ backgroundColor: label.warna }"
-                                ></div>
-                                <CardTitle class="text-lg">{{ label.nama }}</CardTitle>
-                            </div>
-                            <div class="flex gap-1">
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm"
-                                    @click.stop="openEditModal(label)"
-                                    class="h-8 w-8 p-0"
-                                >
-                                    <Edit class="h-3 w-3" />
-                                </Button>
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm"
-                                    @click.stop="openDeleteModal(label)"
-                                    class="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                >
-                                    <Trash2 class="h-3 w-3" />
-                                </Button>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div class="flex items-center gap-2">
-                            <Badge 
-                                variant="secondary" 
-                                class="text-xs"
-                                :style="{ 
-                                    backgroundColor: label.warna + '20', 
-                                    color: label.warna,
-                                    borderColor: label.warna 
-                                }"
-                            >
-                                <Tag class="h-3 w-3 mr-1" />
-                                {{ label.warna.toUpperCase() }}
-                            </Badge>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+            <Card class="border-0 shadow-sm">
+                <CardHeader class="pb-4">
+                    <CardTitle class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                        Daftar Label
+                    </CardTitle>
+                    <p class="text-sm text-muted-foreground">
+                        {{ labels.length }} label tersedia untuk kategorisasi mitra
+                    </p>
+                </CardHeader>
+                <CardContent>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <Card 
+                            v-for="label in labels" 
+                            :key="label.id" 
+                            class="group hover:shadow-lg transition-all duration-200 cursor-pointer border-2 hover:border-primary/20"
+                            @click="openViewModal(label)"
+                        >
+                            <CardHeader class="pb-3">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div 
+                                            class="w-5 h-5 rounded-full border-2 border-white shadow-md ring-1 ring-gray-200 dark:ring-gray-700" 
+                                            :style="{ backgroundColor: label.warna }"
+                                        ></div>
+                                        <CardTitle class="text-lg font-medium group-hover:text-primary transition-colors">
+                                            {{ label.nama }}
+                                        </CardTitle>
+                                    </div>
+                                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm"
+                                            @click.stop="openEditModal(label)"
+                                            class="h-8 w-8 p-0 hover:bg-primary/10"
+                                        >
+                                            <Edit class="h-3 w-3" />
+                                        </Button>
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm"
+                                            @click.stop="openDeleteModal(label)"
+                                            class="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                        >
+                                            <Trash2 class="h-3 w-3" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent class="pt-0">
+                                <div class="flex items-center gap-2">
+                                    <Badge 
+                                        variant="secondary" 
+                                        class="text-xs font-medium px-2 py-1"
+                                        :style="{ 
+                                            backgroundColor: label.warna + '15', 
+                                            color: label.warna,
+                                            borderColor: label.warna + '30',
+                                            border: '1px solid'
+                                        }"
+                                    >
+                                        <Tag class="h-3 w-3 mr-1" />
+                                        {{ label.warna.toUpperCase() }}
+                                    </Badge>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </CardContent>
+            </Card>
 
             <!-- Empty State -->
-            <div v-if="labels.length === 0" class="text-center py-12">
-                <Tag class="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 class="text-lg font-semibold text-muted-foreground mb-2">Belum ada label</h3>
-                <p class="text-muted-foreground mb-4">Mulai dengan menambahkan label pertama Anda.</p>
-                <Button @click="openCreateModal" class="gap-2">
-                    <Plus class="h-4 w-4" />
-                    Tambah Label Pertama
-                </Button>
-            </div>
+            <Card v-if="labels.length === 0" class="border-dashed border-2 border-gray-300 dark:border-gray-600">
+                <CardContent class="text-center py-16">
+                    <div class="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
+                        <Tag class="h-12 w-12 text-gray-400 dark:text-gray-500" />
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                        Belum ada label
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-sm mx-auto">
+                        Mulai dengan menambahkan label pertama untuk mengkategorikan mitra bisnis Anda.
+                    </p>
+                    <Button 
+                        @click="openCreateModal" 
+                        size="lg"
+                        class="gap-2"
+                    >
+                        <Plus class="h-5 w-5" />
+                        Tambah Label Pertama
+                    </Button>
+                </CardContent>
+            </Card>
         </div>
 
         <!-- Modals -->

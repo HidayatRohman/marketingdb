@@ -63,6 +63,7 @@ const props = defineProps<Props>();
 
 const search = ref(props.filters.search || '');
 const chat = ref(props.filters.chat || '');
+const label = ref(props.filters.label || '');
 
 // Modal states
 const mitraModal = ref({
@@ -94,12 +95,13 @@ const chatLabels = {
 let debounceTimer: number;
 
 // Watch for filter changes and update URL
-watch([search, chat], () => {
+watch([search, chat, label], () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
         router.get('/mitras', {
             search: search.value || undefined,
             chat: chat.value || undefined,
+            label: label.value || undefined,
         }, {
             preserveState: true,
             replace: true,
@@ -269,28 +271,43 @@ const getChatBadgeVariant = (chat: string) => {
             <!-- Search and Filter Bar -->
             <Card class="border-0 shadow-lg">
                 <CardContent class="p-6">
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <div class="relative flex-1">
-                            <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                            <Input
-                                v-model="search"
-                                placeholder="Cari berdasarkan nama, telepon, brand, atau lokasi..."
-                                class="pl-10 h-11"
-                            />
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                        <!-- Search Input -->
+                        <div class="lg:col-span-2">
+                            <div class="relative">
+                                <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                                <Input
+                                    v-model="search"
+                                    placeholder="Cari berdasarkan nama, telepon, brand, atau lokasi..."
+                                    class="pl-10 h-11"
+                                />
+                            </div>
                         </div>
-                        <div class="flex gap-2">
-                            <select
-                                v-model="chat"
-                                class="flex h-11 w-full sm:w-[180px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        
+                        <!-- Chat Filter -->
+                        <select
+                            v-model="chat"
+                            class="flex h-11 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <option value="">Semua Chat</option>
+                            <option value="masuk">Masuk</option>
+                            <option value="followup">Follow Up</option>
+                        </select>
+                        
+                        <!-- Label Filter -->
+                        <select
+                            v-model="label"
+                            class="flex h-11 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <option value="">Semua Label</option>
+                            <option 
+                                v-for="labelOption in labels" 
+                                :key="labelOption.id" 
+                                :value="labelOption.id"
                             >
-                                <option value="">Semua Chat</option>
-                                <option value="masuk">Masuk</option>
-                                <option value="followup">Follow Up</option>
-                            </select>
-                            <Button variant="outline" size="icon" class="h-11 w-11">
-                                <Filter class="h-4 w-4" />
-                            </Button>
-                        </div>
+                                {{ labelOption.nama }}
+                            </option>
+                        </select>
                     </div>
                 </CardContent>
             </Card>

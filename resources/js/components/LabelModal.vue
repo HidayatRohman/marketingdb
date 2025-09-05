@@ -89,26 +89,28 @@ const selectColor = (color: string) => {
 
 <template>
     <Dialog :open="open" @update:open="(value) => !value && $emit('close')">
-        <DialogContent class="sm:max-w-[500px]">
-            <DialogHeader>
-                <DialogTitle class="flex items-center gap-2 text-xl">
-                    <Tag class="h-5 w-5" />
+        <DialogContent class="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader class="space-y-3">
+                <DialogTitle class="flex items-center gap-3 text-xl">
+                    <div class="p-2 bg-primary/10 rounded-lg">
+                        <Tag class="h-5 w-5 text-primary" />
+                    </div>
                     <span v-if="mode === 'create'">Tambah Label Baru</span>
                     <span v-else-if="mode === 'edit'">Edit Label</span>
                     <span v-else>Detail Label</span>
                 </DialogTitle>
-                <DialogDescription>
-                    <span v-if="mode === 'create'">Buat label baru untuk kategorisasi mitra.</span>
+                <DialogDescription class="text-base">
+                    <span v-if="mode === 'create'">Buat label baru untuk kategorisasi mitra dengan warna yang menarik.</span>
                     <span v-else-if="mode === 'edit'">Perbarui informasi label yang sudah ada.</span>
-                    <span v-else>Informasi lengkap label.</span>
+                    <span v-else>Informasi lengkap tentang label ini.</span>
                 </DialogDescription>
             </DialogHeader>
 
-            <form @submit.prevent="submit" class="space-y-6">
+            <form @submit.prevent="submit" class="space-y-8">
                 <!-- Nama Label -->
-                <div class="space-y-2">
-                    <Label for="nama" class="flex items-center gap-2">
-                        <Tag class="h-3 w-3" />
+                <div class="space-y-3">
+                    <Label for="nama" class="flex items-center gap-2 text-sm font-medium">
+                        <Tag class="h-4 w-4" />
                         Nama Label *
                     </Label>
                     <Input
@@ -116,6 +118,7 @@ const selectColor = (color: string) => {
                         v-model="form.nama"
                         :disabled="mode === 'view'"
                         placeholder="Masukkan nama label"
+                        class="h-11"
                         :class="{ 'border-destructive': form.errors.nama }"
                     />
                     <p v-if="form.errors.nama" class="text-sm text-destructive">
@@ -124,46 +127,64 @@ const selectColor = (color: string) => {
                 </div>
 
                 <!-- Warna Label -->
-                <div class="space-y-3">
-                    <Label class="flex items-center gap-2">
-                        <Palette class="h-3 w-3" />
+                <div class="space-y-4">
+                    <Label class="flex items-center gap-2 text-sm font-medium">
+                        <Palette class="h-4 w-4" />
                         Warna Label *
                     </Label>
                     
-                    <!-- Color Preview -->
-                    <div class="flex items-center gap-3">
-                        <div 
-                            class="w-8 h-8 rounded-full border-2 border-gray-300 shadow-sm" 
-                            :style="{ backgroundColor: form.warna }"
-                        ></div>
-                        <Input
-                            v-model="form.warna"
-                            :disabled="mode === 'view'"
-                            type="color"
-                            class="w-16 h-8 p-1 cursor-pointer"
-                            :class="{ 'border-destructive': form.errors.warna }"
-                        />
-                        <span class="text-sm text-muted-foreground font-mono">{{ form.warna.toUpperCase() }}</span>
+                    <!-- Color Preview & Picker -->
+                    <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border">
+                        <div class="flex items-center gap-3">
+                            <div 
+                                class="w-10 h-10 rounded-full border-2 border-gray-300 dark:border-gray-600 shadow-sm ring-2 ring-white dark:ring-gray-800" 
+                                :style="{ backgroundColor: form.warna }"
+                            ></div>
+                            <Input
+                                v-model="form.warna"
+                                :disabled="mode === 'view'"
+                                type="color"
+                                class="w-20 h-10 p-1 cursor-pointer"
+                                :class="{ 'border-destructive': form.errors.warna }"
+                            />
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Kode Warna</p>
+                            <p class="text-lg font-mono font-semibold text-gray-900 dark:text-gray-100">
+                                {{ form.warna.toUpperCase() }}
+                            </p>
+                        </div>
                     </div>
 
                     <!-- Predefined Colors -->
-                    <div v-if="mode !== 'view'" class="space-y-2">
-                        <p class="text-sm text-muted-foreground">Atau pilih dari warna yang tersedia:</p>
-                        <div class="grid grid-cols-10 gap-2">
+                    <div v-if="mode !== 'view'" class="space-y-3">
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Atau pilih dari warna yang tersedia:
+                        </p>
+                        <div class="grid grid-cols-5 gap-3">
                             <button
                                 v-for="color in predefinedColors"
                                 :key="color"
                                 type="button"
                                 @click="selectColor(color)"
-                                class="w-8 h-8 rounded-full border-2 transition-all hover:scale-110"
+                                class="group relative w-12 h-12 rounded-xl transition-all hover:scale-110 focus:scale-110 focus:outline-none"
                                 :class="[
                                     form.warna === color 
-                                        ? 'border-gray-900 ring-2 ring-gray-300' 
-                                        : 'border-gray-300 hover:border-gray-400'
+                                        ? 'ring-2 ring-primary ring-offset-2 ring-offset-white dark:ring-offset-gray-800' 
+                                        : 'ring-1 ring-gray-300 dark:ring-gray-600 hover:ring-gray-400'
                                 ]"
                                 :style="{ backgroundColor: color }"
                                 :title="color"
-                            ></button>
+                            >
+                                <div 
+                                    v-if="form.warna === color"
+                                    class="absolute inset-0 flex items-center justify-center"
+                                >
+                                    <div class="w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                                        <div class="w-2 h-2 bg-gray-800 rounded-full"></div>
+                                    </div>
+                                </div>
+                            </button>
                         </div>
                     </div>
 
@@ -173,33 +194,43 @@ const selectColor = (color: string) => {
                 </div>
 
                 <!-- Preview -->
-                <div class="space-y-2">
-                    <Label>Preview:</Label>
-                    <div class="p-3 border rounded-lg bg-muted/50">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium"
-                             :style="{ 
-                                 backgroundColor: form.warna + '20', 
-                                 color: form.warna,
-                                 border: `1px solid ${form.warna}40`
-                             }">
-                            <div 
-                                class="w-2 h-2 rounded-full" 
-                                :style="{ backgroundColor: form.warna }"
-                            ></div>
-                            {{ form.nama || 'Nama Label' }}
+                <div class="space-y-3">
+                    <Label class="text-sm font-medium">Preview Label:</Label>
+                    <div class="p-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50/50 dark:bg-gray-800/50">
+                        <div class="flex justify-center">
+                            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all"
+                                 :style="{ 
+                                     backgroundColor: form.warna + '15', 
+                                     color: form.warna,
+                                     border: `2px solid ${form.warna}30`
+                                 }">
+                                <div 
+                                    class="w-3 h-3 rounded-full" 
+                                    :style="{ backgroundColor: form.warna }"
+                                ></div>
+                                {{ form.nama || 'Nama Label' }}
+                            </div>
                         </div>
+                        <p class="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            Begini tampilan label di halaman mitra
+                        </p>
                     </div>
                 </div>
             </form>
 
-            <DialogFooter v-if="mode !== 'view'">
-                <Button type="button" variant="outline" @click="$emit('close')">
+            <DialogFooter v-if="mode !== 'view'" class="gap-3 pt-6">
+                <Button 
+                    type="button" 
+                    variant="outline" 
+                    @click="$emit('close')"
+                    class="px-6"
+                >
                     Batal
                 </Button>
                 <Button 
                     @click="submit" 
                     :disabled="form.processing"
-                    class="gap-2"
+                    class="gap-2 px-6"
                 >
                     <Loader2 v-if="form.processing" class="h-4 w-4 animate-spin" />
                     <span v-if="mode === 'create'">Tambah Label</span>
