@@ -168,6 +168,19 @@ const openWhatsApp = (phoneNumber: string, mitraName: string) => {
     window.open(url, '_blank');
 };
 
+// Function to format date for display
+const formatDate = (dateString: string) => {
+    if (!dateString) return '-';
+    
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+};
+
 // Reset form when modal closes
 watch(() => props.open, (isOpen) => {
     if (!isOpen) {
@@ -282,11 +295,19 @@ const chatLabels = {
                                 <Calendar class="h-3 w-3" />
                                 Tanggal Lead *
                             </Label>
+                            <div v-if="mode === 'view'" class="flex items-center gap-2 p-2 border rounded-md bg-muted/50">
+                                <div class="p-1 bg-blue-100 dark:bg-blue-800 rounded">
+                                    <Calendar class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <span class="text-gray-900 dark:text-gray-100 font-medium">
+                                    {{ formatDate(form.tanggal_lead) }}
+                                </span>
+                            </div>
                             <Input
+                                v-else
                                 id="tanggal_lead"
                                 v-model="form.tanggal_lead"
                                 type="date"
-                                :disabled="mode === 'view'"
                                 :class="{ 'border-destructive': form.errors.tanggal_lead }"
                             />
                             <p v-if="form.errors.tanggal_lead" class="text-sm text-destructive">
