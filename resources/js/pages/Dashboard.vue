@@ -14,9 +14,9 @@ import {
     Users, UserCheck, Shield, Briefcase, Plus, BarChart3, TrendingUp, Activity, 
     Clock, Calendar, MessageSquare, Target, Award, ChevronUp, ChevronDown,
     Phone, Mail, MapPin, Building2, Zap, Eye, Filter, RefreshCw,
-    TrendingDown, ArrowUpRight, ArrowDownRight, Percent, Tag, PieChart
+    TrendingDown, ArrowUpRight, ArrowDownRight, Percent, Tag, PieChart, X
 } from 'lucide-vue-next';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 interface UserStats {
     total: number;
@@ -139,7 +139,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Refs for filters
 const startDate = ref('');
 const endDate = ref('');
+const selectedMarketing = ref('all');
+const selectedBrand = ref('all');
+const selectedDateRange = ref('this_month');
 const refreshing = ref(false);
+const showMarketingDropdown = ref(false);
+const showBrandDropdown = ref(false);
 
 // Computed values
 const totalConversionRate = computed(() => {
@@ -171,11 +176,97 @@ const applyDateFilter = () => {
         router.get('/dashboard', {
             start_date: startDate.value,
             end_date: endDate.value,
+            marketing: selectedMarketing.value !== 'all' ? selectedMarketing.value : null,
+            brand: selectedBrand.value !== 'all' ? selectedBrand.value : null,
         }, {
             preserveState: true,
             replace: true,
         });
     }
+};
+
+const applyQuickDateFilter = (range: string) => {
+    const now = new Date();
+    let start, end;
+    
+    switch (range) {
+        case 'today':
+            start = end = now.toISOString().split('T')[0];
+            break;
+        case 'yesterday':
+            const yesterday = new Date(now);
+            yesterday.setDate(yesterday.getDate() - 1);
+            start = end = yesterday.toISOString().split('T')[0];
+            break;
+        case 'this_week':
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            start = startOfWeek.toISOString().split('T')[0];
+            end = now.toISOString().split('T')[0];
+            break;
+        case 'last_week':
+            const startOfLastWeek = new Date(now);
+            startOfLastWeek.setDate(now.getDate() - now.getDay() - 7);
+            const endOfLastWeek = new Date(startOfLastWeek);
+            endOfLastWeek.setDate(startOfLastWeek.getDate() + 6);
+            start = startOfLastWeek.toISOString().split('T')[0];
+            end = endOfLastWeek.toISOString().split('T')[0];
+            break;
+        case 'this_month':
+            start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+            end = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+            break;
+        case 'last_month':
+            start = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
+            end = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0];
+            break;
+        default:
+            return;
+    }
+    
+    startDate.value = start;
+    endDate.value = end;
+    selectedDateRange.value = range;
+    applyDateFilter();
+};
+
+const applyMarketingFilter = (marketingId: string) => {
+    selectedMarketing.value = marketingId;
+    applyFilters();
+};
+
+const applyBrandFilter = (brandId: string) => {
+    selectedBrand.value = brandId;
+    applyFilters();
+};
+
+const applyFilters = () => {
+    const params: any = {};
+    
+    if (startDate.value && endDate.value) {
+        params.start_date = startDate.value;
+        params.end_date = endDate.value;
+    }
+    
+    if (selectedMarketing.value !== 'all') {
+        params.marketing = selectedMarketing.value;
+    }
+    
+    if (selectedBrand.value !== 'all') {
+        params.brand = selectedBrand.value;
+    }
+    
+    router.get('/dashboard', params, {
+        preserveState: true,
+        replace: true,
+    });
+};
+
+const resetFilters = () => {
+    selectedMarketing.value = 'all';
+    selectedBrand.value = 'all';
+    selectedDateRange.value = 'this_month';
+    applyQuickDateFilter('this_month');
 };
 
 const formatDate = (dateString: string) => {
@@ -233,6 +324,22 @@ onMounted(() => {
     const now = new Date();
     startDate.value = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
     endDate.value = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+    selectedDateRange.value = 'this_month';
+    
+    // Close dropdowns when clicking outside
+    const handleClickOutside = (event: Event) => {
+        const target = event.target as Element;
+        if (!target.closest('.relative')) {
+            showMarketingDropdown.value = false;
+            showBrandDropdown.value = false;
+        }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    
+    onUnmounted(() => {
+        document.removeEventListener('click', handleClickOutside);
+    });
 });
 </script>
 
@@ -276,33 +383,190 @@ onMounted(() => {
                 <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
             </div>
 
-            <!-- Date Filter Section -->
-            <Card class="border-0 shadow-lg">
+            <!-- Enhanced Filter Section -->
+            <Card class="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950">
                 <CardContent class="p-6">
-                    <div class="flex flex-col sm:flex-row gap-4 items-center">
-                        <div class="flex items-center gap-2">
-                            <Calendar class="h-5 w-5 text-muted-foreground" />
-                            <span class="font-medium">Filter Periode:</span>
-                        </div>
-                        <div class="flex gap-2 items-center">
-                            <Label for="start-date" class="text-sm">Dari:</Label>
-                            <Input
-                                id="start-date"
-                                v-model="startDate"
-                                type="date"
-                                class="w-auto"
-                            />
-                            <Label for="end-date" class="text-sm">Sampai:</Label>
-                            <Input
-                                id="end-date"
-                                v-model="endDate"
-                                type="date"
-                                class="w-auto"
-                            />
-                            <Button @click="applyDateFilter" size="sm">
-                                <Filter class="h-4 w-4 mr-2" />
-                                Terapkan
+                    <div class="space-y-6">
+                        <!-- Filter Header -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-blue-500 rounded-lg">
+                                    <Filter class="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold">Filter Dashboard</h3>
+                                    <p class="text-sm text-muted-foreground">Sesuaikan tampilan data sesuai kebutuhan</p>
+                                </div>
+                            </div>
+                            <Button variant="outline" size="sm" @click="resetFilters">
+                                <RefreshCw class="h-4 w-4 mr-2" />
+                                Reset
                             </Button>
+                        </div>
+
+                        <!-- Quick Date Range Filters -->
+                        <div class="space-y-3">
+                            <Label class="text-sm font-medium">Periode Waktu:</Label>
+                            <div class="flex flex-wrap gap-2">
+                                <Button
+                                    v-for="range in [
+                                        { key: 'today', label: 'Hari Ini' },
+                                        { key: 'yesterday', label: 'Kemarin' },
+                                        { key: 'this_week', label: 'Minggu Ini' },
+                                        { key: 'last_week', label: 'Minggu Lalu' },
+                                        { key: 'this_month', label: 'Bulan Ini' },
+                                        { key: 'last_month', label: 'Bulan Lalu' }
+                                    ]"
+                                    :key="range.key"
+                                    :variant="selectedDateRange === range.key ? 'default' : 'outline'"
+                                    size="sm"
+                                    @click="applyQuickDateFilter(range.key)"
+                                    class="transition-all duration-200"
+                                >
+                                    {{ range.label }}
+                                </Button>
+                            </div>
+                        </div>
+
+                        <!-- Custom Date Range & Filters -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                            <div class="space-y-2">
+                                <Label for="custom-start-date" class="text-sm font-medium">Tanggal Mulai:</Label>
+                                <Input
+                                    id="custom-start-date"
+                                    v-model="startDate"
+                                    type="date"
+                                    class="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                            <div class="space-y-2">
+                                <Label for="custom-end-date" class="text-sm font-medium">Tanggal Akhir:</Label>
+                                <Input
+                                    id="custom-end-date"
+                                    v-model="endDate"
+                                    type="date"
+                                    class="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                            
+                            <!-- Marketing Filter Dropdown -->
+                            <div class="space-y-2 relative">
+                                <Label class="text-sm font-medium">Marketing:</Label>
+                                <Button
+                                    variant="outline"
+                                    class="w-full justify-between"
+                                    @click="showMarketingDropdown = !showMarketingDropdown"
+                                >
+                                    <span class="flex items-center gap-2">
+                                        <Users class="h-4 w-4" />
+                                        {{ selectedMarketing === 'all' ? 'Semua Marketing' : topMarketing.find(m => m.id.toString() === selectedMarketing)?.name }}
+                                    </span>
+                                    <ChevronDown class="h-4 w-4" />
+                                </Button>
+                                <div 
+                                    v-if="showMarketingDropdown"
+                                    class="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                                >
+                                    <div 
+                                        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b"
+                                        @click="applyMarketingFilter('all'); showMarketingDropdown = false"
+                                    >
+                                        <div class="flex items-center gap-2">
+                                            <Target class="h-4 w-4 text-blue-500" />
+                                            <span>Semua Marketing</span>
+                                        </div>
+                                    </div>
+                                    <div 
+                                        v-for="marketing in topMarketing" 
+                                        :key="marketing.id"
+                                        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                                        @click="applyMarketingFilter(marketing.id.toString()); showMarketingDropdown = false"
+                                    >
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <Users class="h-4 w-4 text-green-500" />
+                                                <span>{{ marketing.name }}</span>
+                                            </div>
+                                            <Badge variant="secondary" class="text-xs">
+                                                {{ marketing.total_leads }} leads
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Brand Filter Dropdown -->
+                            <div class="space-y-2 relative">
+                                <Label class="text-sm font-medium">Brand:</Label>
+                                <Button
+                                    variant="outline"
+                                    class="w-full justify-between"
+                                    @click="showBrandDropdown = !showBrandDropdown"
+                                >
+                                    <span class="flex items-center gap-2">
+                                        <Building2 class="h-4 w-4" />
+                                        {{ selectedBrand === 'all' ? 'Semua Brand' : brandPerformance.find(b => b.id.toString() === selectedBrand)?.nama }}
+                                    </span>
+                                    <ChevronDown class="h-4 w-4" />
+                                </Button>
+                                <div 
+                                    v-if="showBrandDropdown"
+                                    class="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                                >
+                                    <div 
+                                        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b"
+                                        @click="applyBrandFilter('all'); showBrandDropdown = false"
+                                    >
+                                        <div class="flex items-center gap-2">
+                                            <Target class="h-4 w-4 text-blue-500" />
+                                            <span>Semua Brand</span>
+                                        </div>
+                                    </div>
+                                    <div 
+                                        v-for="brand in brandPerformance" 
+                                        :key="brand.id"
+                                        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                                        @click="applyBrandFilter(brand.id.toString()); showBrandDropdown = false"
+                                    >
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <Building2 class="h-4 w-4 text-purple-500" />
+                                                <span>{{ brand.nama }}</span>
+                                            </div>
+                                            <Badge variant="secondary" class="text-xs">
+                                                {{ brand.total_leads }} leads
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Apply Filter Button -->
+                        <div class="flex justify-end">
+                            <Button @click="applyFilters" class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white">
+                                <Filter class="h-4 w-4 mr-2" />
+                                Terapkan Filter
+                            </Button>
+                        </div>
+
+                        <!-- Active Filters Display -->
+                        <div v-if="selectedMarketing !== 'all' || selectedBrand !== 'all'" class="flex items-center gap-2 pt-2 border-t border-dashed">
+                            <span class="text-sm font-medium text-muted-foreground">Filter Aktif:</span>
+                            <Badge v-if="selectedMarketing !== 'all'" variant="default" class="flex items-center gap-1">
+                                <Users class="h-3 w-3" />
+                                {{ topMarketing.find(m => m.id.toString() === selectedMarketing)?.name }}
+                                <Button variant="ghost" size="sm" class="h-3 w-3 p-0 ml-1" @click="applyMarketingFilter('all')">
+                                    <X class="h-3 w-3" />
+                                </Button>
+                            </Badge>
+                            <Badge v-if="selectedBrand !== 'all'" variant="default" class="flex items-center gap-1">
+                                <Building2 class="h-3 w-3" />
+                                {{ brandPerformance.find(b => b.id.toString() === selectedBrand)?.nama }}
+                                <Button variant="ghost" size="sm" class="h-3 w-3 p-0 ml-1" @click="applyBrandFilter('all')">
+                                    <X class="h-3 w-3" />
+                                </Button>
+                            </Badge>
                         </div>
                     </div>
                 </CardContent>
