@@ -14,7 +14,7 @@ import { Head, router, useForm } from '@inertiajs/vue3';
 import { 
     Plus, Calendar as CalendarIcon, List, Clock, Flag, 
     User, CheckCircle, XCircle, AlertCircle, MoreVertical,
-    Edit, Trash2, ArrowLeft, ArrowRight
+    Edit, Trash2, ArrowLeft, ArrowRight, Columns3
 } from 'lucide-vue-next';
 import { ref, computed, watch } from 'vue';
 
@@ -60,7 +60,7 @@ interface Props {
     todos: Todo[];
     users: User[];
     selectedDate: string;
-    view: 'calendar' | 'list';
+    view: 'calendar' | 'board' | 'list';
     stats: Stats;
     auth: {
         user: {
@@ -303,7 +303,7 @@ const calendarDays = computed(() => {
 
 // Methods
 const changeView = (view: string) => {
-    if (view === 'calendar' || view === 'list') {
+    if (view === 'calendar' || view === 'board' || view === 'list') {
         currentView.value = view;
         router.get('/todos', { 
             view: view, 
@@ -327,6 +327,21 @@ const navigateMonth = (direction: 'prev' | 'next') => {
     }, { preserveState: true });
 };
 
+const navigateWeek = (direction: 'prev' | 'next') => {
+    const newDate = new Date(selectedDate.value);
+    if (direction === 'prev') {
+        newDate.setDate(newDate.getDate() - 7);
+    } else {
+        newDate.setDate(newDate.getDate() + 7);
+    }
+    selectedDate.value = newDate;
+    
+    router.get('/todos', { 
+        view: 'board', 
+        date: newDate.toISOString().split('T')[0]
+    }, { preserveState: true });
+};
+
 const selectDate = (date: Date) => {
     selectedDate.value = date;
     if (currentView.value === 'list') {
@@ -341,6 +356,14 @@ const openCreateModal = () => {
     form.reset();
     form.start_date = selectedDate.value.toISOString().split('T')[0];
     form.due_date = selectedDate.value.toISOString().split('T')[0];
+    showCreateModal.value = true;
+};
+
+const openCreateModalForDay = (date: Date) => {
+    form.reset();
+    const dateString = date.toISOString().split('T')[0];
+    form.start_date = dateString;
+    form.due_date = dateString;
     showCreateModal.value = true;
 };
 
@@ -512,6 +535,53 @@ const isCurrentMonth = (date: Date) => {
     return date.getMonth() === currentDate.value.getMonth();
 };
 
+// Board view functions
+const getWeekDays = () => {
+    const startOfWeek = new Date(selectedDate.value);
+    const day = startOfWeek.getDay();
+    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+    startOfWeek.setDate(diff);
+    
+    const weekDays = [];
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(startOfWeek);
+        date.setDate(startOfWeek.getDate() + i);
+        weekDays.push(date);
+    }
+    return weekDays;
+};
+
+const getTodosForWeekDay = (date: Date) => {
+    const dateKey = date.toISOString().split('T')[0];
+    
+    return props.todos.filter(todo => {
+        // Include todos that span across this date or have due_date on this date
+        if (todo.start_date) {
+            return dateKey >= todo.start_date && dateKey <= todo.due_date;
+        }
+        return todo.due_date === dateKey;
+    }).sort((a, b) => {
+        const priorityOrder = { high: 3, medium: 2, low: 1 };
+        const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
+        if (priorityDiff !== 0) return priorityDiff;
+        
+        if (a.due_time && b.due_time) {
+            return a.due_time.localeCompare(b.due_time);
+        }
+        
+        return a.title.localeCompare(b.title);
+    });
+};
+
+const getDayName = (date: Date) => {
+    return dayNames[date.getDay()];
+};
+
+const getShortDayName = (date: Date) => {
+    const shortDayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+    return shortDayNames[date.getDay()];
+};
+
 const getStatusIcon = (status: string) => {
     switch (status) {
         case 'completed':
@@ -549,6 +619,10 @@ const getStatusIcon = (status: string) => {
                             <TabsTrigger value="calendar" class="flex items-center gap-2">
                                 <CalendarIcon class="h-4 w-4" />
                                 Kalender
+                            </TabsTrigger>
+                            <TabsTrigger value="board" class="flex items-center gap-2">
+                                <Columns3 class="h-4 w-4" />
+                                Board
                             </TabsTrigger>
                             <TabsTrigger value="list" class="flex items-center gap-2">
                                 <List class="h-4 w-4" />
@@ -821,6 +895,128 @@ const getStatusIcon = (status: string) => {
                         </div>
                     </CardContent>
                 </Card>
+            </div>
+
+            <!-- Board View -->
+            <div v-if="currentView === 'board'" class="space-y-4">
+                <!-- Board Header -->
+                <Card>
+                    <CardHeader class="pb-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <CardTitle class="flex items-center gap-2">
+                                    <Columns3 class="h-5 w-5" />
+                                    Board View - Weekly Planning
+                                </CardTitle>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    Kelola tugas berdasarkan hari dalam minggu
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <Button variant="outline" size="sm" @click="navigateWeek('prev')">
+                                    <ArrowLeft class="h-4 w-4" />
+                                </Button>
+                                <span class="text-sm font-medium px-3">
+                                    {{ formatDate(getWeekDays()[0].toISOString().split('T')[0]) }} - 
+                                    {{ formatDate(getWeekDays()[6].toISOString().split('T')[0]) }}
+                                </span>
+                                <Button variant="outline" size="sm" @click="navigateWeek('next')">
+                                    <ArrowRight class="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    </CardHeader>
+                </Card>
+
+                <!-- Kanban Board -->
+                <div class="grid grid-cols-1 md:grid-cols-7 gap-4 min-h-[600px]">
+                    <div v-for="(day, index) in getWeekDays()" :key="index"
+                         class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                        <!-- Day Header -->
+                        <div class="mb-4">
+                            <h3 class="font-semibold text-gray-900 dark:text-gray-100">
+                                {{ getDayName(day) }}
+                            </h3>
+                            <p class="text-sm text-gray-500">
+                                {{ formatDate(day.toISOString().split('T')[0]) }}
+                            </p>
+                            <div class="text-xs text-gray-400 mt-1">
+                                {{ getTodosForWeekDay(day).length }} tugas
+                            </div>
+                        </div>
+
+                        <!-- Todo Cards -->
+                        <div class="space-y-3">
+                            <div v-for="todo in getTodosForWeekDay(day)" :key="todo.id"
+                                 class="bg-white dark:bg-gray-700 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-600 cursor-pointer hover:shadow-md transition-shadow"
+                                 @click="openEditModal(todo)">
+                                
+                                <!-- Card Header -->
+                                <div class="flex items-start justify-between mb-2">
+                                    <h4 class="font-medium text-sm text-gray-900 dark:text-gray-100 line-clamp-2">
+                                        {{ todo.title }}
+                                    </h4>
+                                    <Checkbox 
+                                        :checked="todo.status === 'completed'"
+                                        @update:checked="(checked: boolean) => updateStatus(todo, checked)"
+                                        @click.stop
+                                        class="ml-2 flex-shrink-0"
+                                    />
+                                </div>
+
+                                <!-- Card Content -->
+                                <div class="space-y-2">
+                                    <!-- Priority & Status -->
+                                    <div class="flex items-center gap-2">
+                                        <Badge :class="priorityColors[todo.priority]" class="text-xs">
+                                            {{ priorityLabels[todo.priority] }}
+                                        </Badge>
+                                        <Badge :class="statusColors[todo.status]" class="text-xs">
+                                            {{ statusLabels[todo.status] }}
+                                        </Badge>
+                                    </div>
+
+                                    <!-- Time & Duration -->
+                                    <div v-if="todo.due_time" class="flex items-center gap-1 text-xs text-gray-500">
+                                        <Clock class="h-3 w-3" />
+                                        {{ todo.due_time }}
+                                    </div>
+
+                                    <!-- Date Range (if applicable) -->
+                                    <div v-if="todo.start_date && todo.start_date !== todo.due_date" 
+                                         class="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                                        📅 {{ formatDate(todo.start_date) }} - {{ formatDate(todo.due_date) }}
+                                    </div>
+
+                                    <!-- Assignee -->
+                                    <div class="flex items-center justify-between mt-2">
+                                        <div class="flex items-center gap-1">
+                                            <span class="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                                📝 {{ todo.user.name.split(' ')[0] }}
+                                            </span>
+                                            <span v-if="todo.assigned_user" 
+                                                  class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                                                👤 {{ todo.assigned_user.name.split(' ')[0] }}
+                                            </span>
+                                        </div>
+                                        
+                                        <!-- Priority Flag -->
+                                        <Flag v-if="todo.priority === 'high'" 
+                                              class="h-3 w-3 text-red-500" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Add Todo Button for this day -->
+                            <Button variant="ghost" 
+                                    class="w-full justify-start text-gray-500 border-2 border-dashed border-gray-300 hover:border-gray-400"
+                                    @click="openCreateModalForDay(day)">
+                                <Plus class="h-4 w-4 mr-2" />
+                                Tambah Tugas
+                            </Button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- List View -->

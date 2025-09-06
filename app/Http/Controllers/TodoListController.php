@@ -91,6 +91,24 @@ class TodoListController extends Controller
                           ->orderBy('due_date')
                           ->orderBy('due_time')
                           ->get();
+        } elseif ($view === 'board') {
+            // For board view, get todos for the entire week
+            $startOfWeek = Carbon::parse($selectedDate)->startOfWeek(Carbon::MONDAY);
+            $endOfWeek = Carbon::parse($selectedDate)->endOfWeek(Carbon::SUNDAY);
+            
+            $todos = $query->where(function($q) use ($startOfWeek, $endOfWeek) {
+                        // Include todos that have due_date in this week
+                        $q->whereBetween('due_date', [$startOfWeek, $endOfWeek])
+                        // OR todos that span across this week (start_date before week, due_date in/after week)
+                        ->orWhere(function($q2) use ($startOfWeek, $endOfWeek) {
+                            $q2->whereNotNull('start_date')
+                               ->where('start_date', '<=', $endOfWeek)
+                               ->where('due_date', '>=', $startOfWeek);
+                        });
+                    })
+                    ->orderBy('due_date')
+                    ->orderBy('due_time')
+                    ->get();
         } else {
             // For list view
             $hasFilters = ($status !== 'all' || $priority !== 'all' || $assigned !== 'all' || $user !== 'all' || !empty($search));
