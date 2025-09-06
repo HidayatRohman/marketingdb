@@ -80,9 +80,14 @@ interface Props {
 
 const props = defineProps<Props>();
 
-// State
-const currentDate = ref(new Date(props.selectedDate));
-const selectedDate = ref(new Date(props.selectedDate));
+// State  
+const parseDate = (dateStr: string): Date => {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+};
+
+const currentDate = ref(parseDate(props.selectedDate));
+const selectedDate = ref(parseDate(props.selectedDate));
 const currentView = ref(props.view);
 const showCreateModal = ref(false);
 const showEditModal = ref(false);
@@ -119,7 +124,9 @@ const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'
 
 // Utility functions
 const formatDate = (dateStr: string): string => {
-    const date = new Date(dateStr);
+    // Parse date as local time to avoid timezone issues
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed
     return `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
 };
 
@@ -130,7 +137,8 @@ const formatTime = (timeStr?: string): string => {
 
 const isToday = (dateStr: string): boolean => {
     const today = new Date();
-    const date = new Date(dateStr);
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed
     return date.toDateString() === today.toDateString();
 };
 
