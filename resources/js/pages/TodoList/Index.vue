@@ -61,6 +61,14 @@ interface Props {
     selectedDate: string;
     view: 'calendar' | 'list';
     stats: Stats;
+    auth: {
+        user: {
+            id: number;
+            name: string;
+            email: string;
+            role: string;
+        };
+    };
     filters?: {
         status: string;
         priority: string;
@@ -135,6 +143,10 @@ const currentMonthYear = computed(() => {
     return `${monthNames[currentDate.value.getMonth()]} ${currentDate.value.getFullYear()}`;
 });
 
+const isSuperAdmin = computed(() => {
+    return props.auth.user.role === 'super_admin';
+});
+
 const todosGroupedByDate = computed(() => {
     const grouped: Record<string, Todo[]> = {};
     props.todos.forEach(todo => {
@@ -154,18 +166,19 @@ const todosForSelectedDate = computed(() => {
         return todosGroupedByDate.value[dateKey] || [];
     }
     
-    // If in list view and no filters active, show only selected date
+    // If in list view and no filters active, show only selected date (except for Super Admin)
     if (currentView.value === 'list' && 
         filters.value.status === 'all' && 
         filters.value.priority === 'all' && 
         filters.value.assigned === 'all' && 
         filters.value.user === 'all' &&
-        !filters.value.search) {
+        !filters.value.search &&
+        !isSuperAdmin.value) {
         const dateKey = selectedDate.value.toISOString().split('T')[0];
         return todosGroupedByDate.value[dateKey] || [];
     }
     
-    // If filters are active in list view, show filtered todos
+    // If filters are active in list view or Super Admin, show filtered todos
     return allFilteredTodos.value;
 });
 
@@ -448,7 +461,14 @@ const getStatusIcon = (status: string) => {
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">To Do List</h1>
-                    <p class="text-gray-600 dark:text-gray-400">Kelola tugas dan jadwal marketing Anda</p>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        {{ isSuperAdmin ? 'Kelola semua tugas dan jadwal marketing tim' : 'Kelola tugas dan jadwal marketing Anda' }}
+                    </p>
+                    <div v-if="isSuperAdmin" class="mt-1">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            👑 Super Admin View - Semua Todo
+                        </span>
+                    </div>
                 </div>
                 
                 <div class="flex items-center gap-2">
@@ -789,8 +809,9 @@ const getStatusIcon = (status: string) => {
                                     class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <option value="all">Semua</option>
-                                    <option value="me">Tugas Saya</option>
-                                    <option value="others">Assigned ke Lain</option>
+                                    <option v-if="!isSuperAdmin" value="me">Tugas Saya</option>
+                                    <option value="others">Ada Assignment</option>
+                                    <option v-if="isSuperAdmin" value="unassigned">Belum Di-assign</option>
                                 </select>
                             </div>
                             

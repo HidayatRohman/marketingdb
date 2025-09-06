@@ -25,11 +25,19 @@ class TodoListController extends Controller
         $user = $request->get('user', 'all');
         $search = $request->get('search', '');
         
-        $query = TodoList::with(['user', 'assignedUser'])
-            ->where(function($q) {
+        $query = TodoList::with(['user', 'assignedUser']);
+        
+        // Role-based access control
+        if (auth()->user()->isSuperAdmin()) {
+            // Super Admin can see all todos
+            // No additional where clause needed
+        } else {
+            // Regular users can only see todos they created or are assigned to
+            $query->where(function($q) {
                 $q->where('user_id', auth()->id())
                   ->orWhere('assigned_to', auth()->id());
             });
+        }
 
         // Apply filters
         if ($status !== 'all') {
@@ -42,13 +50,24 @@ class TodoListController extends Controller
         
         if ($assigned !== 'all') {
             if ($assigned === 'me') {
-                $query->where(function($q) {
-                    $q->where('user_id', auth()->id())
-                      ->orWhereNull('assigned_to');
-                });
-            } else {
-                $query->where('assigned_to', '!=', null)
-                      ->where('user_id', '!=', auth()->id());
+                if (auth()->user()->isSuperAdmin()) {
+                    // For Super Admin, "me" doesn't make sense, so skip this filter
+                } else {
+                    $query->where(function($q) {
+                        $q->where('user_id', auth()->id())
+                          ->orWhereNull('assigned_to');
+                    });
+                }
+            } elseif ($assigned === 'others') {
+                $query->where('assigned_to', '!=', null);
+                if (!auth()->user()->isSuperAdmin()) {
+                    $query->where('user_id', '!=', auth()->id());
+                }
+            } elseif ($assigned === 'unassigned') {
+                // Only for Super Admin - todos that are not assigned to anyone
+                if (auth()->user()->isSuperAdmin()) {
+                    $query->whereNull('assigned_to');
+                }
             }
         }
         
@@ -74,14 +93,16 @@ class TodoListController extends Controller
                           ->get();
         } else {
             // For list view, get todos for selected date or all if filters applied
-            if ($status === 'all' && $priority === 'all' && $assigned === 'all' && $user === 'all' && empty($search)) {
-                // No filters, show only selected date
+            $hasFilters = ($status !== 'all' || $priority !== 'all' || $assigned !== 'all' || $user !== 'all' || !empty($search));
+            
+            if (!$hasFilters && !auth()->user()->isSuperAdmin()) {
+                // No filters and not Super Admin, show only selected date
                 $todos = $query->whereDate('due_date', $selectedDate)
                               ->orderBy('due_time')
                               ->orderBy('priority')
                               ->get();
             } else {
-                // Filters applied, show all matching todos
+                // Filters applied or Super Admin, show all matching todos
                 $todos = $query->orderBy('due_date')
                               ->orderBy('due_time')
                               ->orderBy('priority')
@@ -96,6 +117,14 @@ class TodoListController extends Controller
             'users' => $users,
             'selectedDate' => $selectedDate,
             'view' => $view,
+            'auth' => [
+                'user' => [
+                    'id' => auth()->id(),
+                    'name' => auth()->user()->name,
+                    'email' => auth()->user()->email,
+                    'role' => auth()->user()->role,
+                ]
+            ],
             'filters' => [
                 'status' => $status,
                 'priority' => $priority,
@@ -104,25 +133,10 @@ class TodoListController extends Controller
                 'search' => $search,
             ],
             'stats' => [
-                'total' => TodoList::where(function($q) {
-                    $q->where('user_id', auth()->id())
-                      ->orWhere('assigned_to', auth()->id());
-                })->count(),
-                'completed' => TodoList::where(function($q) {
-                    $q->where('user_id', auth()->id())
-                      ->orWhere('assigned_to', auth()->id());
-                })->where('status', 'completed')->count(),
-                'pending' => TodoList::where(function($q) {
-                    $q->where('user_id', auth()->id())
-                      ->orWhere('assigned_to', auth()->id());
-                })->where('status', 'pending')->count(),
-                'overdue' => TodoList::where(function($q) {
-                    $q->where('user_id', auth()->id())
-                      ->orWhere('assigned_to', auth()->id());
-                })
-                    ->where('status', '!=', 'completed')
-                    ->where('due_date', '<', now()->format('Y-m-d'))
-                    ->count(),
+                'total' => $this->getTotalTodosCount(),
+                'completed' => $this->getCompletedTodosCount(),
+                'pending' => $this->getPendingTodosCount(),
+                'overdue' => $this->getOverdueTodosCount(),
             ]
         ]);
     }
@@ -246,5 +260,59 @@ class TodoListController extends Controller
             });
 
         return response()->json($todos);
+    }
+
+    /**
+     * Get base query for role-based access
+     */
+    private function getBaseStatsQuery()
+    {
+        $query = TodoList::query();
+        
+        if (auth()->user()->isSuperAdmin()) {
+            // Super Admin can see all todos
+            return $query;
+        } else {
+            // Regular users can only see todos they created or are assigned to
+            return $query->where(function($q) {
+                $q->where('user_id', auth()->id())
+                  ->orWhere('assigned_to', auth()->id());
+            });
+        }
+    }
+
+    /**
+     * Get total todos count based on user role
+     */
+    private function getTotalTodosCount(): int
+    {
+        return $this->getBaseStatsQuery()->count();
+    }
+
+    /**
+     * Get completed todos count based on user role
+     */
+    private function getCompletedTodosCount(): int
+    {
+        return $this->getBaseStatsQuery()->where('status', 'completed')->count();
+    }
+
+    /**
+     * Get pending todos count based on user role
+     */
+    private function getPendingTodosCount(): int
+    {
+        return $this->getBaseStatsQuery()->where('status', 'pending')->count();
+    }
+
+    /**
+     * Get overdue todos count based on user role
+     */
+    private function getOverdueTodosCount(): int
+    {
+        return $this->getBaseStatsQuery()
+            ->where('status', '!=', 'completed')
+            ->where('due_date', '<', now()->format('Y-m-d'))
+            ->count();
     }
 }
