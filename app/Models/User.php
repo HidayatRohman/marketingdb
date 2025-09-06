@@ -80,6 +80,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the mitras for the user (marketing).
+     */
+    public function mitras()
+    {
+        return $this->hasMany(Mitra::class);
+    }
+
+    /**
      * Get role label
      */
     public function getRoleLabelAttribute(): string
