@@ -166,20 +166,40 @@ const todosForSelectedDate = computed(() => {
         return todosGroupedByDate.value[dateKey] || [];
     }
     
-    // If in list view and no filters active, show only selected date (except for Super Admin)
-    if (currentView.value === 'list' && 
-        filters.value.status === 'all' && 
-        filters.value.priority === 'all' && 
-        filters.value.assigned === 'all' && 
-        filters.value.user === 'all' &&
-        !filters.value.search &&
-        !isSuperAdmin.value) {
-        const dateKey = selectedDate.value.toISOString().split('T')[0];
-        return todosGroupedByDate.value[dateKey] || [];
+    // For list view
+    const hasFilters = filters.value.status !== 'all' || 
+                      filters.value.priority !== 'all' || 
+                      filters.value.assigned !== 'all' || 
+                      filters.value.user !== 'all' ||
+                      !!filters.value.search;
+    
+    // If Super Admin has active filters, show all filtered todos
+    if (isSuperAdmin.value && hasFilters) {
+        return allFilteredTodos.value;
     }
     
-    // If filters are active in list view or Super Admin, show filtered todos
-    return allFilteredTodos.value;
+    // For all other cases (regular users or Super Admin without filters), show todos for selected date
+    const dateKey = selectedDate.value.toISOString().split('T')[0];
+    const todosForDate = todosGroupedByDate.value[dateKey] || [];
+    
+    // Apply filters to todos for the selected date
+    return todosForDate.filter(todo => {
+        if (filters.value.status !== 'all' && todo.status !== filters.value.status) return false;
+        if (filters.value.priority !== 'all' && todo.priority !== filters.value.priority) return false;
+        if (filters.value.assigned !== 'all') {
+            if (filters.value.assigned === 'me' && todo.assigned_to !== null && todo.user_id !== todo.assigned_to) return false;
+            if (filters.value.assigned === 'others' && (todo.assigned_to === null || todo.user_id === todo.assigned_to)) return false;
+        }
+        if (filters.value.user !== 'all' && todo.user_id.toString() !== filters.value.user) return false;
+        if (filters.value.search) {
+            const searchLower = filters.value.search.toLowerCase();
+            if (!todo.title.toLowerCase().includes(searchLower) && 
+                !(todo.description && todo.description.toLowerCase().includes(searchLower))) {
+                return false;
+            }
+        }
+        return true;
+    });
 });
 
 // Get all todos for current view with filters applied
@@ -336,7 +356,7 @@ const submitForm = () => {
                 // Use router.reload to get fresh data
                 router.reload({ 
                     only: ['todos', 'stats'],
-                    preserveScroll: true
+                    preserveUrl: true
                 });
             }
         });
@@ -348,7 +368,7 @@ const submitForm = () => {
                 // Use router.reload to get fresh data including the new todo
                 router.reload({ 
                     only: ['todos', 'stats'],
-                    preserveScroll: true
+                    preserveUrl: true
                 });
             }
         });
@@ -378,7 +398,7 @@ const applyFilters = () => {
     if (filters.value.search) params.set('search', filters.value.search);
     
     router.get('/todos?' + params.toString(), {}, { 
-        preserveScroll: true
+        preserveUrl: true
     });
 };
 
@@ -394,7 +414,7 @@ const deleteTodo = (todo: Todo) => {
                 // Reload page to update data
                 router.reload({ 
                     only: ['todos', 'stats'],
-                    preserveScroll: true
+                    preserveUrl: true
                 });
             }
         });
@@ -404,12 +424,12 @@ const deleteTodo = (todo: Todo) => {
 const updateStatus = (todo: Todo, checked: boolean) => {
     const status = checked ? 'completed' : 'pending';
     router.patch(`/todos/${todo.id}/status`, { status }, {
-        preserveScroll: true,
+        preserveUrl: true,
         onSuccess: () => {
             // Reload to update stats and data
             router.reload({ 
                 only: ['todos', 'stats'],
-                preserveScroll: true
+                preserveUrl: true
             });
         }
     });
