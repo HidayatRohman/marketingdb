@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Mitra;
 use App\Models\Brand;
 use App\Models\Label;
+use App\Models\TodoList;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -105,6 +106,9 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
+        // Task Management Statistics
+        $taskStats = $this->getTaskStatistics($currentUser);
+
         return Inertia::render('Dashboard', [
             'userStats' => $userStats,
             'mitraStats' => $mitraStats,
@@ -118,6 +122,7 @@ class DashboardController extends Controller
             'topMarketing' => $topMarketing,
             'brandPerformance' => $brandPerformance,
             'recentActivities' => $recentActivities,
+            'taskStats' => $taskStats,
             'permissions' => [
                 'canCrud' => $currentUser->canCrud(),
                 'canOnlyView' => $currentUser->canOnlyView(),
@@ -361,5 +366,97 @@ class DashboardController extends Controller
             })
             ->sortByDesc('total_leads')
             ->values();
+    }
+
+    private function getTaskStatistics($currentUser)
+    {
+        // Base query for tasks
+        $baseQuery = TodoList::query();
+        
+        if ($currentUser->hasLimitedAccess()) {
+            // Marketing users can only see their own tasks and tasks assigned to them
+            $baseQuery->where(function ($query) use ($currentUser) {
+                $query->where('user_id', $currentUser->id)
+                      ->orWhere('assigned_to', $currentUser->id);
+            });
+        }
+
+        // Overall task statistics
+        $overallStats = [
+            'total' => (clone $baseQuery)->count(),
+            'pending' => (clone $baseQuery)->where('status', 'pending')->count(),
+            'in_progress' => (clone $baseQuery)->where('status', 'in_progress')->count(),
+            'completed' => (clone $baseQuery)->where('status', 'completed')->count(),
+            'overdue' => (clone $baseQuery)->where('status', '!=', 'completed')
+                        ->where('due_date', '<', Carbon::today())->count(),
+        ];
+
+        // Task statistics per marketing user
+        $marketingQuery = User::where('role', 'marketing');
+        
+        if ($currentUser->hasLimitedAccess()) {
+            $marketingQuery->where('id', $currentUser->id);
+        }
+
+        $marketingStats = $marketingQuery->withCount([
+                // Tasks created by user
+                'todoLists as created_total',
+                'todoLists as created_pending' => function ($query) {
+                    $query->where('status', 'pending');
+                },
+                'todoLists as created_in_progress' => function ($query) {
+                    $query->where('status', 'in_progress');
+                },
+                'todoLists as created_completed' => function ($query) {
+                    $query->where('status', 'completed');
+                },
+                // Tasks assigned to user
+                'assignedTodoLists as assigned_total',
+                'assignedTodoLists as assigned_pending' => function ($query) {
+                    $query->where('status', 'pending');
+                },
+                'assignedTodoLists as assigned_in_progress' => function ($query) {
+                    $query->where('status', 'in_progress');
+                },
+                'assignedTodoLists as assigned_completed' => function ($query) {
+                    $query->where('status', 'completed');
+                },
+                'assignedTodoLists as assigned_overdue' => function ($query) {
+                    $query->where('status', '!=', 'completed')
+                          ->where('due_date', '<', Carbon::today());
+                }
+            ])
+            ->get()
+            ->map(function ($user) {
+                $totalTasks = $user->created_total + $user->assigned_total;
+                $completedTasks = $user->created_completed + $user->assigned_completed;
+                $inProgressTasks = $user->created_in_progress + $user->assigned_in_progress;
+                $pendingTasks = $user->created_pending + $user->assigned_pending;
+                
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'created_total' => $user->created_total,
+                    'created_pending' => $user->created_pending,
+                    'created_in_progress' => $user->created_in_progress,
+                    'created_completed' => $user->created_completed,
+                    'assigned_total' => $user->assigned_total,
+                    'assigned_pending' => $user->assigned_pending,
+                    'assigned_in_progress' => $user->assigned_in_progress,
+                    'assigned_completed' => $user->assigned_completed,
+                    'assigned_overdue' => $user->assigned_overdue,
+                    'total_tasks' => $totalTasks,
+                    'pending_tasks' => $pendingTasks,
+                    'in_progress_tasks' => $inProgressTasks,
+                    'completed_tasks' => $completedTasks,
+                    'completion_rate' => $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 2) : 0,
+                ];
+            });
+
+        return [
+            'overall' => $overallStats,
+            'by_marketing' => $marketingStats,
+        ];
     }
 }

@@ -89,6 +89,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the todo lists created by the user.
+     */
+    public function todoLists()
+    {
+        return $this->hasMany(TodoList::class, 'user_id');
+    }
+
+    /**
+     * Get the todo lists assigned to the user.
+     */
+    public function assignedTodoLists()
+    {
+        return $this->hasMany(TodoList::class, 'assigned_to');
+    }
+
+    /**
      * Get role label
      */
     public function getRoleLabelAttribute(): string
