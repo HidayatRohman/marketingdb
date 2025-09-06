@@ -385,7 +385,7 @@ onMounted(() => {
             </div>
 
             <!-- Enhanced Collapsible Filter Section -->
-            <Card class="border-0 shadow-lg overflow-hidden bg-white dark:bg-gray-900">
+            <Card class="border-0 shadow-lg overflow-visible bg-white dark:bg-gray-900">
                 <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-1">
                     <div class="bg-white dark:bg-gray-900 rounded-lg">
                         <CardContent class="p-4 sm:p-6">
@@ -429,7 +429,7 @@ onMounted(() => {
                                 leave-from-class="max-h-[800px] opacity-100"
                                 leave-to-class="max-h-0 opacity-0"
                             >
-                                <div v-if="isFilterExpanded" class="mt-6 space-y-6 overflow-hidden">
+                                <div v-if="isFilterExpanded" class="mt-6 space-y-6 overflow-visible">
                                     <!-- Quick Date Range Filters -->
                                     <div class="space-y-3">
                                         <div class="flex items-center gap-2">
@@ -462,7 +462,7 @@ onMounted(() => {
                                     </div>
 
                                     <!-- Custom Date Range & Advanced Filters -->
-                                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-4">
+                                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-4 overflow-visible">
                                         <div class="flex items-center gap-2 mb-3">
                                             <Settings class="h-4 w-4 text-gray-600 dark:text-gray-400" />
                                             <Label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Filter Lanjutan:</Label>
@@ -513,7 +513,7 @@ onMounted(() => {
                                                 </Button>
                                                 <div 
                                                     v-if="showMarketingDropdown"
-                                                    class="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-y-auto"
+                                                    class="absolute top-full left-0 right-0 z-[9999] mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-y-auto min-w-[250px]"
                                                 >
                                                     <div 
                                                         class="p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors"
@@ -561,7 +561,7 @@ onMounted(() => {
                                                 </Button>
                                                 <div 
                                                     v-if="showBrandDropdown"
-                                                    class="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-y-auto"
+                                                    class="absolute top-full left-0 right-0 z-[9999] mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-y-auto min-w-[250px]"
                                                 >
                                                     <div 
                                                         class="p-3 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors"
