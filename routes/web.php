@@ -13,12 +13,94 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Dashboard - All roles can access
+    Route::get('dashboard', [DashboardController::class, 'index'])
+        ->middleware('role.access:view')
+        ->name('dashboard');
 
-    Route::resource('users', UserController::class);
-    Route::resource('mitras', MitraController::class);
-    Route::resource('brands', BrandController::class);
-    Route::resource('labels', LabelController::class);
+    // Users Management - Only Super Admin can CRUD, others can view
+    Route::middleware('role.access:view')->group(function () {
+        Route::get('users', [UserController::class, 'index'])->name('users.index');
+        Route::get('users/{user}', [UserController::class, 'show'])->name('users.show');
+    });
+    
+    Route::middleware('role.access:create')->group(function () {
+        Route::get('users/create', [UserController::class, 'create'])->name('users.create');
+        Route::post('users', [UserController::class, 'store'])->name('users.store');
+    });
+    
+    Route::middleware('role.access:edit')->group(function () {
+        Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::patch('users/{user}', [UserController::class, 'update'])->name('users.update');
+    });
+    
+    Route::middleware('role.access:destroy')->group(function () {
+        Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    });
+
+    // Mitras Management - Role-based access with data filtering
+    Route::middleware('role.access:view')->group(function () {
+        Route::get('mitras', [MitraController::class, 'index'])->name('mitras.index');
+        Route::get('mitras/{mitra}', [MitraController::class, 'show'])->name('mitras.show');
+    });
+    
+    Route::middleware('role.access:create')->group(function () {
+        Route::get('mitras/create', [MitraController::class, 'create'])->name('mitras.create');
+        Route::post('mitras', [MitraController::class, 'store'])->name('mitras.store');
+    });
+    
+    Route::middleware('role.access:edit')->group(function () {
+        Route::get('mitras/{mitra}/edit', [MitraController::class, 'edit'])->name('mitras.edit');
+        Route::put('mitras/{mitra}', [MitraController::class, 'update'])->name('mitras.update');
+        Route::patch('mitras/{mitra}', [MitraController::class, 'update'])->name('mitras.update');
+    });
+    
+    Route::middleware('role.access:destroy')->group(function () {
+        Route::delete('mitras/{mitra}', [MitraController::class, 'destroy'])->name('mitras.destroy');
+    });
+
+    // Brands Management - Only Super Admin can CRUD, others can view
+    Route::middleware('role.access:view')->group(function () {
+        Route::get('brands', [BrandController::class, 'index'])->name('brands.index');
+        Route::get('brands/{brand}', [BrandController::class, 'show'])->name('brands.show');
+    });
+    
+    Route::middleware('role.access:create')->group(function () {
+        Route::get('brands/create', [BrandController::class, 'create'])->name('brands.create');
+        Route::post('brands', [BrandController::class, 'store'])->name('brands.store');
+    });
+    
+    Route::middleware('role.access:edit')->group(function () {
+        Route::get('brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
+        Route::put('brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
+        Route::patch('brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
+    });
+    
+    Route::middleware('role.access:destroy')->group(function () {
+        Route::delete('brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
+    });
+
+    // Labels Management - Only Super Admin can CRUD, others can view
+    Route::middleware('role.access:view')->group(function () {
+        Route::get('labels', [LabelController::class, 'index'])->name('labels.index');
+        Route::get('labels/{label}', [LabelController::class, 'show'])->name('labels.show');
+    });
+    
+    Route::middleware('role.access:create')->group(function () {
+        Route::get('labels/create', [LabelController::class, 'create'])->name('labels.create');
+        Route::post('labels', [LabelController::class, 'store'])->name('labels.store');
+    });
+    
+    Route::middleware('role.access:edit')->group(function () {
+        Route::get('labels/{label}/edit', [LabelController::class, 'edit'])->name('labels.edit');
+        Route::put('labels/{label}', [LabelController::class, 'update'])->name('labels.update');
+        Route::patch('labels/{label}', [LabelController::class, 'update'])->name('labels.update');
+    });
+    
+    Route::middleware('role.access:destroy')->group(function () {
+        Route::delete('labels/{label}', [LabelController::class, 'destroy'])->name('labels.destroy');
+    });
 });
 
 require __DIR__.'/settings.php';

@@ -13,6 +13,7 @@ class BrandController extends Controller
      */
     public function index(Request $request)
     {
+        $currentUser = auth()->user();
         $query = Brand::query();
 
         // Apply search filter
@@ -28,6 +29,11 @@ class BrandController extends Controller
             'filters' => [
                 'search' => $request->search,
             ],
+            'permissions' => [
+                'canCrud' => $currentUser->canCrud(),
+                'canOnlyView' => $currentUser->canOnlyView(),
+                'canOnlyViewOwn' => $currentUser->canOnlyViewOwn(),
+            ],
         ]);
     }
 
@@ -36,7 +42,15 @@ class BrandController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Brand/Create');
+        $currentUser = auth()->user();
+        
+        return Inertia::render('Brand/Create', [
+            'permissions' => [
+                'canCrud' => $currentUser->canCrud(),
+                'canOnlyView' => $currentUser->canOnlyView(),
+                'canOnlyViewOwn' => $currentUser->canOnlyViewOwn(),
+            ],
+        ]);
     }
 
     /**

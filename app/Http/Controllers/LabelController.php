@@ -13,10 +13,16 @@ class LabelController extends Controller
      */
     public function index()
     {
+        $currentUser = auth()->user();
         $labels = Label::orderBy('nama')->get();
         
         return Inertia::render('Labels/Index', [
             'labels' => $labels,
+            'permissions' => [
+                'canCrud' => $currentUser->canCrud(),
+                'canOnlyView' => $currentUser->canOnlyView(),
+                'canOnlyViewOwn' => $currentUser->canOnlyViewOwn(),
+            ],
         ]);
     }
 
@@ -25,7 +31,15 @@ class LabelController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Labels/Create');
+        $currentUser = auth()->user();
+        
+        return Inertia::render('Labels/Create', [
+            'permissions' => [
+                'canCrud' => $currentUser->canCrud(),
+                'canOnlyView' => $currentUser->canOnlyView(),
+                'canOnlyViewOwn' => $currentUser->canOnlyViewOwn(),
+            ],
+        ]);
     }
 
     /**

@@ -15,6 +15,8 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
+        $currentUser = auth()->user();
+        
         $users = User::query()
             ->when($request->search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
@@ -30,6 +32,11 @@ class UserController extends Controller
         return Inertia::render('Users/Index', [
             'users' => $users,
             'filters' => $request->only(['search', 'role']),
+            'permissions' => [
+                'canCrud' => $currentUser->canCrud(),
+                'canOnlyView' => $currentUser->canOnlyView(),
+                'canOnlyViewOwn' => $currentUser->canOnlyViewOwn(),
+            ],
         ]);
     }
 
@@ -38,7 +45,15 @@ class UserController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Users/Create');
+        $currentUser = auth()->user();
+        
+        return Inertia::render('Users/Create', [
+            'permissions' => [
+                'canCrud' => $currentUser->canCrud(),
+                'canOnlyView' => $currentUser->canOnlyView(),
+                'canOnlyViewOwn' => $currentUser->canOnlyViewOwn(),
+            ],
+        ]);
     }
 
     /**
@@ -75,8 +90,15 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        $currentUser = auth()->user();
+        
         return Inertia::render('Users/Edit', [
             'user' => $user,
+            'permissions' => [
+                'canCrud' => $currentUser->canCrud(),
+                'canOnlyView' => $currentUser->canOnlyView(),
+                'canOnlyViewOwn' => $currentUser->canOnlyViewOwn(),
+            ],
         ]);
     }
 

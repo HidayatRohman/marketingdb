@@ -17,7 +17,11 @@ class MitraController extends Controller
      */
     public function index(Request $request)
     {
+        $user = auth()->user();
         $query = Mitra::with(['brand', 'label', 'user']);
+
+        // Apply role-based filtering
+        $query = $user->applyRoleFilter($query, 'user_id');
 
         // Apply search filter
         if ($request->has('search') && $request->search) {
@@ -58,8 +62,8 @@ class MitraController extends Controller
             $query->where('label_id', $request->label);
         }
 
-        // Apply user (marketing) filter
-        if ($request->has('user') && $request->user) {
+        // Apply user (marketing) filter - only for Super Admin and Admin
+        if ($request->has('user') && $request->user && $user->hasFullAccess()) {
             $query->where('user_id', $request->user);
         }
 
@@ -74,8 +78,11 @@ class MitraController extends Controller
         $brands = Brand::all();
         $labels = Label::all();
         
-        // Get marketing users (users with role marketing)
-        $marketingUsers = \App\Models\User::where('role', 'marketing')->get(['id', 'name']);
+        // Get marketing users (users with role marketing) - only for Super Admin and Admin
+        $marketingUsers = collect();
+        if ($user->hasFullAccess() || $user->hasReadOnlyAccess()) {
+            $marketingUsers = \App\Models\User::where('role', 'marketing')->get(['id', 'name']);
+        }
         
         return Inertia::render('Mitra/Index', [
             'mitras' => $mitras,
@@ -91,6 +98,11 @@ class MitraController extends Controller
                 'periode_end' => $request->periode_end,
                 'per_page' => $perPage,
             ],
+            'permissions' => [
+                'canCrud' => $user->canCrud(),
+                'canOnlyView' => $user->canOnlyView(),
+                'canOnlyViewOwn' => $user->canOnlyViewOwn(),
+            ],
         ]);
     }
 
@@ -99,7 +111,15 @@ class MitraController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Mitra/Create');
+        $user = auth()->user();
+        
+        return Inertia::render('Mitra/Create', [
+            'permissions' => [
+                'canCrud' => $user->canCrud(),
+                'canOnlyView' => $user->canOnlyView(),
+                'canOnlyViewOwn' => $user->canOnlyViewOwn(),
+            ],
+        ]);
     }
 
     /**
@@ -137,8 +157,20 @@ class MitraController extends Controller
      */
     public function show(Mitra $mitra)
     {
+        $user = auth()->user();
+        
+        // Check if user can access this mitra
+        if ($user->isMarketing() && $mitra->user_id !== $user->id) {
+            abort(403, 'Anda tidak memiliki izin untuk melihat data ini.');
+        }
+
         return Inertia::render('Mitra/Show', [
-            'mitra' => $mitra,
+            'mitra' => $mitra->load(['brand', 'label', 'user']),
+            'permissions' => [
+                'canCrud' => $user->canCrud(),
+                'canOnlyView' => $user->canOnlyView(),
+                'canOnlyViewOwn' => $user->canOnlyViewOwn(),
+            ],
         ]);
     }
 
@@ -147,8 +179,20 @@ class MitraController extends Controller
      */
     public function edit(Mitra $mitra)
     {
+        $user = auth()->user();
+        
+        // Check if user can edit this mitra
+        if ($user->isMarketing() && $mitra->user_id !== $user->id) {
+            abort(403, 'Anda tidak memiliki izin untuk mengedit data ini.');
+        }
+
         return Inertia::render('Mitra/Edit', [
-            'mitra' => $mitra,
+            'mitra' => $mitra->load(['brand', 'label']),
+            'permissions' => [
+                'canCrud' => $user->canCrud(),
+                'canOnlyView' => $user->canOnlyView(),
+                'canOnlyViewOwn' => $user->canOnlyViewOwn(),
+            ],
         ]);
     }
 
@@ -157,6 +201,13 @@ class MitraController extends Controller
      */
     public function update(UpdateMitraRequest $request, Mitra $mitra)
     {
+        $user = auth()->user();
+        
+        // Check if user can update this mitra
+        if ($user->isMarketing() && $mitra->user_id !== $user->id) {
+            abort(403, 'Anda tidak memiliki izin untuk mengupdate data ini.');
+        }
+
         $validated = $request->validated();
 
         // Set default values for kota and provinsi if empty
@@ -182,6 +233,13 @@ class MitraController extends Controller
      */
     public function destroy(Mitra $mitra)
     {
+        $user = auth()->user();
+        
+        // Check if user can delete this mitra
+        if ($user->isMarketing() && $mitra->user_id !== $user->id) {
+            abort(403, 'Anda tidak memiliki izin untuk menghapus data ini.');
+        }
+
         $mitra->delete();
 
         if (request()->expectsJson()) {
