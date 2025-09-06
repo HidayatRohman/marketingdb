@@ -14,7 +14,7 @@ import {
     Users, UserCheck, Shield, Briefcase, Plus, BarChart3, TrendingUp, Activity, 
     Clock, Calendar, MessageSquare, Target, Award, ChevronUp, ChevronDown,
     Phone, Mail, MapPin, Building2, Zap, Eye, Filter, RefreshCw,
-    TrendingDown, ArrowUpRight, ArrowDownRight, Percent
+    TrendingDown, ArrowUpRight, ArrowDownRight, Percent, Tag, PieChart
 } from 'lucide-vue-next';
 import { ref, computed, onMounted } from 'vue';
 
@@ -193,6 +193,39 @@ const getGrowthIcon = (value: number) => {
 
 const getGrowthColor = (value: number) => {
     return value > 0 ? 'text-green-600' : 'text-red-600';
+};
+
+// Function to create SVG path for pie chart
+const getArcPath = (label: LabelDistribution, index: number) => {
+    const total = props.labelDistribution.reduce((sum, item) => sum + item.count, 0);
+    if (total === 0) return '';
+    
+    const centerX = 100;
+    const centerY = 100;
+    const radius = 80;
+    
+    // Calculate cumulative percentage up to current index
+    let cumulativePercentage = 0;
+    for (let i = 0; i < index; i++) {
+        cumulativePercentage += props.labelDistribution[i].percentage;
+    }
+    
+    const startAngle = (cumulativePercentage / 100) * 2 * Math.PI;
+    const endAngle = ((cumulativePercentage + label.percentage) / 100) * 2 * Math.PI;
+    
+    const startX = centerX + radius * Math.cos(startAngle);
+    const startY = centerY + radius * Math.sin(startAngle);
+    const endX = centerX + radius * Math.cos(endAngle);
+    const endY = centerY + radius * Math.sin(endAngle);
+    
+    const largeArcFlag = endAngle - startAngle <= Math.PI ? '0' : '1';
+    
+    if (label.percentage === 100) {
+        // Full circle
+        return `M ${centerX - radius},${centerY} A ${radius},${radius} 0 1,1 ${centerX - radius},${centerY + 0.1} Z`;
+    }
+    
+    return `M ${centerX},${centerY} L ${startX},${startY} A ${radius},${radius} 0 ${largeArcFlag},1 ${endX},${endY} Z`;
 };
 
 onMounted(() => {
@@ -476,6 +509,383 @@ onMounted(() => {
                             </div>
                         </CardContent>
                     </Card>
+                </TabsContent>
+
+                <!-- Labels Tab -->
+                <TabsContent value="labels" class="space-y-6">
+                    <div class="grid gap-6 md:grid-cols-2">
+                        <!-- Label Distribution Pie Chart -->
+                        <Card class="border-0 shadow-lg">
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <PieChart class="h-5 w-5" />
+                                    Distribusi Label
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div class="space-y-4">
+                                    <!-- Simple Pie Chart Visualization -->
+                                    <div class="relative mx-auto w-64 h-64">
+                                        <svg viewBox="0 0 200 200" class="w-full h-full transform -rotate-90">
+                                            <template v-for="(label, index) in labelDistribution" :key="label.id">
+                                                <path
+                                                    :d="getArcPath(label, index)"
+                                                    :fill="label.warna"
+                                                    :stroke="label.warna"
+                                                    stroke-width="2"
+                                                    class="hover:brightness-110 transition-all duration-200 cursor-pointer drop-shadow-sm"
+                                                    :title="`${label.nama}: ${label.count} (${label.percentage}%)`"
+                                                />
+                                            </template>
+                                        </svg>
+                                        <!-- Center text -->
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <div class="text-center bg-white/90 dark:bg-gray-900/90 rounded-full p-4 backdrop-blur-sm">
+                                                <p class="text-2xl font-bold">{{ labelStats.total }}</p>
+                                                <p class="text-sm text-muted-foreground">Total Labels</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Legend -->
+                                    <div class="space-y-2">
+                                        <div 
+                                            v-for="label in labelDistribution" 
+                                            :key="label.id"
+                                            class="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                                        >
+                                            <div class="flex items-center gap-3">
+                                                <div 
+                                                    class="w-4 h-4 rounded-full"
+                                                    :style="{ backgroundColor: label.warna }"
+                                                ></div>
+                                                <span class="font-medium">{{ label.nama }}</span>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="font-bold">{{ label.count }}</span>
+                                                <span class="text-sm text-muted-foreground ml-1">({{ label.percentage }}%)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Label Statistics -->
+                        <Card class="border-0 shadow-lg">
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <Tag class="h-5 w-5" />
+                                    Label Statistics
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent class="space-y-4">
+                                <div class="grid gap-4">
+                                    <div 
+                                        v-for="label in labelDistribution.slice(0, 5)" 
+                                        :key="label.id"
+                                        class="p-4 border rounded-lg"
+                                    >
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-2">
+                                                <div 
+                                                    class="w-3 h-3 rounded-full"
+                                                    :style="{ backgroundColor: label.warna }"
+                                                ></div>
+                                                <span class="font-medium">{{ label.nama }}</span>
+                                            </div>
+                                            <span class="text-sm font-bold">{{ label.count }} leads</span>
+                                        </div>
+                                        <Progress :value="label.percentage" class="h-2" />
+                                        <p class="text-xs text-muted-foreground mt-1">
+                                            {{ label.percentage }}% dari total leads
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4 p-4 bg-muted/50 rounded-lg">
+                                    <h4 class="font-medium mb-2">Summary</h4>
+                                    <div class="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p class="text-muted-foreground">Total Labels</p>
+                                            <p class="font-bold">{{ labelStats.total }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-muted-foreground">Most Used</p>
+                                            <p class="font-bold">{{ labelDistribution[0]?.nama || 'N/A' }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+
+                <!-- Marketing Tab -->
+                <TabsContent value="marketing" class="space-y-6">
+                    <div class="grid gap-6 md:grid-cols-2">
+                        <!-- Top Marketing Performance -->
+                        <Card class="border-0 shadow-lg">
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <Briefcase class="h-5 w-5" />
+                                    Top Marketing Performance
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div class="space-y-4">
+                                    <div 
+                                        v-for="marketing in topMarketing.slice(0, 5)" 
+                                        :key="marketing.id"
+                                        class="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                                    >
+                                        <div class="flex items-center gap-3">
+                                            <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                                <Users class="h-4 w-4 text-blue-600" />
+                                            </div>
+                                            <div>
+                                                <p class="font-medium">{{ marketing.name }}</p>
+                                                <p class="text-sm text-muted-foreground">{{ marketing.email }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-bold">{{ marketing.total_leads }} leads</p>
+                                            <p class="text-sm text-green-600">{{ marketing.closing_rate }}% closed</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Marketing Statistics -->
+                        <Card class="border-0 shadow-lg">
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <BarChart3 class="h-5 w-5" />
+                                    Marketing Overview
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent class="space-y-4">
+                                <div class="grid gap-4">
+                                    <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="text-sm text-muted-foreground">Total Marketing</p>
+                                                <p class="text-2xl font-bold">{{ userStats.marketing }}</p>
+                                            </div>
+                                            <Briefcase class="h-8 w-8 text-blue-600" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="text-sm text-muted-foreground">Avg. Closing Rate</p>
+                                                <p class="text-2xl font-bold">{{ Math.round(topMarketing.reduce((sum, m) => sum + m.closing_rate, 0) / Math.max(topMarketing.length, 1)) }}%</p>
+                                            </div>
+                                            <Target class="h-8 w-8 text-green-600" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="text-sm text-muted-foreground">Total Leads</p>
+                                                <p class="text-2xl font-bold">{{ topMarketing.reduce((sum, m) => sum + m.total_leads, 0) }}</p>
+                                            </div>
+                                            <Users class="h-8 w-8 text-purple-600" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+
+                <!-- Brands Tab -->
+                <TabsContent value="brands" class="space-y-6">
+                    <div class="grid gap-6 md:grid-cols-2">
+                        <!-- Brand Performance -->
+                        <Card class="border-0 shadow-lg">
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <Building2 class="h-5 w-5" />
+                                    Brand Performance
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div class="space-y-4">
+                                    <div 
+                                        v-for="brand in brandPerformance.slice(0, 5)" 
+                                        :key="brand.id"
+                                        class="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                                    >
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                                                <img 
+                                                    v-if="brand.logo_url" 
+                                                    :src="brand.logo_url" 
+                                                    :alt="brand.nama"
+                                                    class="w-8 h-8 object-contain"
+                                                />
+                                                <Building2 v-else class="h-5 w-5 text-muted-foreground" />
+                                            </div>
+                                            <div>
+                                                <p class="font-medium">{{ brand.nama }}</p>
+                                                <p class="text-sm text-muted-foreground">{{ brand.total_leads }} leads</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-bold">{{ brand.closed_leads }} closed</p>
+                                            <p class="text-sm text-green-600">{{ brand.closing_rate }}%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Brand Statistics -->
+                        <Card class="border-0 shadow-lg">
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <Zap class="h-5 w-5" />
+                                    Brand Overview
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent class="space-y-4">
+                                <div class="grid gap-4">
+                                    <div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="text-sm text-muted-foreground">Total Brands</p>
+                                                <p class="text-2xl font-bold">{{ brandStats.total }}</p>
+                                            </div>
+                                            <Building2 class="h-8 w-8 text-purple-600" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="text-sm text-muted-foreground">With Logo</p>
+                                                <p class="text-2xl font-bold">{{ brandStats.with_logo }}</p>
+                                            </div>
+                                            <Zap class="h-8 w-8 text-blue-600" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="text-sm text-muted-foreground">Best Performer</p>
+                                                <p class="text-lg font-bold">{{ brandPerformance[0]?.nama || 'N/A' }}</p>
+                                            </div>
+                                            <Award class="h-8 w-8 text-green-600" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+
+                <!-- Trends Tab -->
+                <TabsContent value="trends" class="space-y-6">
+                    <div class="grid gap-6">
+                        <!-- Daily Trends Chart -->
+                        <Card class="border-0 shadow-lg">
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <TrendingUp class="h-5 w-5" />
+                                    Daily Trends
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div class="space-y-4">
+                                    <!-- Simple Line Chart Visualization -->
+                                    <div class="h-64 flex items-end justify-between gap-2 p-4 bg-muted/20 rounded-lg">
+                                        <div 
+                                            v-for="(trend, index) in dailyTrends.slice(-10)" 
+                                            :key="trend.date"
+                                            class="flex-1 flex flex-col items-center gap-2"
+                                        >
+                                            <div class="flex flex-col items-center gap-1">
+                                                <!-- Total bar -->
+                                                <div 
+                                                    class="w-4 bg-blue-500 rounded-t transition-all duration-300 hover:bg-blue-600"
+                                                    :style="{ height: `${Math.max((trend.total / Math.max(...dailyTrends.map(d => d.total))) * 150, 4)}px` }"
+                                                    :title="`Total: ${trend.total}`"
+                                                ></div>
+                                                <!-- Follow up bar -->
+                                                <div 
+                                                    class="w-4 bg-green-500 rounded-t transition-all duration-300 hover:bg-green-600"
+                                                    :style="{ height: `${Math.max((trend.followup / Math.max(...dailyTrends.map(d => d.followup))) * 100, 2)}px` }"
+                                                    :title="`Follow up: ${trend.followup}`"
+                                                ></div>
+                                            </div>
+                                            <div class="text-xs text-muted-foreground text-center">
+                                                {{ trend.date_formatted }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Legend -->
+                                    <div class="flex justify-center gap-6">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-3 h-3 bg-blue-500 rounded"></div>
+                                            <span class="text-sm">Total Leads</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-3 h-3 bg-green-500 rounded"></div>
+                                            <span class="text-sm">Follow Up</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Trend Statistics -->
+                        <div class="grid gap-6 md:grid-cols-3">
+                            <Card class="border-0 shadow-lg">
+                                <CardContent class="p-6">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-muted-foreground">Today's Growth</p>
+                                            <p class="text-2xl font-bold flex items-center gap-2">
+                                                +{{ mitraStats.today }}
+                                                <TrendingUp class="h-5 w-5 text-green-600" />
+                                            </p>
+                                        </div>
+                                        <Calendar class="h-8 w-8 text-blue-600" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            
+                            <Card class="border-0 shadow-lg">
+                                <CardContent class="p-6">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-muted-foreground">This Week</p>
+                                            <p class="text-2xl font-bold">+{{ mitraStats.this_week }}</p>
+                                        </div>
+                                        <Activity class="h-8 w-8 text-green-600" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            
+                            <Card class="border-0 shadow-lg">
+                                <CardContent class="p-6">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-muted-foreground">This Month</p>
+                                            <p class="text-2xl font-bold">+{{ mitraStats.this_month }}</p>
+                                        </div>
+                                        <BarChart3 class="h-8 w-8 text-purple-600" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
                 </TabsContent>
             </Tabs>
 
