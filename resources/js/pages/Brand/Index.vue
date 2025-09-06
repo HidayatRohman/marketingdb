@@ -265,9 +265,6 @@ const formatDate = (dateString: string) => {
                                                 <div v-else class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
                                                     <Zap class="h-4 w-4 text-gray-400" />
                                                 </div>
-                                                <span class="text-sm text-muted-foreground">
-                                                    {{ brand.logo_url ? 'Ada' : 'Tidak ada' }}
-                                                </span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
