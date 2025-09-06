@@ -14,9 +14,9 @@ import {
     Users, UserCheck, Shield, Briefcase, Plus, BarChart3, TrendingUp, Activity, 
     Clock, Calendar, MessageSquare, Target, Award, ChevronUp, ChevronDown,
     Phone, Mail, MapPin, Building2, Zap, Eye, Filter, RefreshCw,
-    TrendingDown, ArrowUpRight, ArrowDownRight, Percent, Tag, PieChart, X
+    TrendingDown, ArrowUpRight, ArrowDownRight, Percent, Tag, PieChart, X, Settings
 } from 'lucide-vue-next';
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, Transition } from 'vue';
 
 interface UserStats {
     total: number;
@@ -145,6 +145,7 @@ const selectedDateRange = ref('this_month');
 const refreshing = ref(false);
 const showMarketingDropdown = ref(false);
 const showBrandDropdown = ref(false);
+const isFilterExpanded = ref(false);
 
 // Computed values
 const totalConversionRate = computed(() => {
@@ -383,193 +384,274 @@ onMounted(() => {
                 <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
             </div>
 
-            <!-- Enhanced Filter Section -->
-            <Card class="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950">
-                <CardContent class="p-6">
-                    <div class="space-y-6">
-                        <!-- Filter Header -->
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="p-2 bg-blue-500 rounded-lg">
-                                    <Filter class="h-5 w-5 text-white" />
+            <!-- Enhanced Collapsible Filter Section -->
+            <Card class="border-0 shadow-lg overflow-hidden bg-white dark:bg-gray-900">
+                <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-1">
+                    <div class="bg-white dark:bg-gray-900 rounded-lg">
+                        <CardContent class="p-4 sm:p-6">
+                            <!-- Filter Toggle Header -->
+                            <div 
+                                class="flex items-center justify-between cursor-pointer group"
+                                @click="isFilterExpanded = !isFilterExpanded"
+                            >
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg shadow-lg group-hover:shadow-xl transition-all duration-300">
+                                        <Filter class="h-5 w-5 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                            Filter Dashboard
+                                        </h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                                            {{ isFilterExpanded ? 'Klik untuk menyembunyikan filter' : 'Klik untuk menampilkan opsi filter' }}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 class="text-lg font-semibold">Filter Dashboard</h3>
-                                    <p class="text-sm text-muted-foreground">Sesuaikan tampilan data sesuai kebutuhan</p>
+                                <div class="flex items-center gap-2">
+                                    <!-- Active Filters Count -->
+                                    <div v-if="selectedMarketing !== 'all' || selectedBrand !== 'all'" 
+                                         class="px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full text-xs font-medium">
+                                        {{ (selectedMarketing !== 'all' ? 1 : 0) + (selectedBrand !== 'all' ? 1 : 0) }} filter aktif
+                                    </div>
+                                    <ChevronDown 
+                                        :class="['h-5 w-5 text-gray-500 dark:text-gray-400 transition-transform duration-300', 
+                                                isFilterExpanded ? 'transform rotate-180' : '']" 
+                                    />
                                 </div>
                             </div>
-                            <Button variant="outline" size="sm" @click="resetFilters">
-                                <RefreshCw class="h-4 w-4 mr-2" />
-                                Reset
-                            </Button>
-                        </div>
 
-                        <!-- Quick Date Range Filters -->
-                        <div class="space-y-3">
-                            <Label class="text-sm font-medium">Periode Waktu:</Label>
-                            <div class="flex flex-wrap gap-2">
-                                <Button
-                                    v-for="range in [
-                                        { key: 'today', label: 'Hari Ini' },
-                                        { key: 'yesterday', label: 'Kemarin' },
-                                        { key: 'this_week', label: 'Minggu Ini' },
-                                        { key: 'last_week', label: 'Minggu Lalu' },
-                                        { key: 'this_month', label: 'Bulan Ini' },
-                                        { key: 'last_month', label: 'Bulan Lalu' }
-                                    ]"
-                                    :key="range.key"
-                                    :variant="selectedDateRange === range.key ? 'default' : 'outline'"
-                                    size="sm"
-                                    @click="applyQuickDateFilter(range.key)"
-                                    class="transition-all duration-200"
-                                >
-                                    {{ range.label }}
-                                </Button>
-                            </div>
-                        </div>
-
-                        <!-- Custom Date Range & Filters -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                            <div class="space-y-2">
-                                <Label for="custom-start-date" class="text-sm font-medium">Tanggal Mulai:</Label>
-                                <Input
-                                    id="custom-start-date"
-                                    v-model="startDate"
-                                    type="date"
-                                    class="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div class="space-y-2">
-                                <Label for="custom-end-date" class="text-sm font-medium">Tanggal Akhir:</Label>
-                                <Input
-                                    id="custom-end-date"
-                                    v-model="endDate"
-                                    type="date"
-                                    class="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            
-                            <!-- Marketing Filter Dropdown -->
-                            <div class="space-y-2 relative">
-                                <Label class="text-sm font-medium">Marketing:</Label>
-                                <Button
-                                    variant="outline"
-                                    class="w-full justify-between"
-                                    @click="showMarketingDropdown = !showMarketingDropdown"
-                                >
-                                    <span class="flex items-center gap-2">
-                                        <Users class="h-4 w-4" />
-                                        {{ selectedMarketing === 'all' ? 'Semua Marketing' : topMarketing.find(m => m.id.toString() === selectedMarketing)?.name }}
-                                    </span>
-                                    <ChevronDown class="h-4 w-4" />
-                                </Button>
-                                <div 
-                                    v-if="showMarketingDropdown"
-                                    class="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border rounded-lg shadow-lg max-h-60 overflow-y-auto"
-                                >
-                                    <div 
-                                        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b"
-                                        @click="applyMarketingFilter('all'); showMarketingDropdown = false"
-                                    >
+                            <!-- Expandable Filter Content -->
+                            <Transition
+                                enter-active-class="transition-all duration-300 ease-out"
+                                enter-from-class="max-h-0 opacity-0"
+                                enter-to-class="max-h-[800px] opacity-100"
+                                leave-active-class="transition-all duration-300 ease-in"
+                                leave-from-class="max-h-[800px] opacity-100"
+                                leave-to-class="max-h-0 opacity-0"
+                            >
+                                <div v-if="isFilterExpanded" class="mt-6 space-y-6 overflow-hidden">
+                                    <!-- Quick Date Range Filters -->
+                                    <div class="space-y-3">
                                         <div class="flex items-center gap-2">
-                                            <Target class="h-4 w-4 text-blue-500" />
-                                            <span>Semua Marketing</span>
+                                            <Calendar class="h-4 w-4 text-indigo-500" />
+                                            <Label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Periode Waktu:</Label>
+                                        </div>
+                                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                                            <Button
+                                                v-for="range in [
+                                                    { key: 'today', label: 'Hari Ini', color: 'emerald' },
+                                                    { key: 'yesterday', label: 'Kemarin', color: 'blue' },
+                                                    { key: 'this_week', label: 'Minggu Ini', color: 'purple' },
+                                                    { key: 'last_week', label: 'Minggu Lalu', color: 'pink' },
+                                                    { key: 'this_month', label: 'Bulan Ini', color: 'indigo' },
+                                                    { key: 'last_month', label: 'Bulan Lalu', color: 'orange' }
+                                                ]"
+                                                :key="range.key"
+                                                :class="[
+                                                    'text-xs sm:text-sm font-medium transition-all duration-200 relative overflow-hidden',
+                                                    selectedDateRange === range.key 
+                                                        ? 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg transform scale-105' 
+                                                        : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-md'
+                                                ]"
+                                                size="sm"
+                                                @click="applyQuickDateFilter(range.key)"
+                                            >
+                                                {{ range.label }}
+                                            </Button>
                                         </div>
                                     </div>
-                                    <div 
-                                        v-for="marketing in topMarketing" 
-                                        :key="marketing.id"
-                                        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                                        @click="applyMarketingFilter(marketing.id.toString()); showMarketingDropdown = false"
-                                    >
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center gap-2">
-                                                <Users class="h-4 w-4 text-green-500" />
-                                                <span>{{ marketing.name }}</span>
-                                            </div>
-                                            <Badge variant="secondary" class="text-xs">
-                                                {{ marketing.total_leads }} leads
-                                            </Badge>
+
+                                    <!-- Custom Date Range & Advanced Filters -->
+                                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-4">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <Settings class="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                                            <Label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Filter Lanjutan:</Label>
                                         </div>
+                                        
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                            <!-- Custom Start Date -->
+                                            <div class="space-y-2">
+                                                <Label for="custom-start-date" class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                                    Tanggal Mulai:
+                                                </Label>
+                                                <Input
+                                                    id="custom-start-date"
+                                                    v-model="startDate"
+                                                    type="date"
+                                                    class="transition-all duration-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600"
+                                                />
+                                            </div>
+                                            
+                                            <!-- Custom End Date -->
+                                            <div class="space-y-2">
+                                                <Label for="custom-end-date" class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                                    Tanggal Akhir:
+                                                </Label>
+                                                <Input
+                                                    id="custom-end-date"
+                                                    v-model="endDate"
+                                                    type="date"
+                                                    class="transition-all duration-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600"
+                                                />
+                                            </div>
+                                            
+                                            <!-- Marketing Filter Dropdown -->
+                                            <div class="space-y-2 relative">
+                                                <Label class="text-sm font-medium text-gray-600 dark:text-gray-400">Marketing:</Label>
+                                                <Button
+                                                    variant="outline"
+                                                    class="w-full justify-between h-10 border-gray-300 dark:border-gray-600 hover:border-emerald-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
+                                                    @click="showMarketingDropdown = !showMarketingDropdown"
+                                                >
+                                                    <span class="flex items-center gap-2 text-left truncate">
+                                                        <Users class="h-4 w-4 text-emerald-500" />
+                                                        <span class="truncate">
+                                                            {{ selectedMarketing === 'all' ? 'Semua Marketing' : topMarketing.find(m => m.id.toString() === selectedMarketing)?.name }}
+                                                        </span>
+                                                    </span>
+                                                    <ChevronDown class="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                                </Button>
+                                                <div 
+                                                    v-if="showMarketingDropdown"
+                                                    class="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-y-auto"
+                                                >
+                                                    <div 
+                                                        class="p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors"
+                                                        @click="applyMarketingFilter('all'); showMarketingDropdown = false"
+                                                    >
+                                                        <div class="flex items-center gap-2">
+                                                            <Target class="h-4 w-4 text-emerald-500" />
+                                                            <span class="font-medium text-gray-700 dark:text-gray-300">Semua Marketing</span>
+                                                        </div>
+                                                    </div>
+                                                    <div 
+                                                        v-for="marketing in topMarketing" 
+                                                        :key="marketing.id"
+                                                        class="p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 cursor-pointer transition-colors"
+                                                        @click="applyMarketingFilter(marketing.id.toString()); showMarketingDropdown = false"
+                                                    >
+                                                        <div class="flex items-center justify-between">
+                                                            <div class="flex items-center gap-2">
+                                                                <Users class="h-4 w-4 text-emerald-500" />
+                                                                <span class="font-medium text-gray-700 dark:text-gray-300">{{ marketing.name }}</span>
+                                                            </div>
+                                                            <Badge class="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 text-xs">
+                                                                {{ marketing.total_leads }} leads
+                                                            </Badge>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Brand Filter Dropdown -->
+                                            <div class="space-y-2 relative">
+                                                <Label class="text-sm font-medium text-gray-600 dark:text-gray-400">Brand:</Label>
+                                                <Button
+                                                    variant="outline"
+                                                    class="w-full justify-between h-10 border-gray-300 dark:border-gray-600 hover:border-purple-400 focus:ring-2 focus:ring-purple-500 transition-all duration-200"
+                                                    @click="showBrandDropdown = !showBrandDropdown"
+                                                >
+                                                    <span class="flex items-center gap-2 text-left truncate">
+                                                        <Building2 class="h-4 w-4 text-purple-500" />
+                                                        <span class="truncate">
+                                                            {{ selectedBrand === 'all' ? 'Semua Brand' : brandPerformance.find(b => b.id.toString() === selectedBrand)?.nama }}
+                                                        </span>
+                                                    </span>
+                                                    <ChevronDown class="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                                </Button>
+                                                <div 
+                                                    v-if="showBrandDropdown"
+                                                    class="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-y-auto"
+                                                >
+                                                    <div 
+                                                        class="p-3 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors"
+                                                        @click="applyBrandFilter('all'); showBrandDropdown = false"
+                                                    >
+                                                        <div class="flex items-center gap-2">
+                                                            <Target class="h-4 w-4 text-purple-500" />
+                                                            <span class="font-medium text-gray-700 dark:text-gray-300">Semua Brand</span>
+                                                        </div>
+                                                    </div>
+                                                    <div 
+                                                        v-for="brand in brandPerformance" 
+                                                        :key="brand.id"
+                                                        class="p-3 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-colors"
+                                                        @click="applyBrandFilter(brand.id.toString()); showBrandDropdown = false"
+                                                    >
+                                                        <div class="flex items-center justify-between">
+                                                            <div class="flex items-center gap-2">
+                                                                <Building2 class="h-4 w-4 text-purple-500" />
+                                                                <span class="font-medium text-gray-700 dark:text-gray-300">{{ brand.nama }}</span>
+                                                            </div>
+                                                            <Badge class="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 text-xs">
+                                                                {{ brand.total_leads }} leads
+                                                            </Badge>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                                        <Button 
+                                            @click="applyFilters" 
+                                            class="flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+                                        >
+                                            <Filter class="h-4 w-4 mr-2" />
+                                            Terapkan Filter
+                                        </Button>
+                                        <Button 
+                                            variant="outline" 
+                                            @click="resetFilters"
+                                            class="flex-1 sm:flex-none border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
+                                        >
+                                            <RefreshCw class="h-4 w-4 mr-2" />
+                                            Reset
+                                        </Button>
+                                    </div>
+
+                                    <!-- Active Filters Display -->
+                                    <div v-if="selectedMarketing !== 'all' || selectedBrand !== 'all'" 
+                                         class="flex flex-wrap items-center gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Filter Aktif:</span>
+                                        <Badge 
+                                            v-if="selectedMarketing !== 'all'" 
+                                            class="flex items-center gap-2 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 px-3 py-1"
+                                        >
+                                            <Users class="h-3 w-3" />
+                                            <span>{{ topMarketing.find(m => m.id.toString() === selectedMarketing)?.name }}</span>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                class="h-4 w-4 p-0 ml-1 hover:bg-emerald-200 dark:hover:bg-emerald-800 rounded-full" 
+                                                @click="applyMarketingFilter('all')"
+                                            >
+                                                <X class="h-3 w-3" />
+                                            </Button>
+                                        </Badge>
+                                        <Badge 
+                                            v-if="selectedBrand !== 'all'" 
+                                            class="flex items-center gap-2 bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 px-3 py-1"
+                                        >
+                                            <Building2 class="h-3 w-3" />
+                                            <span>{{ brandPerformance.find(b => b.id.toString() === selectedBrand)?.nama }}</span>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                class="h-4 w-4 p-0 ml-1 hover:bg-purple-200 dark:hover:bg-purple-800 rounded-full" 
+                                                @click="applyBrandFilter('all')"
+                                            >
+                                                <X class="h-3 w-3" />
+                                            </Button>
+                                        </Badge>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <!-- Brand Filter Dropdown -->
-                            <div class="space-y-2 relative">
-                                <Label class="text-sm font-medium">Brand:</Label>
-                                <Button
-                                    variant="outline"
-                                    class="w-full justify-between"
-                                    @click="showBrandDropdown = !showBrandDropdown"
-                                >
-                                    <span class="flex items-center gap-2">
-                                        <Building2 class="h-4 w-4" />
-                                        {{ selectedBrand === 'all' ? 'Semua Brand' : brandPerformance.find(b => b.id.toString() === selectedBrand)?.nama }}
-                                    </span>
-                                    <ChevronDown class="h-4 w-4" />
-                                </Button>
-                                <div 
-                                    v-if="showBrandDropdown"
-                                    class="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border rounded-lg shadow-lg max-h-60 overflow-y-auto"
-                                >
-                                    <div 
-                                        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b"
-                                        @click="applyBrandFilter('all'); showBrandDropdown = false"
-                                    >
-                                        <div class="flex items-center gap-2">
-                                            <Target class="h-4 w-4 text-blue-500" />
-                                            <span>Semua Brand</span>
-                                        </div>
-                                    </div>
-                                    <div 
-                                        v-for="brand in brandPerformance" 
-                                        :key="brand.id"
-                                        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                                        @click="applyBrandFilter(brand.id.toString()); showBrandDropdown = false"
-                                    >
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center gap-2">
-                                                <Building2 class="h-4 w-4 text-purple-500" />
-                                                <span>{{ brand.nama }}</span>
-                                            </div>
-                                            <Badge variant="secondary" class="text-xs">
-                                                {{ brand.total_leads }} leads
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Apply Filter Button -->
-                        <div class="flex justify-end">
-                            <Button @click="applyFilters" class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white">
-                                <Filter class="h-4 w-4 mr-2" />
-                                Terapkan Filter
-                            </Button>
-                        </div>
-
-                        <!-- Active Filters Display -->
-                        <div v-if="selectedMarketing !== 'all' || selectedBrand !== 'all'" class="flex items-center gap-2 pt-2 border-t border-dashed">
-                            <span class="text-sm font-medium text-muted-foreground">Filter Aktif:</span>
-                            <Badge v-if="selectedMarketing !== 'all'" variant="default" class="flex items-center gap-1">
-                                <Users class="h-3 w-3" />
-                                {{ topMarketing.find(m => m.id.toString() === selectedMarketing)?.name }}
-                                <Button variant="ghost" size="sm" class="h-3 w-3 p-0 ml-1" @click="applyMarketingFilter('all')">
-                                    <X class="h-3 w-3" />
-                                </Button>
-                            </Badge>
-                            <Badge v-if="selectedBrand !== 'all'" variant="default" class="flex items-center gap-1">
-                                <Building2 class="h-3 w-3" />
-                                {{ brandPerformance.find(b => b.id.toString() === selectedBrand)?.nama }}
-                                <Button variant="ghost" size="sm" class="h-3 w-3 p-0 ml-1" @click="applyBrandFilter('all')">
-                                    <X class="h-3 w-3" />
-                                </Button>
-                            </Badge>
-                        </div>
+                            </Transition>
+                        </CardContent>
                     </div>
-                </CardContent>
+                </div>
             </Card>
 
             <!-- Main KPI Cards -->
