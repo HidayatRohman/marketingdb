@@ -13,8 +13,8 @@ import Badge from '@/components/ui/badge/Badge.vue';
 import MitraModal from '@/components/MitraModal.vue';
 import MitraDeleteModal from '@/components/MitraDeleteModal.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
-import { Search, Plus, Edit, Trash2, Eye, Building2, Filter, MoreHorizontal } from 'lucide-vue-next';
+import { ref, watch, computed } from 'vue';
+import { Search, Plus, Edit, Trash2, Eye, Building2, Filter, MoreHorizontal, Calendar, ChevronDown, ChevronUp, X } from 'lucide-vue-next';
 
 interface Brand {
     id: number;
@@ -62,6 +62,9 @@ interface Props {
         search?: string;
         chat?: string;
         label?: string;
+        periode_start?: string;
+        periode_end?: string;
+        per_page?: number;
     };
 }
 
@@ -70,6 +73,15 @@ const props = defineProps<Props>();
 const search = ref(props.filters.search || '');
 const chat = ref(props.filters.chat || '');
 const label = ref(props.filters.label || '');
+const periodeStart = ref(props.filters.periode_start || '');
+const periodeEnd = ref(props.filters.periode_end || new Date().toISOString().split('T')[0]);
+const perPage = ref(props.filters.per_page || 30);
+
+// Filter panel state
+const showFilters = ref(false);
+const hasActiveFilters = computed(() => {
+    return search.value || chat.value || label.value || periodeStart.value || (periodeEnd.value && periodeEnd.value !== new Date().toISOString().split('T')[0]);
+});
 
 // Modal states
 const mitraModal = ref({
@@ -101,13 +113,16 @@ const chatLabels = {
 let debounceTimer: number;
 
 // Watch for filter changes and update URL
-watch([search, chat, label], () => {
+watch([search, chat, label, periodeStart, periodeEnd, perPage], () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
         router.get('/mitras', {
             search: search.value || undefined,
             chat: chat.value || undefined,
             label: label.value || undefined,
+            periode_start: periodeStart.value || undefined,
+            periode_end: periodeEnd.value || undefined,
+            per_page: perPage.value || 30,
         }, {
             preserveState: true,
             replace: true,
@@ -177,6 +192,31 @@ const formatDate = (dateString: string) => {
 
 const getChatBadgeVariant = (chat: string) => {
     return chat === 'masuk' ? 'default' : 'secondary';
+};
+
+const clearFilters = () => {
+    search.value = '';
+    chat.value = '';
+    label.value = '';
+    periodeStart.value = '';
+    periodeEnd.value = new Date().toISOString().split('T')[0];
+    perPage.value = 30;
+    showFilters.value = false;
+};
+
+const toggleFilters = () => {
+    showFilters.value = !showFilters.value;
+};
+
+const getFilterParams = () => {
+    return {
+        search: search.value || undefined,
+        chat: chat.value || undefined,
+        label: label.value || undefined,
+        periode_start: periodeStart.value || undefined,
+        periode_end: periodeEnd.value || undefined,
+        per_page: perPage.value || 30,
+    };
 };
 </script>
 
@@ -277,9 +317,10 @@ const getChatBadgeVariant = (chat: string) => {
             <!-- Search and Filter Bar -->
             <Card class="border-0 shadow-lg">
                 <CardContent class="p-6">
-                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                    <!-- Top row with search and filter toggle -->
+                    <div class="flex items-center gap-4 mb-4">
                         <!-- Search Input -->
-                        <div class="lg:col-span-2">
+                        <div class="flex-1">
                             <div class="relative">
                                 <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                                 <Input
@@ -290,30 +331,122 @@ const getChatBadgeVariant = (chat: string) => {
                             </div>
                         </div>
                         
-                        <!-- Chat Filter -->
-                        <select
-                            v-model="chat"
-                            class="flex h-11 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            <option value="">Semua Chat</option>
-                            <option value="masuk">Masuk</option>
-                            <option value="followup">Follow Up</option>
-                        </select>
-                        
-                        <!-- Label Filter -->
-                        <select
-                            v-model="label"
-                            class="flex h-11 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            <option value="">Semua Label</option>
-                            <option 
-                                v-for="labelOption in labels" 
-                                :key="labelOption.id" 
-                                :value="labelOption.id"
+                        <!-- Filter Toggle Button -->
+                        <div class="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                @click="toggleFilters"
+                                class="h-11 px-4 relative"
+                                :class="{ 'bg-primary text-primary-foreground border-primary': hasActiveFilters }"
                             >
-                                {{ labelOption.nama }}
-                            </option>
-                        </select>
+                                <Filter class="h-4 w-4 mr-2" />
+                                Filter
+                                <ChevronDown v-if="!showFilters" class="h-4 w-4 ml-2" />
+                                <ChevronUp v-else class="h-4 w-4 ml-2" />
+                                <span v-if="hasActiveFilters" class="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
+                            </Button>
+                            
+                            <Button
+                                v-if="hasActiveFilters"
+                                variant="ghost"
+                                size="sm"
+                                @click="clearFilters"
+                                class="h-11 text-muted-foreground hover:text-foreground"
+                            >
+                                <X class="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+
+                    <!-- Expandable Filter Panel -->
+                    <div v-if="showFilters" class="border-t pt-4 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <!-- Periode Start -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                                    <Calendar class="h-4 w-4" />
+                                    Dari Tanggal
+                                </label>
+                                <Input
+                                    type="date"
+                                    v-model="periodeStart"
+                                    class="h-10"
+                                />
+                            </div>
+
+                            <!-- Periode End -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                                    <Calendar class="h-4 w-4" />
+                                    Sampai Tanggal
+                                </label>
+                                <Input
+                                    type="date"
+                                    v-model="periodeEnd"
+                                    class="h-10"
+                                />
+                            </div>
+
+                            <!-- Chat Filter -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-muted-foreground">Status Chat</label>
+                                <select
+                                    v-model="chat"
+                                    class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="">Semua Chat</option>
+                                    <option value="masuk">Masuk</option>
+                                    <option value="followup">Follow Up</option>
+                                </select>
+                            </div>
+
+                            <!-- Label Filter -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-muted-foreground">Label</label>
+                                <select
+                                    v-model="label"
+                                    class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="">Semua Label</option>
+                                    <option 
+                                        v-for="labelOption in labels" 
+                                        :key="labelOption.id" 
+                                        :value="labelOption.id"
+                                    >
+                                        {{ labelOption.nama }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Per Page and Active Filters -->
+                        <div class="flex items-center justify-between pt-4 border-t">
+                            <div class="flex items-center gap-2">
+                                <label class="text-sm font-medium text-muted-foreground">Tampilkan:</label>
+                                <select
+                                    v-model="perPage"
+                                    class="flex h-9 w-20 rounded-md border border-input bg-transparent px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                >
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="30">30</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span class="text-sm text-muted-foreground">per halaman</span>
+                            </div>
+
+                            <!-- Active Filters Display -->
+                            <div v-if="hasActiveFilters" class="flex items-center gap-2 text-sm text-muted-foreground">
+                                <span>Filter aktif:</span>
+                                <div class="flex gap-1">
+                                    <span v-if="search" class="px-2 py-1 bg-primary/10 text-primary rounded text-xs">Search</span>
+                                    <span v-if="chat" class="px-2 py-1 bg-primary/10 text-primary rounded text-xs">{{ chatLabels[chat as keyof typeof chatLabels] }}</span>
+                                    <span v-if="label" class="px-2 py-1 bg-primary/10 text-primary rounded text-xs">Label</span>
+                                    <span v-if="periodeStart || periodeEnd" class="px-2 py-1 bg-primary/10 text-primary rounded text-xs">Periode</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -425,33 +558,73 @@ const getChatBadgeVariant = (chat: string) => {
                         </div>
 
                         <!-- Enhanced Pagination -->
-                        <div class="mt-6 flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                        <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg">
                             <div class="text-sm text-muted-foreground">
                                 Menampilkan <span class="font-medium">{{ mitras.data.length }}</span> dari <span class="font-medium">{{ mitras.total }}</span> mitra
+                                <span v-if="mitras.total > 0">
+                                    ({{ ((mitras.current_page - 1) * mitras.per_page) + 1 }} - {{ Math.min(mitras.current_page * mitras.per_page, mitras.total) }})
+                                </span>
                             </div>
+                            
                             <div class="flex items-center gap-2">
+                                <!-- First Page -->
+                                <Button 
+                                    v-if="mitras.current_page > 2"
+                                    variant="outline" 
+                                    size="sm"
+                                    @click="router.get('/mitras', { ...getFilterParams(), page: 1 })"
+                                    class="h-9 w-9 p-0"
+                                >
+                                    1
+                                </Button>
+                                
+                                <!-- Dots if there's a gap -->
+                                <span v-if="mitras.current_page > 3" class="text-muted-foreground px-2">...</span>
+                                
+                                <!-- Previous Page -->
                                 <Button 
                                     v-if="mitras.prev_page_url" 
                                     variant="outline" 
                                     size="sm"
                                     @click="router.get(mitras.prev_page_url)"
-                                    class="h-9"
+                                    class="h-9 px-3"
                                 >
-                                    ← Previous
+                                    ← Prev
                                 </Button>
-                                <div class="flex items-center gap-1 mx-2">
-                                    <span class="text-sm text-muted-foreground">
-                                        Page {{ mitras.current_page }} of {{ mitras.last_page }}
-                                    </span>
-                                </div>
+                                
+                                <!-- Current Page -->
+                                <Button 
+                                    variant="default" 
+                                    size="sm"
+                                    class="h-9 w-9 p-0"
+                                    disabled
+                                >
+                                    {{ mitras.current_page }}
+                                </Button>
+                                
+                                <!-- Next Page -->
                                 <Button 
                                     v-if="mitras.next_page_url" 
                                     variant="outline" 
                                     size="sm"
                                     @click="router.get(mitras.next_page_url)"
-                                    class="h-9"
+                                    class="h-9 px-3"
                                 >
                                     Next →
+                                </Button>
+                                
+                                <!-- Dots if there's a gap -->
+                                <span v-if="mitras.current_page < mitras.last_page - 2" class="text-muted-foreground px-2">...</span>
+                                
+                                <!-- Last Page -->
+                                <Button 
+                                    v-if="mitras.current_page < mitras.last_page - 1"
+                                    variant="outline" 
+                                    size="sm"
+                                    @click="router.get('/mitras', { ...getFilterParams(), page: mitras.last_page })"
+                                    class="h-9 w-9 p-0"
+                                >
+                                    {{ mitras.last_page }}
                                 </Button>
                             </div>
                         </div>

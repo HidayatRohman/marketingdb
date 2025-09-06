@@ -36,6 +36,15 @@ class MitraController extends Controller
             });
         }
 
+        // Apply periode filter
+        if ($request->has('periode_start') && $request->periode_start) {
+            $query->whereDate('tanggal_lead', '>=', $request->periode_start);
+        }
+
+        if ($request->has('periode_end') && $request->periode_end) {
+            $query->whereDate('tanggal_lead', '<=', $request->periode_end);
+        }
+
         // Apply chat filter
         if ($request->has('chat') && $request->chat) {
             $query->where('chat', $request->chat);
@@ -46,7 +55,14 @@ class MitraController extends Controller
             $query->where('label_id', $request->label);
         }
 
-        $mitras = $query->latest()->paginate(10)->withQueryString();
+        // Default ordering by tanggal_lead (newest first), then by created_at
+        $query->orderBy('tanggal_lead', 'desc')->orderBy('created_at', 'desc');
+
+        // Get per_page parameter, default to 30
+        $perPage = $request->get('per_page', 30);
+        $perPage = in_array($perPage, [10, 20, 30, 50, 100]) ? $perPage : 30;
+
+        $mitras = $query->paginate($perPage)->withQueryString();
         $brands = Brand::all();
         $labels = Label::all();
         
@@ -58,6 +74,9 @@ class MitraController extends Controller
                 'search' => $request->search,
                 'chat' => $request->chat,
                 'label' => $request->label,
+                'periode_start' => $request->periode_start,
+                'periode_end' => $request->periode_end,
+                'per_page' => $perPage,
             ],
         ]);
     }
