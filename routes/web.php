@@ -4,6 +4,7 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\MitraController;
+use App\Http\Controllers\TaskManagementController;
 use App\Http\Controllers\TodoListController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -111,6 +112,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{todoList}', [TodoListController::class, 'destroy'])->name('destroy');
         Route::patch('/{todoList}/status', [TodoListController::class, 'updateStatus'])->name('updateStatus');
         Route::get('/calendar', [TodoListController::class, 'calendar'])->name('calendar');
+    });
+
+    // Task Management - All authenticated users can access
+    Route::prefix('task-management')->name('task-management.')->group(function () {
+        Route::get('/', [TaskManagementController::class, 'index'])->name('index');
+        Route::post('/', [TaskManagementController::class, 'store'])->name('store');
+        Route::put('/{todoList}', [TaskManagementController::class, 'update'])->name('update');
+        Route::delete('/{todoList}', [TaskManagementController::class, 'destroy'])->name('destroy');
+        Route::patch('/{todoList}/status', [TaskManagementController::class, 'updateStatus'])->name('updateStatus');
+        Route::get('/tasks', [TaskManagementController::class, 'getTasks'])->name('getTasks');
     });
 });
 
