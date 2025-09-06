@@ -250,12 +250,16 @@ const submitForm = () => {
             onSuccess: () => {
                 showEditModal.value = false;
                 editingTodo.value = null;
+                // Reload page to show updated data
+                router.reload({ only: ['todos', 'stats'] });
             }
         });
     } else {
         form.post('/todos', {
             onSuccess: () => {
                 showCreateModal.value = false;
+                // Reload page to show new todo
+                router.reload({ only: ['todos', 'stats'] });
             }
         });
     }
@@ -263,14 +267,23 @@ const submitForm = () => {
 
 const deleteTodo = (todo: Todo) => {
     if (confirm('Apakah Anda yakin ingin menghapus todo ini?')) {
-        router.delete(`/todos/${todo.id}`);
+        router.delete(`/todos/${todo.id}`, {
+            onSuccess: () => {
+                // Reload page to update data
+                router.reload({ only: ['todos', 'stats'] });
+            }
+        });
     }
 };
 
 const updateStatus = (todo: Todo, checked: boolean) => {
     const status = checked ? 'completed' : 'pending';
     router.patch(`/todos/${todo.id}/status`, { status }, {
-        preserveScroll: true
+        preserveScroll: true,
+        onSuccess: () => {
+            // Reload to update stats
+            router.reload({ only: ['todos', 'stats'] });
+        }
     });
 };
 
