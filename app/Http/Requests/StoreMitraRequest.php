@@ -29,8 +29,8 @@ class StoreMitraRequest extends FormRequest
             'brand_id' => 'required|exists:brands,id',
             'label_id' => 'nullable|exists:labels,id',
             'chat' => 'required|in:masuk,followup',
-            'kota' => 'required|string|max:255',
-            'provinsi' => 'required|string|max:255',
+            'kota' => 'nullable|string|max:255',
+            'provinsi' => 'nullable|string|max:255',
             'komentar' => 'nullable|string',
         ];
     }
@@ -63,11 +63,9 @@ class StoreMitraRequest extends FormRequest
             'chat.required' => 'Status chat wajib dipilih.',
             'chat.in' => 'Status chat harus berupa "masuk" atau "followup".',
             
-            'kota.required' => 'Kota wajib diisi.',
             'kota.string' => 'Kota harus berupa teks.',
             'kota.max' => 'Kota maksimal 255 karakter.',
             
-            'provinsi.required' => 'Provinsi wajib diisi.',
             'provinsi.string' => 'Provinsi harus berupa teks.',
             'provinsi.max' => 'Provinsi maksimal 255 karakter.',
             

@@ -114,6 +114,14 @@ class MitraController extends Controller
             $validated['user_id'] = auth()->id();
         }
 
+        // Set default values for kota and provinsi if empty
+        if (empty($validated['kota'])) {
+            $validated['kota'] = 'Unknown';
+        }
+        if (empty($validated['provinsi'])) {
+            $validated['provinsi'] = 'Unknown';
+        }
+
         Mitra::create($validated);
 
         if ($request->expectsJson()) {
@@ -150,6 +158,14 @@ class MitraController extends Controller
     public function update(UpdateMitraRequest $request, Mitra $mitra)
     {
         $validated = $request->validated();
+
+        // Set default values for kota and provinsi if empty
+        if (empty($validated['kota'])) {
+            $validated['kota'] = 'Unknown';
+        }
+        if (empty($validated['provinsi'])) {
+            $validated['provinsi'] = 'Unknown';
+        }
 
         $mitra->update($validated);
 

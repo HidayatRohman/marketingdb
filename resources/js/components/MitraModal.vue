@@ -59,6 +59,49 @@ const emit = defineEmits<{
     success: [];
 }>();
 
+// Indonesian provinces
+const indonesianProvinces = [
+    'Unknown',
+    'Aceh',
+    'Sumatera Utara',
+    'Sumatera Barat',
+    'Riau',
+    'Kepulauan Riau',
+    'Jambi',
+    'Sumatera Selatan',
+    'Kepulauan Bangka Belitung',
+    'Bengkulu',
+    'Lampung',
+    'DKI Jakarta',
+    'Jawa Barat',
+    'Banten',
+    'Jawa Tengah',
+    'DI Yogyakarta',
+    'Jawa Timur',
+    'Bali',
+    'Nusa Tenggara Barat',
+    'Nusa Tenggara Timur',
+    'Kalimantan Barat',
+    'Kalimantan Tengah',
+    'Kalimantan Selatan',
+    'Kalimantan Timur',
+    'Kalimantan Utara',
+    'Sulawesi Utara',
+    'Sulawesi Tengah',
+    'Sulawesi Selatan',
+    'Sulawesi Tenggara',
+    'Gorontalo',
+    'Sulawesi Barat',
+    'Maluku',
+    'Maluku Utara',
+    'Papua',
+    'Papua Barat',
+    'Papua Selatan',
+    'Papua Tengah',
+    'Papua Pegunungan',
+    'Papua Barat Daya'
+];
+
 const form = useForm({
     nama: '',
     no_telp: '',
@@ -67,8 +110,8 @@ const form = useForm({
     label_id: null as number | null,
     user_id: null as number | null,
     chat: 'masuk' as 'masuk' | 'followup',
-    kota: '',
-    provinsi: '',
+    kota: 'Unknown',
+    provinsi: 'Unknown',
     komentar: '',
 });
 
@@ -82,12 +125,14 @@ watch(() => props.mitra, (newMitra) => {
         form.label_id = newMitra.label_id || null;
         form.user_id = newMitra.user_id || null;
         form.chat = newMitra.chat || 'masuk';
-        form.kota = newMitra.kota || '';
-        form.provinsi = newMitra.provinsi || '';
+        form.kota = newMitra.kota || 'Unknown';
+        form.provinsi = newMitra.provinsi || 'Unknown';
         form.komentar = newMitra.komentar || '';
     } else {
         form.reset();
         form.tanggal_lead = new Date().toISOString().split('T')[0]; // Reset to today's date
+        form.kota = 'Unknown';
+        form.provinsi = 'Unknown';
     }
 }, { immediate: true });
 
@@ -96,6 +141,8 @@ watch(() => props.open, (isOpen) => {
     if (!isOpen) {
         form.reset();
         form.tanggal_lead = new Date().toISOString().split('T')[0]; // Reset to today's date
+        form.kota = 'Unknown';
+        form.provinsi = 'Unknown';
         form.clearErrors();
     }
 });
@@ -291,13 +338,13 @@ const chatLabels = {
                         <div class="space-y-2">
                             <Label for="kota" class="flex items-center gap-2">
                                 <MapPin class="h-3 w-3" />
-                                Kota *
+                                Kota
                             </Label>
                             <Input
                                 id="kota"
                                 v-model="form.kota"
                                 :disabled="mode === 'view'"
-                                placeholder="Masukkan nama kota"
+                                placeholder="Masukkan nama kota (opsional)"
                                 :class="{ 'border-destructive': form.errors.kota }"
                             />
                             <p v-if="form.errors.kota" class="text-sm text-destructive">
@@ -308,15 +355,24 @@ const chatLabels = {
                         <div class="space-y-2">
                             <Label for="provinsi" class="flex items-center gap-2">
                                 <MapPin class="h-3 w-3" />
-                                Provinsi *
+                                Provinsi
                             </Label>
-                            <Input
+                            <select
                                 id="provinsi"
                                 v-model="form.provinsi"
                                 :disabled="mode === 'view'"
-                                placeholder="Masukkan nama provinsi"
+                                class="flex h-10 w-full rounded-md border border-input bg-background text-foreground px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
                                 :class="{ 'border-destructive': form.errors.provinsi }"
-                            />
+                            >
+                                <option 
+                                    v-for="province in indonesianProvinces" 
+                                    :key="province" 
+                                    :value="province"
+                                    class="bg-background text-foreground"
+                                >
+                                    {{ province }}
+                                </option>
+                            </select>
                             <p v-if="form.errors.provinsi" class="text-sm text-destructive">
                                 {{ form.errors.provinsi }}
                             </p>
