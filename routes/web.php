@@ -4,6 +4,7 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\MitraController;
+use App\Http\Controllers\TodoListController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -100,6 +101,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::middleware('role.access:destroy')->group(function () {
         Route::delete('labels/{label}', [LabelController::class, 'destroy'])->name('labels.destroy');
+    });
+
+    // Todo Lists - All authenticated users can access
+    Route::prefix('todos')->name('todos.')->group(function () {
+        Route::get('/', [TodoListController::class, 'index'])->name('index');
+        Route::post('/', [TodoListController::class, 'store'])->name('store');
+        Route::put('/{todoList}', [TodoListController::class, 'update'])->name('update');
+        Route::delete('/{todoList}', [TodoListController::class, 'destroy'])->name('destroy');
+        Route::patch('/{todoList}/status', [TodoListController::class, 'updateStatus'])->name('updateStatus');
+        Route::get('/calendar', [TodoListController::class, 'calendar'])->name('calendar');
     });
 });
 

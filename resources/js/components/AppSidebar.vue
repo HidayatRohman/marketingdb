@@ -6,7 +6,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Users, Handshake, Zap, Tag, User, Bookmark } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Users, Handshake, Zap, Tag, User, Bookmark, Calendar } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
@@ -23,6 +23,11 @@ const mainNavItems = computed<NavItem[]>(() => {
             title: 'Dashboard',
             href: dashboard(),
             icon: LayoutGrid,
+        },
+        {
+            title: 'To Do List',
+            href: '/todos',
+            icon: Calendar,
         },
     ];
 
