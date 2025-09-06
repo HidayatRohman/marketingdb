@@ -477,18 +477,7 @@ onMounted(() => {
                         </CardContent>
                     </Card>
                 </TabsContent>
-                        </Link>
-                        <Link href="/users">
-                            <Button variant="outline" class="border-white text-white hover:bg-white/10">
-                                <Users class="mr-2 h-5 w-5" />
-                                Kelola Users
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
-                <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
-                <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
-            </div>
+            </Tabs>
 
             <!-- Statistics Cards -->
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
