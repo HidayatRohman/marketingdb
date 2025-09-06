@@ -23,7 +23,7 @@ class TodoList extends Model
     ];
 
     protected $casts = [
-        'due_date' => 'date',
+        'due_date' => 'date:Y-m-d',
         'due_time' => 'datetime:H:i',
         'tags' => 'array',
     ];

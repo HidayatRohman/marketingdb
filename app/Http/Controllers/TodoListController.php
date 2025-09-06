@@ -18,11 +18,45 @@ class TodoListController extends Controller
         $selectedDate = $request->get('date', now()->format('Y-m-d'));
         $view = $request->get('view', 'calendar'); // calendar or list
         
+        // Get filter parameters
+        $status = $request->get('status', 'all');
+        $priority = $request->get('priority', 'all');
+        $assigned = $request->get('assigned', 'all');
+        $search = $request->get('search', '');
+        
         $query = TodoList::with(['user', 'assignedUser'])
             ->where(function($q) {
                 $q->where('user_id', auth()->id())
                   ->orWhere('assigned_to', auth()->id());
             });
+
+        // Apply filters
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+        
+        if ($priority !== 'all') {
+            $query->where('priority', $priority);
+        }
+        
+        if ($assigned !== 'all') {
+            if ($assigned === 'me') {
+                $query->where(function($q) {
+                    $q->where('user_id', auth()->id())
+                      ->orWhereNull('assigned_to');
+                });
+            } else {
+                $query->where('assigned_to', '!=', null)
+                      ->where('user_id', '!=', auth()->id());
+            }
+        }
+        
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', '%' . $search . '%')
+                  ->orWhere('description', 'like', '%' . $search . '%');
+            });
+        }
 
         if ($view === 'calendar') {
             // For calendar view, get todos for the entire month
@@ -34,11 +68,20 @@ class TodoListController extends Controller
                           ->orderBy('due_time')
                           ->get();
         } else {
-            // For list view, get todos for selected date
-            $todos = $query->whereDate('due_date', $selectedDate)
-                          ->orderBy('due_time')
-                          ->orderBy('priority')
-                          ->get();
+            // For list view, get todos for selected date or all if filters applied
+            if ($status === 'all' && $priority === 'all' && $assigned === 'all' && empty($search)) {
+                // No filters, show only selected date
+                $todos = $query->whereDate('due_date', $selectedDate)
+                              ->orderBy('due_time')
+                              ->orderBy('priority')
+                              ->get();
+            } else {
+                // Filters applied, show all matching todos
+                $todos = $query->orderBy('due_date')
+                              ->orderBy('due_time')
+                              ->orderBy('priority')
+                              ->get();
+            }
         }
 
         $users = User::select('id', 'name', 'email')->get();
@@ -48,11 +91,29 @@ class TodoListController extends Controller
             'users' => $users,
             'selectedDate' => $selectedDate,
             'view' => $view,
+            'filters' => [
+                'status' => $status,
+                'priority' => $priority,
+                'assigned' => $assigned,
+                'search' => $search,
+            ],
             'stats' => [
-                'total' => TodoList::where('user_id', auth()->id())->count(),
-                'completed' => TodoList::where('user_id', auth()->id())->where('status', 'completed')->count(),
-                'pending' => TodoList::where('user_id', auth()->id())->where('status', 'pending')->count(),
-                'overdue' => TodoList::where('user_id', auth()->id())
+                'total' => TodoList::where(function($q) {
+                    $q->where('user_id', auth()->id())
+                      ->orWhere('assigned_to', auth()->id());
+                })->count(),
+                'completed' => TodoList::where(function($q) {
+                    $q->where('user_id', auth()->id())
+                      ->orWhere('assigned_to', auth()->id());
+                })->where('status', 'completed')->count(),
+                'pending' => TodoList::where(function($q) {
+                    $q->where('user_id', auth()->id())
+                      ->orWhere('assigned_to', auth()->id());
+                })->where('status', 'pending')->count(),
+                'overdue' => TodoList::where(function($q) {
+                    $q->where('user_id', auth()->id())
+                      ->orWhere('assigned_to', auth()->id());
+                })
                     ->where('status', '!=', 'completed')
                     ->where('due_date', '<', now()->format('Y-m-d'))
                     ->count(),

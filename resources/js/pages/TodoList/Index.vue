@@ -16,7 +16,7 @@ import {
     User, CheckCircle, XCircle, AlertCircle, MoreVertical,
     Edit, Trash2, ArrowLeft, ArrowRight
 } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 interface Todo {
     id: number;
@@ -61,6 +61,12 @@ interface Props {
     selectedDate: string;
     view: 'calendar' | 'list';
     stats: Stats;
+    filters?: {
+        status: string;
+        priority: string;
+        assigned: string;
+        search: string;
+    };
 }
 
 const props = defineProps<Props>();
@@ -72,6 +78,14 @@ const currentView = ref(props.view);
 const showCreateModal = ref(false);
 const showEditModal = ref(false);
 const editingTodo = ref<Todo | null>(null);
+
+// Filter state - initialize from props if available
+const filters = ref({
+    status: (props.filters?.status || 'all') as 'all' | 'pending' | 'in_progress' | 'completed',
+    priority: (props.filters?.priority || 'all') as 'all' | 'low' | 'medium' | 'high',
+    assigned: (props.filters?.assigned || 'all') as 'all' | 'me' | 'others',
+    search: props.filters?.search || ''
+});
 
 // Form state
 const form = useForm({
@@ -132,8 +146,56 @@ const todosGroupedByDate = computed(() => {
 });
 
 const todosForSelectedDate = computed(() => {
-    const dateKey = selectedDate.value.toISOString().split('T')[0];
-    return todosGroupedByDate.value[dateKey] || [];
+    // For calendar view, always show todos for selected date without filters
+    if (currentView.value === 'calendar') {
+        const dateKey = selectedDate.value.toISOString().split('T')[0];
+        return todosGroupedByDate.value[dateKey] || [];
+    }
+    
+    // If in list view and no filters active, show only selected date
+    if (currentView.value === 'list' && 
+        filters.value.status === 'all' && 
+        filters.value.priority === 'all' && 
+        filters.value.assigned === 'all' && 
+        !filters.value.search) {
+        const dateKey = selectedDate.value.toISOString().split('T')[0];
+        return todosGroupedByDate.value[dateKey] || [];
+    }
+    
+    // If filters are active in list view, show filtered todos
+    return allFilteredTodos.value;
+});
+
+// Get all todos for current view with filters applied
+const allFilteredTodos = computed(() => {
+    let todos = props.todos;
+    
+    // Apply filters
+    if (filters.value.status !== 'all') {
+        todos = todos.filter(todo => todo.status === filters.value.status);
+    }
+    
+    if (filters.value.priority !== 'all') {
+        todos = todos.filter(todo => todo.priority === filters.value.priority);
+    }
+    
+    if (filters.value.assigned !== 'all') {
+        if (filters.value.assigned === 'me') {
+            todos = todos.filter(todo => todo.assigned_to === null || todo.user_id === todo.assigned_to);
+        } else {
+            todos = todos.filter(todo => todo.assigned_to !== null && todo.user_id !== todo.assigned_to);
+        }
+    }
+    
+    if (filters.value.search) {
+        const searchLower = filters.value.search.toLowerCase();
+        todos = todos.filter(todo => 
+            todo.title.toLowerCase().includes(searchLower) ||
+            (todo.description && todo.description.toLowerCase().includes(searchLower))
+        );
+    }
+    
+    return todos;
 });
 
 const priorityColors = {
@@ -250,27 +312,68 @@ const submitForm = () => {
             onSuccess: () => {
                 showEditModal.value = false;
                 editingTodo.value = null;
-                // Reload page to show updated data
-                router.reload({ only: ['todos', 'stats'] });
+                form.reset();
+                // Use router.reload to get fresh data
+                router.reload({ 
+                    only: ['todos', 'stats'],
+                    preserveScroll: true
+                });
             }
         });
     } else {
         form.post('/todos', {
             onSuccess: () => {
                 showCreateModal.value = false;
-                // Reload page to show new todo
-                router.reload({ only: ['todos', 'stats'] });
+                form.reset();
+                // Use router.reload to get fresh data including the new todo
+                router.reload({ 
+                    only: ['todos', 'stats'],
+                    preserveScroll: true
+                });
             }
         });
     }
 };
+
+const clearFilters = () => {
+    filters.value = {
+        status: 'all',
+        priority: 'all', 
+        assigned: 'all',
+        search: ''
+    };
+    applyFilters();
+};
+
+const applyFilters = () => {
+    const params = new URLSearchParams();
+    params.set('view', currentView.value);
+    params.set('date', selectedDate.value.toISOString().split('T')[0]);
+    
+    if (filters.value.status !== 'all') params.set('status', filters.value.status);
+    if (filters.value.priority !== 'all') params.set('priority', filters.value.priority);
+    if (filters.value.assigned !== 'all') params.set('assigned', filters.value.assigned);
+    if (filters.value.search) params.set('search', filters.value.search);
+    
+    router.get('/todos?' + params.toString(), {}, { 
+        preserveScroll: true
+    });
+};
+
+// Watch for filter changes and apply them
+watch(filters, () => {
+    applyFilters();
+}, { deep: true });
 
 const deleteTodo = (todo: Todo) => {
     if (confirm('Apakah Anda yakin ingin menghapus todo ini?')) {
         router.delete(`/todos/${todo.id}`, {
             onSuccess: () => {
                 // Reload page to update data
-                router.reload({ only: ['todos', 'stats'] });
+                router.reload({ 
+                    only: ['todos', 'stats'],
+                    preserveScroll: true
+                });
             }
         });
     }
@@ -281,15 +384,34 @@ const updateStatus = (todo: Todo, checked: boolean) => {
     router.patch(`/todos/${todo.id}/status`, { status }, {
         preserveScroll: true,
         onSuccess: () => {
-            // Reload to update stats
-            router.reload({ only: ['todos', 'stats'] });
+            // Reload to update stats and data
+            router.reload({ 
+                only: ['todos', 'stats'],
+                preserveScroll: true
+            });
         }
     });
 };
 
 const getDayTodos = (date: Date) => {
     const dateKey = date.toISOString().split('T')[0];
-    return todosGroupedByDate.value[dateKey] || [];
+    const todos = todosGroupedByDate.value[dateKey] || [];
+    
+    // Sort todos by priority and time for better display
+    return todos.sort((a, b) => {
+        // Prioritize high priority todos
+        const priorityOrder = { high: 3, medium: 2, low: 1 };
+        const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
+        if (priorityDiff !== 0) return priorityDiff;
+        
+        // Then sort by time if available
+        if (a.due_time && b.due_time) {
+            return a.due_time.localeCompare(b.due_time);
+        }
+        
+        // Finally by title
+        return a.title.localeCompare(b.title);
+    });
 };
 
 const isCurrentMonth = (date: Date) => {
@@ -402,6 +524,37 @@ const getStatusIcon = (status: string) => {
 
             <!-- Calendar View -->
             <div v-if="currentView === 'calendar'" class="space-y-4">
+                <!-- Calendar Legend -->
+                <Card>
+                    <CardContent class="p-4">
+                        <div class="flex flex-wrap items-center gap-4 text-sm">
+                            <span class="font-medium text-gray-700 dark:text-gray-300">Legend:</span>
+                            
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded bg-gray-100 border"></div>
+                                <span class="text-gray-600">Pending</span>
+                            </div>
+                            
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded bg-blue-100 border"></div>
+                                <span class="text-gray-600">Dikerjakan</span>
+                            </div>
+                            
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded bg-green-100 border"></div>
+                                <span class="text-gray-600">Selesai</span>
+                            </div>
+                            
+                            <div class="flex items-center gap-2">
+                                <Flag class="w-3 h-3 text-red-600" />
+                                <span class="text-gray-600">Prioritas Tinggi</span>
+                            </div>
+                            
+                            <span class="text-xs text-gray-500">💡 Klik pada todo untuk edit, klik "+X lainnya" untuk lihat semua</span>
+                        </div>
+                    </CardContent>
+                </Card>
+                
                 <!-- Calendar Header -->
                 <Card>
                     <CardHeader class="pb-4">
@@ -446,17 +599,36 @@ const getStatusIcon = (status: string) => {
                                     
                                     <!-- Todos for this date -->
                                     <div class="flex-1 space-y-1">
-                                        <div v-for="todo in getDayTodos(date).slice(0, 3)" :key="todo.id"
+                                        <div v-for="todo in getDayTodos(date).slice(0, 2)" :key="todo.id"
                                              :class="[
-                                                 'text-xs p-1 rounded truncate',
-                                                 statusColors[todo.status]
-                                             ]">
-                                            {{ todo.title }}
+                                                 'text-xs p-1 rounded truncate cursor-pointer transition-colors',
+                                                 statusColors[todo.status],
+                                                 'hover:opacity-80'
+                                             ]"
+                                             :title="`${todo.title} - ${statusLabels[todo.status]} - ${priorityLabels[todo.priority]}${todo.due_time ? ' (' + todo.due_time + ')' : ''}`"
+                                             @click.stop="openEditModal(todo)">
+                                            <div class="flex items-center gap-1">
+                                                <component :is="getStatusIcon(todo.status)" 
+                                                          class="h-3 w-3 flex-shrink-0" />
+                                                <span class="truncate">{{ todo.title }}</span>
+                                            </div>
+                                            <div v-if="todo.due_time" class="text-xs opacity-75">
+                                                {{ todo.due_time }}
+                                            </div>
                                         </div>
                                         
-                                        <div v-if="getDayTodos(date).length > 3" 
-                                             class="text-xs text-gray-500">
-                                            +{{ getDayTodos(date).length - 3 }} lainnya
+                                        <div v-if="getDayTodos(date).length > 2" 
+                                             class="text-xs text-gray-500 p-1 cursor-pointer hover:bg-gray-100 rounded"
+                                             @click.stop="selectDate(date)"
+                                             :title="`Klik untuk melihat semua ${getDayTodos(date).length} tugas`">
+                                            +{{ getDayTodos(date).length - 2 }} lainnya
+                                        </div>
+                                        
+                                        <!-- Show priority indicator if any high priority todos -->
+                                        <div v-if="getDayTodos(date).some(todo => todo.priority === 'high' && todo.status !== 'completed')" 
+                                             class="text-xs text-red-600 font-medium flex items-center gap-1">
+                                            <Flag class="h-3 w-3" />
+                                            Prioritas Tinggi
                                         </div>
                                     </div>
                                 </div>
@@ -525,18 +697,101 @@ const getStatusIcon = (status: string) => {
 
             <!-- List View -->
             <div v-if="currentView === 'list'" class="space-y-4">
+                <!-- Filters Section -->
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="flex items-center justify-between">
+                            <span>Filter & Pencarian</span>
+                            <Button variant="outline" size="sm" @click="clearFilters">
+                                Reset Filter
+                            </Button>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <!-- Date Filter -->
+                            <div>
+                                <Label for="dateFilter">Tanggal</Label>
+                                <Input 
+                                    id="dateFilter"
+                                    type="date"
+                                    :value="selectedDate.toISOString().split('T')[0]"
+                                    @change="(e: Event) => selectDate(new Date((e.target as HTMLInputElement).value))"
+                                />
+                            </div>
+                            
+                            <!-- Status Filter -->
+                            <div>
+                                <Label for="statusFilter">Status</Label>
+                                <select 
+                                    id="statusFilter"
+                                    v-model="filters.status"
+                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="all">Semua Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="in_progress">Dikerjakan</option>
+                                    <option value="completed">Selesai</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Priority Filter -->
+                            <div>
+                                <Label for="priorityFilter">Prioritas</Label>
+                                <select 
+                                    id="priorityFilter"
+                                    v-model="filters.priority"
+                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="all">Semua Prioritas</option>
+                                    <option value="high">Tinggi</option>
+                                    <option value="medium">Sedang</option>
+                                    <option value="low">Rendah</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Assigned Filter -->
+                            <div>
+                                <Label for="assignedFilter">Assignment</Label>
+                                <select 
+                                    id="assignedFilter"
+                                    v-model="filters.assigned"
+                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="all">Semua</option>
+                                    <option value="me">Tugas Saya</option>
+                                    <option value="others">Assigned ke Lain</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Search -->
+                            <div>
+                                <Label for="searchFilter">Pencarian</Label>
+                                <Input 
+                                    id="searchFilter"
+                                    v-model="filters.search"
+                                    placeholder="Cari judul atau deskripsi..."
+                                />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Todo List -->
                 <Card>
                     <CardHeader>
                         <div class="flex items-center justify-between">
                             <CardTitle>
-                                Tugas untuk {{ formatDate(selectedDate.toISOString().split('T')[0]) }}
+                                <span v-if="filters.status === 'all' && filters.priority === 'all' && filters.assigned === 'all' && !filters.search">
+                                    Tugas untuk {{ formatDate(selectedDate.toISOString().split('T')[0]) }}
+                                </span>
+                                <span v-else>
+                                    Hasil Filter Tugas
+                                </span>
+                                <span v-if="todosForSelectedDate.length !== props.todos.length" class="text-sm font-normal text-gray-500 ml-2">
+                                    ({{ todosForSelectedDate.length }} hasil)
+                                </span>
                             </CardTitle>
-                            <Input 
-                                type="date"
-                                :value="selectedDate.toISOString().split('T')[0]"
-                                @change="(e: Event) => selectDate(new Date((e.target as HTMLInputElement).value))"
-                                class="w-auto"
-                            />
                         </div>
                     </CardHeader>
                     
