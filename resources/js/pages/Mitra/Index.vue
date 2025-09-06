@@ -253,7 +253,7 @@ const getFilterParams = () => {
                         </div>
                         <Button 
                             @click="openCreateModal"
-                            class="bg-white text-teal-600 hover:bg-teal-50 font-semibold shadow-lg"
+                            class="bg-white dark:bg-gray-800 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-gray-700 font-semibold shadow-lg"
                         >
                             <Plus class="mr-2 h-5 w-5" />
                             Tambah Mitra
@@ -515,27 +515,27 @@ const getFilterParams = () => {
                                                 <div class="p-2 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-lg">
                                                     <Building2 class="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                                                 </div>
-                                                <span>{{ mitra.nama }}</span>
+                                                <span class="text-gray-900 dark:text-gray-100">{{ mitra.nama }}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <div class="flex items-center gap-2">
                                                 <div class="p-1 bg-gray-100 dark:bg-gray-800 rounded">
-                                                    <svg class="h-4 w-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                                    <svg class="h-4 w-4 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                                                         <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
                                                     </svg>
                                                 </div>
-                                                <span>{{ mitra.no_telp }}</span>
+                                                <span class="text-gray-900 dark:text-gray-100">{{ mitra.no_telp }}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <div class="flex items-center gap-2">
                                                 <div class="p-1 bg-gray-100 dark:bg-gray-800 rounded">
-                                                    <svg class="h-4 w-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                                    <svg class="h-4 w-4 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
                                                     </svg>
                                                 </div>
-                                                <span class="text-sm">{{ mitra.tanggal_lead ? formatDate(mitra.tanggal_lead) : '-' }}</span>
+                                                <span class="text-sm text-gray-900 dark:text-gray-100">{{ mitra.tanggal_lead ? formatDate(mitra.tanggal_lead) : '-' }}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -543,7 +543,7 @@ const getFilterParams = () => {
                                                 <div class="p-1 bg-blue-100 dark:bg-blue-800 rounded">
                                                     <User class="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                                 </div>
-                                                <span class="text-sm">{{ mitra.user?.name || '-' }}</span>
+                                                <span class="text-sm text-gray-900 dark:text-gray-100">{{ mitra.user?.name || '-' }}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>{{ mitra.brand.nama }}</TableCell>

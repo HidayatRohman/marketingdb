@@ -165,3 +165,32 @@
         @apply bg-background text-foreground;
     }
 }
+
+@layer utilities {
+    /* Enhanced contrast for dark mode */
+    .text-enhanced {
+        @apply text-gray-900 dark:text-gray-100;
+    }
+    
+    .text-muted-enhanced {
+        @apply text-gray-600 dark:text-gray-300;
+    }
+    
+    .bg-enhanced {
+        @apply bg-white dark:bg-gray-800;
+    }
+    
+    .border-enhanced {
+        @apply border-gray-200 dark:border-gray-600;
+    }
+    
+    /* Better contrast for icons */
+    .icon-enhanced {
+        @apply text-gray-500 dark:text-gray-400;
+    }
+    
+    /* Better shadow for dark mode */
+    .shadow-enhanced {
+        @apply shadow-lg dark:shadow-gray-700/50;
+    }
+}
