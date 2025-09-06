@@ -120,7 +120,18 @@ watch(() => props.mitra, (newMitra) => {
     if (newMitra) {
         form.nama = newMitra.nama || '';
         form.no_telp = newMitra.no_telp || '';
-        form.tanggal_lead = newMitra.tanggal_lead || new Date().toISOString().split('T')[0];
+        // Handle date formatting more carefully
+        if (newMitra.tanggal_lead) {
+            // Convert any date format to YYYY-MM-DD format required by input[type="date"]
+            const date = new Date(newMitra.tanggal_lead);
+            if (!isNaN(date.getTime())) {
+                form.tanggal_lead = date.toISOString().split('T')[0];
+            } else {
+                form.tanggal_lead = new Date().toISOString().split('T')[0];
+            }
+        } else {
+            form.tanggal_lead = new Date().toISOString().split('T')[0];
+        }
         form.brand_id = newMitra.brand_id || null;
         form.label_id = newMitra.label_id || null;
         form.user_id = newMitra.user_id || null;

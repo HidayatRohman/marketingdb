@@ -23,7 +23,7 @@ class Mitra extends Model
     ];
 
     protected $casts = [
-        'tanggal_lead' => 'date',
+        'tanggal_lead' => 'date:Y-m-d',
         // Removed transaksi cast since we're removing the field
     ];
 
