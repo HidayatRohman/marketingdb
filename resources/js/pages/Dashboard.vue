@@ -420,13 +420,12 @@ onMounted(() => {
             </div>
 
             <!-- Enhanced Collapsible Filter Section -->
-            <Card class="border-0 shadow-lg overflow-visible bg-white dark:bg-gray-900">
-                <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-0.5 rounded-lg">
-                    <div class="bg-white dark:bg-gray-900 rounded-lg">
-                        <CardContent class="p-4 sm:p-6">
+            <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-0.5 rounded-lg shadow-lg">
+                <Card class="border-0 overflow-visible bg-white dark:bg-gray-900 rounded-lg">
+                    <CardContent class="px-4 sm:px-6 py-0">
                             <!-- Filter Toggle Header -->
                             <div 
-                                class="flex items-center justify-between cursor-pointer group mb-4"
+                                class="flex items-center justify-between cursor-pointer group"
                                 @click="isFilterExpanded = !isFilterExpanded"
                             >
                                 <div class="flex items-center gap-3">
@@ -464,7 +463,7 @@ onMounted(() => {
                                 leave-from-class="max-h-[800px] opacity-100"
                                 leave-to-class="max-h-0 opacity-0"
                             >
-                                <div v-if="isFilterExpanded" class="mt-6 space-y-6 overflow-visible">
+                                <div v-if="isFilterExpanded" class="mt-4 space-y-6 overflow-visible">
                                     <!-- Quick Date Range Filters -->
                                     <div class="space-y-3">
                                         <div class="flex items-center gap-2">
@@ -629,7 +628,7 @@ onMounted(() => {
                                     </div>
 
                                     <!-- Action Buttons -->
-                                    <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                                    <div class="flex flex-col sm:flex-row gap-3 pt-4">
                                         <Button 
                                             @click="applyFilters" 
                                             class="flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
@@ -685,9 +684,8 @@ onMounted(() => {
                                 </div>
                             </Transition>
                         </CardContent>
-                    </div>
-                </div>
-            </Card>
+                </Card>
+            </div>
 
             <!-- Main KPI Cards -->
             <div class="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
@@ -769,35 +767,6 @@ onMounted(() => {
                     </CardContent>
                 </Card>
             </div>
-
-            <!-- System Analytics Overview -->
-            <Card class="border-0 shadow-xl bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-900 dark:to-gray-900">
-                <CardHeader class="pb-3 sm:pb-4">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <CardTitle class="flex items-center gap-3 text-lg sm:text-xl font-bold">
-                            <div class="p-2 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg shadow-lg">
-                                <BarChart3 class="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                            </div>
-                            Analisa Komprehensif Sistem
-                        </CardTitle>
-                        <Badge class="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 self-start sm:self-center">
-                            Live Analytics
-                        </Badge>
-                    </div>
-                </CardHeader>
-                <CardContent class="space-y-6 sm:space-y-8 p-4 sm:p-6">
-                    <!-- Content area is now empty -->
-                    <div class="text-center py-8 sm:py-12">
-                        <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center">
-                            <BarChart3 class="h-8 w-8 text-white" />
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Analytics Section</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
-                            Comprehensive system analytics will be displayed here
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
 
             <!-- Task Management Report -->
             <Card class="border-0 shadow-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/50 dark:to-purple-950/50">
