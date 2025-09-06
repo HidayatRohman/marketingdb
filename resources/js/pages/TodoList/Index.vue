@@ -24,6 +24,7 @@ interface Todo {
     description?: string;
     priority: 'low' | 'medium' | 'high';
     status: 'pending' | 'in_progress' | 'completed';
+    start_date?: string;
     due_date: string;
     due_time?: string;
     user_id: number;
@@ -108,6 +109,7 @@ const form = useForm({
     description: '',
     priority: 'medium' as 'low' | 'medium' | 'high',
     status: 'pending' as 'pending' | 'in_progress' | 'completed',
+    start_date: '',
     due_date: props.selectedDate,
     due_time: '',
     assigned_to: null as number | null,
@@ -337,6 +339,7 @@ const selectDate = (date: Date) => {
 
 const openCreateModal = () => {
     form.reset();
+    form.start_date = selectedDate.value.toISOString().split('T')[0];
     form.due_date = selectedDate.value.toISOString().split('T')[0];
     showCreateModal.value = true;
 };
@@ -347,6 +350,7 @@ const openEditModal = (todo: Todo) => {
     form.description = todo.description || '';
     form.priority = todo.priority;
     form.status = todo.status;
+    form.start_date = todo.start_date || '';
     form.due_date = todo.due_date;
     form.due_time = todo.due_time || '';
     form.assigned_to = todo.assigned_to || null;
@@ -462,6 +466,46 @@ const getDayTodos = (date: Date) => {
         // Finally by title
         return a.title.localeCompare(b.title);
     });
+};
+
+// Get todos that span across date ranges (for bar visualization)
+const getTodosForDateRange = (date: Date) => {
+    const dateKey = date.toISOString().split('T')[0];
+    
+    return props.todos.filter(todo => {
+        // If todo has start_date, check if current date is within the range
+        if (todo.start_date) {
+            return dateKey >= todo.start_date && dateKey <= todo.due_date;
+        }
+        // If no start_date, only show on due_date (original behavior)
+        return todo.due_date === dateKey;
+    }).sort((a, b) => {
+        const priorityOrder = { high: 3, medium: 2, low: 1 };
+        const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
+        if (priorityDiff !== 0) return priorityDiff;
+        
+        if (a.due_time && b.due_time) {
+            return a.due_time.localeCompare(b.due_time);
+        }
+        
+        return a.title.localeCompare(b.title);
+    });
+};
+
+// Get position of date within todo's date range (for bar visualization)
+const getTodoBarPosition = (todo: Todo, date: Date) => {
+    if (!todo.start_date) return 'full';
+    
+    const dateKey = date.toISOString().split('T')[0];
+    const startDate = todo.start_date;
+    const endDate = todo.due_date;
+    
+    if (dateKey === startDate && dateKey === endDate) return 'full';
+    if (dateKey === startDate) return 'start';
+    if (dateKey === endDate) return 'end';
+    if (dateKey > startDate && dateKey < endDate) return 'middle';
+    
+    return 'none';
 };
 
 const isCurrentMonth = (date: Date) => {
@@ -607,7 +651,14 @@ const getStatusIcon = (status: string) => {
                                 <span class="text-gray-600">Prioritas Tinggi</span>
                             </div>
                             
-                            <span class="text-xs text-gray-500">💡 Klik pada todo untuk edit, klik "+X lainnya" untuk lihat semua</span>
+                            <div class="flex items-center gap-2">
+                                <div class="flex items-center">
+                                    <span class="text-xs">●━━●</span>
+                                </div>
+                                <span class="text-gray-600">Range Tanggal (Mulai - Selesai)</span>
+                            </div>
+                            
+                            <span class="text-xs text-gray-500">💡 Todo dengan tanggal mulai ditampilkan sebagai bar dari mulai sampai deadline</span>
                         </div>
                     </CardContent>
                 </Card>
@@ -654,35 +705,49 @@ const getStatusIcon = (status: string) => {
                                         {{ date.getDate() }}
                                     </div>
                                     
-                                    <!-- Todos for this date -->
+                                    <!-- Todos for this date with bar visualization -->
                                     <div class="flex-1 space-y-1">
-                                        <div v-for="todo in getDayTodos(date).slice(0, 2)" :key="todo.id"
+                                        <div v-for="todo in getTodosForDateRange(date).slice(0, 3)" :key="todo.id"
                                              :class="[
-                                                 'text-xs p-1 rounded truncate cursor-pointer transition-colors',
+                                                 'text-xs p-1 cursor-pointer transition-colors relative',
                                                  statusColors[todo.status],
-                                                 'hover:opacity-80'
+                                                 'hover:opacity-80',
+                                                 {
+                                                     // Bar styling based on position in date range
+                                                     'rounded-l rounded-r': getTodoBarPosition(todo, date) === 'full',
+                                                     'rounded-l': getTodoBarPosition(todo, date) === 'start',
+                                                     'rounded-r': getTodoBarPosition(todo, date) === 'end',
+                                                     'rounded-none': getTodoBarPosition(todo, date) === 'middle',
+                                                 }
                                              ]"
-                                             :title="`${todo.title} - ${statusLabels[todo.status]} - ${priorityLabels[todo.priority]}${todo.due_time ? ' (' + todo.due_time + ')' : ''}`"
+                                             :title="`${todo.title} - ${statusLabels[todo.status]} - ${priorityLabels[todo.priority]}${todo.due_time ? ' (' + todo.due_time + ')' : ''}${todo.start_date ? '\nPeriode: ' + formatDate(todo.start_date) + ' - ' + formatDate(todo.due_date) : ''}`"
                                              @click.stop="openEditModal(todo)">
                                             <div class="flex items-center gap-1">
                                                 <component :is="getStatusIcon(todo.status)" 
                                                           class="h-3 w-3 flex-shrink-0" />
                                                 <span class="truncate">{{ todo.title }}</span>
+                                                <!-- Show date range indicator -->
+                                                <span v-if="todo.start_date && getTodoBarPosition(todo, date) === 'start'" 
+                                                      class="text-xs opacity-60">●</span>
+                                                <span v-else-if="todo.start_date && getTodoBarPosition(todo, date) === 'middle'" 
+                                                      class="text-xs opacity-60">━</span>
+                                                <span v-else-if="todo.start_date && getTodoBarPosition(todo, date) === 'end'" 
+                                                      class="text-xs opacity-60">●</span>
                                             </div>
-                                            <div v-if="todo.due_time" class="text-xs opacity-75">
+                                            <div v-if="todo.due_time && getTodoBarPosition(todo, date) === 'end'" class="text-xs opacity-75">
                                                 {{ todo.due_time }}
                                             </div>
                                         </div>
                                         
-                                        <div v-if="getDayTodos(date).length > 2" 
+                                        <div v-if="getTodosForDateRange(date).length > 3" 
                                              class="text-xs text-gray-500 p-1 cursor-pointer hover:bg-gray-100 rounded"
                                              @click.stop="selectDate(date)"
-                                             :title="`Klik untuk melihat semua ${getDayTodos(date).length} tugas`">
-                                            +{{ getDayTodos(date).length - 2 }} lainnya
+                                             :title="`Klik untuk melihat semua ${getTodosForDateRange(date).length} tugas`">
+                                            +{{ getTodosForDateRange(date).length - 3 }} lainnya
                                         </div>
                                         
                                         <!-- Show priority indicator if any high priority todos -->
-                                        <div v-if="getDayTodos(date).some(todo => todo.priority === 'high' && todo.status !== 'completed')" 
+                                        <div v-if="getTodosForDateRange(date).some(todo => todo.priority === 'high' && todo.status !== 'completed')" 
                                              class="text-xs text-red-600 font-medium flex items-center gap-1">
                                             <Flag class="h-3 w-3" />
                                             Prioritas Tinggi
@@ -904,6 +969,12 @@ const getStatusIcon = (status: string) => {
                                                 <component :is="getStatusIcon(todo.status)" class="h-3 w-3 mr-1" />
                                                 {{ statusLabels[todo.status] }}
                                             </Badge>
+                                            <span v-if="todo.start_date" class="text-sm text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                                                📅 {{ formatDate(todo.start_date) }} - {{ formatDate(todo.due_date) }}
+                                            </span>
+                                            <span v-else class="text-sm text-gray-500">
+                                                📅 {{ formatDate(todo.due_date) }}
+                                            </span>
                                             <span v-if="todo.due_time" class="text-sm text-gray-500">
                                                 <Clock class="h-3 w-3 inline mr-1" />
                                                 {{ todo.due_time }}
@@ -1000,6 +1071,16 @@ const getStatusIcon = (status: string) => {
                                     <option value="completed">Selesai</option>
                                 </select>
                                 <span v-if="form.errors.status" class="text-sm text-red-600">{{ form.errors.status }}</span>
+                            </div>
+                            
+                            <div>
+                                <Label for="start_date">Tanggal Mulai</Label>
+                                <Input 
+                                    id="start_date"
+                                    v-model="form.start_date"
+                                    type="date"
+                                />
+                                <span v-if="form.errors.start_date" class="text-sm text-red-600">{{ form.errors.start_date }}</span>
                             </div>
                             
                             <div>

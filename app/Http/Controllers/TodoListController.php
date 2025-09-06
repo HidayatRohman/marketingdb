@@ -143,7 +143,8 @@ class TodoListController extends Controller
             'description' => 'nullable|string',
             'priority' => 'required|in:low,medium,high',
             'status' => 'required|in:pending,in_progress,completed',
-            'due_date' => 'required|date',
+            'start_date' => 'nullable|date',
+            'due_date' => 'required|date|after_or_equal:start_date',
             'due_time' => 'nullable|date_format:H:i',
             'assigned_to' => 'nullable|exists:users,id',
             'tags' => 'nullable|array',
@@ -154,6 +155,7 @@ class TodoListController extends Controller
             'description' => $request->description,
             'priority' => $request->priority,
             'status' => $request->status,
+            'start_date' => $request->start_date,
             'due_date' => $request->due_date,
             'due_time' => $request->due_time,
             'user_id' => auth()->id(),
@@ -179,14 +181,15 @@ class TodoListController extends Controller
             'description' => 'nullable|string',
             'priority' => 'required|in:low,medium,high',
             'status' => 'required|in:pending,in_progress,completed',
-            'due_date' => 'required|date',
+            'start_date' => 'nullable|date',
+            'due_date' => 'required|date|after_or_equal:start_date',
             'due_time' => 'nullable|date_format:H:i',
             'assigned_to' => 'nullable|exists:users,id',
             'tags' => 'nullable|array',
         ]);
 
         $todoList->update($request->only([
-            'title', 'description', 'priority', 'status', 
+            'title', 'description', 'priority', 'status', 'start_date',
             'due_date', 'due_time', 'assigned_to', 'tags'
         ]));
 

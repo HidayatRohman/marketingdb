@@ -15,6 +15,7 @@ class TodoList extends Model
         'description',
         'priority',
         'status',
+        'start_date',
         'due_date',
         'due_time',
         'user_id',
@@ -23,6 +24,7 @@ class TodoList extends Model
     ];
 
     protected $casts = [
+        'start_date' => 'date:Y-m-d',
         'due_date' => 'date:Y-m-d',
         'due_time' => 'datetime:H:i',
         'tags' => 'array',
