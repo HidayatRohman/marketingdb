@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Helpers\RoleHelper;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -52,6 +53,12 @@ class HandleInertiaRequests extends Middleware
                 'dataScope' => $user ? RoleHelper::getDataScope($user) : 'none',
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'siteSettings' => [
+                'site_title' => SiteSetting::get('site_title', 'Laravel Starter Kit'),
+                'site_description' => SiteSetting::get('site_description', 'Marketing Database Management System'),
+                'site_logo' => SiteSetting::get('site_logo'),
+                'site_favicon' => SiteSetting::get('site_favicon'),
+            ],
         ];
     }
 }

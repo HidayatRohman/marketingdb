@@ -7,7 +7,10 @@ import { appearance } from '@/routes';
 import { edit as editPassword } from '@/routes/password';
 import { edit } from '@/routes/profile';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+
+const page = usePage();
+const user = page.props.auth?.user;
 
 const sidebarNavItems: NavItem[] = [
     {
@@ -23,6 +26,14 @@ const sidebarNavItems: NavItem[] = [
         href: appearance(),
     },
 ];
+
+// Add Site Settings for Super Admin only
+if (user?.role === 'super_admin') {
+    sidebarNavItems.push({
+        title: 'Site Settings',
+        href: '/settings/site',
+    });
+}
 
 const currentPath = typeof window !== undefined ? window.location.pathname : '';
 </script>

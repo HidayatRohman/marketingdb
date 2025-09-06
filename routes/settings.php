@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Settings\SiteSettingController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -21,4 +22,11 @@ Route::middleware('auth')->group(function () {
     Route::get('settings/appearance', function () {
         return Inertia::render('settings/Appearance');
     })->name('appearance');
+
+    // Site Settings - Only Super Admin can access
+    Route::middleware('role.access:edit')->group(function () {
+        Route::get('settings/site', [SiteSettingController::class, 'edit'])->name('site-settings.edit');
+        Route::patch('settings/site', [SiteSettingController::class, 'update'])->name('site-settings.update');
+        Route::delete('settings/site/file', [SiteSettingController::class, 'deleteFile'])->name('site-settings.delete-file');
+    });
 });
