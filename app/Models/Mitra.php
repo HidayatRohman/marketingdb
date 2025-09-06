@@ -13,6 +13,7 @@ class Mitra extends Model
         'nama',
         'no_telp',
         'tanggal_lead',
+        'user_id',
         'brand_id',
         'label_id',
         'chat',
@@ -40,5 +41,13 @@ class Mitra extends Model
     public function label()
     {
         return $this->belongsTo(Label::class);
+    }
+
+    /**
+     * Get the user (marketing) that owns the mitra.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

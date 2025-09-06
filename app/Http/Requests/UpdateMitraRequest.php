@@ -31,6 +31,7 @@ class UpdateMitraRequest extends FormRequest
                 Rule::unique('mitras', 'no_telp')->ignore($this->route('mitra')),
             ],
             'tanggal_lead' => 'required|date',
+            'user_id' => 'nullable|exists:users,id',
             'brand_id' => 'required|exists:brands,id',
             'label_id' => 'nullable|exists:labels,id',
             'chat' => 'required|in:masuk,followup',

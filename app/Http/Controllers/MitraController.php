@@ -17,7 +17,7 @@ class MitraController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Mitra::with(['brand', 'label']);
+        $query = Mitra::with(['brand', 'label', 'user']);
 
         // Apply search filter
         if ($request->has('search') && $request->search) {
@@ -32,6 +32,9 @@ class MitraController extends Controller
                   })
                   ->orWhereHas('label', function ($labelQuery) use ($search) {
                       $labelQuery->where('nama', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('user', function ($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', "%{$search}%");
                   });
             });
         }
@@ -55,6 +58,11 @@ class MitraController extends Controller
             $query->where('label_id', $request->label);
         }
 
+        // Apply user (marketing) filter
+        if ($request->has('user') && $request->user) {
+            $query->where('user_id', $request->user);
+        }
+
         // Default ordering by tanggal_lead (newest first), then by created_at
         $query->orderBy('tanggal_lead', 'desc')->orderBy('created_at', 'desc');
 
@@ -66,14 +74,19 @@ class MitraController extends Controller
         $brands = Brand::all();
         $labels = Label::all();
         
+        // Get marketing users (users with role marketing)
+        $marketingUsers = \App\Models\User::where('role', 'marketing')->get(['id', 'name']);
+        
         return Inertia::render('Mitra/Index', [
             'mitras' => $mitras,
             'brands' => $brands,
             'labels' => $labels,
+            'users' => $marketingUsers,
             'filters' => [
                 'search' => $request->search,
                 'chat' => $request->chat,
                 'label' => $request->label,
+                'user' => $request->user,
                 'periode_start' => $request->periode_start,
                 'periode_end' => $request->periode_end,
                 'per_page' => $perPage,
@@ -95,6 +108,11 @@ class MitraController extends Controller
     public function store(StoreMitraRequest $request)
     {
         $validated = $request->validated();
+        
+        // Set user_id to current logged in user if not provided
+        if (empty($validated['user_id'])) {
+            $validated['user_id'] = auth()->id();
+        }
 
         Mitra::create($validated);
 

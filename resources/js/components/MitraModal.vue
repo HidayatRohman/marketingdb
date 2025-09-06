@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from '@inertiajs/vue3';
-import { Loader2, Building2, Phone, Package, MessageSquare, MapPin, Tag, FileText, Calendar } from 'lucide-vue-next';
+import { Loader2, Building2, Phone, Package, MessageSquare, MapPin, Tag, FileText, Calendar, User } from 'lucide-vue-next';
 
 interface Brand {
     id: number;
@@ -21,6 +21,12 @@ interface Label {
     warna: string;
 }
 
+interface User {
+    id: number;
+    name: string;
+    email: string;
+}
+
 interface Mitra {
     id?: number;
     nama: string;
@@ -30,6 +36,8 @@ interface Mitra {
     brand?: Brand;
     label_id: number | null;
     label?: Label | null;
+    user_id: number | null;
+    user?: User | null;
     chat: 'masuk' | 'followup';
     kota: string;
     provinsi: string;
@@ -42,6 +50,7 @@ interface Props {
     mitra?: Mitra;
     brands: Brand[];
     labels: Label[];
+    marketingUsers: User[];
 }
 
 const props = defineProps<Props>();
@@ -56,6 +65,7 @@ const form = useForm({
     tanggal_lead: new Date().toISOString().split('T')[0], // Default to today
     brand_id: null as number | null,
     label_id: null as number | null,
+    user_id: null as number | null,
     chat: 'masuk' as 'masuk' | 'followup',
     kota: '',
     provinsi: '',
@@ -70,6 +80,7 @@ watch(() => props.mitra, (newMitra) => {
         form.tanggal_lead = newMitra.tanggal_lead || new Date().toISOString().split('T')[0];
         form.brand_id = newMitra.brand_id || null;
         form.label_id = newMitra.label_id || null;
+        form.user_id = newMitra.user_id || null;
         form.chat = newMitra.chat || 'masuk';
         form.kota = newMitra.kota || '';
         form.provinsi = newMitra.provinsi || '';
@@ -218,6 +229,32 @@ const chatLabels = {
                     </div>
 
                     <div class="space-y-2">
+                        <Label for="user_id" class="flex items-center gap-2">
+                            <User class="h-3 w-3" />
+                            Marketing
+                        </Label>
+                        <select
+                            id="user_id"
+                            v-model="form.user_id"
+                            :disabled="mode === 'view'"
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            :class="{ 'border-destructive': form.errors.user_id }"
+                        >
+                            <option value="">Pilih marketing</option>
+                            <option 
+                                v-for="user in marketingUsers" 
+                                :key="user.id" 
+                                :value="user.id"
+                            >
+                                {{ user.name }}
+                            </option>
+                        </select>
+                        <p v-if="form.errors.user_id" class="text-sm text-destructive">
+                            {{ form.errors.user_id }}
+                        </p>
+                    </div>
+
+                    <div class="space-y-2">
                         <Label for="chat" class="flex items-center gap-2">
                             <MessageSquare class="h-3 w-3" />
                             Status Chat *
@@ -328,7 +365,7 @@ const chatLabels = {
                             v-model="form.komentar"
                             :disabled="mode === 'view'"
                             placeholder="Tambahkan catatan atau komentar..."
-                            rows="3"
+                            :rows="3"
                             :class="{ 'border-destructive': form.errors.komentar }"
                         />
                         <p v-if="form.errors.komentar" class="text-sm text-destructive">

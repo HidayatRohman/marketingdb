@@ -25,6 +25,7 @@ class StoreMitraRequest extends FormRequest
             'nama' => 'required|string|max:255',
             'no_telp' => 'required|string|max:20|unique:mitras,no_telp',
             'tanggal_lead' => 'required|date',
+            'user_id' => 'nullable|exists:users,id',
             'brand_id' => 'required|exists:brands,id',
             'label_id' => 'nullable|exists:labels,id',
             'chat' => 'required|in:masuk,followup',

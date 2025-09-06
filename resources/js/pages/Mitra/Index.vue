@@ -14,7 +14,7 @@ import MitraModal from '@/components/MitraModal.vue';
 import MitraDeleteModal from '@/components/MitraDeleteModal.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
-import { Search, Plus, Edit, Trash2, Eye, Building2, Filter, MoreHorizontal, Calendar, ChevronDown, ChevronUp, X } from 'lucide-vue-next';
+import { Search, Plus, Edit, Trash2, Eye, Building2, Filter, MoreHorizontal, Calendar, ChevronDown, ChevronUp, X, User } from 'lucide-vue-next';
 
 interface Brand {
     id: number;
@@ -29,13 +29,20 @@ interface Label {
     warna: string;
 }
 
+interface User {
+    id: number;
+    name: string;
+}
+
 interface Mitra {
     id: number;
     nama: string;
     no_telp: string;
     tanggal_lead: string;
+    user_id: number | null;
     brand_id: number;
     brand: Brand;
+    user: User | null;
     label_id: number | null;
     label: Label | null;
     chat: 'masuk' | 'followup';
@@ -58,10 +65,12 @@ interface Props {
     };
     brands: Brand[];
     labels: Label[];
+    users: User[];
     filters: {
         search?: string;
         chat?: string;
         label?: string;
+        user?: string;
         periode_start?: string;
         periode_end?: string;
         per_page?: number;
@@ -73,6 +82,7 @@ const props = defineProps<Props>();
 const search = ref(props.filters.search || '');
 const chat = ref(props.filters.chat || '');
 const label = ref(props.filters.label || '');
+const user = ref(props.filters.user || '');
 const periodeStart = ref(props.filters.periode_start || '');
 const periodeEnd = ref(props.filters.periode_end || new Date().toISOString().split('T')[0]);
 const perPage = ref(props.filters.per_page || 30);
@@ -80,7 +90,7 @@ const perPage = ref(props.filters.per_page || 30);
 // Filter panel state
 const showFilters = ref(false);
 const hasActiveFilters = computed(() => {
-    return search.value || chat.value || label.value || periodeStart.value || (periodeEnd.value && periodeEnd.value !== new Date().toISOString().split('T')[0]);
+    return search.value || chat.value || label.value || user.value || periodeStart.value || (periodeEnd.value && periodeEnd.value !== new Date().toISOString().split('T')[0]);
 });
 
 // Modal states
@@ -113,13 +123,14 @@ const chatLabels = {
 let debounceTimer: number;
 
 // Watch for filter changes and update URL
-watch([search, chat, label, periodeStart, periodeEnd, perPage], () => {
+watch([search, chat, label, user, periodeStart, periodeEnd, perPage], () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
         router.get('/mitras', {
             search: search.value || undefined,
             chat: chat.value || undefined,
             label: label.value || undefined,
+            user: user.value || undefined,
             periode_start: periodeStart.value || undefined,
             periode_end: periodeEnd.value || undefined,
             per_page: perPage.value || 30,
@@ -198,6 +209,7 @@ const clearFilters = () => {
     search.value = '';
     chat.value = '';
     label.value = '';
+    user.value = '';
     periodeStart.value = '';
     periodeEnd.value = new Date().toISOString().split('T')[0];
     perPage.value = 30;
@@ -213,6 +225,7 @@ const getFilterParams = () => {
         search: search.value || undefined,
         chat: chat.value || undefined,
         label: label.value || undefined,
+        user: user.value || undefined,
         periode_start: periodeStart.value || undefined,
         periode_end: periodeEnd.value || undefined,
         per_page: perPage.value || 30,
@@ -360,7 +373,7 @@ const getFilterParams = () => {
 
                     <!-- Expandable Filter Panel -->
                     <div v-if="showFilters" class="border-t pt-4 space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                             <!-- Periode Start -->
                             <div class="space-y-2">
                                 <label class="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -385,6 +398,27 @@ const getFilterParams = () => {
                                     v-model="periodeEnd"
                                     class="h-10"
                                 />
+                            </div>
+
+                            <!-- Marketing Filter -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                                    <User class="h-4 w-4" />
+                                    Marketing
+                                </label>
+                                <select
+                                    v-model="user"
+                                    class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="">Semua Marketing</option>
+                                    <option 
+                                        v-for="userOption in users" 
+                                        :key="userOption.id" 
+                                        :value="userOption.id"
+                                    >
+                                        {{ userOption.name }}
+                                    </option>
+                                </select>
                             </div>
 
                             <!-- Chat Filter -->
@@ -443,6 +477,7 @@ const getFilterParams = () => {
                                     <span v-if="search" class="px-2 py-1 bg-primary/10 text-primary rounded text-xs">Search</span>
                                     <span v-if="chat" class="px-2 py-1 bg-primary/10 text-primary rounded text-xs">{{ chatLabels[chat as keyof typeof chatLabels] }}</span>
                                     <span v-if="label" class="px-2 py-1 bg-primary/10 text-primary rounded text-xs">Label</span>
+                                    <span v-if="user" class="px-2 py-1 bg-primary/10 text-primary rounded text-xs">Marketing</span>
                                     <span v-if="periodeStart || periodeEnd" class="px-2 py-1 bg-primary/10 text-primary rounded text-xs">Periode</span>
                                 </div>
                             </div>
@@ -465,6 +500,7 @@ const getFilterParams = () => {
                                         <TableHead class="font-semibold text-foreground">Nama</TableHead>
                                         <TableHead class="font-semibold text-foreground">Kontak</TableHead>
                                         <TableHead class="font-semibold text-foreground">Tanggal Lead</TableHead>
+                                        <TableHead class="font-semibold text-foreground">Marketing</TableHead>
                                         <TableHead class="font-semibold text-foreground">Brand</TableHead>
                                         <TableHead class="font-semibold text-foreground">Chat</TableHead>
                                         <TableHead class="font-semibold text-foreground">Lokasi</TableHead>
@@ -500,6 +536,14 @@ const getFilterParams = () => {
                                                     </svg>
                                                 </div>
                                                 <span class="text-sm">{{ mitra.tanggal_lead ? formatDate(mitra.tanggal_lead) : '-' }}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div class="flex items-center gap-2">
+                                                <div class="p-1 bg-blue-100 dark:bg-blue-800 rounded">
+                                                    <User class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                                </div>
+                                                <span class="text-sm">{{ mitra.user?.name || '-' }}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>{{ mitra.brand.nama }}</TableCell>
@@ -640,6 +684,7 @@ const getFilterParams = () => {
             :mitra="mitraModal.mitra"
             :brands="brands"
             :labels="labels"
+            :marketing-users="users"
             @close="closeMitraModal"
             @success="handleModalSuccess"
         />
