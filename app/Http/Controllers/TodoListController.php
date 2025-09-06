@@ -22,6 +22,7 @@ class TodoListController extends Controller
         $status = $request->get('status', 'all');
         $priority = $request->get('priority', 'all');
         $assigned = $request->get('assigned', 'all');
+        $user = $request->get('user', 'all');
         $search = $request->get('search', '');
         
         $query = TodoList::with(['user', 'assignedUser'])
@@ -51,6 +52,10 @@ class TodoListController extends Controller
             }
         }
         
+        if ($user !== 'all') {
+            $query->where('user_id', $user);
+        }
+        
         if (!empty($search)) {
             $query->where(function($q) use ($search) {
                 $q->where('title', 'like', '%' . $search . '%')
@@ -69,7 +74,7 @@ class TodoListController extends Controller
                           ->get();
         } else {
             // For list view, get todos for selected date or all if filters applied
-            if ($status === 'all' && $priority === 'all' && $assigned === 'all' && empty($search)) {
+            if ($status === 'all' && $priority === 'all' && $assigned === 'all' && $user === 'all' && empty($search)) {
                 // No filters, show only selected date
                 $todos = $query->whereDate('due_date', $selectedDate)
                               ->orderBy('due_time')
@@ -95,6 +100,7 @@ class TodoListController extends Controller
                 'status' => $status,
                 'priority' => $priority,
                 'assigned' => $assigned,
+                'user' => $user,
                 'search' => $search,
             ],
             'stats' => [

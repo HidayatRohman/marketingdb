@@ -65,6 +65,7 @@ interface Props {
         status: string;
         priority: string;
         assigned: string;
+        user: string;
         search: string;
     };
 }
@@ -84,6 +85,7 @@ const filters = ref({
     status: (props.filters?.status || 'all') as 'all' | 'pending' | 'in_progress' | 'completed',
     priority: (props.filters?.priority || 'all') as 'all' | 'low' | 'medium' | 'high',
     assigned: (props.filters?.assigned || 'all') as 'all' | 'me' | 'others',
+    user: props.filters?.user || 'all',
     search: props.filters?.search || ''
 });
 
@@ -157,6 +159,7 @@ const todosForSelectedDate = computed(() => {
         filters.value.status === 'all' && 
         filters.value.priority === 'all' && 
         filters.value.assigned === 'all' && 
+        filters.value.user === 'all' &&
         !filters.value.search) {
         const dateKey = selectedDate.value.toISOString().split('T')[0];
         return todosGroupedByDate.value[dateKey] || [];
@@ -185,6 +188,10 @@ const allFilteredTodos = computed(() => {
         } else {
             todos = todos.filter(todo => todo.assigned_to !== null && todo.user_id !== todo.assigned_to);
         }
+    }
+    
+    if (filters.value.user !== 'all') {
+        todos = todos.filter(todo => todo.user_id.toString() === filters.value.user);
     }
     
     if (filters.value.search) {
@@ -340,6 +347,7 @@ const clearFilters = () => {
         status: 'all',
         priority: 'all', 
         assigned: 'all',
+        user: 'all',
         search: ''
     };
     applyFilters();
@@ -353,6 +361,7 @@ const applyFilters = () => {
     if (filters.value.status !== 'all') params.set('status', filters.value.status);
     if (filters.value.priority !== 'all') params.set('priority', filters.value.priority);
     if (filters.value.assigned !== 'all') params.set('assigned', filters.value.assigned);
+    if (filters.value.user !== 'all') params.set('user', filters.value.user);
     if (filters.value.search) params.set('search', filters.value.search);
     
     router.get('/todos?' + params.toString(), {}, { 
@@ -660,13 +669,19 @@ const getStatusIcon = (status: string) => {
                                         </h4>
                                         <div class="flex items-center gap-2 mt-1">
                                             <Badge :class="priorityColors[todo.priority]">
-                                                {{ todo.priority }}
+                                                {{ priorityLabels[todo.priority] }}
                                             </Badge>
                                             <Badge :class="statusColors[todo.status]">
-                                                {{ todo.status }}
+                                                {{ statusLabels[todo.status] }}
                                             </Badge>
                                             <span v-if="todo.due_time" class="text-sm text-gray-500">
                                                 {{ todo.due_time }}
+                                            </span>
+                                            <span class="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                                📝 {{ todo.user.name }}
+                                            </span>
+                                            <span v-if="todo.assigned_user" class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                                                👤 {{ todo.assigned_user.name }}
                                             </span>
                                         </div>
                                     </div>
@@ -708,7 +723,7 @@ const getStatusIcon = (status: string) => {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
                             <!-- Date Filter -->
                             <div>
                                 <Label for="dateFilter">Tanggal</Label>
@@ -747,6 +762,21 @@ const getStatusIcon = (status: string) => {
                                     <option value="high">Tinggi</option>
                                     <option value="medium">Sedang</option>
                                     <option value="low">Rendah</option>
+                                </select>
+                            </div>
+                            
+                            <!-- User Filter -->
+                            <div>
+                                <Label for="userFilter">Dibuat Oleh</Label>
+                                <select 
+                                    id="userFilter"
+                                    v-model="filters.user"
+                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="all">Semua User</option>
+                                    <option v-for="user in users" :key="user.id" :value="user.id.toString()">
+                                        {{ user.name }}
+                                    </option>
                                 </select>
                             </div>
                             
@@ -819,19 +849,21 @@ const getStatusIcon = (status: string) => {
                                         <div class="flex items-center gap-2 mt-2">
                                             <Badge :class="priorityColors[todo.priority]">
                                                 <Flag class="h-3 w-3 mr-1" />
-                                                {{ todo.priority }}
+                                                {{ priorityLabels[todo.priority] }}
                                             </Badge>
                                             <Badge :class="statusColors[todo.status]">
                                                 <component :is="getStatusIcon(todo.status)" class="h-3 w-3 mr-1" />
-                                                {{ todo.status }}
+                                                {{ statusLabels[todo.status] }}
                                             </Badge>
                                             <span v-if="todo.due_time" class="text-sm text-gray-500">
                                                 <Clock class="h-3 w-3 inline mr-1" />
                                                 {{ todo.due_time }}
                                             </span>
-                                            <span v-if="todo.assigned_user" class="text-sm text-gray-500">
-                                                <User class="h-3 w-3 inline mr-1" />
-                                                {{ todo.assigned_user.name }}
+                                            <span class="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                                📝 {{ todo.user.name }}
+                                            </span>
+                                            <span v-if="todo.assigned_user" class="text-sm text-green-600 bg-green-50 px-2 py-1 rounded">
+                                                👤 {{ todo.assigned_user.name }}
                                             </span>
                                         </div>
                                     </div>
