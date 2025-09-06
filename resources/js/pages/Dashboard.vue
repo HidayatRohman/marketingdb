@@ -1008,7 +1008,7 @@ onMounted(() => {
                 </div>
 
                 <!-- System Status -->
-                <Card class="border-0 shadow-lg">
+                <Card class="border-0 shadow-lg hidden">
                     <CardHeader>
                         <CardTitle class="flex items-center text-xl">
                             <Clock class="mr-3 h-6 w-6 text-green-500" />
