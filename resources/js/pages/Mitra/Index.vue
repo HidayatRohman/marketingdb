@@ -408,13 +408,14 @@ const getFilterParams = () => {
                                 </label>
                                 <select
                                     v-model="user"
-                                    class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="flex h-10 w-full rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
                                 >
-                                    <option value="">Semua Marketing</option>
+                                    <option value="" class="bg-background text-foreground">Semua Marketing</option>
                                     <option 
                                         v-for="userOption in users" 
                                         :key="userOption.id" 
                                         :value="userOption.id"
+                                        class="bg-background text-foreground"
                                     >
                                         {{ userOption.name }}
                                     </option>
@@ -426,11 +427,11 @@ const getFilterParams = () => {
                                 <label class="text-sm font-medium text-muted-foreground">Status Chat</label>
                                 <select
                                     v-model="chat"
-                                    class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="flex h-10 w-full rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
                                 >
-                                    <option value="">Semua Chat</option>
-                                    <option value="masuk">Masuk</option>
-                                    <option value="followup">Follow Up</option>
+                                    <option value="" class="bg-background text-foreground">Semua Chat</option>
+                                    <option value="masuk" class="bg-background text-foreground">Masuk</option>
+                                    <option value="followup" class="bg-background text-foreground">Follow Up</option>
                                 </select>
                             </div>
 
@@ -439,13 +440,14 @@ const getFilterParams = () => {
                                 <label class="text-sm font-medium text-muted-foreground">Label</label>
                                 <select
                                     v-model="label"
-                                    class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="flex h-10 w-full rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
                                 >
-                                    <option value="">Semua Label</option>
+                                    <option value="" class="bg-background text-foreground">Semua Label</option>
                                     <option 
                                         v-for="labelOption in labels" 
                                         :key="labelOption.id" 
                                         :value="labelOption.id"
+                                        class="bg-background text-foreground"
                                     >
                                         {{ labelOption.nama }}
                                     </option>
@@ -459,13 +461,13 @@ const getFilterParams = () => {
                                 <label class="text-sm font-medium text-muted-foreground">Tampilkan:</label>
                                 <select
                                     v-model="perPage"
-                                    class="flex h-9 w-20 rounded-md border border-input bg-transparent px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    class="flex h-9 w-20 rounded-md border border-input bg-background text-foreground px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&>option]:bg-background [&>option]:text-foreground"
                                 >
-                                    <option value="10">10</option>
-                                    <option value="20">20</option>
-                                    <option value="30">30</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
+                                    <option value="10" class="bg-background text-foreground">10</option>
+                                    <option value="20" class="bg-background text-foreground">20</option>
+                                    <option value="30" class="bg-background text-foreground">30</option>
+                                    <option value="50" class="bg-background text-foreground">50</option>
+                                    <option value="100" class="bg-background text-foreground">100</option>
                                 </select>
                                 <span class="text-sm text-muted-foreground">per halaman</span>
                             </div>

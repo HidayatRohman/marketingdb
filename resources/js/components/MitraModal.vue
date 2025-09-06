@@ -211,14 +211,15 @@ const chatLabels = {
                             id="brand_id"
                             v-model="form.brand_id"
                             :disabled="mode === 'view'"
-                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            class="flex h-10 w-full rounded-md border border-input bg-background text-foreground px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
                             :class="{ 'border-destructive': form.errors.brand_id }"
                         >
-                            <option value="">Pilih brand</option>
+                            <option value="" class="bg-background text-foreground">Pilih brand</option>
                             <option 
                                 v-for="brand in brands" 
                                 :key="brand.id" 
                                 :value="brand.id"
+                                class="bg-background text-foreground"
                             >
                                 {{ brand.nama }}
                             </option>
@@ -237,14 +238,15 @@ const chatLabels = {
                             id="user_id"
                             v-model="form.user_id"
                             :disabled="mode === 'view'"
-                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            class="flex h-10 w-full rounded-md border border-input bg-background text-foreground px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
                             :class="{ 'border-destructive': form.errors.user_id }"
                         >
-                            <option value="">Pilih marketing</option>
+                            <option value="" class="bg-background text-foreground">Pilih marketing</option>
                             <option 
                                 v-for="user in marketingUsers" 
                                 :key="user.id" 
                                 :value="user.id"
+                                class="bg-background text-foreground"
                             >
                                 {{ user.name }}
                             </option>
@@ -264,13 +266,13 @@ const chatLabels = {
                             v-model="form.chat"
                             :disabled="mode === 'view'"
                             :class="[
-                                'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+                                'flex h-9 w-full rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground',
                                 { 'border-destructive': form.errors.chat }
                             ]"
                         >
-                            <option value="">Pilih status chat</option>
-                            <option value="masuk">Masuk</option>
-                            <option value="followup">Follow Up</option>
+                            <option value="" class="bg-background text-foreground">Pilih status chat</option>
+                            <option value="masuk" class="bg-background text-foreground">Masuk</option>
+                            <option value="followup" class="bg-background text-foreground">Follow Up</option>
                         </select>
                         <p v-if="form.errors.chat" class="text-sm text-destructive">
                             {{ form.errors.chat }}
@@ -338,14 +340,15 @@ const chatLabels = {
                             id="label_id"
                             v-model="form.label_id"
                             :disabled="mode === 'view'"
-                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            class="flex h-10 w-full rounded-md border border-input bg-background text-foreground px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
                             :class="{ 'border-destructive': form.errors.label_id }"
                         >
-                            <option value="">Pilih label</option>
+                            <option value="" class="bg-background text-foreground">Pilih label</option>
                             <option 
                                 v-for="label in labels" 
                                 :key="label.id" 
                                 :value="label.id"
+                                class="bg-background text-foreground"
                             >
                                 {{ label.nama }}
                             </option>

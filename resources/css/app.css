@@ -193,4 +193,23 @@
     .shadow-enhanced {
         @apply shadow-lg dark:shadow-gray-700/50;
     }
+    
+    /* Select and option dark mode fix */
+    select {
+        color-scheme: light dark;
+    }
+    
+    .dark select {
+        color-scheme: dark;
+    }
+    
+    select option {
+        background-color: var(--background);
+        color: var(--foreground);
+    }
+    
+    .dark select option {
+        background-color: var(--background);
+        color: var(--foreground);
+    }
 }
