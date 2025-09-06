@@ -5,37 +5,65 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Users, Handshake, Zap, Tag } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import { BookOpen, Folder, LayoutGrid, Users, Handshake, Zap, Tag, User, Bookmark } from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Users',
-        href: '/users',
-        icon: Users,
-    },
-    {
-        title: 'Mitra',
-        href: '/mitras',
-        icon: Handshake,
-    },
-    {
-        title: 'Brand',
-        href: '/brands',
-        icon: Zap,
-    },
-    {
-        title: 'Label',
-        href: '/labels',
-        icon: Tag,
-    },
-];
+const page = usePage();
+
+// Get user permissions from auth data
+const auth = computed(() => page.props.auth as any);
+const permissions = computed(() => auth.value?.permissions || {});
+
+// Define main navigation items with role-based visibility
+const mainNavItems = computed<NavItem[]>(() => {
+    const items: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+    ];
+
+    // Mitra - accessible by all roles but with different permissions
+    if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess || permissions.value.hasLimitedAccess) {
+        items.push({
+            title: 'Mitra',
+            href: '/mitras',
+            icon: Handshake,
+        });
+    }
+
+    // Users - only Super Admin and Admin can access
+    if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess) {
+        items.push({
+            title: 'Users',
+            href: '/users',
+            icon: Users,
+        });
+    }
+
+    // Brands - only Super Admin and Admin can access
+    if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess) {
+        items.push({
+            title: 'Brand',
+            href: '/brands',
+            icon: Zap,
+        });
+    }
+
+    // Labels - only Super Admin and Admin can access
+    if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess) {
+        items.push({
+            title: 'Label',
+            href: '/labels',
+            icon: Tag,
+        });
+    }
+
+    return items;
+});
 
 const footerNavItems: NavItem[] = [
     {
