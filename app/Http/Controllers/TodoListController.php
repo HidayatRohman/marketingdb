@@ -126,14 +126,6 @@ class TodoListController extends Controller
             'users' => $users,
             'selectedDate' => $selectedDate,
             'view' => $view,
-            'auth' => [
-                'user' => [
-                    'id' => auth()->id(),
-                    'name' => auth()->user()->name,
-                    'email' => auth()->user()->email,
-                    'role' => auth()->user()->role,
-                ]
-            ],
             'filters' => [
                 'status' => $status,
                 'priority' => $priority,
