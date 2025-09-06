@@ -92,21 +92,30 @@ class TodoListController extends Controller
                           ->orderBy('due_time')
                           ->get();
         } else {
-            // For list view, get todos for selected date or all if filters applied
+            // For list view
             $hasFilters = ($status !== 'all' || $priority !== 'all' || $assigned !== 'all' || $user !== 'all' || !empty($search));
             
             if (!$hasFilters && !auth()->user()->isSuperAdmin()) {
-                // No filters and not Super Admin, show only selected date
+                // No filters and not Super Admin - show todos for selected date
                 $todos = $query->whereDate('due_date', $selectedDate)
                               ->orderBy('due_time')
                               ->orderBy('priority')
                               ->get();
             } else {
-                // Filters applied or Super Admin, show all matching todos
-                $todos = $query->orderBy('due_date')
-                              ->orderBy('due_time')
-                              ->orderBy('priority')
-                              ->get();
+                // Filters applied or Super Admin
+                if (auth()->user()->isSuperAdmin()) {
+                    // Super Admin can see all todos regardless of date
+                    $todos = $query->orderBy('due_date')
+                                  ->orderBy('due_time') 
+                                  ->orderBy('priority')
+                                  ->get();
+                } else {
+                    // Regular users with filters - still filter by selected date
+                    $todos = $query->whereDate('due_date', $selectedDate)
+                                  ->orderBy('due_time')
+                                  ->orderBy('priority')
+                                  ->get();
+                }
             }
         }
 
