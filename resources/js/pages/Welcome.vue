@@ -85,28 +85,28 @@ onUnmounted(() => {
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
     
-    <!-- Main Container with Full Gradient Background -->
-    <div class="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-orange-500 relative overflow-hidden">
+    <!-- Main Container with Soft Blue-Orange Gradient Background -->
+    <div class="min-h-screen bg-gradient-to-br from-blue-300 via-blue-200 to-orange-300 relative overflow-hidden">
         <!-- Decorative Elements -->
         <div class="absolute top-0 left-0 w-full h-full">
-            <!-- Floating circles for decoration -->
-            <div class="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
-            <div class="absolute top-40 right-20 w-24 h-24 bg-white/15 rounded-full blur-lg"></div>
-            <div class="absolute bottom-32 left-1/4 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>
-            <div class="absolute bottom-20 right-1/3 w-28 h-28 bg-white/10 rounded-full blur-xl"></div>
+            <!-- Floating circles for decoration with more transparency -->
+            <div class="absolute top-20 left-10 w-32 h-32 bg-white/5 rounded-full blur-xl"></div>
+            <div class="absolute top-40 right-20 w-24 h-24 bg-white/8 rounded-full blur-lg"></div>
+            <div class="absolute bottom-32 left-1/4 w-40 h-40 bg-white/3 rounded-full blur-2xl"></div>
+            <div class="absolute bottom-20 right-1/3 w-28 h-28 bg-white/5 rounded-full blur-xl"></div>
         </div>
 
         <!-- Header Navigation -->
-        <header class="relative z-10 bg-black/10 backdrop-blur-md border-b border-white/20">
+        <header class="relative z-10 bg-black/5 backdrop-blur-sm border-b border-white/10">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-16">
                     <!-- Logo -->
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/30 p-1">
+                        <div class="w-10 h-10 bg-white/15 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/20 p-1">
                             <img src="/images/partner-bisnismu-logo.png" alt="Partner Bisnismu" class="w-full h-full object-contain" />
                         </div>
                         <div>
-                            <h1 class="text-xl font-bold text-white">Partner Bisnismu</h1>
+                            <h1 class="text-xl font-bold text-gray-700">Partner Bisnismu</h1>
                         </div>
                     </div>
                     
@@ -115,20 +115,20 @@ onUnmounted(() => {
                         <Link
                             v-if="$page.props.auth.user"
                             :href="dashboard()"
-                            class="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white px-6 py-2 rounded-full font-medium transition-all duration-300 border border-white/30"
+                            class="bg-white/15 backdrop-blur-sm hover:bg-white/25 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 border border-white/20"
                         >
                             Dashboard
                         </Link>
                         <template v-else>
                             <Link
                                 :href="login()"
-                                class="text-white/90 hover:text-white transition-colors font-medium hidden sm:block"
+                                class="text-gray-600 hover:text-gray-800 transition-colors font-medium hidden sm:block"
                             >
                                 Log In
                             </Link>
                             <Link
                                 :href="register()"
-                                class="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white px-6 py-2 rounded-full font-medium transition-all duration-300 border border-white/30"
+                                class="bg-white/15 backdrop-blur-sm hover:bg-white/25 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 border border-white/20"
                             >
                                 Join Now
                             </Link>
@@ -144,24 +144,24 @@ onUnmounted(() => {
                 <!-- Left Content -->
                 <div class="text-left space-y-8">
                     <!-- David Badge -->
-                    <div class="inline-flex items-center space-x-2 bg-purple-500/20 backdrop-blur-md border border-purple-400/30 rounded-full px-4 py-2">
-                        <div class="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                    <div class="inline-flex items-center space-x-2 bg-blue-400/20 backdrop-blur-sm border border-blue-300/30 rounded-full px-4 py-2">
+                        <div class="w-6 h-6 bg-blue-400 rounded-full flex items-center justify-center">
                             <span class="text-white text-xs font-medium">H</span>
                         </div>
-                        <span class="text-white text-sm font-medium">Hidayat</span>
+                        <span class="text-gray-700 text-sm font-medium">Hidayat</span>
                     </div>
 
                     <div class="space-y-6">
-                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
+                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight">
                             Sistem<br>
                             Pencatatan<br>
                             Database<br>
-                            <span class="text-orange-300">CV Partner<br>
+                            <span class="text-orange-400">CV Partner<br>
                             Bisnismu</span>
                         </h1>
                         
                         <div class="flex items-center space-x-4 pt-4">
-                            <button class="bg-black/30 backdrop-blur-md hover:bg-black/40 text-white px-8 py-3 rounded-full font-medium transition-all duration-300 border border-white/30 flex items-center space-x-2">
+                            <button class="bg-black/20 backdrop-blur-sm hover:bg-black/30 text-gray-700 px-8 py-3 rounded-full font-medium transition-all duration-300 border border-white/20 flex items-center space-x-2">
                                 <Play class="w-5 h-5" />
                                 <span>Start Project</span>
                             </button>
@@ -174,36 +174,36 @@ onUnmounted(() => {
                     <!-- Central Circle -->
                     <div class="relative">
                         <!-- Outer rotating ring -->
-                        <div class="w-80 h-80 sm:w-96 sm:h-96 rounded-full border-2 border-white/30 relative animate-spin-slow">
+                        <div class="w-80 h-80 sm:w-96 sm:h-96 rounded-full border-2 border-white/20 relative animate-spin-slow">
                             <!-- Avatar positions around the circle -->
                             <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                                <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/40 flex items-center justify-center">
-                                    <Users class="w-6 h-6 text-white" />
+                                <div class="w-12 h-12 rounded-full bg-white/15 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center">
+                                    <Users class="w-6 h-6 text-gray-600" />
                                 </div>
                             </div>
                             <div class="absolute top-1/4 right-0 transform translate-x-1/2 -translate-y-1/2">
-                                <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/40 flex items-center justify-center">
-                                    <TrendingUp class="w-6 h-6 text-white" />
+                                <div class="w-12 h-12 rounded-full bg-white/15 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center">
+                                    <TrendingUp class="w-6 h-6 text-gray-600" />
                                 </div>
                             </div>
                             <div class="absolute bottom-1/4 right-0 transform translate-x-1/2 translate-y-1/2">
-                                <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/40 flex items-center justify-center">
-                                    <Briefcase class="w-6 h-6 text-white" />
+                                <div class="w-12 h-12 rounded-full bg-white/15 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center">
+                                    <Briefcase class="w-6 h-6 text-gray-600" />
                                 </div>
                             </div>
                             <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
-                                <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/40 flex items-center justify-center">
-                                    <Building2 class="w-6 h-6 text-white" />
+                                <div class="w-12 h-12 rounded-full bg-white/15 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center">
+                                    <Building2 class="w-6 h-6 text-gray-600" />
                                 </div>
                             </div>
                             <div class="absolute bottom-1/4 left-0 transform -translate-x-1/2 translate-y-1/2">
-                                <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/40 flex items-center justify-center">
-                                    <Users class="w-6 h-6 text-white" />
+                                <div class="w-12 h-12 rounded-full bg-white/15 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center">
+                                    <Users class="w-6 h-6 text-gray-600" />
                                 </div>
                             </div>
                             <div class="absolute top-1/4 left-0 transform -translate-x-1/2 -translate-y-1/2">
-                                <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/40 flex items-center justify-center">
-                                    <TrendingUp class="w-6 h-6 text-white" />
+                                <div class="w-12 h-12 rounded-full bg-white/15 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center">
+                                    <TrendingUp class="w-6 h-6 text-gray-600" />
                                 </div>
                             </div>
                         </div>
@@ -211,8 +211,8 @@ onUnmounted(() => {
                         <!-- Center content -->
                         <div class="absolute inset-0 flex items-center justify-center">
                             <div class="text-center">
-                                <div class="text-6xl font-bold text-white mb-2">20k+</div>
-                                <div class="text-white/80 text-lg">Database Mitra</div>
+                                <div class="text-6xl font-bold text-gray-700 mb-2">20k+</div>
+                                <div class="text-gray-600 text-lg">Database Mitra</div>
                             </div>
                         </div>
                     </div>
@@ -221,11 +221,11 @@ onUnmounted(() => {
         </main>
 
         <!-- Brand Partners Section -->
-        <section class="relative z-10 bg-black/10 backdrop-blur-md border-t border-white/20 py-12">
+        <section class="relative z-10 bg-black/5 backdrop-blur-sm border-t border-white/10 py-12">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-8">
-                    <h2 class="text-2xl font-bold text-white mb-2">Brand Kami</h2>
-                    <p class="text-white/80">Mitra yang mempercayai solusi pemasaran kami</p>
+                    <h2 class="text-2xl font-bold text-gray-700 mb-2">Brand Kami</h2>
+                    <p class="text-gray-600">Mitra yang mempercayai solusi pemasaran kami</p>
                 </div>
                 
                 <!-- Brand Slider -->
@@ -244,15 +244,15 @@ onUnmounted(() => {
                                 
                                 <div v-for="brand in brandGroup" 
                                      :key="brand.id"
-                                     class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 flex items-center justify-center">
+                                     class="bg-white/15 backdrop-blur-sm rounded-xl p-6 border border-white/15 hover:bg-white/25 transition-all duration-300 flex items-center justify-center">
                                     
                                     <div v-if="brand.logo_url" class="w-full h-16 flex items-center justify-center">
                                         <img :src="brand.logo_url" 
                                              :alt="brand.nama"
-                                             class="max-w-full max-h-full object-contain filter brightness-0 invert opacity-80 hover:opacity-100 transition-opacity">
+                                             class="max-w-full max-h-full object-contain filter brightness-0 opacity-60 hover:opacity-80 transition-opacity">
                                     </div>
                                     <div v-else class="w-full h-16 flex items-center justify-center">
-                                        <span class="text-white/80 font-medium text-center">{{ brand.nama }}</span>
+                                        <span class="text-gray-600 font-medium text-center">{{ brand.nama }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -261,13 +261,13 @@ onUnmounted(() => {
                     
                     <!-- Navigation Arrows -->
                     <button @click="prevSlide" 
-                            class="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-white/20 backdrop-blur-md hover:bg-white/30 rounded-full p-3 border border-white/30 transition-all duration-300">
-                        <ChevronLeft class="w-6 h-6 text-white" />
+                            class="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-white/15 backdrop-blur-sm hover:bg-white/25 rounded-full p-3 border border-white/20 transition-all duration-300">
+                        <ChevronLeft class="w-6 h-6 text-gray-600" />
                     </button>
                     
                     <button @click="nextSlide" 
-                            class="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 bg-white/20 backdrop-blur-md hover:bg-white/30 rounded-full p-3 border border-white/30 transition-all duration-300">
-                        <ChevronRight class="w-6 h-6 text-white" />
+                            class="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 bg-white/15 backdrop-blur-sm hover:bg-white/25 rounded-full p-3 border border-white/20 transition-all duration-300">
+                        <ChevronRight class="w-6 h-6 text-gray-600" />
                     </button>
                     
                     <!-- Slider Indicators -->
@@ -278,8 +278,8 @@ onUnmounted(() => {
                                 :class="[
                                     'w-3 h-3 rounded-full transition-all duration-300',
                                     currentSlide === index 
-                                        ? 'bg-white' 
-                                        : 'bg-white/40 hover:bg-white/60'
+                                        ? 'bg-gray-600' 
+                                        : 'bg-gray-400 hover:bg-gray-500'
                                 ]">
                         </button>
                     </div>
@@ -288,10 +288,10 @@ onUnmounted(() => {
         </section>
 
         <!-- Footer Partners -->
-        <footer class="relative z-10 bg-black/20 backdrop-blur-md border-t border-white/20 py-8">
+        <footer class="relative z-10 bg-black/10 backdrop-blur-sm border-t border-white/10 py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-wrap justify-center items-center gap-8 opacity-60">
-                    <span class="text-white font-medium">Copyright © 2025 Partner Bisnismu. CTO BCE With Love</span>
+                    <span class="text-gray-600 font-medium">Copyright © 2025 Partner Bisnismu. CTO BCE With Love</span>
                 </div>
             </div>
         </footer>
@@ -327,8 +327,11 @@ html {
 
 /* Backdrop blur fallback */
 @supports not (backdrop-filter: blur(12px)) {
+    .backdrop-blur-sm {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
     .backdrop-blur-md {
-        background-color: rgba(0, 0, 0, 0.3);
+        background-color: rgba(255, 255, 255, 0.15);
     }
 }
 </style>
