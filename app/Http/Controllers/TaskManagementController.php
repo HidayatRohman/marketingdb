@@ -54,6 +54,19 @@ class TaskManagementController extends Controller
             ],
             'summary' => $summary,
             'users' => $users,
+            'currentUser' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'role' => $user->role,
+            ],
+            'permissions' => [
+                'canCrud' => $user->canCrud(),
+                'canOnlyView' => $user->canOnlyView(),
+                'canOnlyViewOwn' => $user->canOnlyViewOwn(),
+                'hasFullAccess' => $user->hasFullAccess(),
+                'hasReadOnlyAccess' => $user->hasReadOnlyAccess(),
+                'hasLimitedAccess' => $user->hasLimitedAccess(),
+            ],
         ]);
     }
 

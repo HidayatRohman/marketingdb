@@ -67,6 +67,11 @@ interface Props {
     brands: Brand[];
     labels: Label[];
     users: User[];
+    currentUser: {
+        id: number;
+        name: string;
+        role: string;
+    };
     filters: {
         search?: string;
         chat?: string;
@@ -858,6 +863,7 @@ const getFilterParams = () => {
             :brands="brands"
             :labels="labels"
             :marketing-users="users"
+            :current-user="currentUser"
             @close="closeMitraModal"
             @success="handleModalSuccess"
         />

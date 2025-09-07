@@ -51,6 +51,11 @@ interface Props {
     brands: Brand[];
     labels: Label[];
     marketingUsers: User[];
+    currentUser: {
+        id: number;
+        name: string;
+        role: string;
+    };
 }
 
 const props = defineProps<Props>();
@@ -144,6 +149,10 @@ watch(() => props.mitra, (newMitra) => {
         form.tanggal_lead = new Date().toISOString().split('T')[0]; // Reset to today's date
         form.kota = 'Unknown';
         form.provinsi = 'Unknown';
+        // Auto-set user_id for marketing role when creating new mitra
+        if (props.currentUser.role === 'marketing') {
+            form.user_id = props.currentUser.id;
+        }
     }
 }, { immediate: true });
 
@@ -200,6 +209,11 @@ watch(() => props.open, (isOpen) => {
         form.kota = 'Unknown';
         form.provinsi = 'Unknown';
         form.clearErrors();
+    } else if (isOpen && props.mode === 'create') {
+        // Auto-set user_id for marketing role when creating new mitra
+        if (props.currentUser.role === 'marketing') {
+            form.user_id = props.currentUser.id;
+        }
     }
 });
 
@@ -359,10 +373,20 @@ const chatLabels = {
                             <User class="h-3 w-3" />
                             Marketing
                         </Label>
+                        <!-- Show selected marketing user for marketing role or readonly view -->
+                        <div v-if="currentUser.role === 'marketing' || mode === 'view'" class="flex items-center gap-2 p-2 border rounded-md bg-muted/50">
+                            <div class="p-1 bg-blue-100 dark:bg-blue-800 rounded">
+                                <User class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <span class="text-gray-900 dark:text-gray-100 font-medium">
+                                {{ currentUser.role === 'marketing' ? currentUser.name : (form.user_id ? marketingUsers.find(u => u.id === form.user_id)?.name || 'Tidak ada' : 'Tidak ada') }}
+                            </span>
+                        </div>
+                        <!-- Show dropdown for super admin and admin -->
                         <select
+                            v-else
                             id="user_id"
                             v-model="form.user_id"
-                            :disabled="mode === 'view'"
                             class="flex h-10 w-full rounded-md border border-input bg-background text-foreground px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
                             :class="{ 'border-destructive': form.errors.user_id }"
                         >

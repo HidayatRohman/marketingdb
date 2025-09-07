@@ -61,6 +61,19 @@ interface Props {
     };
     summary: Summary;
     users: User[];
+    currentUser: {
+        id: number;
+        name: string;
+        role: string;
+    };
+    permissions: {
+        canCrud: boolean;
+        canOnlyView: boolean;
+        canOnlyViewOwn: boolean;
+        hasFullAccess: boolean;
+        hasReadOnlyAccess: boolean;
+        hasLimitedAccess: boolean;
+    };
 }
 
 const props = defineProps<Props>();
@@ -101,6 +114,8 @@ const resetForm = () => {
 // Open create dialog
 const openCreateDialog = () => {
     resetForm();
+    console.log('Opening create dialog with permissions:', props.permissions);
+    console.log('Form priority value:', form.value.priority);
     isDialogOpen.value = true;
 };
 
@@ -122,6 +137,8 @@ const openEditDialog = (task: Task) => {
 
 // Submit form
 const submitForm = () => {
+    console.log('Submitting form with data:', form.value);
+    
     const data = {
         title: form.value.title,
         description: form.value.description,
@@ -133,11 +150,16 @@ const submitForm = () => {
         tags: form.value.tags,
     };
 
+    console.log('Processed data being sent:', data);
+
     if (editingTask.value) {
         router.put(`/task-management/${editingTask.value.id}`, data, {
             onSuccess: () => {
                 isDialogOpen.value = false;
                 resetForm();
+            },
+            onError: (errors) => {
+                console.error('Update errors:', errors);
             }
         });
     } else {
@@ -145,6 +167,9 @@ const submitForm = () => {
             onSuccess: () => {
                 isDialogOpen.value = false;
                 resetForm();
+            },
+            onError: (errors) => {
+                console.error('Create errors:', errors);
             }
         });
     }
@@ -649,6 +674,20 @@ const formatTime = (time: string) => {
 
                                 <div>
                                     <Label for="priority" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Prioritas *</Label>
+                                    <!-- Debug: Show current form priority value -->
+                                    <div class="text-xs text-gray-500 mb-1">Current value: {{ form.priority }}</div>
+                                    <!-- Temporary native select for debugging -->
+                                    <select 
+                                        v-model="form.priority" 
+                                        required
+                                        class="mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 w-full rounded-md px-3 py-2 border focus:border-blue-500 dark:focus:border-blue-400"
+                                    >
+                                        <option value="">Pilih prioritas</option>
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                    </select>
+                                    <!-- Original Select component commented out for debugging
                                     <Select v-model="form.priority" required>
                                         <SelectTrigger class="mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100">
                                             <SelectValue placeholder="Pilih prioritas" />
@@ -659,10 +698,24 @@ const formatTime = (time: string) => {
                                             <SelectItem value="high" class="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">High</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                    -->
                                 </div>
 
                                 <div>
                                     <Label for="assigned_to" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Assign ke User</Label>
+                                    <!-- Debug: Show current assigned_to value -->
+                                    <div class="text-xs text-gray-500 mb-1">Current assigned_to: {{ form.assigned_to }}</div>
+                                    <!-- Temporary native select for debugging -->
+                                    <select 
+                                        v-model="form.assigned_to" 
+                                        class="mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 w-full rounded-md px-3 py-2 border focus:border-blue-500 dark:focus:border-blue-400"
+                                    >
+                                        <option :value="null">Tidak di-assign</option>
+                                        <option v-for="user in users" :key="user.id" :value="user.id">
+                                            {{ user.name }}
+                                        </option>
+                                    </select>
+                                    <!-- Original Select component commented out for debugging
                                     <Select v-model="form.assigned_to">
                                         <SelectTrigger class="mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100">
                                             <SelectValue placeholder="Pilih user" />
@@ -674,6 +727,7 @@ const formatTime = (time: string) => {
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
+                                    -->
                                 </div>
 
                                 <div>

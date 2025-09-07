@@ -78,10 +78,13 @@ class MitraController extends Controller
         $brands = Brand::all();
         $labels = Label::all();
         
-        // Get marketing users (users with role marketing) - only for Super Admin and Admin
+        // Get marketing users (users with role marketing) 
         $marketingUsers = collect();
         if ($user->hasFullAccess() || $user->hasReadOnlyAccess()) {
             $marketingUsers = \App\Models\User::where('role', 'marketing')->get(['id', 'name']);
+        } elseif ($user->isMarketing()) {
+            // For marketing users, only show themselves in the list
+            $marketingUsers = collect([['id' => $user->id, 'name' => $user->name]]);
         }
         
         return Inertia::render('Mitra/Index', [
@@ -89,6 +92,11 @@ class MitraController extends Controller
             'brands' => $brands,
             'labels' => $labels,
             'users' => $marketingUsers,
+            'currentUser' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'role' => $user->role,
+            ],
             'filters' => [
                 'search' => $request->search,
                 'chat' => $request->chat,

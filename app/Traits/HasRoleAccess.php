@@ -9,7 +9,7 @@ trait HasRoleAccess
      */
     public function canCrud(): bool
     {
-        return $this->isSuperAdmin();
+        return $this->isSuperAdmin() || $this->isMarketing();
     }
 
     /**
