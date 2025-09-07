@@ -314,13 +314,13 @@ class DashboardController extends Controller
         }
         
         return $query
+            ->whereHas('mitras')
             ->withCount([
                 'mitras as total_leads',
                 'mitras as closed_leads' => function ($query) {
                     $query->where('chat', 'followup');
                 }
             ])
-            ->having('total_leads', '>', 0)
             ->get()
             ->map(function ($user) {
                 return [
@@ -339,7 +339,12 @@ class DashboardController extends Controller
 
     private function getBrandPerformance($currentUser)
     {
-        return Brand::withCount([
+        return Brand::whereHas('mitras', function ($query) use ($currentUser) {
+                if ($currentUser->hasLimitedAccess()) {
+                    $query->where('user_id', $currentUser->id);
+                }
+            })
+            ->withCount([
                 'mitras as total_leads' => function ($query) use ($currentUser) {
                     if ($currentUser->hasLimitedAccess()) {
                         $query->where('user_id', $currentUser->id);
@@ -352,7 +357,6 @@ class DashboardController extends Controller
                     }
                 }
             ])
-            ->having('total_leads', '>', 0)
             ->get()
             ->map(function ($brand) {
                 return [

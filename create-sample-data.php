@@ -57,13 +57,13 @@ echo "Today's Leads: {$todayCount}\n";
 
 echo "\nMarketing Performance:\n";
 $marketingStats = User::where('role', 'marketing')
+    ->whereHas('mitras')
     ->withCount([
         'mitras as total_leads',
         'mitras as closed_leads' => function ($query) {
             $query->where('chat', 'followup');
         }
     ])
-    ->having('total_leads', '>', 0)
     ->get();
 
 foreach ($marketingStats as $user) {

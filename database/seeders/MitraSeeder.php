@@ -31,8 +31,8 @@ class MitraSeeder extends Seeder
                 'chat' => 'masuk',
                 'kota' => 'Jakarta',
                 'provinsi' => 'DKI Jakarta',
-                'transaksi' => 5000000.00,
-                'komentar' => 'Mitra terpercaya dengan volume transaksi tinggi',
+                'komentar' => 'Mitra terpercaya dengan potensi tinggi',
+                'tanggal_lead' => now()->format('Y-m-d'),
             ],
             [
                 'nama' => 'CV Berkah Jaya',
@@ -41,8 +41,8 @@ class MitraSeeder extends Seeder
                 'chat' => 'followup',
                 'kota' => 'Surabaya',
                 'provinsi' => 'Jawa Timur',
-                'transaksi' => 3500000.00,
                 'komentar' => 'Membutuhkan followup untuk peningkatan penjualan',
+                'tanggal_lead' => now()->subDays(1)->format('Y-m-d'),
             ],
             [
                 'nama' => 'Toko Makmur',
@@ -51,8 +51,8 @@ class MitraSeeder extends Seeder
                 'chat' => 'masuk',
                 'kota' => 'Bandung',
                 'provinsi' => 'Jawa Barat',
-                'transaksi' => 2750000.00,
                 'komentar' => 'Mitra baru dengan potensi berkembang',
+                'tanggal_lead' => now()->subDays(2)->format('Y-m-d'),
             ],
         ];
 
