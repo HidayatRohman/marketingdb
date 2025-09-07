@@ -11,7 +11,10 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome');
+    $brands = \App\Models\Brand::select(['id', 'nama', 'logo'])->get();
+    return Inertia::render('Welcome', [
+        'brands' => $brands
+    ]);
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
