@@ -34,33 +34,62 @@ class SiteSettingController extends Controller
      */
     public function update(Request $request)
     {
-        $request->validate([
+        // Debug log untuk melihat data yang masuk
+        \Log::info('Site Settings Update - Raw Request:', [
+            'method' => $request->method(),
+            'content_type' => $request->header('Content-Type'),
+            'all_data' => $request->all(),
+            'files' => $request->allFiles(),
+            'input_site_title' => $request->input('site_title'),
+            'has_site_title' => $request->has('site_title'),
+            'filled_site_title' => $request->filled('site_title'),
+        ]);
+
+        // Custom validation dengan pesan error yang jelas
+        $validator = \Validator::make($request->all(), [
             'site_title' => 'required|string|max:255',
             'site_description' => 'nullable|string|max:1000',
             'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'site_favicon' => 'nullable|image|mimes:ico,png|max:1024',
+        ], [
+            'site_title.required' => 'Judul situs harus diisi.',
+            'site_title.string' => 'Judul situs harus berupa teks.',
+            'site_title.max' => 'Judul situs maksimal 255 karakter.',
+            'site_logo.image' => 'Logo harus berupa file gambar.',
+            'site_logo.mimes' => 'Logo harus berformat: jpeg, png, jpg, gif, atau svg.',
+            'site_logo.max' => 'Logo maksimal 2MB.',
+            'site_favicon.image' => 'Favicon harus berupa file gambar.',
+            'site_favicon.mimes' => 'Favicon harus berformat: ico atau png.',
+            'site_favicon.max' => 'Favicon maksimal 1MB.',
         ]);
+
+        if ($validator->fails()) {
+            \Log::error('Site Settings Validation Failed:', [
+                'errors' => $validator->errors()->toArray(),
+                'input' => $request->all()
+            ]);
+            
+            return back()
+                ->withErrors($validator)
+                ->withInput();
+        }
 
         try {
             // Update site title
-            if ($request->has('site_title')) {
-                SiteSetting::set(
-                    'site_title',
-                    $request->site_title,
-                    'text',
-                    'Title aplikasi yang ditampilkan di browser'
-                );
-            }
+            SiteSetting::set(
+                'site_title',
+                $request->site_title,
+                'text',
+                'Title aplikasi yang ditampilkan di browser'
+            );
 
             // Update site description
-            if ($request->has('site_description')) {
-                SiteSetting::set(
-                    'site_description',
-                    $request->site_description,
-                    'textarea',
-                    'Deskripsi singkat tentang aplikasi'
-                );
-            }
+            SiteSetting::set(
+                'site_description',
+                $request->site_description ?? '',
+                'textarea',
+                'Deskripsi singkat tentang aplikasi'
+            );
 
             // Handle logo upload
             if ($request->hasFile('site_logo')) {

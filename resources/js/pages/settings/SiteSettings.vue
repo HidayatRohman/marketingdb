@@ -43,6 +43,15 @@ const form = useForm({
     site_favicon: null as File | null,
 });
 
+// Debug: watch form changes
+watch(() => form.site_title, (newValue) => {
+    console.log('site_title changed:', newValue);
+});
+
+watch(() => form.errors, (newErrors) => {
+    console.log('Form errors changed:', newErrors);
+}, { deep: true });
+
 const logoPreview = ref<string | null>(props.settings.site_logo_url);
 const faviconPreview = ref<string | null>(props.settings.site_favicon_url);
 const deleteModal = ref(false);
@@ -122,11 +131,25 @@ const confirmDeleteFile = () => {
 
 // Submit form
 const submit = () => {
-    form.patch('/settings/site', {
+    // Debug: log form data
+    console.log('Form data before submit:', {
+        site_title: form.site_title,
+        site_description: form.site_description,
+        site_logo: form.site_logo,
+        site_favicon: form.site_favicon,
+        errors: form.errors
+    });
+
+    // Try POST instead of PATCH for file uploads
+    form.post('/settings/site', {
         forceFormData: true,
         onSuccess: () => {
+            console.log('Form submitted successfully');
             form.site_logo = null;
             form.site_favicon = null;
+        },
+        onError: (errors) => {
+            console.log('Form submission errors:', errors);
         }
     });
 };

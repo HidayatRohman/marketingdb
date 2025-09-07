@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role.access:edit')->group(function () {
         Route::get('settings/site', [SiteSettingController::class, 'edit'])->name('site-settings.edit');
         Route::patch('settings/site', [SiteSettingController::class, 'update'])->name('site-settings.update');
+        Route::post('settings/site', [SiteSettingController::class, 'update'])->name('site-settings.update-post');
         Route::delete('settings/site/file', [SiteSettingController::class, 'deleteFile'])->name('site-settings.delete-file');
     });
 });

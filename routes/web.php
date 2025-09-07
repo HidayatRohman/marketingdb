@@ -7,8 +7,37 @@ use App\Http\Controllers\MitraController;
 use App\Http\Controllers\TaskManagementController;
 use App\Http\Controllers\TodoListController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TestSiteSettingsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+// Test route for debugging
+Route::match(['GET', 'POST'], '/test-site-settings', [TestSiteSettingsController::class, 'test'])->withoutMiddleware(['web']);
+
+// Simple HTML test
+Route::get('/test-site-settings-simple', function() {
+    $settings = [
+        'site_title' => \App\Models\SiteSetting::get('site_title', 'Default Title'),
+        'site_description' => \App\Models\SiteSetting::get('site_description', 'Default Description'),
+        'site_logo' => \App\Models\SiteSetting::get('site_logo'),
+        'site_favicon' => \App\Models\SiteSetting::get('site_favicon'),
+    ];
+    return view('test-site-settings', compact('settings'));
+});
+
+Route::post('/test-site-settings-simple', function(\Illuminate\Http\Request $request) {
+    $request->validate([
+        'site_title' => 'required|string|max:255',
+        'site_description' => 'nullable|string|max:1000',
+        'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        'site_favicon' => 'nullable|image|mimes:ico,png|max:1024',
+    ]);
+    
+    \App\Models\SiteSetting::set('site_title', $request->site_title);
+    \App\Models\SiteSetting::set('site_description', $request->site_description ?? '');
+    
+    return back()->with('success', 'Settings updated successfully!');
+});
 
 Route::get('/', function () {
     $brands = \App\Models\Brand::all(); // Get all brands with all attributes including logo_url accessor
