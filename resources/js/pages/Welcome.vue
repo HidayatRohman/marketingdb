@@ -146,9 +146,9 @@ onUnmounted(() => {
                     <!-- David Badge -->
                     <div class="inline-flex items-center space-x-2 bg-purple-500/20 backdrop-blur-md border border-purple-400/30 rounded-full px-4 py-2">
                         <div class="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
-                            <span class="text-white text-xs font-medium">D</span>
+                            <span class="text-white text-xs font-medium">H</span>
                         </div>
-                        <span class="text-white text-sm font-medium">David</span>
+                        <span class="text-white text-sm font-medium">Hidayat</span>
                     </div>
 
                     <div class="space-y-6">
@@ -212,7 +212,7 @@ onUnmounted(() => {
                         <div class="absolute inset-0 flex items-center justify-center">
                             <div class="text-center">
                                 <div class="text-6xl font-bold text-white mb-2">20k+</div>
-                                <div class="text-white/80 text-lg">Specialists</div>
+                                <div class="text-white/80 text-lg">Database Mitra</div>
                             </div>
                         </div>
                     </div>
@@ -224,8 +224,8 @@ onUnmounted(() => {
         <section class="relative z-10 bg-black/10 backdrop-blur-md border-t border-white/20 py-12">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-8">
-                    <h2 class="text-2xl font-bold text-white mb-2">Trusted by Leading Brands</h2>
-                    <p class="text-white/80">Our partners who trust our marketing solutions</p>
+                    <h2 class="text-2xl font-bold text-white mb-2">Brand Kami</h2>
+                    <p class="text-white/80">Mitra yang mempercayai solusi pemasaran kami</p>
                 </div>
                 
                 <!-- Brand Slider -->
@@ -291,11 +291,7 @@ onUnmounted(() => {
         <footer class="relative z-10 bg-black/20 backdrop-blur-md border-t border-white/20 py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-wrap justify-center items-center gap-8 opacity-60">
-                    <span class="text-white font-medium">Dreamure</span>
-                    <span class="text-white font-medium">SWITCH.WIN</span>
-                    <span class="text-white font-medium">Sphere</span>
-                    <span class="text-white font-medium">PinSpace</span>
-                    <span class="text-white font-medium">Visionix</span>
+                    <span class="text-white font-medium">Copyright © 2025 Partner Bisnismu. CTO BCE With Love</span>
                 </div>
             </div>
         </footer>
