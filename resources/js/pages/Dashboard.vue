@@ -1524,52 +1524,81 @@ onMounted(() => {
                 </Card>
             </div>
 
+            <!-- Quick Actions - Full Width -->
+            <Card class="border-0 shadow-lg">
+                <CardHeader>
+                    <CardTitle class="flex items-center text-xl">
+                        <Activity class="mr-3 h-6 w-6 text-blue-500" />
+                        Aksi Cepat
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                        <Link href="/users" class="group">
+                            <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white transition-all duration-300 hover:from-blue-600 hover:to-blue-700 hover:scale-105 hover:shadow-xl">
+                                <div class="flex items-center">
+                                    <div class="p-2 bg-white/20 rounded-lg mr-4">
+                                        <Users class="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-lg">Tambah User</h3>
+                                        <p class="text-blue-100 text-sm">Buat pengguna baru</p>
+                                    </div>
+                                </div>
+                                <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+                            </div>
+                        </Link>
+                        
+                        <Link href="/brands" class="group">
+                            <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 p-6 text-white transition-all duration-300 hover:from-purple-600 hover:to-purple-700 hover:scale-105 hover:shadow-xl">
+                                <div class="flex items-center">
+                                    <div class="p-2 bg-white/20 rounded-lg mr-4">
+                                        <Tag class="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-lg">Tambah Brand</h3>
+                                        <p class="text-purple-100 text-sm">Buat brand baru</p>
+                                    </div>
+                                </div>
+                                <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+                            </div>
+                        </Link>
+
+                        <Link href="/labels" class="group">
+                            <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white transition-all duration-300 hover:from-orange-600 hover:to-orange-700 hover:scale-105 hover:shadow-xl">
+                                <div class="flex items-center">
+                                    <div class="p-2 bg-white/20 rounded-lg mr-4">
+                                        <Target class="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-lg">Tambah Label</h3>
+                                        <p class="text-orange-100 text-sm">Buat label baru</p>
+                                    </div>
+                                </div>
+                                <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+                            </div>
+                        </Link>
+
+                        <Link href="/users" class="group">
+                            <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-green-500 to-green-600 p-6 text-white transition-all duration-300 hover:from-green-600 hover:to-green-700 hover:scale-105 hover:shadow-xl">
+                                <div class="flex items-center">
+                                    <div class="p-2 bg-white/20 rounded-lg mr-4">
+                                        <Users class="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-lg">Kelola Users</h3>
+                                        <p class="text-green-100 text-sm">Lihat dan edit semua pengguna</p>
+                                    </div>
+                                </div>
+                                <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+                            </div>
+                        </Link>
+                    </div>
+                </CardContent>
+            </Card>
+
             <!-- Main Content Grid -->
             <div class="grid gap-6 lg:grid-cols-3">
-                <!-- Quick Actions -->
-                <div class="lg:col-span-2">
-                    <Card class="border-0 shadow-lg">
-                        <CardHeader>
-                            <CardTitle class="flex items-center text-xl">
-                                <Activity class="mr-3 h-6 w-6 text-blue-500" />
-                                Aksi Cepat
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div class="grid gap-4 sm:grid-cols-2">
-                                <Link href="/users" class="group">
-                                    <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white transition-all duration-300 hover:from-blue-600 hover:to-blue-700 hover:scale-105 hover:shadow-xl">
-                                        <div class="flex items-center">
-                                            <div class="p-2 bg-white/20 rounded-lg mr-4">
-                                                <Users class="h-6 w-6" />
-                                            </div>
-                                            <div>
-                                                <h3 class="font-semibold text-lg">Kelola Users</h3>
-                                                <p class="text-blue-100 text-sm">Lihat dan edit semua pengguna</p>
-                                            </div>
-                                        </div>
-                                        <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
-                                    </div>
-                                </Link>
-                                
-                                <Link href="/users/create" class="group">
-                                    <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-green-500 to-green-600 p-6 text-white transition-all duration-300 hover:from-green-600 hover:to-green-700 hover:scale-105 hover:shadow-xl">
-                                        <div class="flex items-center">
-                                            <div class="p-2 bg-white/20 rounded-lg mr-4">
-                                                <Plus class="h-6 w-6" />
-                                            </div>
-                                            <div>
-                                                <h3 class="font-semibold text-lg">Tambah User</h3>
-                                                <p class="text-green-100 text-sm">Buat pengguna baru</p>
-                                            </div>
-                                        </div>
-                                        <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
-                                    </div>
-                                </Link>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
 
                 <!-- System Status -->
                 <Card class="border-0 shadow-lg hidden">
