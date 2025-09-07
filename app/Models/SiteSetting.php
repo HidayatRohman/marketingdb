@@ -16,10 +16,6 @@ class SiteSetting extends Model
         'description',
     ];
 
-    protected $casts = [
-        'value' => 'array',
-    ];
-
     /**
      * Get setting value by key
      */

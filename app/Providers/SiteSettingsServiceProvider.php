@@ -28,6 +28,14 @@ class SiteSettingsServiceProvider extends ServiceProvider
                     'title' => SiteSetting::get('site_title', config('app.name')),
                     'description' => SiteSetting::get('site_description', 'Marketing Database Management System'),
                 ];
+            },
+            'siteSettings' => function () {
+                return [
+                    'site_title' => SiteSetting::get('site_title', config('app.name')),
+                    'site_description' => SiteSetting::get('site_description', 'Marketing Database Management System'),
+                    'site_logo' => SiteSetting::get('site_logo'),
+                    'site_favicon' => SiteSetting::get('site_favicon'),
+                ];
             }
         ]);
 
@@ -36,6 +44,7 @@ class SiteSettingsServiceProvider extends ServiceProvider
             $view->with([
                 'siteTitle' => SiteSetting::get('site_title', config('app.name')),
                 'siteFavicon' => SiteSetting::get('site_favicon'),
+                'siteLogo' => SiteSetting::get('site_logo'),
             ]);
         });
     }
