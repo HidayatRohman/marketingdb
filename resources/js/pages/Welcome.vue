@@ -161,12 +161,11 @@ onUnmounted(() => {
 
                     <div class="space-y-6">
                         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
-                            Unlock Top<br>
-                            Marketing Talent<br>
-                            You Thought Was<br>
-                            Out of Reach –<br>
-                            <span class="text-orange-300">Now Just One<br>
-                            Click Away!</span>
+                            Sistem<br>
+                            Pencatatan<br>
+                            Database<br>
+                            <span class="text-orange-300">CV Partner<br>
+                            Bisnismu</span>
                         </h1>
                         
                         <div class="flex items-center space-x-4 pt-4">
