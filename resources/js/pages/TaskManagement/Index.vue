@@ -14,7 +14,7 @@ import { Calendar } from '@/components/ui/calendar/index';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover/index';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { CalendarIcon, Plus, Edit, Trash2, User, Clock, AlertCircle, CheckCircle, Target, UserCheck } from 'lucide-vue-next';
+import { CalendarIcon, Plus, Edit, Trash2, User, Clock, AlertCircle, CheckCircle, Target, UserCheck, ArrowRight, ArrowLeft, MoveRight } from 'lucide-vue-next';
 import { cn } from '@/lib/utils';
 // @ts-ignore
 import { Container, Draggable } from 'vue3-smooth-dnd';
@@ -154,6 +154,39 @@ const submitForm = () => {
 const deleteTask = (task: Task) => {
     if (confirm('Apakah Anda yakin ingin menghapus task ini?')) {
         router.delete(`/task-management/${task.id}`);
+    }
+};
+
+// Move task to different status
+const moveTask = async (task: Task, newStatus: string) => {
+    if (task.status === newStatus) return;
+    
+    try {
+        // Update local state immediately for better UX
+        const currentTasks = tasks.value[task.status as keyof typeof tasks.value];
+        const taskIndex = currentTasks.findIndex(t => t.id === task.id);
+        
+        if (taskIndex !== -1) {
+            // Remove from current status
+            currentTasks.splice(taskIndex, 1);
+            
+            // Add to new status
+            const updatedTask = { ...task, status: newStatus as 'pending' | 'in_progress' | 'completed' };
+            tasks.value[newStatus as keyof typeof tasks.value].push(updatedTask);
+        }
+
+        // Update on server
+        await fetch(`/task-management/${task.id}/status`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+            body: JSON.stringify({ status: newStatus }),
+        });
+    } catch (error) {
+        console.error('Error updating task status:', error);
+        // Optionally revert local changes on error
     }
 };
 
@@ -376,6 +409,12 @@ const formatTime = (time: string) => {
                                                 <div class="flex justify-between items-start mb-3">
                                                     <h4 class="font-semibold text-sm text-slate-900 dark:text-slate-100">{{ task.title }}</h4>
                                                     <div class="flex gap-1">
+                                                        <Button variant="ghost" size="sm" @click="moveTask(task, 'in_progress')" class="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30" title="Pindah ke Dikerjakan">
+                                                            <ArrowRight class="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                                        </Button>
+                                                        <Button variant="ghost" size="sm" @click="moveTask(task, 'completed')" class="h-7 w-7 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30" title="Tandai Selesai">
+                                                            <CheckCircle class="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                                                        </Button>
                                                         <Button variant="ghost" size="sm" @click="openEditDialog(task)" class="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30">
                                                             <Edit class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                                         </Button>
@@ -444,6 +483,12 @@ const formatTime = (time: string) => {
                                                 <div class="flex justify-between items-start mb-3">
                                                     <h4 class="font-semibold text-sm text-slate-900 dark:text-slate-100">{{ task.title }}</h4>
                                                     <div class="flex gap-1">
+                                                        <Button variant="ghost" size="sm" @click="moveTask(task, 'pending')" class="h-7 w-7 p-0 hover:bg-orange-100 dark:hover:bg-orange-900/30" title="Kembali ke Rencana">
+                                                            <ArrowLeft class="h-3 w-3 text-orange-600 dark:text-orange-400" />
+                                                        </Button>
+                                                        <Button variant="ghost" size="sm" @click="moveTask(task, 'completed')" class="h-7 w-7 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30" title="Tandai Selesai">
+                                                            <CheckCircle class="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                                                        </Button>
                                                         <Button variant="ghost" size="sm" @click="openEditDialog(task)" class="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30">
                                                             <Edit class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                                         </Button>
@@ -515,6 +560,12 @@ const formatTime = (time: string) => {
                                                 <div class="flex justify-between items-start mb-3">
                                                     <h4 class="font-semibold text-sm line-through text-slate-700 dark:text-slate-300">{{ task.title }}</h4>
                                                     <div class="flex gap-1">
+                                                        <Button variant="ghost" size="sm" @click="moveTask(task, 'pending')" class="h-7 w-7 p-0 hover:bg-orange-100 dark:hover:bg-orange-900/30" title="Kembali ke Rencana">
+                                                            <ArrowLeft class="h-3 w-3 text-orange-600 dark:text-orange-400" />
+                                                        </Button>
+                                                        <Button variant="ghost" size="sm" @click="moveTask(task, 'in_progress')" class="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30" title="Kembali ke Dikerjakan">
+                                                            <MoveRight class="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                                        </Button>
                                                         <Button variant="ghost" size="sm" @click="openEditDialog(task)" class="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30">
                                                             <Edit class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                                         </Button>
