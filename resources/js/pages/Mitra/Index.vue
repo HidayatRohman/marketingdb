@@ -351,7 +351,7 @@ const getFilterParams = () => {
                         </div>
                         <Button 
                             @click="openCreateModal"
-                            class="bg-white dark:bg-gray-800 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-gray-700 font-semibold shadow-lg px-4 py-2"
+                            class="bg-gradient-to-r from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 text-teal-600 dark:text-teal-400 border border-white/50 dark:border-gray-700 hover:from-teal-50 hover:to-white dark:hover:from-gray-700 dark:hover:to-gray-800 font-semibold shadow-lg px-4 py-2 transition-all duration-200"
                         >
                             <Plus class="mr-2 h-4 w-4" />
                             Tambah Mitra
@@ -447,8 +447,11 @@ const getFilterParams = () => {
                             <Button
                                 variant="outline"
                                 @click="toggleFilters"
-                                class="h-10 px-4 relative"
-                                :class="{ 'bg-primary text-primary-foreground border-primary': hasActiveFilters }"
+                                class="h-10 px-4 relative font-medium transition-all duration-200"
+                                :class="{ 
+                                    'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-emerald-500 hover:from-emerald-600 hover:to-teal-700 shadow-md': hasActiveFilters,
+                                    'bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-700': !hasActiveFilters
+                                }"
                             >
                                 <Filter class="h-4 w-4 mr-2" />
                                 Filter
@@ -462,7 +465,7 @@ const getFilterParams = () => {
                                 variant="ghost"
                                 size="sm"
                                 @click="clearFilters"
-                                class="h-10 text-muted-foreground hover:text-foreground"
+                                class="h-10 bg-gradient-to-r from-red-100 to-red-200 dark:from-red-900/50 dark:to-red-800/50 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-700 hover:from-red-200 hover:to-red-300 dark:hover:from-red-800/60 dark:hover:to-red-700/60 transition-all duration-200"
                             >
                                 <X class="h-4 w-4" />
                             </Button>
@@ -473,7 +476,7 @@ const getFilterParams = () => {
                     <div v-if="showFilters" class="border-t pt-3 space-y-3">
                         <!-- Date Preset Quick Filters -->
                         <div class="space-y-2">
-                            <label class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                            <label class="text-sm font-medium text-foreground/90 dark:text-foreground flex items-center gap-2">
                                 <Clock class="h-4 w-4" />
                                 Filter Periode Cepat
                             </label>
@@ -485,10 +488,10 @@ const getFilterParams = () => {
                                     size="sm"
                                     @click="setDatePreset(preset.key)"
                                     :class="{
-                                        'bg-primary text-primary-foreground border-primary': selectedPreset === preset.key,
-                                        'hover:bg-primary/10': selectedPreset !== preset.key
+                                        'bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-500 hover:from-blue-600 hover:to-blue-700 shadow-md': selectedPreset === preset.key,
+                                        'bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-700': selectedPreset !== preset.key
                                     }"
-                                    class="px-3 py-1 h-8 text-xs font-medium"
+                                    class="px-3 py-1 h-8 text-xs font-medium transition-all duration-200"
                                 >
                                     {{ preset.label }}
                                 </Button>
@@ -498,7 +501,7 @@ const getFilterParams = () => {
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
                             <!-- Periode Start -->
                             <div class="space-y-1">
-                                <label class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                                <label class="text-sm font-medium text-foreground/90 dark:text-foreground flex items-center gap-2">
                                     <Calendar class="h-4 w-4" />
                                     Dari Tanggal
                                 </label>
@@ -511,7 +514,7 @@ const getFilterParams = () => {
 
                             <!-- Periode End -->
                             <div class="space-y-1">
-                                <label class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                                <label class="text-sm font-medium text-foreground/90 dark:text-foreground flex items-center gap-2">
                                     <Calendar class="h-4 w-4" />
                                     Sampai Tanggal
                                 </label>
@@ -524,7 +527,7 @@ const getFilterParams = () => {
 
                             <!-- Marketing Filter -->
                             <div class="space-y-1">
-                                <label class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                                <label class="text-sm font-medium text-foreground/90 dark:text-foreground flex items-center gap-2">
                                     <User class="h-4 w-4" />
                                     Marketing
                                 </label>
@@ -546,7 +549,7 @@ const getFilterParams = () => {
 
                             <!-- Chat Filter -->
                             <div class="space-y-1">
-                                <label class="text-sm font-medium text-muted-foreground">Status Chat</label>
+                                <label class="text-sm font-medium text-foreground/90 dark:text-foreground">Status Chat</label>
                                 <select
                                     v-model="chat"
                                     class="flex h-9 w-full rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
@@ -559,7 +562,7 @@ const getFilterParams = () => {
 
                             <!-- Label Filter -->
                             <div class="space-y-1">
-                                <label class="text-sm font-medium text-muted-foreground">Label</label>
+                                <label class="text-sm font-medium text-foreground/90 dark:text-foreground">Label</label>
                                 <select
                                     v-model="label"
                                     class="flex h-9 w-full rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
@@ -580,7 +583,7 @@ const getFilterParams = () => {
                         <!-- Per Page and Active Filters -->
                         <div class="flex items-center justify-between pt-3 border-t">
                             <div class="flex items-center gap-2">
-                                <label class="text-sm font-medium text-muted-foreground">Tampilkan:</label>
+                                <label class="text-sm font-medium text-foreground/80 dark:text-foreground/90">Tampilkan:</label>
                                 <select
                                     v-model="perPage"
                                     class="flex h-8 w-20 rounded-md border border-input bg-background text-foreground px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&>option]:bg-background [&>option]:text-foreground"
@@ -591,11 +594,11 @@ const getFilterParams = () => {
                                     <option value="50" class="bg-background text-foreground">50</option>
                                     <option value="100" class="bg-background text-foreground">100</option>
                                 </select>
-                                <span class="text-sm text-muted-foreground">per halaman</span>
+                                <span class="text-sm text-foreground/80 dark:text-foreground/90">per halaman</span>
                             </div>
 
                             <!-- Active Filters Display -->
-                            <div v-if="hasActiveFilters" class="flex items-center gap-2 text-sm text-muted-foreground">
+                            <div v-if="hasActiveFilters" class="flex items-center gap-2 text-sm text-foreground/80 dark:text-foreground/90">
                                 <span>Filter aktif:</span>
                                 <div class="flex gap-1">
                                     <span v-if="search" class="px-2 py-1 bg-primary/10 text-primary rounded text-xs">Search</span>
@@ -638,18 +641,18 @@ const getFilterParams = () => {
                                         <TableCell colspan="9" class="text-center py-8">
                                             <div class="flex justify-center">
                                                 <div class="max-w-md mx-auto">
-                                                    <Card class="border-2 border-dashed border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30">
+                                                    <Card class="border-2 border-dashed border-orange-300 dark:border-orange-600 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-800 dark:to-gray-900 shadow-lg">
                                                         <CardContent class="p-8">
                                                             <div class="flex flex-col items-center justify-center space-y-4">
-                                                                <div class="p-4 bg-orange-100 dark:bg-orange-900/50 rounded-full ring-4 ring-orange-200 dark:ring-orange-800/50">
-                                                                    <Building2 class="h-12 w-12 text-orange-600 dark:text-orange-400" />
+                                                                <div class="p-4 bg-orange-100 dark:bg-orange-500/20 rounded-full ring-4 ring-orange-200 dark:ring-orange-400/30">
+                                                                    <Building2 class="h-12 w-12 text-orange-600 dark:text-orange-300" />
                                                                 </div>
                                                                 <div class="space-y-3 text-center">
-                                                                    <h3 class="text-xl font-bold text-orange-900 dark:text-orange-100">
+                                                                    <h3 class="text-xl font-bold text-orange-900 dark:text-orange-200">
                                                                         Tidak Ada Data Mitra
                                                                     </h3>
-                                                                    <div class="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg border border-orange-200 dark:border-orange-700">
-                                                                        <p class="text-sm font-medium text-orange-800 dark:text-orange-200">
+                                                                    <div class="p-3 bg-orange-100 dark:bg-orange-500/10 rounded-lg border border-orange-200 dark:border-orange-400/30">
+                                                                        <p class="text-sm font-medium text-orange-800 dark:text-orange-100">
                                                                             <span v-if="hasActiveFilters">
                                                                                 ⚠️ Tidak ditemukan mitra yang sesuai dengan filter yang dipilih.<br>
                                                                                 Coba ubah kriteria pencarian atau hapus filter.
@@ -712,13 +715,17 @@ const getFilterParams = () => {
                                                 <span class="text-sm text-gray-900 dark:text-gray-100">{{ mitra.user?.name || '-' }}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell>{{ mitra.brand.nama }}</TableCell>
+                                        <TableCell>
+                                            <span class="text-sm text-gray-900 dark:text-gray-100 font-medium">{{ mitra.brand.nama }}</span>
+                                        </TableCell>
                                         <TableCell>
                                             <Badge :variant="getChatBadgeVariant(mitra.chat)">
                                                 {{ chatLabels[mitra.chat] }}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>{{ mitra.kota }}, {{ mitra.provinsi }}</TableCell>
+                                        <TableCell>
+                                            <span class="text-sm text-gray-900 dark:text-gray-100">{{ mitra.kota }}, {{ mitra.provinsi }}</span>
+                                        </TableCell>
                                         <TableCell>
                                             <div v-if="mitra.label" class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
                                                  :style="{ 
@@ -740,7 +747,7 @@ const getFilterParams = () => {
                                                     variant="ghost" 
                                                     size="sm"
                                                     @click="openViewModal(mitra)"
-                                                    class="h-9 w-9 p-0 hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900/30"
+                                                    class="h-9 w-9 p-0 bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-900/50 dark:to-blue-800/50 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700 hover:from-blue-200 hover:to-blue-300 dark:hover:from-blue-800/60 dark:hover:to-blue-700/60 transition-all duration-200"
                                                 >
                                                     <Eye class="h-4 w-4" />
                                                 </Button>
@@ -748,7 +755,7 @@ const getFilterParams = () => {
                                                     variant="ghost" 
                                                     size="sm"
                                                     @click="openEditModal(mitra)"
-                                                    class="h-9 w-9 p-0 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900/30"
+                                                    class="h-9 w-9 p-0 bg-gradient-to-r from-green-100 to-green-200 dark:from-green-900/50 dark:to-green-800/50 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700 hover:from-green-200 hover:to-green-300 dark:hover:from-green-800/60 dark:hover:to-green-700/60 transition-all duration-200"
                                                 >
                                                     <Edit class="h-4 w-4" />
                                                 </Button>
@@ -756,7 +763,7 @@ const getFilterParams = () => {
                                                     variant="ghost" 
                                                     size="sm"
                                                     @click="openDeleteModal(mitra)"
-                                                    class="h-9 w-9 p-0 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30"
+                                                    class="h-9 w-9 p-0 bg-gradient-to-r from-red-100 to-red-200 dark:from-red-900/50 dark:to-red-800/50 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-700 hover:from-red-200 hover:to-red-300 dark:hover:from-red-800/60 dark:hover:to-red-700/60 transition-all duration-200"
                                                 >
                                                     <Trash2 class="h-4 w-4" />
                                                 </Button>
@@ -769,9 +776,9 @@ const getFilterParams = () => {
 
                         <!-- Enhanced Pagination -->
                         <div class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-muted/20 rounded-lg">
-                            <div class="text-sm text-muted-foreground">
-                                Menampilkan <span class="font-medium">{{ mitras.data.length }}</span> dari <span class="font-medium">{{ mitras.total }}</span> mitra
-                                <span v-if="mitras.total > 0">
+                            <div class="text-sm text-foreground/80 dark:text-foreground/90">
+                                Menampilkan <span class="font-medium text-foreground">{{ mitras.data.length }}</span> dari <span class="font-medium text-foreground">{{ mitras.total }}</span> mitra
+                                <span v-if="mitras.total > 0" class="text-foreground/70 dark:text-foreground/80">
                                     ({{ ((mitras.current_page - 1) * mitras.per_page) + 1 }} - {{ Math.min(mitras.current_page * mitras.per_page, mitras.total) }})
                                 </span>
                             </div>
@@ -783,13 +790,13 @@ const getFilterParams = () => {
                                     variant="outline" 
                                     size="sm"
                                     @click="router.get('/mitras', { ...getFilterParams(), page: 1 })"
-                                    class="h-9 w-9 p-0"
+                                    class="h-9 w-9 p-0 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-700 transition-all duration-200"
                                 >
                                     1
                                 </Button>
                                 
                                 <!-- Dots if there's a gap -->
-                                <span v-if="mitras.current_page > 3" class="text-muted-foreground px-2">...</span>
+                                <span v-if="mitras.current_page > 3" class="text-foreground/60 px-2">...</span>
                                 
                                 <!-- Previous Page -->
                                 <Button 
@@ -797,7 +804,7 @@ const getFilterParams = () => {
                                     variant="outline" 
                                     size="sm"
                                     @click="router.get(mitras.prev_page_url)"
-                                    class="h-9 px-3"
+                                    class="h-9 px-3 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-700 transition-all duration-200"
                                 >
                                     ← Prev
                                 </Button>
@@ -806,7 +813,7 @@ const getFilterParams = () => {
                                 <Button 
                                     variant="default" 
                                     size="sm"
-                                    class="h-9 w-9 p-0"
+                                    class="h-9 w-9 p-0 bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-500 shadow-md"
                                     disabled
                                 >
                                     {{ mitras.current_page }}
@@ -818,13 +825,13 @@ const getFilterParams = () => {
                                     variant="outline" 
                                     size="sm"
                                     @click="router.get(mitras.next_page_url)"
-                                    class="h-9 px-3"
+                                    class="h-9 px-3 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-700 transition-all duration-200"
                                 >
                                     Next →
                                 </Button>
                                 
                                 <!-- Dots if there's a gap -->
-                                <span v-if="mitras.current_page < mitras.last_page - 2" class="text-muted-foreground px-2">...</span>
+                                <span v-if="mitras.current_page < mitras.last_page - 2" class="text-foreground/60 px-2">...</span>
                                 
                                 <!-- Last Page -->
                                 <Button 
@@ -832,7 +839,7 @@ const getFilterParams = () => {
                                     variant="outline" 
                                     size="sm"
                                     @click="router.get('/mitras', { ...getFilterParams(), page: mitras.last_page })"
-                                    class="h-9 w-9 p-0"
+                                    class="h-9 w-9 p-0 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-700 transition-all duration-200"
                                 >
                                     {{ mitras.last_page }}
                                 </Button>
