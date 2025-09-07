@@ -383,17 +383,17 @@ onMounted(() => {
     <Head title="Analytics Dashboard" />
     
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4 sm:p-6 lg:p-8">
+        <div class="layout-main">
             <!-- Enhanced Welcome Section -->
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-6 sm:p-8 text-white">
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dashboard-welcome text-white">
                 <div class="relative z-10">
-                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between responsive-gap">
                         <div class="flex-1">
-                            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-2 flex items-center gap-3">
+                            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-4 flex items-center gap-3">
                                 <BarChart3 class="h-8 w-8 sm:h-10 sm:w-10" />
                                 Analytics Dashboard
                             </h1>
-                            <p class="text-lg sm:text-xl text-blue-100 mb-4 lg:mb-6 max-w-2xl">
+                            <p class="text-lg sm:text-xl text-blue-100 mb-6 max-w-2xl">
                                 Pantau performa marketing dan analisa data lead secara real-time
                             </p>
                         </div>
@@ -401,13 +401,13 @@ onMounted(() => {
                             <Button 
                                 @click="refreshData"
                                 :disabled="refreshing"
-                                class="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border-white/30 px-4 py-2"
+                                class="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border-white/30 btn-spacing"
                             >
                                 <RefreshCw :class="['mr-2 h-4 w-4', refreshing && 'animate-spin']" />
                                 Refresh
                             </Button>
                             <Link href="/mitras/create">
-                                <Button class="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-4 py-2 w-full sm:w-auto">
+                                <Button class="bg-white text-blue-600 hover:bg-blue-50 font-semibold btn-spacing w-full sm:w-auto">
                                     <Plus class="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                                     Lead Baru
                                 </Button>
@@ -422,7 +422,7 @@ onMounted(() => {
             <!-- Enhanced Collapsible Filter Section -->
             <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-0.5 rounded-lg shadow-lg">
                 <Card class="border-0 overflow-visible bg-white dark:bg-gray-900 rounded-lg">
-                    <CardContent class="px-4 sm:px-6 py-0">
+                    <CardContent class="layout-content py-6">
                             <!-- Filter Toggle Header -->
                             <div 
                                 class="flex items-center justify-between cursor-pointer group"
@@ -444,7 +444,7 @@ onMounted(() => {
                                 <div class="flex items-center gap-2">
                                     <!-- Active Filters Count -->
                                     <div v-if="selectedMarketing !== 'all' || selectedBrand !== 'all'" 
-                                         class="px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full text-xs font-medium">
+                                         class="px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full text-xs font-medium">
                                         {{ (selectedMarketing !== 'all' ? 1 : 0) + (selectedBrand !== 'all' ? 1 : 0) }} filter aktif
                                     </div>
                                     <ChevronDown 
@@ -463,14 +463,14 @@ onMounted(() => {
                                 leave-from-class="max-h-[800px] opacity-100"
                                 leave-to-class="max-h-0 opacity-0"
                             >
-                                <div v-if="isFilterExpanded" class="mt-4 space-y-6 overflow-visible">
+                                <div v-if="isFilterExpanded" class="filter-content-section">
                                     <!-- Quick Date Range Filters -->
-                                    <div class="space-y-3">
-                                        <div class="flex items-center gap-2">
+                                    <div class="filter-group">
+                                        <div class="filter-header">
                                             <Calendar class="h-4 w-4 text-indigo-500" />
                                             <Label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Periode Waktu:</Label>
                                         </div>
-                                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                                        <div class="responsive-grid-6">
                                             <Button
                                                 v-for="range in [
                                                     { key: 'today', label: 'Hari Ini', color: 'emerald' },
@@ -482,10 +482,10 @@ onMounted(() => {
                                                 ]"
                                                 :key="range.key"
                                                 :class="[
-                                                    'text-xs sm:text-sm font-medium transition-all duration-200 relative overflow-hidden',
+                                                    'btn-filter-range',
                                                     selectedDateRange === range.key 
-                                                        ? 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg transform scale-105' 
-                                                        : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-md'
+                                                        ? 'btn-filter-active' 
+                                                        : 'btn-filter-inactive'
                                                 ]"
                                                 size="sm"
                                                 @click="applyQuickDateFilter(range.key)"
@@ -496,48 +496,48 @@ onMounted(() => {
                                     </div>
 
                                     <!-- Custom Date Range & Advanced Filters -->
-                                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-4 overflow-visible">
-                                        <div class="flex items-center gap-2 mb-3">
+                                    <div class="filter-advanced-section">
+                                        <div class="filter-header">
                                             <Settings class="h-4 w-4 text-gray-600 dark:text-gray-400" />
                                             <Label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Filter Lanjutan:</Label>
                                         </div>
                                         
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div class="responsive-grid-4">
                                             <!-- Custom Start Date -->
-                                            <div class="space-y-2">
-                                                <Label for="custom-start-date" class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            <div class="form-group">
+                                                <Label for="custom-start-date" class="form-label">
                                                     Tanggal Mulai:
                                                 </Label>
                                                 <Input
                                                     id="custom-start-date"
                                                     v-model="startDate"
                                                     type="date"
-                                                    class="transition-all duration-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600"
+                                                    class="form-input-date"
                                                 />
                                             </div>
                                             
                                             <!-- Custom End Date -->
-                                            <div class="space-y-2">
-                                                <Label for="custom-end-date" class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            <div class="form-group">
+                                                <Label for="custom-end-date" class="form-label">
                                                     Tanggal Akhir:
                                                 </Label>
                                                 <Input
                                                     id="custom-end-date"
                                                     v-model="endDate"
                                                     type="date"
-                                                    class="transition-all duration-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600"
+                                                    class="form-input-date"
                                                 />
                                             </div>
                                             
                                             <!-- Marketing Filter Dropdown -->
-                                            <div class="space-y-2 relative">
-                                                <Label class="text-sm font-medium text-gray-600 dark:text-gray-400">Marketing:</Label>
+                                            <div class="form-group dropdown-wrapper">
+                                                <Label class="form-label">Marketing:</Label>
                                                 <Button
                                                     variant="outline"
-                                                    class="w-full justify-between h-10 border-gray-300 dark:border-gray-600 hover:border-emerald-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
+                                                    class="dropdown-trigger"
                                                     @click="showMarketingDropdown = !showMarketingDropdown"
                                                 >
-                                                    <span class="flex items-center gap-2 text-left truncate">
+                                                    <span class="dropdown-content">
                                                         <Users class="h-4 w-4 text-emerald-500" />
                                                         <span class="truncate">
                                                             {{ selectedMarketing === 'all' ? 'Semua Marketing' : topMarketing.find(m => m.id.toString() === selectedMarketing)?.name }}
@@ -547,13 +547,13 @@ onMounted(() => {
                                                 </Button>
                                                 <div 
                                                     v-if="showMarketingDropdown"
-                                                    class="absolute top-full left-0 right-0 z-[9999] mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-y-auto min-w-[250px]"
+                                                    class="dropdown-menu"
                                                 >
                                                     <div 
-                                                        class="p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors"
+                                                        class="dropdown-item dropdown-item-border"
                                                         @click="applyMarketingFilter('all'); showMarketingDropdown = false"
                                                     >
-                                                        <div class="flex items-center gap-2">
+                                                        <div class="dropdown-item-content">
                                                             <Target class="h-4 w-4 text-emerald-500" />
                                                             <span class="font-medium text-gray-700 dark:text-gray-300">Semua Marketing</span>
                                                         </div>
@@ -561,15 +561,15 @@ onMounted(() => {
                                                     <div 
                                                         v-for="marketing in topMarketing" 
                                                         :key="marketing.id"
-                                                        class="p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 cursor-pointer transition-colors"
+                                                        class="dropdown-item"
                                                         @click="applyMarketingFilter(marketing.id.toString()); showMarketingDropdown = false"
                                                     >
-                                                        <div class="flex items-center justify-between">
-                                                            <div class="flex items-center gap-2">
+                                                        <div class="dropdown-item-with-badge">
+                                                            <div class="dropdown-item-content">
                                                                 <Users class="h-4 w-4 text-emerald-500" />
                                                                 <span class="font-medium text-gray-700 dark:text-gray-300">{{ marketing.name }}</span>
                                                             </div>
-                                                            <Badge class="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 text-xs">
+                                                            <Badge class="dropdown-badge-emerald">
                                                                 {{ marketing.total_leads }} leads
                                                             </Badge>
                                                         </div>
@@ -578,14 +578,14 @@ onMounted(() => {
                                             </div>
                                             
                                             <!-- Brand Filter Dropdown -->
-                                            <div class="space-y-2 relative">
-                                                <Label class="text-sm font-medium text-gray-600 dark:text-gray-400">Brand:</Label>
+                                            <div class="form-group dropdown-wrapper">
+                                                <Label class="form-label">Brand:</Label>
                                                 <Button
                                                     variant="outline"
-                                                    class="w-full justify-between h-10 border-gray-300 dark:border-gray-600 hover:border-purple-400 focus:ring-2 focus:ring-purple-500 transition-all duration-200"
+                                                    class="dropdown-trigger dropdown-trigger-purple"
                                                     @click="showBrandDropdown = !showBrandDropdown"
                                                 >
-                                                    <span class="flex items-center gap-2 text-left truncate">
+                                                    <span class="dropdown-content">
                                                         <Building2 class="h-4 w-4 text-purple-500" />
                                                         <span class="truncate">
                                                             {{ selectedBrand === 'all' ? 'Semua Brand' : brandPerformance.find(b => b.id.toString() === selectedBrand)?.nama }}
@@ -595,13 +595,13 @@ onMounted(() => {
                                                 </Button>
                                                 <div 
                                                     v-if="showBrandDropdown"
-                                                    class="absolute top-full left-0 right-0 z-[9999] mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-y-auto min-w-[250px]"
+                                                    class="dropdown-menu"
                                                 >
                                                     <div 
-                                                        class="p-3 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors"
+                                                        class="dropdown-item-purple dropdown-item-border"
                                                         @click="applyBrandFilter('all'); showBrandDropdown = false"
                                                     >
-                                                        <div class="flex items-center gap-2">
+                                                        <div class="dropdown-item-content">
                                                             <Target class="h-4 w-4 text-purple-500" />
                                                             <span class="font-medium text-gray-700 dark:text-gray-300">Semua Brand</span>
                                                         </div>
@@ -609,15 +609,15 @@ onMounted(() => {
                                                     <div 
                                                         v-for="brand in brandPerformance" 
                                                         :key="brand.id"
-                                                        class="p-3 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-colors"
+                                                        class="dropdown-item-purple"
                                                         @click="applyBrandFilter(brand.id.toString()); showBrandDropdown = false"
                                                     >
-                                                        <div class="flex items-center justify-between">
-                                                            <div class="flex items-center gap-2">
+                                                        <div class="dropdown-item-with-badge">
+                                                            <div class="dropdown-item-content">
                                                                 <Building2 class="h-4 w-4 text-purple-500" />
                                                                 <span class="font-medium text-gray-700 dark:text-gray-300">{{ brand.nama }}</span>
                                                             </div>
-                                                            <Badge class="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 text-xs">
+                                                            <Badge class="dropdown-badge-purple">
                                                                 {{ brand.total_leads }} leads
                                                             </Badge>
                                                         </div>
@@ -628,10 +628,10 @@ onMounted(() => {
                                     </div>
 
                                     <!-- Action Buttons -->
-                                    <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                                    <div class="action-buttons">
                                         <Button 
                                             @click="applyFilters" 
-                                            class="flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+                                            class="btn-primary-gradient"
                                         >
                                             <Filter class="h-4 w-4 mr-2" />
                                             Terapkan Filter
@@ -639,7 +639,7 @@ onMounted(() => {
                                         <Button 
                                             variant="outline" 
                                             @click="resetFilters"
-                                            class="flex-1 sm:flex-none border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
+                                            class="btn-reset"
                                         >
                                             <RefreshCw class="h-4 w-4 mr-2" />
                                             Reset
@@ -648,18 +648,18 @@ onMounted(() => {
 
                                     <!-- Active Filters Display -->
                                     <div v-if="selectedMarketing !== 'all' || selectedBrand !== 'all'" 
-                                         class="flex flex-wrap items-center gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Filter Aktif:</span>
+                                         class="active-filters-container">
+                                        <span class="active-filters-label">Filter Aktif:</span>
                                         <Badge 
                                             v-if="selectedMarketing !== 'all'" 
-                                            class="flex items-center gap-2 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 px-3 py-1"
+                                            class="active-filter-badge active-filter-emerald"
                                         >
                                             <Users class="h-3 w-3" />
                                             <span>{{ topMarketing.find(m => m.id.toString() === selectedMarketing)?.name }}</span>
                                             <Button 
                                                 variant="ghost" 
                                                 size="sm" 
-                                                class="h-4 w-4 p-0 ml-1 hover:bg-emerald-200 dark:hover:bg-emerald-800 rounded-full" 
+                                                class="filter-remove-btn filter-remove-emerald" 
                                                 @click="applyMarketingFilter('all')"
                                             >
                                                 <X class="h-3 w-3" />
@@ -667,14 +667,14 @@ onMounted(() => {
                                         </Badge>
                                         <Badge 
                                             v-if="selectedBrand !== 'all'" 
-                                            class="flex items-center gap-2 bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 px-3 py-1"
+                                            class="active-filter-badge active-filter-purple"
                                         >
                                             <Building2 class="h-3 w-3" />
                                             <span>{{ brandPerformance.find(b => b.id.toString() === selectedBrand)?.nama }}</span>
                                             <Button 
                                                 variant="ghost" 
                                                 size="sm" 
-                                                class="h-4 w-4 p-0 ml-1 hover:bg-purple-200 dark:hover:bg-purple-800 rounded-full" 
+                                                class="filter-remove-btn filter-remove-purple" 
                                                 @click="applyBrandFilter('all')"
                                             >
                                                 <X class="h-3 w-3" />
@@ -688,80 +688,80 @@ onMounted(() => {
             </div>
 
             <!-- Main KPI Cards -->
-            <div class="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="stats-grid">
                 <!-- Total Leads -->
-                <Card class="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
-                    <CardContent class="p-4 sm:p-6">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Total Leads</p>
-                                <p class="text-2xl sm:text-3xl font-bold text-blue-900 dark:text-blue-100 mb-1">{{ mitraStats.total }}</p>
-                                <p class="text-xs text-blue-600 dark:text-blue-400">
+                <Card class="stats-card stats-card-blue">
+                    <CardContent class="stats-card-content">
+                        <div class="stats-card-layout">
+                            <div class="stats-card-text">
+                                <p class="stats-card-label stats-label-blue">Total Leads</p>
+                                <p class="stats-card-value stats-value-blue">{{ mitraStats.total }}</p>
+                                <p class="stats-card-subtitle stats-subtitle-blue">
                                     +{{ mitraStats.today }} hari ini
                                 </p>
                             </div>
-                            <div class="p-2.5 sm:p-3 bg-blue-500 rounded-lg flex-shrink-0">
-                                <Users class="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                            <div class="stats-card-icon stats-icon-blue">
+                                <Users class="stats-icon-size" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 <!-- Conversion Rate -->
-                <Card class="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
-                    <CardContent class="p-4 sm:p-6">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-green-700 dark:text-green-300 mb-1">Conversion Rate</p>
-                                <p class="text-2xl sm:text-3xl font-bold text-green-900 dark:text-green-100 flex items-center gap-2 mb-1">
+                <Card class="stats-card stats-card-green">
+                    <CardContent class="stats-card-content">
+                        <div class="stats-card-layout">
+                            <div class="stats-card-text">
+                                <p class="stats-card-label stats-label-green">Conversion Rate</p>
+                                <p class="stats-card-value-with-icon stats-value-green">
                                     {{ totalConversionRate }}%
                                     <component 
                                         :is="getGrowthIcon(totalConversionRate)" 
-                                        :class="['h-4 w-4 sm:h-5 sm:w-5', getGrowthColor(totalConversionRate)]"
+                                        :class="['stats-growth-icon', getGrowthColor(totalConversionRate)]"
                                     />
                                 </p>
-                                <p class="text-xs text-green-600 dark:text-green-400">
+                                <p class="stats-card-subtitle stats-subtitle-green">
                                     {{ mitraStats.followup }} dari {{ mitraStats.total }}
                                 </p>
                             </div>
-                            <div class="p-2.5 sm:p-3 bg-green-500 rounded-lg flex-shrink-0">
-                                <Target class="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                            <div class="stats-card-icon stats-icon-green">
+                                <Target class="stats-icon-size" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 <!-- Active Chats -->
-                <Card class="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
-                    <CardContent class="p-4 sm:p-6">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-orange-700 dark:text-orange-300 mb-1">Chat Masuk</p>
-                                <p class="text-2xl sm:text-3xl font-bold text-orange-900 dark:text-orange-100 mb-1">{{ mitraStats.masuk }}</p>
-                                <p class="text-xs text-orange-600 dark:text-orange-400">
+                <Card class="stats-card stats-card-orange">
+                    <CardContent class="stats-card-content">
+                        <div class="stats-card-layout">
+                            <div class="stats-card-text">
+                                <p class="stats-card-label stats-label-orange">Chat Masuk</p>
+                                <p class="stats-card-value stats-value-orange">{{ mitraStats.masuk }}</p>
+                                <p class="stats-card-subtitle stats-subtitle-orange">
                                     {{ mitraStats.this_week }} minggu ini
                                 </p>
                             </div>
-                            <div class="p-2.5 sm:p-3 bg-orange-500 rounded-lg flex-shrink-0">
-                                <MessageSquare class="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                            <div class="stats-card-icon stats-icon-orange">
+                                <MessageSquare class="stats-icon-size" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 <!-- Follow Ups -->
-                <Card class="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
-                    <CardContent class="p-4 sm:p-6">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">Follow Up</p>
-                                <p class="text-2xl sm:text-3xl font-bold text-purple-900 dark:text-purple-100 mb-1">{{ mitraStats.followup }}</p>
-                                <p class="text-xs text-purple-600 dark:text-purple-400">
+                <Card class="stats-card stats-card-purple">
+                    <CardContent class="stats-card-content">
+                        <div class="stats-card-layout">
+                            <div class="stats-card-text">
+                                <p class="stats-card-label stats-label-purple">Follow Up</p>
+                                <p class="stats-card-value stats-value-purple">{{ mitraStats.followup }}</p>
+                                <p class="stats-card-subtitle stats-subtitle-purple">
                                     {{ mitraStats.this_month }} bulan ini
                                 </p>
                             </div>
-                            <div class="p-2.5 sm:p-3 bg-purple-500 rounded-lg flex-shrink-0">
-                                <Phone class="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                            <div class="stats-card-icon stats-icon-purple">
+                                <Phone class="stats-icon-size" />
                             </div>
                         </div>
                     </CardContent>

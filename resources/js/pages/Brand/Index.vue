@@ -135,73 +135,73 @@ const formatDate = (dateString: string) => {
     <Head title="Brand" />
     
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-8">
+        <div class="layout-main">
             <!-- Header Section -->
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 p-8 text-white">
-                <div class="relative z-10">
-                    <div class="flex items-center justify-between">
+            <div class="page-header-gradient">
+                <div class="page-header-content">
+                    <div class="page-header-layout">
                         <div>
-                            <h1 class="text-4xl font-bold tracking-tight mb-2 flex items-center gap-3">
+                            <h1 class="page-title">
                                 <Zap class="h-10 w-10" />
                                 Manajemen Brand
                             </h1>
-                            <p class="text-xl text-purple-100">
+                            <p class="page-subtitle">
                                 Kelola brand dengan mudah dan efisien
                             </p>
                         </div>
                         <Button 
                             @click="openCreateModal"
-                            class="bg-white text-purple-600 hover:bg-purple-50 font-semibold shadow-lg"
+                            class="btn-primary-white"
                         >
                             <Plus class="mr-2 h-5 w-5" />
                             Tambah Brand
                         </Button>
                     </div>
                 </div>
-                <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
-                <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
+                <div class="page-header-decoration-right"></div>
+                <div class="page-header-decoration-left"></div>
             </div>
 
             <!-- Statistics Bar -->
-            <div class="grid gap-4 md:grid-cols-3">
-                <Card class="border-0 shadow-lg bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-950 dark:to-violet-900">
-                    <CardContent class="p-4">
-                        <div class="flex items-center justify-between">
+            <div class="stats-grid-3">
+                <Card class="stats-card stats-card-violet">
+                    <CardContent class="stats-card-content-small">
+                        <div class="stats-card-layout">
                             <div>
-                                <p class="text-sm font-medium text-violet-700 dark:text-violet-300">Total Brand</p>
-                                <p class="text-2xl font-bold text-violet-900 dark:text-violet-100">{{ brands.total }}</p>
+                                <p class="stats-card-label stats-label-violet">Total Brand</p>
+                                <p class="stats-card-value-small stats-value-violet">{{ brands.total }}</p>
                             </div>
-                            <div class="p-2 bg-violet-500 rounded-lg">
+                            <div class="stats-card-icon-small stats-icon-violet">
                                 <Zap class="h-5 w-5 text-white" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
                 
-                <Card class="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
-                    <CardContent class="p-4">
-                        <div class="flex items-center justify-between">
+                <Card class="stats-card stats-card-purple">
+                    <CardContent class="stats-card-content-small">
+                        <div class="stats-card-layout">
                             <div>
-                                <p class="text-sm font-medium text-purple-700 dark:text-purple-300">Halaman Ini</p>
-                                <p class="text-2xl font-bold text-purple-900 dark:text-purple-100">{{ brands.data.length }}</p>
+                                <p class="stats-card-label stats-label-purple">Halaman Ini</p>
+                                <p class="stats-card-value-small stats-value-purple">{{ brands.data.length }}</p>
                             </div>
-                            <div class="p-2 bg-purple-500 rounded-lg">
+                            <div class="stats-card-icon-small stats-icon-purple">
                                 <Eye class="h-5 w-5 text-white" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card class="border-0 shadow-lg bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900">
-                    <CardContent class="p-4">
-                        <div class="flex items-center justify-between">
+                <Card class="stats-card stats-card-indigo">
+                    <CardContent class="stats-card-content-small">
+                        <div class="stats-card-layout">
                             <div>
-                                <p class="text-sm font-medium text-indigo-700 dark:text-indigo-300">Dengan Logo</p>
-                                <p class="text-2xl font-bold text-indigo-900 dark:text-indigo-100">
+                                <p class="stats-card-label stats-label-indigo">Dengan Logo</p>
+                                <p class="stats-card-value-small stats-value-indigo">
                                     {{ brands.data.filter(b => b.logo).length }}
                                 </p>
                             </div>
-                            <div class="p-2 bg-indigo-500 rounded-lg">
+                            <div class="stats-card-icon-small stats-icon-indigo">
                                 <Plus class="h-5 w-5 text-white" />
                             </div>
                         </div>
@@ -210,19 +210,19 @@ const formatDate = (dateString: string) => {
             </div>
 
             <!-- Search Bar -->
-            <Card class="border-0 shadow-lg">
-                <CardContent class="p-6">
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <div class="relative flex-1">
-                            <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Card class="search-card">
+                <CardContent class="search-card-content">
+                    <div class="search-layout">
+                        <div class="search-input-wrapper">
+                            <Search class="search-icon" />
                             <Input
                                 v-model="search"
                                 placeholder="Cari berdasarkan nama brand..."
-                                class="pl-10 h-11"
+                                class="search-input"
                             />
                         </div>
-                        <div class="flex gap-2">
-                            <Button variant="outline" size="icon" class="h-11 w-11">
+                        <div class="search-actions">
+                            <Button variant="outline" size="icon" class="search-action-btn">
                                 <Filter class="h-4 w-4" />
                             </Button>
                         </div>
@@ -231,11 +231,11 @@ const formatDate = (dateString: string) => {
             </Card>
 
             <!-- Table Card -->
-            <Card class="border-0 shadow-lg">
-                <CardHeader class="pb-3">
-                    <CardTitle class="text-xl font-semibold">Daftar Brand</CardTitle>
+            <Card class="table-card">
+                <CardHeader class="table-card-header">
+                    <CardTitle class="table-card-title">Daftar Brand</CardTitle>
                 </CardHeader>
-                <CardContent class="p-0">
+                <CardContent class="table-card-content">
                     <div class="relative overflow-hidden">
                         <div class="overflow-x-auto">
                             <Table>

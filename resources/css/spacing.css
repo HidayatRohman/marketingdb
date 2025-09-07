@@ -1,0 +1,564 @@
+/* 
+ * Standardized Spacing System for Marketing Database
+ * This file defines consistent margin and padding patterns across all components
+ */
+
+/* Base Layout Spacing */
+.layout-main {
+    @apply space-y-6 p-4 sm:p-6 lg:p-8;
+}
+
+.layout-content {
+    @apply px-4 sm:px-6 lg:px-8;
+}
+
+.layout-section {
+    @apply space-y-6;
+}
+
+/* Header Spacing */
+.header-main {
+    @apply p-6 sm:p-8;
+}
+
+.header-compact {
+    @apply p-4 sm:p-6;
+}
+
+/* Card and Component Spacing */
+.card-content-standard {
+    @apply p-6;
+}
+
+.card-content-compact {
+    @apply p-4;
+}
+
+.card-content-loose {
+    @apply p-8;
+}
+
+/* Navigation Spacing */
+.nav-item {
+    @apply px-3 py-2;
+}
+
+.nav-item-large {
+    @apply px-4 py-3;
+}
+
+.nav-spacing {
+    @apply space-y-1;
+}
+
+/* Form Spacing */
+.form-section {
+    @apply space-y-6;
+}
+
+.form-group {
+    @apply space-y-2;
+}
+
+.form-row {
+    @apply space-y-4 sm:space-y-0 sm:space-x-4;
+}
+
+.form-label {
+    @apply text-sm font-medium text-gray-600 dark:text-gray-400;
+}
+
+.form-input-date {
+    @apply transition-all duration-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600;
+}
+
+/* Dropdown Components */
+.dropdown-wrapper {
+    @apply relative;
+}
+
+.dropdown-trigger {
+    @apply w-full justify-between h-10 border-gray-300 dark:border-gray-600 hover:border-emerald-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200;
+}
+
+.dropdown-trigger-purple {
+    @apply w-full justify-between h-10 border-gray-300 dark:border-gray-600 hover:border-purple-400 focus:ring-2 focus:ring-purple-500 transition-all duration-200;
+}
+
+.dropdown-content {
+    @apply flex items-center gap-2 text-left truncate;
+}
+
+.dropdown-menu {
+    @apply absolute top-full left-0 right-0 z-[9999] mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-y-auto min-w-[250px];
+}
+
+.dropdown-item {
+    @apply p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 cursor-pointer transition-colors;
+}
+
+.dropdown-item-border {
+    @apply p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors;
+}
+
+.dropdown-item-content {
+    @apply flex items-center gap-2;
+}
+
+.dropdown-item-with-badge {
+    @apply flex items-center justify-between;
+}
+
+.dropdown-badge-emerald {
+    @apply bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 text-xs;
+}
+
+.dropdown-badge-purple {
+    @apply bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 text-xs;
+}
+
+.dropdown-item-purple {
+    @apply p-3 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-colors;
+}
+
+/* Button Spacing */
+.btn-spacing {
+    @apply px-4 py-2;
+}
+
+.btn-spacing-large {
+    @apply px-6 py-3;
+}
+
+.btn-spacing-small {
+    @apply px-3 py-1.5;
+}
+
+/* Table Spacing */
+.table-cell {
+    @apply px-4 py-3;
+}
+
+.table-header {
+    @apply px-4 py-3;
+}
+
+/* Modal Spacing */
+.modal-content {
+    @apply p-6;
+}
+
+.modal-header {
+    @apply pb-4;
+}
+
+.modal-footer {
+    @apply pt-4;
+}
+
+/* Dashboard Specific */
+.dashboard-welcome {
+    @apply p-6 sm:p-8;
+}
+
+.dashboard-stats {
+    @apply p-4;
+}
+
+.dashboard-chart {
+    @apply p-6;
+}
+
+/* List Spacing */
+.list-spacing {
+    @apply space-y-2;
+}
+
+.list-spacing-loose {
+    @apply space-y-4;
+}
+
+.list-spacing-tight {
+    @apply space-y-1;
+}
+
+/* Grid Spacing */
+.grid-gap-standard {
+    @apply gap-6;
+}
+
+.grid-gap-compact {
+    @apply gap-4;
+}
+
+.grid-gap-loose {
+    @apply gap-8;
+}
+
+/* Responsive Spacing Utilities */
+.responsive-padding {
+    @apply p-4 sm:p-6 lg:p-8;
+}
+
+.responsive-margin {
+    @apply m-4 sm:m-6 lg:m-8;
+}
+
+.responsive-gap {
+    @apply gap-3 sm:gap-4 lg:gap-6;
+}
+
+/* Filter Components */
+.filter-section {
+    @apply p-6 space-y-4;
+}
+
+.filter-header {
+    @apply flex items-center gap-2;
+}
+
+.filter-toggle {
+    @apply p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm border;
+}
+
+.filter-content-section {
+    @apply mt-4 space-y-6 overflow-visible;
+}
+
+.filter-group {
+    @apply space-y-3;
+}
+
+.filter-advanced-section {
+    @apply bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-4 overflow-visible;
+}
+
+/* Button Filter Styles */
+.btn-filter-range {
+    @apply text-xs sm:text-sm font-medium transition-all duration-200 relative overflow-hidden;
+}
+
+.btn-filter-active {
+    @apply bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg transform scale-105;
+}
+
+.btn-filter-inactive {
+    @apply bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-md;
+}
+
+/* Responsive Grid for Filter Buttons */
+.responsive-grid-6 {
+    @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2;
+}
+
+.responsive-grid-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4;
+}
+
+/* Action Buttons */
+.action-buttons {
+    @apply flex flex-col sm:flex-row gap-3 pt-4;
+}
+
+.btn-primary-gradient {
+    @apply flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200;
+}
+
+.btn-reset {
+    @apply flex-1 sm:flex-none border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200;
+}
+
+/* Active Filters */
+.active-filters-container {
+    @apply flex flex-wrap items-center gap-2 pt-4 border-t border-gray-200 dark:border-gray-700;
+}
+
+.active-filters-label {
+    @apply text-sm font-medium text-gray-600 dark:text-gray-400;
+}
+
+.active-filter-badge {
+    @apply flex items-center gap-2 px-3 py-1;
+}
+
+.active-filter-emerald {
+    @apply bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300;
+}
+
+.active-filter-purple {
+    @apply bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300;
+}
+
+.filter-remove-btn {
+    @apply h-4 w-4 p-0 ml-1 rounded-full;
+}
+
+.filter-remove-emerald {
+    @apply hover:bg-emerald-200 dark:hover:bg-emerald-800;
+}
+
+.filter-remove-purple {
+    @apply hover:bg-purple-200 dark:hover:bg-purple-800;
+}
+
+/* Stats Cards */
+.stats-grid {
+    @apply grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+}
+
+.stats-card {
+    @apply border-0 shadow-lg;
+}
+
+.stats-card-blue {
+    @apply bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900;
+}
+
+.stats-card-green {
+    @apply bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900;
+}
+
+.stats-card-orange {
+    @apply bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900;
+}
+
+.stats-card-purple {
+    @apply bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900;
+}
+
+.stats-card-content {
+    @apply p-4 sm:p-6;
+}
+
+.stats-card-layout {
+    @apply flex items-center justify-between;
+}
+
+.stats-card-text {
+    @apply flex-1 min-w-0;
+}
+
+.stats-card-label {
+    @apply text-sm font-medium mb-1;
+}
+
+.stats-label-blue {
+    @apply text-blue-700 dark:text-blue-300;
+}
+
+.stats-label-green {
+    @apply text-green-700 dark:text-green-300;
+}
+
+.stats-label-orange {
+    @apply text-orange-700 dark:text-orange-300;
+}
+
+.stats-label-purple {
+    @apply text-purple-700 dark:text-purple-300;
+}
+
+.stats-card-value {
+    @apply text-2xl sm:text-3xl font-bold mb-1;
+}
+
+.stats-card-value-with-icon {
+    @apply text-2xl sm:text-3xl font-bold flex items-center gap-2 mb-1;
+}
+
+.stats-value-blue {
+    @apply text-blue-900 dark:text-blue-100;
+}
+
+.stats-value-green {
+    @apply text-green-900 dark:text-green-100;
+}
+
+.stats-value-orange {
+    @apply text-orange-900 dark:text-orange-100;
+}
+
+.stats-value-purple {
+    @apply text-purple-900 dark:text-purple-100;
+}
+
+.stats-growth-icon {
+    @apply h-4 w-4 sm:h-5 sm:w-5;
+}
+
+.stats-card-subtitle {
+    @apply text-xs;
+}
+
+.stats-subtitle-blue {
+    @apply text-blue-600 dark:text-blue-400;
+}
+
+.stats-subtitle-green {
+    @apply text-green-600 dark:text-green-400;
+}
+
+.stats-subtitle-orange {
+    @apply text-orange-600 dark:text-orange-400;
+}
+
+.stats-subtitle-purple {
+    @apply text-purple-600 dark:text-purple-400;
+}
+
+.stats-card-icon {
+    @apply p-2.5 sm:p-3 rounded-lg flex-shrink-0;
+}
+
+.stats-icon-blue {
+    @apply bg-blue-500;
+}
+
+.stats-icon-green {
+    @apply bg-green-500;
+}
+
+.stats-icon-orange {
+    @apply bg-orange-500;
+}
+
+.stats-icon-purple {
+    @apply bg-purple-500;
+}
+
+.stats-icon-size {
+    @apply h-5 w-5 sm:h-6 sm:w-6 text-white;
+}
+
+/* Page Headers */
+.page-header-gradient {
+    @apply relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 p-8 text-white;
+}
+
+.page-header-content {
+    @apply relative z-10;
+}
+
+.page-header-layout {
+    @apply flex items-center justify-between;
+}
+
+.page-title {
+    @apply text-4xl font-bold tracking-tight mb-2 flex items-center gap-3;
+}
+
+.page-subtitle {
+    @apply text-xl text-purple-100;
+}
+
+.btn-primary-white {
+    @apply bg-white text-purple-600 hover:bg-purple-50 font-semibold shadow-lg;
+}
+
+.page-header-decoration-right {
+    @apply absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32;
+}
+
+.page-header-decoration-left {
+    @apply absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24;
+}
+
+/* Stats Grid Variants */
+.stats-grid-3 {
+    @apply grid gap-4 md:grid-cols-3;
+}
+
+.stats-card-content-small {
+    @apply p-4;
+}
+
+.stats-card-icon-small {
+    @apply p-2 rounded-lg;
+}
+
+.stats-card-value-small {
+    @apply text-2xl font-bold;
+}
+
+/* Additional Color Variants */
+.stats-card-violet {
+    @apply bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-950 dark:to-violet-900;
+}
+
+.stats-card-indigo {
+    @apply bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900;
+}
+
+.stats-label-violet {
+    @apply text-violet-700 dark:text-violet-300;
+}
+
+.stats-label-indigo {
+    @apply text-indigo-700 dark:text-indigo-300;
+}
+
+.stats-value-violet {
+    @apply text-violet-900 dark:text-violet-100;
+}
+
+.stats-value-indigo {
+    @apply text-indigo-900 dark:text-indigo-100;
+}
+
+.stats-icon-violet {
+    @apply bg-violet-500;
+}
+
+.stats-icon-indigo {
+    @apply bg-indigo-500;
+}
+
+/* Search Components */
+.search-card {
+    @apply border-0 shadow-lg;
+}
+
+.search-card-content {
+    @apply p-6;
+}
+
+.search-layout {
+    @apply flex flex-col sm:flex-row gap-4;
+}
+
+.search-input-wrapper {
+    @apply relative flex-1;
+}
+
+.search-icon {
+    @apply absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4;
+}
+
+.search-input {
+    @apply pl-10 h-11;
+}
+
+.search-actions {
+    @apply flex gap-2;
+}
+
+.search-action-btn {
+    @apply h-11 w-11;
+}
+
+/* Table Components */
+.table-card {
+    @apply border-0 shadow-lg;
+}
+
+.table-card-header {
+    @apply pb-3;
+}
+
+.table-card-title {
+    @apply text-xl font-semibold;
+}
+
+.table-card-content {
+    @apply p-0;
+}
