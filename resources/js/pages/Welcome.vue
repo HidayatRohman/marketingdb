@@ -244,15 +244,22 @@ onUnmounted(() => {
                                 
                                 <div v-for="brand in brandGroup" 
                                      :key="brand.id"
-                                     class="bg-white/15 backdrop-blur-sm rounded-xl p-6 border border-white/15 hover:bg-white/25 transition-all duration-300 flex items-center justify-center">
+                                     class="bg-white/15 backdrop-blur-sm rounded-xl p-4 border border-white/15 hover:bg-white/25 transition-all duration-300 flex flex-col items-center justify-center space-y-3">
                                     
-                                    <div v-if="brand.logo_url" class="w-full h-16 flex items-center justify-center">
-                                        <img :src="brand.logo_url" 
+                                    <!-- Logo Section -->
+                                    <div class="w-full h-12 flex items-center justify-center">
+                                        <img v-if="brand.logo_url" 
+                                             :src="brand.logo_url" 
                                              :alt="brand.nama"
-                                             class="max-w-full max-h-full object-contain filter brightness-0 opacity-60 hover:opacity-80 transition-opacity">
+                                             class="max-w-full max-h-full object-contain hover:scale-110 transition-transform duration-300">
+                                        <div v-else class="w-8 h-8 bg-gray-400/50 rounded-lg flex items-center justify-center">
+                                            <span class="text-gray-600 font-bold text-sm">{{ brand.nama.charAt(0).toUpperCase() }}</span>
+                                        </div>
                                     </div>
-                                    <div v-else class="w-full h-16 flex items-center justify-center">
-                                        <span class="text-gray-600 font-medium text-center">{{ brand.nama }}</span>
+                                    
+                                    <!-- Brand Name -->
+                                    <div class="w-full text-center">
+                                        <span class="text-gray-600 font-medium text-sm text-center line-clamp-2">{{ brand.nama }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -333,5 +340,14 @@ html {
     .backdrop-blur-md {
         background-color: rgba(255, 255, 255, 0.15);
     }
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 </style>

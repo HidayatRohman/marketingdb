@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    $brands = \App\Models\Brand::select(['id', 'nama', 'logo'])->get();
+    $brands = \App\Models\Brand::all(); // Get all brands with all attributes including logo_url accessor
     return Inertia::render('Welcome', [
         'brands' => $brands
     ]);
