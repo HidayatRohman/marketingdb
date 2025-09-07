@@ -20,7 +20,7 @@ const props = defineProps<Props>();
 // Brand slider state
 const currentSlide = ref(0);
 const isAutoPlay = ref(true);
-let autoPlayInterval: NodeJS.Timeout | null = null;
+let autoPlayInterval: number | null = null;
 
 // Slider functionality
 const nextSlide = () => {
@@ -80,7 +80,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Head title="MarkeTeam - Unlock Top Marketing Talent">
+    <Head title="Partner Bisnismu - Sistem Pencatatan Database">
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
@@ -102,21 +102,13 @@ onUnmounted(() => {
                 <div class="flex justify-between items-center h-16">
                     <!-- Logo -->
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/30">
-                            <Building2 class="w-6 h-6 text-white" />
+                        <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/30 p-1">
+                            <img src="/images/partner-bisnismu-logo.png" alt="Partner Bisnismu" class="w-full h-full object-contain" />
                         </div>
                         <div>
-                            <h1 class="text-xl font-bold text-white">MarkeTeam</h1>
+                            <h1 class="text-xl font-bold text-white">Partner Bisnismu</h1>
                         </div>
                     </div>
-                    
-                    <!-- Navigation Menu -->
-                    <nav class="hidden md:flex items-center space-x-8">
-                        <a href="#" class="text-white/90 hover:text-white transition-colors">Your Team</a>
-                        <a href="#" class="text-white/90 hover:text-white transition-colors">Solutions</a>
-                        <a href="#" class="text-white/90 hover:text-white transition-colors">Blog</a>
-                        <a href="#" class="text-white/90 hover:text-white transition-colors">Pricing</a>
-                    </nav>
                     
                     <!-- Auth Buttons -->
                     <div class="flex items-center space-x-4">
