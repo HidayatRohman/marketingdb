@@ -270,40 +270,40 @@ const getFilterParams = () => {
     <Head title="Mitra" />
     
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-8">
+        <div class="space-y-6 mt-6 mx-6">
             <!-- Header Section -->
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-8 text-white">
+            <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 text-white">
                 <div class="relative z-10">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h1 class="text-4xl font-bold tracking-tight mb-2 flex items-center gap-3">
-                                <Building2 class="h-10 w-10" />
+                            <h1 class="text-3xl font-bold tracking-tight mb-2 flex items-center gap-3">
+                                <Building2 class="h-8 w-8" />
                                 Manajemen Mitra
                             </h1>
-                            <p class="text-xl text-teal-100">
+                            <p class="text-lg text-teal-100">
                                 Kelola mitra bisnis dengan mudah dan efisien
                             </p>
                         </div>
                         <Button 
                             @click="openCreateModal"
-                            class="bg-white dark:bg-gray-800 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-gray-700 font-semibold shadow-lg"
+                            class="bg-white dark:bg-gray-800 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-gray-700 font-semibold shadow-lg px-4 py-2"
                         >
-                            <Plus class="mr-2 h-5 w-5" />
+                            <Plus class="mr-2 h-4 w-4" />
                             Tambah Mitra
                         </Button>
                     </div>
                 </div>
-                <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
-                <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
+                <div class="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24"></div>
+                <div class="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-16 -mb-16"></div>
             </div>
 
             <!-- Statistics Bar -->
             <div class="grid gap-4 md:grid-cols-4">
-                <Card class="border-0 shadow-lg bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900">
+                <Card class="border-0 shadow-md bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900">
                     <CardContent class="p-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-emerald-700 dark:text-emerald-300">Total Mitra</p>
+                                <p class="text-sm font-medium text-emerald-700 dark:text-emerald-300 mb-1">Total Mitra</p>
                                 <p class="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{{ mitras.total }}</p>
                             </div>
                             <div class="p-2 bg-emerald-500 rounded-lg">
@@ -313,11 +313,11 @@ const getFilterParams = () => {
                     </CardContent>
                 </Card>
                 
-                <Card class="border-0 shadow-lg bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950 dark:to-teal-900">
+                <Card class="border-0 shadow-md bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950 dark:to-teal-900">
                     <CardContent class="p-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-teal-700 dark:text-teal-300">Halaman Ini</p>
+                                <p class="text-sm font-medium text-teal-700 dark:text-teal-300 mb-1">Halaman Ini</p>
                                 <p class="text-2xl font-bold text-teal-900 dark:text-teal-100">{{ mitras.data.length }}</p>
                             </div>
                             <div class="p-2 bg-teal-500 rounded-lg">
@@ -327,11 +327,11 @@ const getFilterParams = () => {
                     </CardContent>
                 </Card>
 
-                <Card class="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+                <Card class="border-0 shadow-md bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
                     <CardContent class="p-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-green-700 dark:text-green-300">Chat Masuk</p>
+                                <p class="text-sm font-medium text-green-700 dark:text-green-300 mb-1">Chat Masuk</p>
                                 <p class="text-2xl font-bold text-green-900 dark:text-green-100">
                                     {{ mitras.data.filter(m => m.chat === 'masuk').length }}
                                 </p>
@@ -343,11 +343,11 @@ const getFilterParams = () => {
                     </CardContent>
                 </Card>
 
-                <Card class="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+                <Card class="border-0 shadow-md bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
                     <CardContent class="p-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-blue-700 dark:text-blue-300">Follow Up</p>
+                                <p class="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Follow Up</p>
                                 <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
                                     {{ mitras.data.filter(m => m.chat === 'followup').length }}
                                 </p>
@@ -361,10 +361,10 @@ const getFilterParams = () => {
             </div>
 
             <!-- Search and Filter Bar -->
-            <Card class="border-0 shadow-lg">
-                <CardContent class="p-6">
+            <Card class="border-0 shadow-md">
+                <CardContent class="p-4">
                     <!-- Top row with search and filter toggle -->
-                    <div class="flex items-center gap-4 mb-4">
+                    <div class="flex items-center gap-4 mb-3">
                         <!-- Search Input -->
                         <div class="flex-1">
                             <div class="relative">
@@ -372,7 +372,7 @@ const getFilterParams = () => {
                                 <Input
                                     v-model="search"
                                     placeholder="Cari berdasarkan nama, telepon, brand, atau lokasi..."
-                                    class="pl-10 h-11"
+                                    class="pl-10 h-10"
                                 />
                             </div>
                         </div>
@@ -382,7 +382,7 @@ const getFilterParams = () => {
                             <Button
                                 variant="outline"
                                 @click="toggleFilters"
-                                class="h-11 px-4 relative"
+                                class="h-10 px-4 relative"
                                 :class="{ 'bg-primary text-primary-foreground border-primary': hasActiveFilters }"
                             >
                                 <Filter class="h-4 w-4 mr-2" />
@@ -397,7 +397,7 @@ const getFilterParams = () => {
                                 variant="ghost"
                                 size="sm"
                                 @click="clearFilters"
-                                class="h-11 text-muted-foreground hover:text-foreground"
+                                class="h-10 text-muted-foreground hover:text-foreground"
                             >
                                 <X class="h-4 w-4" />
                             </Button>
@@ -405,10 +405,10 @@ const getFilterParams = () => {
                     </div>
 
                     <!-- Expandable Filter Panel -->
-                    <div v-if="showFilters" class="border-t pt-4 space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div v-if="showFilters" class="border-t pt-3 space-y-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
                             <!-- Periode Start -->
-                            <div class="space-y-2">
+                            <div class="space-y-1">
                                 <label class="text-sm font-medium text-muted-foreground flex items-center gap-2">
                                     <Calendar class="h-4 w-4" />
                                     Dari Tanggal
@@ -416,12 +416,12 @@ const getFilterParams = () => {
                                 <Input
                                     type="date"
                                     v-model="periodeStart"
-                                    class="h-10"
+                                    class="h-9"
                                 />
                             </div>
 
                             <!-- Periode End -->
-                            <div class="space-y-2">
+                            <div class="space-y-1">
                                 <label class="text-sm font-medium text-muted-foreground flex items-center gap-2">
                                     <Calendar class="h-4 w-4" />
                                     Sampai Tanggal
@@ -429,19 +429,19 @@ const getFilterParams = () => {
                                 <Input
                                     type="date"
                                     v-model="periodeEnd"
-                                    class="h-10"
+                                    class="h-9"
                                 />
                             </div>
 
                             <!-- Marketing Filter -->
-                            <div class="space-y-2">
+                            <div class="space-y-1">
                                 <label class="text-sm font-medium text-muted-foreground flex items-center gap-2">
                                     <User class="h-4 w-4" />
                                     Marketing
                                 </label>
                                 <select
                                     v-model="user"
-                                    class="flex h-10 w-full rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
+                                    class="flex h-9 w-full rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
                                 >
                                     <option value="" class="bg-background text-foreground">Semua Marketing</option>
                                     <option 
@@ -456,11 +456,11 @@ const getFilterParams = () => {
                             </div>
 
                             <!-- Chat Filter -->
-                            <div class="space-y-2">
+                            <div class="space-y-1">
                                 <label class="text-sm font-medium text-muted-foreground">Status Chat</label>
                                 <select
                                     v-model="chat"
-                                    class="flex h-10 w-full rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
+                                    class="flex h-9 w-full rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
                                 >
                                     <option value="" class="bg-background text-foreground">Semua Chat</option>
                                     <option value="masuk" class="bg-background text-foreground">Masuk</option>
@@ -469,11 +469,11 @@ const getFilterParams = () => {
                             </div>
 
                             <!-- Label Filter -->
-                            <div class="space-y-2">
+                            <div class="space-y-1">
                                 <label class="text-sm font-medium text-muted-foreground">Label</label>
                                 <select
                                     v-model="label"
-                                    class="flex h-10 w-full rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
+                                    class="flex h-9 w-full rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
                                 >
                                     <option value="" class="bg-background text-foreground">Semua Label</option>
                                     <option 
@@ -489,12 +489,12 @@ const getFilterParams = () => {
                         </div>
 
                         <!-- Per Page and Active Filters -->
-                        <div class="flex items-center justify-between pt-4 border-t">
+                        <div class="flex items-center justify-between pt-3 border-t">
                             <div class="flex items-center gap-2">
                                 <label class="text-sm font-medium text-muted-foreground">Tampilkan:</label>
                                 <select
                                     v-model="perPage"
-                                    class="flex h-9 w-20 rounded-md border border-input bg-background text-foreground px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&>option]:bg-background [&>option]:text-foreground"
+                                    class="flex h-8 w-20 rounded-md border border-input bg-background text-foreground px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&>option]:bg-background [&>option]:text-foreground"
                                 >
                                     <option value="10" class="bg-background text-foreground">10</option>
                                     <option value="20" class="bg-background text-foreground">20</option>
@@ -522,9 +522,9 @@ const getFilterParams = () => {
             </Card>
 
             <!-- Table Card -->
-            <Card class="border-0 shadow-lg">
-                <CardHeader class="pb-3">
-                    <CardTitle class="text-xl font-semibold">Daftar Mitra</CardTitle>
+            <Card class="border-0 shadow-md">
+                <CardHeader class="pb-2">
+                    <CardTitle class="text-lg font-semibold">Daftar Mitra</CardTitle>
                 </CardHeader>
                 <CardContent class="p-0">
                     <div class="relative overflow-hidden">
@@ -532,20 +532,20 @@ const getFilterParams = () => {
                             <Table>
                                 <TableHeader>
                                     <TableRow class="hover:bg-transparent border-b border-border">
-                                        <TableHead class="font-semibold text-foreground">Nama</TableHead>
-                                        <TableHead class="font-semibold text-foreground">Kontak</TableHead>
-                                        <TableHead class="font-semibold text-foreground">Tanggal Lead</TableHead>
-                                        <TableHead class="font-semibold text-foreground">Marketing</TableHead>
-                                        <TableHead class="font-semibold text-foreground">Brand</TableHead>
-                                        <TableHead class="font-semibold text-foreground">Chat</TableHead>
-                                        <TableHead class="font-semibold text-foreground">Lokasi</TableHead>
-                                        <TableHead class="font-semibold text-foreground">Label</TableHead>
-                                        <TableHead class="font-semibold text-foreground text-center w-[120px]">Aksi</TableHead>
+                                        <TableHead class="font-semibold text-foreground py-3">Nama</TableHead>
+                                        <TableHead class="font-semibold text-foreground py-3">Kontak</TableHead>
+                                        <TableHead class="font-semibold text-foreground py-3">Tanggal Lead</TableHead>
+                                        <TableHead class="font-semibold text-foreground py-3">Marketing</TableHead>
+                                        <TableHead class="font-semibold text-foreground py-3">Brand</TableHead>
+                                        <TableHead class="font-semibold text-foreground py-3">Chat</TableHead>
+                                        <TableHead class="font-semibold text-foreground py-3">Lokasi</TableHead>
+                                        <TableHead class="font-semibold text-foreground py-3">Label</TableHead>
+                                        <TableHead class="font-semibold text-foreground text-center w-[120px] py-3">Aksi</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     <TableRow v-for="mitra in mitras.data" :key="mitra.id" class="hover:bg-muted/30 transition-colors">
-                                        <TableCell class="font-medium">
+                                        <TableCell class="font-medium py-3">
                                             <div class="flex items-center gap-3">
                                                 <div class="p-2 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-lg">
                                                     <Building2 class="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
@@ -643,7 +643,7 @@ const getFilterParams = () => {
                         </div>
 
                         <!-- Enhanced Pagination -->
-                        <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg">
+                        <div class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-muted/20 rounded-lg">
                             <div class="text-sm text-muted-foreground">
                                 Menampilkan <span class="font-medium">{{ mitras.data.length }}</span> dari <span class="font-medium">{{ mitras.total }}</span> mitra
                                 <span v-if="mitras.total > 0">
