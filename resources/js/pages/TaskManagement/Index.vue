@@ -160,10 +160,10 @@ const deleteTask = (task: Task) => {
 // Get priority color
 const getPriorityColor = (priority: string) => {
     switch (priority) {
-        case 'high': return 'bg-red-100 text-red-800 border-red-200';
-        case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-        case 'low': return 'bg-green-100 text-green-800 border-green-200';
-        default: return 'bg-gray-100 text-gray-800 border-gray-200';
+        case 'high': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700';
+        case 'medium': return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700';
+        case 'low': return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700';
+        default: return 'bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600';
     }
 };
 
@@ -238,112 +238,114 @@ const formatTime = (time: string) => {
         <div class="py-6">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <!-- Header -->
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex justify-between items-center mb-8">
                     <div>
-                        <h1 class="text-3xl font-bold text-gray-900">Task Management</h1>
-                        <p class="text-gray-600 mt-1">Kelola dan pantau progress task Anda</p>
+                        <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            Task Management
+                        </h1>
+                        <p class="text-slate-600 dark:text-slate-400 mt-2 text-lg">Kelola dan pantau progress task Anda dengan mudah</p>
                     </div>
-                    <Button @click="openCreateDialog" class="flex items-center gap-2">
+                    <Button @click="openCreateDialog" class="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
                         <Plus class="h-4 w-4" />
                         Tambah Task
                     </Button>
                 </div>
 
                 <!-- Summary Cards -->
-                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
-                    <Card>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
+                    <Card class="border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 hover:shadow-lg transition-all duration-200">
                         <CardContent class="p-4">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-gray-600">Total</p>
-                                    <p class="text-2xl font-bold text-gray-900">{{ summary.total }}</p>
+                                    <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Total</p>
+                                    <p class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ summary.total }}</p>
                                 </div>
-                                <div class="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                    <Target class="h-4 w-4 text-blue-600" />
+                                <div class="h-10 w-10 bg-blue-200 dark:bg-blue-700 rounded-full flex items-center justify-center shadow-md">
+                                    <Target class="h-5 w-5 text-blue-600 dark:text-blue-300" />
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card class="border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 hover:shadow-lg transition-all duration-200">
                         <CardContent class="p-4">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-gray-600">Rencana</p>
-                                    <p class="text-2xl font-bold text-orange-600">{{ summary.pending }}</p>
+                                    <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Rencana</p>
+                                    <p class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ summary.pending }}</p>
                                 </div>
-                                <div class="h-8 w-8 bg-orange-100 rounded-full flex items-center justify-center">
-                                    <Clock class="h-4 w-4 text-orange-600" />
+                                <div class="h-10 w-10 bg-orange-200 dark:bg-orange-700 rounded-full flex items-center justify-center shadow-md">
+                                    <Clock class="h-5 w-5 text-orange-600 dark:text-orange-300" />
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card class="border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 hover:shadow-lg transition-all duration-200">
                         <CardContent class="p-4">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-gray-600">Dikerjakan</p>
-                                    <p class="text-2xl font-bold text-blue-600">{{ summary.in_progress }}</p>
+                                    <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Dikerjakan</p>
+                                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ summary.in_progress }}</p>
                                 </div>
-                                <div class="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                    <Target class="h-4 w-4 text-blue-600" />
+                                <div class="h-10 w-10 bg-blue-200 dark:bg-blue-700 rounded-full flex items-center justify-center shadow-md">
+                                    <Target class="h-5 w-5 text-blue-600 dark:text-blue-300" />
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card class="border-emerald-200 dark:border-emerald-800 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 hover:shadow-lg transition-all duration-200">
                         <CardContent class="p-4">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-gray-600">Selesai</p>
-                                    <p class="text-2xl font-bold text-green-600">{{ summary.completed }}</p>
+                                    <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Selesai</p>
+                                    <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ summary.completed }}</p>
                                 </div>
-                                <div class="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
-                                    <CheckCircle class="h-4 w-4 text-green-600" />
+                                <div class="h-10 w-10 bg-emerald-200 dark:bg-emerald-700 rounded-full flex items-center justify-center shadow-md">
+                                    <CheckCircle class="h-5 w-5 text-emerald-600 dark:text-emerald-300" />
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card class="border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 hover:shadow-lg transition-all duration-200">
                         <CardContent class="p-4">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-gray-600">Terlambat</p>
-                                    <p class="text-2xl font-bold text-red-600">{{ summary.overdue }}</p>
+                                    <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Terlambat</p>
+                                    <p class="text-2xl font-bold text-red-600 dark:text-red-400">{{ summary.overdue }}</p>
                                 </div>
-                                <div class="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center">
-                                    <AlertCircle class="h-4 w-4 text-red-600" />
+                                <div class="h-10 w-10 bg-red-200 dark:bg-red-700 rounded-full flex items-center justify-center shadow-md">
+                                    <AlertCircle class="h-5 w-5 text-red-600 dark:text-red-300" />
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card class="border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 hover:shadow-lg transition-all duration-200">
                         <CardContent class="p-4">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-gray-600">Hari Ini</p>
-                                    <p class="text-2xl font-bold text-purple-600">{{ summary.today }}</p>
+                                    <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Hari Ini</p>
+                                    <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ summary.today }}</p>
                                 </div>
-                                <div class="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center">
-                                    <CalendarIcon class="h-4 w-4 text-purple-600" />
+                                <div class="h-10 w-10 bg-purple-200 dark:bg-purple-700 rounded-full flex items-center justify-center shadow-md">
+                                    <CalendarIcon class="h-5 w-5 text-purple-600 dark:text-purple-300" />
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card class="border-indigo-200 dark:border-indigo-800 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 hover:shadow-lg transition-all duration-200">
                         <CardContent class="p-4">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-gray-600">Minggu Ini</p>
-                                    <p class="text-2xl font-bold text-indigo-600">{{ summary.this_week }}</p>
+                                    <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Minggu Ini</p>
+                                    <p class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{{ summary.this_week }}</p>
                                 </div>
-                                <div class="h-8 w-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                                    <CalendarIcon class="h-4 w-4 text-indigo-600" />
+                                <div class="h-10 w-10 bg-indigo-200 dark:bg-indigo-700 rounded-full flex items-center justify-center shadow-md">
+                                    <CalendarIcon class="h-5 w-5 text-indigo-600 dark:text-indigo-300" />
                                 </div>
                             </div>
                         </CardContent>
@@ -354,62 +356,62 @@ const formatTime = (time: string) => {
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- Rencana Column -->
                     <div class="space-y-4">
-                        <Card class="border-orange-200">
-                            <CardHeader class="bg-orange-50 border-b border-orange-200">
-                                <CardTitle class="flex items-center gap-2 text-orange-800">
+                        <Card class="border-orange-500 dark:border-orange-600 shadow-lg overflow-hidden">
+                            <CardHeader class="bg-orange-500 dark:bg-orange-600 p-0 m-0">
+                                <CardTitle class="flex items-center gap-2 text-white font-bold px-6 py-4 m-0">
                                     <Clock class="h-5 w-5" />
                                     Rencana ({{ tasks.pending.length }})
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent class="p-4">
+                            <CardContent class="p-4 bg-slate-50 dark:bg-slate-900">
                                 <Container
                                     group-name="tasks"
                                     @drop="(dropResult: any) => onDrop(dropResult, 'pending')"
                                     :get-child-payload="(index: any) => getChildPayload(index, 'pending')"
-                                    class="min-h-[200px]"
+                                    class="min-h-[200px] space-y-3"
                                 >
                                     <Draggable v-for="task in tasks.pending" :key="task.id">
-                                        <Card class="mb-3 cursor-move hover:shadow-md transition-shadow">
+                                        <Card class="mb-3 cursor-move hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] border-l-4 border-l-orange-400 dark:border-l-orange-500 bg-white dark:bg-slate-800">
                                             <CardContent class="p-4">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <h4 class="font-semibold text-sm">{{ task.title }}</h4>
+                                                <div class="flex justify-between items-start mb-3">
+                                                    <h4 class="font-semibold text-sm text-slate-900 dark:text-slate-100">{{ task.title }}</h4>
                                                     <div class="flex gap-1">
-                                                        <Button variant="ghost" size="sm" @click="openEditDialog(task)">
-                                                            <Edit class="h-3 w-3" />
+                                                        <Button variant="ghost" size="sm" @click="openEditDialog(task)" class="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30">
+                                                            <Edit class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                                         </Button>
-                                                        <Button variant="ghost" size="sm" @click="deleteTask(task)">
-                                                            <Trash2 class="h-3 w-3" />
+                                                        <Button variant="ghost" size="sm" @click="deleteTask(task)" class="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900/30">
+                                                            <Trash2 class="h-3 w-3 text-red-600 dark:text-red-400" />
                                                         </Button>
                                                     </div>
                                                 </div>
                                                 
-                                                <p v-if="task.description" class="text-xs text-gray-600 mb-2">
+                                                <p v-if="task.description" class="text-xs text-slate-600 dark:text-slate-400 mb-3 leading-relaxed">
                                                     {{ task.description.substring(0, 100) }}{{ task.description.length > 100 ? '...' : '' }}
                                                 </p>
                                                 
-                                                <div class="flex flex-wrap gap-1 mb-2">
-                                                    <Badge :class="getPriorityColor(task.priority)" variant="outline" class="text-xs">
+                                                <div class="flex flex-wrap gap-2 mb-3">
+                                                    <Badge :class="getPriorityColor(task.priority)" variant="outline" class="text-xs font-medium">
                                                         <component :is="getPriorityIcon(task.priority)" class="h-3 w-3 mr-1" />
                                                         {{ task.priority }}
                                                     </Badge>
-                                                    <Badge v-if="isOverdue(task)" variant="destructive" class="text-xs">
+                                                    <Badge v-if="isOverdue(task)" variant="destructive" class="text-xs bg-red-500 text-white dark:bg-red-600">
                                                         Terlambat
                                                     </Badge>
                                                 </div>
                                                 
-                                                <div class="space-y-1 text-xs text-gray-500">
-                                                    <div class="flex items-center gap-1">
+                                                <div class="space-y-2 text-xs text-slate-500 dark:text-slate-400">
+                                                    <div class="flex items-center gap-2">
                                                         <CalendarIcon class="h-3 w-3" />
-                                                        {{ formatDate(task.due_date) }}
-                                                        <span v-if="task.due_time">{{ formatTime(task.due_time) }}</span>
+                                                        <span class="font-medium">{{ formatDate(task.due_date) }}</span>
+                                                        <span v-if="task.due_time" class="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-xs">{{ formatTime(task.due_time) }}</span>
                                                     </div>
-                                                    <div v-if="task.assigned_user" class="flex items-center gap-1">
+                                                    <div v-if="task.assigned_user" class="flex items-center gap-2">
                                                         <UserCheck class="h-3 w-3" />
-                                                        Assigned: {{ task.assigned_user.name }}
+                                                        <span>Assigned: <span class="font-medium text-blue-600 dark:text-blue-400">{{ task.assigned_user.name }}</span></span>
                                                     </div>
-                                                    <div class="flex items-center gap-1">
+                                                    <div class="flex items-center gap-2">
                                                         <User class="h-3 w-3" />
-                                                        Created by: {{ task.user.name }}
+                                                        <span>Created by: <span class="font-medium">{{ task.user.name }}</span></span>
                                                     </div>
                                                 </div>
                                             </CardContent>
@@ -422,62 +424,65 @@ const formatTime = (time: string) => {
 
                     <!-- Dikerjakan Column -->
                     <div class="space-y-4">
-                        <Card class="border-blue-200">
-                            <CardHeader class="bg-blue-50 border-b border-blue-200">
-                                <CardTitle class="flex items-center gap-2 text-blue-800">
+                        <Card class="border-blue-500 dark:border-blue-600 shadow-lg overflow-hidden">
+                            <CardHeader class="bg-blue-500 dark:bg-blue-600 p-0 m-0">
+                                <CardTitle class="flex items-center gap-2 text-white font-bold px-6 py-4 m-0">
                                     <Target class="h-5 w-5" />
                                     Dikerjakan ({{ tasks.in_progress.length }})
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent class="p-4">
+                            <CardContent class="p-4 bg-slate-50 dark:bg-slate-900">
                                 <Container
                                     group-name="tasks"
                                     @drop="(dropResult: any) => onDrop(dropResult, 'in_progress')"
                                     :get-child-payload="(index: any) => getChildPayload(index, 'in_progress')"
-                                    class="min-h-[200px]"
+                                    class="min-h-[200px] space-y-3"
                                 >
                                     <Draggable v-for="task in tasks.in_progress" :key="task.id">
-                                        <Card class="mb-3 cursor-move hover:shadow-md transition-shadow">
+                                        <Card class="mb-3 cursor-move hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] border-l-4 border-l-blue-400 dark:border-l-blue-500 bg-white dark:bg-slate-800">
                                             <CardContent class="p-4">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <h4 class="font-semibold text-sm">{{ task.title }}</h4>
+                                                <div class="flex justify-between items-start mb-3">
+                                                    <h4 class="font-semibold text-sm text-slate-900 dark:text-slate-100">{{ task.title }}</h4>
                                                     <div class="flex gap-1">
-                                                        <Button variant="ghost" size="sm" @click="openEditDialog(task)">
-                                                            <Edit class="h-3 w-3" />
+                                                        <Button variant="ghost" size="sm" @click="openEditDialog(task)" class="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30">
+                                                            <Edit class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                                         </Button>
-                                                        <Button variant="ghost" size="sm" @click="deleteTask(task)">
-                                                            <Trash2 class="h-3 w-3" />
+                                                        <Button variant="ghost" size="sm" @click="deleteTask(task)" class="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900/30">
+                                                            <Trash2 class="h-3 w-3 text-red-600 dark:text-red-400" />
                                                         </Button>
                                                     </div>
                                                 </div>
                                                 
-                                                <p v-if="task.description" class="text-xs text-gray-600 mb-2">
+                                                <p v-if="task.description" class="text-xs text-slate-600 dark:text-slate-400 mb-3 leading-relaxed">
                                                     {{ task.description.substring(0, 100) }}{{ task.description.length > 100 ? '...' : '' }}
                                                 </p>
                                                 
-                                                <div class="flex flex-wrap gap-1 mb-2">
-                                                    <Badge :class="getPriorityColor(task.priority)" variant="outline" class="text-xs">
+                                                <div class="flex flex-wrap gap-2 mb-3">
+                                                    <Badge :class="getPriorityColor(task.priority)" variant="outline" class="text-xs font-medium">
                                                         <component :is="getPriorityIcon(task.priority)" class="h-3 w-3 mr-1" />
                                                         {{ task.priority }}
                                                     </Badge>
-                                                    <Badge v-if="isOverdue(task)" variant="destructive" class="text-xs">
+                                                    <Badge v-if="isOverdue(task)" variant="destructive" class="text-xs bg-red-500 text-white dark:bg-red-600">
                                                         Terlambat
+                                                    </Badge>
+                                                    <Badge class="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                        In Progress
                                                     </Badge>
                                                 </div>
                                                 
-                                                <div class="space-y-1 text-xs text-gray-500">
-                                                    <div class="flex items-center gap-1">
+                                                <div class="space-y-2 text-xs text-slate-500 dark:text-slate-400">
+                                                    <div class="flex items-center gap-2">
                                                         <CalendarIcon class="h-3 w-3" />
-                                                        {{ formatDate(task.due_date) }}
-                                                        <span v-if="task.due_time">{{ formatTime(task.due_time) }}</span>
+                                                        <span class="font-medium">{{ formatDate(task.due_date) }}</span>
+                                                        <span v-if="task.due_time" class="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-xs">{{ formatTime(task.due_time) }}</span>
                                                     </div>
-                                                    <div v-if="task.assigned_user" class="flex items-center gap-1">
+                                                    <div v-if="task.assigned_user" class="flex items-center gap-2">
                                                         <UserCheck class="h-3 w-3" />
-                                                        Assigned: {{ task.assigned_user.name }}
+                                                        <span>Assigned: <span class="font-medium text-blue-600 dark:text-blue-400">{{ task.assigned_user.name }}</span></span>
                                                     </div>
-                                                    <div class="flex items-center gap-1">
+                                                    <div class="flex items-center gap-2">
                                                         <User class="h-3 w-3" />
-                                                        Created by: {{ task.user.name }}
+                                                        <span>Created by: <span class="font-medium">{{ task.user.name }}</span></span>
                                                     </div>
                                                 </div>
                                             </CardContent>
@@ -490,62 +495,63 @@ const formatTime = (time: string) => {
 
                     <!-- Selesai Column -->
                     <div class="space-y-4">
-                        <Card class="border-green-200">
-                            <CardHeader class="bg-green-50 border-b border-green-200">
-                                <CardTitle class="flex items-center gap-2 text-green-800">
+                        <Card class="border-emerald-500 dark:border-emerald-600 shadow-lg overflow-hidden">
+                            <CardHeader class="bg-emerald-500 dark:bg-emerald-600 p-0 m-0">
+                                <CardTitle class="flex items-center gap-2 text-white font-bold px-6 py-4 m-0">
                                     <CheckCircle class="h-5 w-5" />
                                     Selesai ({{ tasks.completed.length }})
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent class="p-4">
+                            <CardContent class="p-4 bg-slate-50 dark:bg-slate-900">
                                 <Container
                                     group-name="tasks"
                                     @drop="(dropResult: any) => onDrop(dropResult, 'completed')"
                                     :get-child-payload="(index: any) => getChildPayload(index, 'completed')"
-                                    class="min-h-[200px]"
+                                    class="min-h-[200px] space-y-3"
                                 >
                                     <Draggable v-for="task in tasks.completed" :key="task.id">
-                                        <Card class="mb-3 cursor-move hover:shadow-md transition-shadow opacity-75">
+                                        <Card class="mb-3 cursor-move hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] border-l-4 border-l-emerald-400 dark:border-l-emerald-500 bg-white dark:bg-slate-800 opacity-90">
                                             <CardContent class="p-4">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <h4 class="font-semibold text-sm line-through">{{ task.title }}</h4>
+                                                <div class="flex justify-between items-start mb-3">
+                                                    <h4 class="font-semibold text-sm line-through text-slate-700 dark:text-slate-300">{{ task.title }}</h4>
                                                     <div class="flex gap-1">
-                                                        <Button variant="ghost" size="sm" @click="openEditDialog(task)">
-                                                            <Edit class="h-3 w-3" />
+                                                        <Button variant="ghost" size="sm" @click="openEditDialog(task)" class="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30">
+                                                            <Edit class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                                         </Button>
-                                                        <Button variant="ghost" size="sm" @click="deleteTask(task)">
-                                                            <Trash2 class="h-3 w-3" />
+                                                        <Button variant="ghost" size="sm" @click="deleteTask(task)" class="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900/30">
+                                                            <Trash2 class="h-3 w-3 text-red-600 dark:text-red-400" />
                                                         </Button>
                                                     </div>
                                                 </div>
                                                 
-                                                <p v-if="task.description" class="text-xs text-gray-600 mb-2 line-through">
+                                                <p v-if="task.description" class="text-xs text-slate-500 dark:text-slate-400 mb-3 line-through leading-relaxed">
                                                     {{ task.description.substring(0, 100) }}{{ task.description.length > 100 ? '...' : '' }}
                                                 </p>
                                                 
-                                                <div class="flex flex-wrap gap-1 mb-2">
-                                                    <Badge :class="getPriorityColor(task.priority)" variant="outline" class="text-xs">
+                                                <div class="flex flex-wrap gap-2 mb-3">
+                                                    <Badge :class="getPriorityColor(task.priority)" variant="outline" class="text-xs font-medium opacity-75">
                                                         <component :is="getPriorityIcon(task.priority)" class="h-3 w-3 mr-1" />
                                                         {{ task.priority }}
                                                     </Badge>
-                                                    <Badge variant="secondary" class="text-xs bg-green-100 text-green-800">
+                                                    <Badge class="text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 font-medium">
+                                                        <CheckCircle class="h-3 w-3 mr-1" />
                                                         Completed
                                                     </Badge>
                                                 </div>
                                                 
-                                                <div class="space-y-1 text-xs text-gray-500">
-                                                    <div class="flex items-center gap-1">
+                                                <div class="space-y-2 text-xs text-slate-500 dark:text-slate-400">
+                                                    <div class="flex items-center gap-2">
                                                         <CalendarIcon class="h-3 w-3" />
-                                                        {{ formatDate(task.due_date) }}
-                                                        <span v-if="task.due_time">{{ formatTime(task.due_time) }}</span>
+                                                        <span class="font-medium">{{ formatDate(task.due_date) }}</span>
+                                                        <span v-if="task.due_time" class="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-xs">{{ formatTime(task.due_time) }}</span>
                                                     </div>
-                                                    <div v-if="task.assigned_user" class="flex items-center gap-1">
+                                                    <div v-if="task.assigned_user" class="flex items-center gap-2">
                                                         <UserCheck class="h-3 w-3" />
-                                                        Assigned: {{ task.assigned_user.name }}
+                                                        <span>Assigned: <span class="font-medium text-emerald-600 dark:text-emerald-400">{{ task.assigned_user.name }}</span></span>
                                                     </div>
-                                                    <div class="flex items-center gap-1">
+                                                    <div class="flex items-center gap-2">
                                                         <User class="h-3 w-3" />
-                                                        Created by: {{ task.user.name }}
+                                                        <span>Created by: <span class="font-medium">{{ task.user.name }}</span></span>
                                                     </div>
                                                 </div>
                                             </CardContent>
@@ -559,58 +565,60 @@ const formatTime = (time: string) => {
 
                 <!-- Create/Edit Task Dialog -->
                 <Dialog v-model:open="isDialogOpen">
-                    <DialogContent class="max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                            <DialogTitle>
+                    <DialogContent class="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                        <DialogHeader class="pb-4 border-b border-slate-200 dark:border-slate-700">
+                            <DialogTitle class="text-xl font-bold text-slate-900 dark:text-slate-100">
                                 {{ editingTask ? 'Edit Task' : 'Tambah Task Baru' }}
                             </DialogTitle>
                         </DialogHeader>
 
-                        <form @submit.prevent="submitForm" class="space-y-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <form @submit.prevent="submitForm" class="space-y-6 pt-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="md:col-span-2">
-                                    <Label for="title">Judul Task *</Label>
+                                    <Label for="title" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Judul Task *</Label>
                                     <Input
                                         id="title"
                                         v-model="form.title"
                                         placeholder="Masukkan judul task"
                                         required
+                                        class="mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-400"
                                     />
                                 </div>
 
                                 <div class="md:col-span-2">
-                                    <Label for="description">Deskripsi</Label>
+                                    <Label for="description" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Deskripsi</Label>
                                     <Textarea
                                         id="description"
                                         v-model="form.description"
                                         placeholder="Masukkan deskripsi task"
                                         :rows="3"
+                                        class="mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-400"
                                     />
                                 </div>
 
                                 <div>
-                                    <Label for="priority">Prioritas *</Label>
+                                    <Label for="priority" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Prioritas *</Label>
                                     <Select v-model="form.priority" required>
-                                        <SelectTrigger>
+                                        <SelectTrigger class="mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100">
                                             <SelectValue placeholder="Pilih prioritas" />
                                         </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="low">Low</SelectItem>
-                                            <SelectItem value="medium">Medium</SelectItem>
-                                            <SelectItem value="high">High</SelectItem>
+                                        <SelectContent class="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
+                                            <SelectItem value="low" class="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">Low</SelectItem>
+                                            <SelectItem value="medium" class="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">Medium</SelectItem>
+                                            <SelectItem value="high" class="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">High</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
 
                                 <div>
-                                    <Label for="assigned_to">Assign ke User</Label>
+                                    <Label for="assigned_to" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Assign ke User</Label>
                                     <Select v-model="form.assigned_to">
-                                        <SelectTrigger>
+                                        <SelectTrigger class="mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100">
                                             <SelectValue placeholder="Pilih user" />
                                         </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem :value="null">Tidak di-assign</SelectItem>
-                                            <SelectItem v-for="user in users" :key="user.id" :value="user.id">
+                                        <SelectContent class="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
+                                            <SelectItem :value="null" class="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">Tidak di-assign</SelectItem>
+                                            <SelectItem v-for="user in users" :key="user.id" :value="user.id" class="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">
                                                 {{ user.name }}
                                             </SelectItem>
                                         </SelectContent>
@@ -618,56 +626,57 @@ const formatTime = (time: string) => {
                                 </div>
 
                                 <div>
-                                    <Label for="start_date">Tanggal Mulai</Label>
+                                    <Label for="start_date" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Tanggal Mulai</Label>
                                     <Popover>
                                         <PopoverTrigger as-child>
                                             <Button
                                                 variant="outline"
-                                                :class="cn('w-full justify-start text-left font-normal', !form.start_date && 'text-muted-foreground')"
+                                                :class="cn('w-full justify-start text-left font-normal mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100', !form.start_date && 'text-slate-500 dark:text-slate-400')"
                                             >
                                                 <CalendarIcon class="mr-2 h-4 w-4" />
                                                 {{ form.start_date ? format(form.start_date, 'dd/MM/yyyy') : 'Pilih tanggal' }}
                                             </Button>
                                         </PopoverTrigger>
-                                        <PopoverContent class="w-auto p-0">
+                                        <PopoverContent class="w-auto p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
                                             <Calendar v-model="form.start_date" />
                                         </PopoverContent>
                                     </Popover>
                                 </div>
 
                                 <div>
-                                    <Label for="due_date">Tanggal Deadline *</Label>
+                                    <Label for="due_date" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Tanggal Deadline *</Label>
                                     <Popover>
                                         <PopoverTrigger as-child>
                                             <Button
                                                 variant="outline"
-                                                :class="cn('w-full justify-start text-left font-normal', !form.due_date && 'text-muted-foreground')"
+                                                :class="cn('w-full justify-start text-left font-normal mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100', !form.due_date && 'text-slate-500 dark:text-slate-400')"
                                             >
                                                 <CalendarIcon class="mr-2 h-4 w-4" />
                                                 {{ form.due_date ? format(form.due_date, 'dd/MM/yyyy') : 'Pilih tanggal' }}
                                             </Button>
                                         </PopoverTrigger>
-                                        <PopoverContent class="w-auto p-0">
+                                        <PopoverContent class="w-auto p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
                                             <Calendar v-model="form.due_date" />
                                         </PopoverContent>
                                     </Popover>
                                 </div>
 
                                 <div>
-                                    <Label for="due_time">Waktu Deadline</Label>
+                                    <Label for="due_time" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Waktu Deadline</Label>
                                     <Input
                                         id="due_time"
                                         type="time"
                                         v-model="form.due_time"
+                                        class="mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-400"
                                     />
                                 </div>
                             </div>
 
-                            <div class="flex justify-end gap-2 pt-4">
-                                <Button type="button" variant="outline" @click="isDialogOpen = false">
+                            <div class="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
+                                <Button type="button" variant="outline" @click="isDialogOpen = false" class="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
                                     Batal
                                 </Button>
-                                <Button type="submit">
+                                <Button type="submit" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
                                     {{ editingTask ? 'Update' : 'Simpan' }}
                                 </Button>
                             </div>
@@ -685,8 +694,10 @@ const formatTime = (time: string) => {
 }
 
 .smooth-dnd-ghost {
-    transition: transform 0.18s ease-out;
-    transform: rotateZ(5deg);
+    transition: transform 0.2s ease-out;
+    transform: rotateZ(3deg) scale(1.05);
+    opacity: 0.8;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
 .smooth-dnd-ghost * {
@@ -694,8 +705,91 @@ const formatTime = (time: string) => {
 }
 
 .smooth-dnd-drop-preview {
-    background-color: rgba(150, 150, 200, 0.1);
-    border: 1px dashed #abc;
-    margin: 5px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+    border: 2px dashed rgba(59, 130, 246, 0.3);
+    margin: 8px 0;
+    border-radius: 8px;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.smooth-dnd-drop-preview::before {
+    content: "Drop here";
+    color: rgba(59, 130, 246, 0.6);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* Custom scrollbar for dark mode */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: rgb(241 245 249);
+}
+
+.dark ::-webkit-scrollbar-track {
+    background-color: rgb(30 41 59);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgb(148 163 184);
+    border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background-color: rgb(71 85 105);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(100 116 139);
+}
+
+/* Enhance card hover effects */
+.card-hover-effect {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover-effect:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Button hover animations */
+.btn-gradient {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    transition: all 0.2s ease;
+}
+
+.btn-gradient:hover {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+}
+
+/* Loading animation for priority badges */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.priority-badge {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Dark mode specific enhancements */
+@media (prefers-color-scheme: dark) {
+    .glass-effect {
+        backdrop-filter: blur(10px);
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(71, 85, 105, 0.3);
+    }
 }
 </style>
