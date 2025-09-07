@@ -135,6 +135,12 @@ const openEditDialog = (task: Task) => {
 
 // Submit form
 const submitForm = () => {
+    // Validasi form
+    if (!form.value.title || !form.value.priority || !form.value.due_date) {
+        alert('Mohon lengkapi field yang wajib diisi (Judul, Prioritas, dan Tanggal Deadline)');
+        return;
+    }
+
     const data = {
         title: form.value.title,
         description: form.value.description,
@@ -146,11 +152,17 @@ const submitForm = () => {
         tags: form.value.tags,
     };
 
+    console.log('Submitting data:', data); // Debug log
+
     if (editingTask.value) {
         router.put(`/task-management/${editingTask.value.id}`, data, {
             onSuccess: () => {
                 isDialogOpen.value = false;
                 resetForm();
+            },
+            onError: (errors) => {
+                console.error('Update error:', errors);
+                alert('Gagal update task: ' + JSON.stringify(errors));
             }
         });
     } else {
@@ -158,6 +170,10 @@ const submitForm = () => {
             onSuccess: () => {
                 isDialogOpen.value = false;
                 resetForm();
+            },
+            onError: (errors) => {
+                console.error('Create error:', errors);
+                alert('Gagal membuat task: ' + JSON.stringify(errors));
             }
         });
     }
@@ -275,6 +291,21 @@ const formatDate = (date: string) => {
 const formatTime = (time: string) => {
     return time ? format(new Date(`2000-01-01 ${time}`), 'HH:mm') : '';
 };
+
+// Check if user can edit/delete task
+const canEditTask = (task: Task) => {
+    return props.permissions.canCrud || 
+           props.permissions.hasFullAccess || 
+           task.user_id === props.currentUser.id || 
+           task.assigned_to === props.currentUser.id;
+};
+
+// Check if user can delete task
+const canDeleteTask = (task: Task) => {
+    return props.permissions.canCrud || 
+           props.permissions.hasFullAccess || 
+           task.user_id === props.currentUser.id;
+};
 </script>
 
 <template>
@@ -291,7 +322,10 @@ const formatTime = (time: string) => {
                         </h1>
                         <p class="text-slate-600 dark:text-slate-400 mt-2 text-lg">Kelola dan pantau progress task Anda dengan mudah</p>
                     </div>
-                    <Button @click="openCreateDialog" class="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                    <Button 
+                        v-if="props.permissions.canCrud || props.permissions.hasFullAccess"
+                        @click="openCreateDialog" 
+                        class="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
                         <Plus class="h-4 w-4" />
                         Tambah Task
                     </Button>
@@ -428,10 +462,10 @@ const formatTime = (time: string) => {
                                                         <Button variant="ghost" size="sm" @click="moveTask(task, 'completed')" class="h-7 w-7 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30" title="Tandai Selesai">
                                                             <CheckCircle class="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                                                         </Button>
-                                                        <Button variant="ghost" size="sm" @click="openEditDialog(task)" class="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30">
+                                                        <Button v-if="canEditTask(task)" variant="ghost" size="sm" @click="openEditDialog(task)" class="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30">
                                                             <Edit class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                                         </Button>
-                                                        <Button variant="ghost" size="sm" @click="deleteTask(task)" class="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900/30">
+                                                        <Button v-if="canDeleteTask(task)" variant="ghost" size="sm" @click="deleteTask(task)" class="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900/30">
                                                             <Trash2 class="h-3 w-3 text-red-600 dark:text-red-400" />
                                                         </Button>
                                                     </div>
@@ -502,10 +536,10 @@ const formatTime = (time: string) => {
                                                         <Button variant="ghost" size="sm" @click="moveTask(task, 'completed')" class="h-7 w-7 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30" title="Tandai Selesai">
                                                             <CheckCircle class="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                                                         </Button>
-                                                        <Button variant="ghost" size="sm" @click="openEditDialog(task)" class="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30">
+                                                        <Button v-if="canEditTask(task)" variant="ghost" size="sm" @click="openEditDialog(task)" class="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30">
                                                             <Edit class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                                         </Button>
-                                                        <Button variant="ghost" size="sm" @click="deleteTask(task)" class="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900/30">
+                                                        <Button v-if="canDeleteTask(task)" variant="ghost" size="sm" @click="deleteTask(task)" class="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900/30">
                                                             <Trash2 class="h-3 w-3 text-red-600 dark:text-red-400" />
                                                         </Button>
                                                     </div>
@@ -579,10 +613,10 @@ const formatTime = (time: string) => {
                                                         <Button variant="ghost" size="sm" @click="moveTask(task, 'in_progress')" class="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30" title="Kembali ke Dikerjakan">
                                                             <MoveRight class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                                         </Button>
-                                                        <Button variant="ghost" size="sm" @click="openEditDialog(task)" class="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30">
+                                                        <Button v-if="canEditTask(task)" variant="ghost" size="sm" @click="openEditDialog(task)" class="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30">
                                                             <Edit class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                                         </Button>
-                                                        <Button variant="ghost" size="sm" @click="deleteTask(task)" class="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900/30">
+                                                        <Button v-if="canDeleteTask(task)" variant="ghost" size="sm" @click="deleteTask(task)" class="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900/30">
                                                             <Trash2 class="h-3 w-3 text-red-600 dark:text-red-400" />
                                                         </Button>
                                                     </div>
@@ -662,9 +696,9 @@ const formatTime = (time: string) => {
 
                                 <div>
                                     <Label for="priority" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Prioritas *</Label>
-                                    <Select v-model="form.priority" required>
+                                    <Select v-model:model-value="form.priority" required>
                                         <SelectTrigger class="mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100">
-                                            <SelectValue placeholder="Pilih prioritas" />
+                                            <SelectValue :placeholder="form.priority ? (form.priority === 'low' ? 'Low' : form.priority === 'medium' ? 'Medium' : 'High') : 'Pilih prioritas'" />
                                         </SelectTrigger>
                                         <SelectContent class="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
                                             <SelectItem value="low" class="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">Low</SelectItem>
@@ -676,9 +710,9 @@ const formatTime = (time: string) => {
 
                                 <div>
                                     <Label for="assigned_to" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Assign ke User</Label>
-                                    <Select v-model="form.assigned_to">
+                                    <Select v-model:model-value="form.assigned_to">
                                         <SelectTrigger class="mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100">
-                                            <SelectValue placeholder="Pilih user" />
+                                            <SelectValue :placeholder="form.assigned_to ? users.find(u => u.id === form.assigned_to)?.name : 'Pilih user'" />
                                         </SelectTrigger>
                                         <SelectContent class="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
                                             <SelectItem :value="null" class="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">Tidak di-assign</SelectItem>
@@ -702,7 +736,7 @@ const formatTime = (time: string) => {
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent class="w-auto p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
-                                            <Calendar v-model="form.start_date" />
+                                            <Calendar v-model:model-value="form.start_date" />
                                         </PopoverContent>
                                     </Popover>
                                 </div>
@@ -720,7 +754,7 @@ const formatTime = (time: string) => {
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent class="w-auto p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
-                                            <Calendar v-model="form.due_date" />
+                                            <Calendar v-model:model-value="form.due_date" />
                                         </PopoverContent>
                                     </Popover>
                                 </div>
