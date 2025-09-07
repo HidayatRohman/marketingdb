@@ -14,7 +14,7 @@ import MitraModal from '@/components/MitraModal.vue';
 import MitraDeleteModal from '@/components/MitraDeleteModal.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
-import { Search, Plus, Edit, Trash2, Eye, Building2, Filter, MoreHorizontal, Calendar, ChevronDown, ChevronUp, X, User } from 'lucide-vue-next';
+import { Search, Plus, Edit, Trash2, Eye, Building2, Filter, MoreHorizontal, Calendar, ChevronDown, ChevronUp, X, User, Clock } from 'lucide-vue-next';
 
 interface Brand {
     id: number;
@@ -84,14 +84,78 @@ const search = ref(props.filters.search || '');
 const chat = ref(props.filters.chat || '');
 const label = ref(props.filters.label || '');
 const user = ref(props.filters.user || '');
-const periodeStart = ref(props.filters.periode_start || '');
+const periodeStart = ref(props.filters.periode_start || new Date().toISOString().split('T')[0]);
 const periodeEnd = ref(props.filters.periode_end || new Date().toISOString().split('T')[0]);
 const perPage = ref(props.filters.per_page || 30);
+
+// Date filter presets
+const datePresets = [
+    { key: 'today', label: 'Hari Ini', value: 'today', days: 0 },
+    { key: '3days', label: '3 Hari', value: '3days', days: 3 },
+    { key: '7days', label: '7 Hari', value: '7days', days: 7 },
+    { key: '2weeks', label: '2 Minggu', value: '2weeks', days: 14 },
+    { key: '1month', label: '1 Bulan', value: '1month', days: 30 },
+    { key: 'custom', label: 'Custom', value: 'custom', days: null },
+];
+
+const selectedPreset = ref('today');
+
+// Set date range based on preset
+const setDatePreset = (preset: string) => {
+    selectedPreset.value = preset;
+    const today = new Date();
+    const endDate = new Date().toISOString().split('T')[0];
+    
+    if (preset === 'today') {
+        periodeStart.value = endDate;
+        periodeEnd.value = endDate;
+    } else if (preset === 'custom') {
+        // Don't change dates, let user set manually
+        return;
+    } else {
+        const presetData = datePresets.find(p => p.key === preset);
+        if (presetData && presetData.days !== null) {
+            const startDate = new Date();
+            startDate.setDate(today.getDate() - presetData.days);
+            periodeStart.value = startDate.toISOString().split('T')[0];
+            periodeEnd.value = endDate;
+        }
+    }
+};
 
 // Filter panel state
 const showFilters = ref(false);
 const hasActiveFilters = computed(() => {
-    return search.value || chat.value || label.value || user.value || periodeStart.value || (periodeEnd.value && periodeEnd.value !== new Date().toISOString().split('T')[0]);
+    return search.value || chat.value || label.value || user.value || 
+           periodeStart.value || periodeEnd.value || 
+           selectedPreset.value !== 'today';
+});
+
+// Watch for manual date changes to update preset to custom
+watch([periodeStart, periodeEnd], () => {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Check if current dates match any preset
+    let matchingPreset = 'custom';
+    
+    if (periodeStart.value === today && periodeEnd.value === today) {
+        matchingPreset = 'today';
+    } else {
+        for (const preset of datePresets) {
+            if (preset.days !== null && preset.key !== 'today') {
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() - preset.days);
+                const expectedStart = startDate.toISOString().split('T')[0];
+                
+                if (periodeStart.value === expectedStart && periodeEnd.value === today) {
+                    matchingPreset = preset.key;
+                    break;
+                }
+            }
+        }
+    }
+    
+    selectedPreset.value = matchingPreset;
 });
 
 // Modal states
@@ -243,8 +307,9 @@ const clearFilters = () => {
     chat.value = '';
     label.value = '';
     user.value = '';
-    periodeStart.value = '';
+    periodeStart.value = new Date().toISOString().split('T')[0];
     periodeEnd.value = new Date().toISOString().split('T')[0];
+    selectedPreset.value = 'today';
     perPage.value = 30;
     showFilters.value = false;
 };
@@ -406,6 +471,30 @@ const getFilterParams = () => {
 
                     <!-- Expandable Filter Panel -->
                     <div v-if="showFilters" class="border-t pt-3 space-y-3">
+                        <!-- Date Preset Quick Filters -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                                <Clock class="h-4 w-4" />
+                                Filter Periode Cepat
+                            </label>
+                            <div class="flex flex-wrap gap-2">
+                                <Button
+                                    v-for="preset in datePresets"
+                                    :key="preset.key"
+                                    variant="outline"
+                                    size="sm"
+                                    @click="setDatePreset(preset.key)"
+                                    :class="{
+                                        'bg-primary text-primary-foreground border-primary': selectedPreset === preset.key,
+                                        'hover:bg-primary/10': selectedPreset !== preset.key
+                                    }"
+                                    class="px-3 py-1 h-8 text-xs font-medium"
+                                >
+                                    {{ preset.label }}
+                                </Button>
+                            </div>
+                        </div>
+                        
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
                             <!-- Periode Start -->
                             <div class="space-y-1">
@@ -544,6 +633,42 @@ const getFilterParams = () => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
+                                    <!-- Empty State -->
+                                    <TableRow v-if="mitras.data.length === 0" class="hover:bg-transparent">
+                                        <TableCell colspan="9" class="text-center py-8">
+                                            <div class="flex justify-center">
+                                                <div class="max-w-md mx-auto">
+                                                    <Card class="border-2 border-dashed border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30">
+                                                        <CardContent class="p-8">
+                                                            <div class="flex flex-col items-center justify-center space-y-4">
+                                                                <div class="p-4 bg-orange-100 dark:bg-orange-900/50 rounded-full ring-4 ring-orange-200 dark:ring-orange-800/50">
+                                                                    <Building2 class="h-12 w-12 text-orange-600 dark:text-orange-400" />
+                                                                </div>
+                                                                <div class="space-y-3 text-center">
+                                                                    <h3 class="text-xl font-bold text-orange-900 dark:text-orange-100">
+                                                                        Tidak Ada Data Mitra
+                                                                    </h3>
+                                                                    <div class="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg border border-orange-200 dark:border-orange-700">
+                                                                        <p class="text-sm font-medium text-orange-800 dark:text-orange-200">
+                                                                            <span v-if="hasActiveFilters">
+                                                                                ⚠️ Tidak ditemukan mitra yang sesuai dengan filter yang dipilih.<br>
+                                                                                Coba ubah kriteria pencarian atau hapus filter.
+                                                                            </span>
+                                                                            <span v-else>
+                                                                                📋 Belum ada data mitra yang tersedia di sistem.
+                                                                            </span>
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+
+                                    <!-- Data Rows -->
                                     <TableRow v-for="mitra in mitras.data" :key="mitra.id" class="hover:bg-muted/30 transition-colors">
                                         <TableCell class="font-medium py-3">
                                             <div class="flex items-center gap-3">
