@@ -768,191 +768,6 @@ onMounted(() => {
                 </Card>
             </div>
 
-            <!-- Task Management Report -->
-            <Card class="border-0 shadow-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/50 dark:to-purple-950/50">
-                <CardHeader class="pb-3 sm:pb-4">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <CardTitle class="flex items-center gap-3 text-lg sm:text-xl font-bold">
-                            <div class="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg shadow-lg">
-                                <CheckCircle class="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                            </div>
-                            Report Task Management
-                        </CardTitle>
-                        <Badge class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-3 py-1 self-start sm:self-center">
-                            Real-time Data
-                        </Badge>
-                    </div>
-                </CardHeader>
-                <CardContent class="space-y-6 sm:space-y-8 p-4 sm:p-6">
-                    <!-- Overall Task Statistics -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 shadow-md">
-                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                            <BarChart3 class="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600" />
-                            Total Keseluruhan Task
-                        </h3>
-                        <div class="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-5">
-                            <!-- Total Tasks -->
-                            <div class="text-center p-3 sm:p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg">
-                                <div class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 bg-gradient-to-r from-gray-500 to-gray-600 rounded-lg flex items-center justify-center">
-                                    <Clock class="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                                </div>
-                                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1">Total Task</p>
-                                <p class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">{{ taskStats.overall.total }}</p>
-                            </div>
-
-                            <!-- Pending Tasks -->
-                            <div class="text-center p-3 sm:p-4 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/30 dark:to-orange-900/30 rounded-lg">
-                                <div class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
-                                    <Clock class="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                                </div>
-                                <p class="text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 mb-1">Rencana</p>
-                                <p class="text-lg sm:text-xl font-bold text-yellow-900 dark:text-yellow-100">{{ taskStats.overall.pending }}</p>
-                                <p class="text-xs text-yellow-600 dark:text-yellow-400">
-                                    {{ taskStats.overall.total > 0 ? Math.round((taskStats.overall.pending / taskStats.overall.total) * 100) : 0 }}%
-                                </p>
-                            </div>
-
-                            <!-- In Progress Tasks -->
-                            <div class="text-center p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-lg">
-                                <div class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                                    <Activity class="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                                </div>
-                                <p class="text-xs sm:text-sm text-blue-700 dark:text-blue-400 mb-1">Dikerjakan</p>
-                                <p class="text-lg sm:text-xl font-bold text-blue-900 dark:text-blue-100">{{ taskStats.overall.in_progress }}</p>
-                                <p class="text-xs text-blue-600 dark:text-blue-400">
-                                    {{ taskStats.overall.total > 0 ? Math.round((taskStats.overall.in_progress / taskStats.overall.total) * 100) : 0 }}%
-                                </p>
-                            </div>
-
-                            <!-- Completed Tasks -->
-                            <div class="text-center p-3 sm:p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-lg">
-                                <div class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                                    <CheckCircle class="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                                </div>
-                                <p class="text-xs sm:text-sm text-green-700 dark:text-green-400 mb-1">Selesai</p>
-                                <p class="text-lg sm:text-xl font-bold text-green-900 dark:text-green-100">{{ taskStats.overall.completed }}</p>
-                                <p class="text-xs text-green-600 dark:text-green-400">
-                                    {{ taskStats.overall.total > 0 ? Math.round((taskStats.overall.completed / taskStats.overall.total) * 100) : 0 }}%
-                                </p>
-                            </div>
-
-                            <!-- Overdue Tasks -->
-                            <div class="text-center p-3 sm:p-4 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/30 dark:to-pink-900/30 rounded-lg">
-                                <div class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center">
-                                    <AlertCircle class="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                                </div>
-                                <p class="text-xs sm:text-sm text-red-700 dark:text-red-400 mb-1">Terlambat</p>
-                                <p class="text-lg sm:text-xl font-bold text-red-900 dark:text-red-100">{{ taskStats.overall.overdue }}</p>
-                                <p class="text-xs text-red-600 dark:text-red-400">
-                                    {{ taskStats.overall.total > 0 ? Math.round((taskStats.overall.overdue / taskStats.overall.total) * 100) : 0 }}%
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Task Statistics by Marketing -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 shadow-md">
-                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                            <Users class="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
-                            Report Task per Marketing
-                        </h3>
-                        
-                        <!-- Table Header -->
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm">
-                                <thead>
-                                    <tr class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30">
-                                        <th class="text-left p-3 font-semibold text-gray-700 dark:text-gray-300">Marketing</th>
-                                        <th class="text-center p-3 font-semibold text-yellow-700 dark:text-yellow-400">Rencana</th>
-                                        <th class="text-center p-3 font-semibold text-blue-700 dark:text-blue-400">Dikerjakan</th>
-                                        <th class="text-center p-3 font-semibold text-green-700 dark:text-green-400">Selesai</th>
-                                        <th class="text-center p-3 font-semibold text-red-700 dark:text-red-400">Terlambat</th>
-                                        <th class="text-center p-3 font-semibold text-indigo-700 dark:text-indigo-400">Total</th>
-                                        <th class="text-center p-3 font-semibold text-purple-700 dark:text-purple-400">Completion %</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="marketing in taskStats.by_marketing" :key="marketing.id" 
-                                        class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
-                                        <td class="p-3">
-                                            <div class="flex items-center gap-2">
-                                                <div class="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
-                                                    <User class="h-4 w-4 text-white" />
-                                                </div>
-                                                <div>
-                                                    <p class="font-medium text-gray-900 dark:text-white">{{ marketing.name }}</p>
-                                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ marketing.email }}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="text-center p-3">
-                                            <Badge class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                                                {{ marketing.pending_tasks }}
-                                            </Badge>
-                                        </td>
-                                        <td class="text-center p-3">
-                                            <Badge class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                                {{ marketing.in_progress_tasks }}
-                                            </Badge>
-                                        </td>
-                                        <td class="text-center p-3">
-                                            <Badge class="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                {{ marketing.completed_tasks }}
-                                            </Badge>
-                                        </td>
-                                        <td class="text-center p-3">
-                                            <Badge class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                                {{ marketing.assigned_overdue }}
-                                            </Badge>
-                                        </td>
-                                        <td class="text-center p-3">
-                                            <Badge class="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
-                                                {{ marketing.total_tasks }}
-                                            </Badge>
-                                        </td>
-                                        <td class="text-center p-3">
-                                            <div class="flex items-center justify-center gap-2">
-                                                <div class="w-12 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                                    <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full transition-all duration-300"
-                                                         :style="{ width: `${marketing.completion_rate}%` }"></div>
-                                                </div>
-                                                <span class="text-xs font-medium text-purple-600 dark:text-purple-400">
-                                                    {{ marketing.completion_rate }}%
-                                                </span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Summary Row -->
-                        <div class="mt-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-lg">
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                <div class="flex items-center gap-2">
-                                    <Award class="h-5 w-5 text-purple-600" />
-                                    <span class="font-semibold text-gray-900 dark:text-white">Total Keseluruhan:</span>
-                                </div>
-                                <div class="flex flex-wrap gap-4 text-sm">
-                                    <span class="text-yellow-700 dark:text-yellow-400">
-                                        Rencana: <strong>{{ taskStats.overall.pending }}</strong>
-                                    </span>
-                                    <span class="text-blue-700 dark:text-blue-400">
-                                        Dikerjakan: <strong>{{ taskStats.overall.in_progress }}</strong>
-                                    </span>
-                                    <span class="text-green-700 dark:text-green-400">
-                                        Selesai: <strong>{{ taskStats.overall.completed }}</strong>
-                                    </span>
-                                    <span class="text-purple-700 dark:text-purple-400">
-                                        Total: <strong>{{ taskStats.overall.total }}</strong>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
             <!-- Tabs for Different Analytics Views -->
             <Tabs default-value="overview" class="w-full">
                 <TabsList class="grid w-full grid-cols-5">
@@ -1070,6 +885,191 @@ onMounted(() => {
                                         Lihat Semua Lead
                                     </Button>
                                 </Link>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Task Management Report -->
+                    <Card class="border-0 shadow-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/50 dark:to-purple-950/50">
+                        <CardHeader class="pb-3 sm:pb-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                <CardTitle class="flex items-center gap-3 text-lg sm:text-xl font-bold">
+                                    <div class="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg shadow-lg">
+                                        <CheckCircle class="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                                    </div>
+                                    Report Task Management
+                                </CardTitle>
+                                <Badge class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-3 py-1 self-start sm:self-center">
+                                    Real-time Data
+                                </Badge>
+                            </div>
+                        </CardHeader>
+                        <CardContent class="space-y-6 sm:space-y-8 p-4 sm:p-6">
+                            <!-- Overall Task Statistics -->
+                            <div class="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 shadow-md">
+                                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <BarChart3 class="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600" />
+                                    Total Keseluruhan Task
+                                </h3>
+                                <div class="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-5">
+                                    <!-- Total Tasks -->
+                                    <div class="text-center p-3 sm:p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg">
+                                        <div class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 bg-gradient-to-r from-gray-500 to-gray-600 rounded-lg flex items-center justify-center">
+                                            <Clock class="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                                        </div>
+                                        <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1">Total Task</p>
+                                        <p class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">{{ taskStats.overall.total }}</p>
+                                    </div>
+
+                                    <!-- Pending Tasks -->
+                                    <div class="text-center p-3 sm:p-4 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/30 dark:to-orange-900/30 rounded-lg">
+                                        <div class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
+                                            <Clock class="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                                        </div>
+                                        <p class="text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 mb-1">Rencana</p>
+                                        <p class="text-lg sm:text-xl font-bold text-yellow-900 dark:text-yellow-100">{{ taskStats.overall.pending }}</p>
+                                        <p class="text-xs text-yellow-600 dark:text-yellow-400">
+                                            {{ taskStats.overall.total > 0 ? Math.round((taskStats.overall.pending / taskStats.overall.total) * 100) : 0 }}%
+                                        </p>
+                                    </div>
+
+                                    <!-- In Progress Tasks -->
+                                    <div class="text-center p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-lg">
+                                        <div class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                                            <Activity class="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                                        </div>
+                                        <p class="text-xs sm:text-sm text-blue-700 dark:text-blue-400 mb-1">Dikerjakan</p>
+                                        <p class="text-lg sm:text-xl font-bold text-blue-900 dark:text-blue-100">{{ taskStats.overall.in_progress }}</p>
+                                        <p class="text-xs text-blue-600 dark:text-blue-400">
+                                            {{ taskStats.overall.total > 0 ? Math.round((taskStats.overall.in_progress / taskStats.overall.total) * 100) : 0 }}%
+                                        </p>
+                                    </div>
+
+                                    <!-- Completed Tasks -->
+                                    <div class="text-center p-3 sm:p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-lg">
+                                        <div class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                                            <CheckCircle class="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                                        </div>
+                                        <p class="text-xs sm:text-sm text-green-700 dark:text-green-400 mb-1">Selesai</p>
+                                        <p class="text-lg sm:text-xl font-bold text-green-900 dark:text-green-100">{{ taskStats.overall.completed }}</p>
+                                        <p class="text-xs text-green-600 dark:text-green-400">
+                                            {{ taskStats.overall.total > 0 ? Math.round((taskStats.overall.completed / taskStats.overall.total) * 100) : 0 }}%
+                                        </p>
+                                    </div>
+
+                                    <!-- Overdue Tasks -->
+                                    <div class="text-center p-3 sm:p-4 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/30 dark:to-pink-900/30 rounded-lg">
+                                        <div class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center">
+                                            <AlertCircle class="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                                        </div>
+                                        <p class="text-xs sm:text-sm text-red-700 dark:text-red-400 mb-1">Terlambat</p>
+                                        <p class="text-lg sm:text-xl font-bold text-red-900 dark:text-red-100">{{ taskStats.overall.overdue }}</p>
+                                        <p class="text-xs text-red-600 dark:text-red-400">
+                                            {{ taskStats.overall.total > 0 ? Math.round((taskStats.overall.overdue / taskStats.overall.total) * 100) : 0 }}%
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Task Statistics by Marketing -->
+                            <div class="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 shadow-md">
+                                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <Users class="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+                                    Report Task per Marketing
+                                </h3>
+                                
+                                <!-- Table Header -->
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm">
+                                        <thead>
+                                            <tr class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30">
+                                                <th class="text-left p-3 font-semibold text-gray-700 dark:text-gray-300">Marketing</th>
+                                                <th class="text-center p-3 font-semibold text-yellow-700 dark:text-yellow-400">Rencana</th>
+                                                <th class="text-center p-3 font-semibold text-blue-700 dark:text-blue-400">Dikerjakan</th>
+                                                <th class="text-center p-3 font-semibold text-green-700 dark:text-green-400">Selesai</th>
+                                                <th class="text-center p-3 font-semibold text-red-700 dark:text-red-400">Terlambat</th>
+                                                <th class="text-center p-3 font-semibold text-indigo-700 dark:text-indigo-400">Total</th>
+                                                <th class="text-center p-3 font-semibold text-purple-700 dark:text-purple-400">Completion %</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="marketing in taskStats.by_marketing" :key="marketing.id" 
+                                                class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                                                <td class="p-3">
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
+                                                            <User class="h-4 w-4 text-white" />
+                                                        </div>
+                                                        <div>
+                                                            <p class="font-medium text-gray-900 dark:text-white">{{ marketing.name }}</p>
+                                                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ marketing.email }}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center p-3">
+                                                    <Badge class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                                        {{ marketing.pending_tasks }}
+                                                    </Badge>
+                                                </td>
+                                                <td class="text-center p-3">
+                                                    <Badge class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                        {{ marketing.in_progress_tasks }}
+                                                    </Badge>
+                                                </td>
+                                                <td class="text-center p-3">
+                                                    <Badge class="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                        {{ marketing.completed_tasks }}
+                                                    </Badge>
+                                                </td>
+                                                <td class="text-center p-3">
+                                                    <Badge class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                                        {{ marketing.assigned_overdue }}
+                                                    </Badge>
+                                                </td>
+                                                <td class="text-center p-3">
+                                                    <Badge class="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                                                        {{ marketing.total_tasks }}
+                                                    </Badge>
+                                                </td>
+                                                <td class="text-center p-3">
+                                                    <div class="flex items-center justify-center gap-2">
+                                                        <div class="w-12 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                                            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full transition-all duration-300"
+                                                                 :style="{ width: `${marketing.completion_rate}%` }"></div>
+                                                        </div>
+                                                        <span class="text-xs font-medium text-purple-600 dark:text-purple-400">
+                                                            {{ marketing.completion_rate }}%
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Summary Row -->
+                                <div class="mt-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-lg">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div class="flex items-center gap-2">
+                                            <Award class="h-5 w-5 text-purple-600" />
+                                            <span class="font-semibold text-gray-900 dark:text-white">Total Keseluruhan:</span>
+                                        </div>
+                                        <div class="flex flex-wrap gap-4 text-sm">
+                                            <span class="text-yellow-700 dark:text-yellow-400">
+                                                Rencana: <strong>{{ taskStats.overall.pending }}</strong>
+                                            </span>
+                                            <span class="text-blue-700 dark:text-blue-400">
+                                                Dikerjakan: <strong>{{ taskStats.overall.in_progress }}</strong>
+                                            </span>
+                                            <span class="text-green-700 dark:text-green-400">
+                                                Selesai: <strong>{{ taskStats.overall.completed }}</strong>
+                                            </span>
+                                            <span class="text-purple-700 dark:text-purple-400">
+                                                Total: <strong>{{ taskStats.overall.total }}</strong>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

@@ -105,7 +105,7 @@ onUnmounted(() => {
                         <div class="w-10 h-10 bg-white/15 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/20 p-1">
                             <img src="/images/partner-bisnismu-logo.png" alt="Partner Bisnismu" class="w-full h-full object-contain" />
                         </div>
-                        <div>
+                        <div class="hidden sm:block">
                             <h1 class="text-xl font-bold text-gray-700">Partner Bisnismu</h1>
                         </div>
                     </div>
@@ -142,7 +142,7 @@ onUnmounted(() => {
         <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
             <div class="grid lg:grid-cols-2 gap-12 items-center min-h-[70vh]">
                 <!-- Left Content -->
-                <div class="text-left space-y-8">
+                <div class="text-left md:text-left text-center space-y-8">
                     <!-- David Badge -->
                     <div class="inline-flex items-center space-x-2 bg-blue-400/20 backdrop-blur-sm border border-blue-300/30 rounded-full px-4 py-2">
                         <div class="w-6 h-6 bg-blue-400 rounded-full flex items-center justify-center">
@@ -160,7 +160,7 @@ onUnmounted(() => {
                             Bisnismu</span>
                         </h1>
                         
-                        <div class="flex items-center space-x-4 pt-4">
+                        <div class="flex items-center justify-center md:justify-start space-x-4 pt-4">
                             <button class="bg-black/20 backdrop-blur-sm hover:bg-black/30 text-gray-700 px-8 py-3 rounded-full font-medium transition-all duration-300 border border-white/20 flex items-center space-x-2">
                                 <Play class="w-5 h-5" />
                                 <span>Start Project</span>
@@ -298,7 +298,7 @@ onUnmounted(() => {
         <footer class="relative z-10 bg-black/10 backdrop-blur-sm border-t border-white/10 py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-wrap justify-center items-center gap-8 opacity-60">
-                    <span class="text-gray-600 font-medium">Copyright © 2025 Partner Bisnismu. CTO BCE With Love</span>
+                    <span class="text-gray-600 font-medium text-xs">Copyright © 2025 Partner Bisnismu. CTO BCE With Love</span>
                 </div>
             </div>
         </footer>
@@ -325,6 +325,25 @@ onUnmounted(() => {
         font-size: 2.5rem;
         line-height: 1.1;
     }
+    
+    /* Center align all text on mobile */
+    .text-left {
+        text-align: center !important;
+    }
+    
+    h1, h2, h3, h4, h5, h6, p, span, div {
+        text-align: center !important;
+    }
+    
+    /* Exception for flex items that should remain centered */
+    .flex {
+        justify-content: center !important;
+    }
+}
+
+/* Footer font size */
+footer span {
+    font-size: 12px !important;
 }
 
 /* Smooth scrolling */
