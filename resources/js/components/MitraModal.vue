@@ -139,7 +139,12 @@ watch(() => props.mitra, (newMitra) => {
         }
         form.brand_id = newMitra.brand_id || null;
         form.label_id = newMitra.label_id || null;
-        form.user_id = newMitra.user_id || null;
+        // For marketing role, always use current user ID
+        if (props.currentUser.role === 'marketing') {
+            form.user_id = props.currentUser.id;
+        } else {
+            form.user_id = newMitra.user_id || null;
+        }
         form.chat = newMitra.chat || 'masuk';
         form.kota = newMitra.kota || 'Unknown';
         form.provinsi = newMitra.provinsi || 'Unknown';
@@ -373,13 +378,23 @@ const chatLabels = {
                             <User class="h-3 w-3" />
                             Marketing
                         </Label>
-                        <!-- Show selected marketing user for marketing role or readonly view -->
-                        <div v-if="currentUser.role === 'marketing' || mode === 'view'" class="flex items-center gap-2 p-2 border rounded-md bg-muted/50">
+                        <!-- Show current user for marketing role (read-only) -->
+                        <div v-if="currentUser.role === 'marketing'" class="flex items-center gap-2 p-2 border rounded-md bg-muted/50">
                             <div class="p-1 bg-blue-100 dark:bg-blue-800 rounded">
                                 <User class="h-4 w-4 text-blue-600 dark:text-blue-400" />
                             </div>
                             <span class="text-gray-900 dark:text-gray-100 font-medium">
-                                {{ currentUser.role === 'marketing' ? currentUser.name : (form.user_id ? marketingUsers.find(u => u.id === form.user_id)?.name || 'Tidak ada' : 'Tidak ada') }}
+                                {{ currentUser.name }}
+                            </span>
+                            <span class="text-xs text-muted-foreground">(Auto)</span>
+                        </div>
+                        <!-- Show selected marketing user for readonly view -->
+                        <div v-else-if="mode === 'view'" class="flex items-center gap-2 p-2 border rounded-md bg-muted/50">
+                            <div class="p-1 bg-blue-100 dark:bg-blue-800 rounded">
+                                <User class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <span class="text-gray-900 dark:text-gray-100 font-medium">
+                                {{ form.user_id ? marketingUsers.find(u => u.id === form.user_id)?.name || 'Tidak ada' : 'Tidak ada' }}
                             </span>
                         </div>
                         <!-- Show dropdown for super admin and admin -->

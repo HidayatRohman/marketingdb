@@ -136,10 +136,14 @@ class MitraController extends Controller
     public function store(StoreMitraRequest $request)
     {
         $validated = $request->validated();
+        $user = auth()->user();
         
-        // Set user_id to current logged in user if not provided
-        if (empty($validated['user_id'])) {
-            $validated['user_id'] = auth()->id();
+        // For marketing role, always use current user ID
+        if ($user->role === 'marketing') {
+            $validated['user_id'] = $user->id;
+        } elseif (empty($validated['user_id'])) {
+            // For admin/super_admin, use provided user_id or current user if empty
+            $validated['user_id'] = $user->id;
         }
 
         // Set default values for kota and provinsi if empty
@@ -217,6 +221,11 @@ class MitraController extends Controller
         }
 
         $validated = $request->validated();
+
+        // For marketing role, always keep current user ID (don't allow change)
+        if ($user->role === 'marketing') {
+            $validated['user_id'] = $user->id;
+        }
 
         // Set default values for kota and provinsi if empty
         if (empty($validated['kota'])) {
