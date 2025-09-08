@@ -12,8 +12,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { 
-    Plus, Calendar as CalendarIcon, List, Clock, Flag, 
-    User, CheckCircle, XCircle, AlertCircle, MoreVertical,
+    Plus, Calendar, CalendarIcon, List, Clock, Flag, 
+    User, UserCheck, CheckCircle, XCircle, AlertCircle, MoreVertical,
     Edit, Trash2, ArrowLeft, ArrowRight, Columns3
 } from 'lucide-vue-next';
 import { ref, computed, watch } from 'vue';
@@ -267,15 +267,15 @@ const allFilteredTodos = computed(() => {
 });
 
 const priorityColors = {
-    low: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-    medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-    high: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+    low: 'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 dark:from-emerald-900/30 dark:to-teal-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700',
+    medium: 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 dark:from-amber-900/30 dark:to-orange-900/30 dark:text-amber-300 border border-amber-200 dark:border-amber-700',
+    high: 'bg-gradient-to-r from-rose-100 to-red-100 text-rose-800 dark:from-rose-900/30 dark:to-red-900/30 dark:text-rose-300 border border-rose-200 dark:border-rose-700'
 };
 
 const statusColors = {
-    pending: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
-    in_progress: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-    completed: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+    pending: 'bg-gradient-to-r from-slate-100 to-gray-100 text-slate-700 dark:from-slate-800/50 dark:to-gray-800/50 dark:text-slate-300 border border-slate-200 dark:border-slate-600',
+    in_progress: 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 dark:from-blue-900/30 dark:to-indigo-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-700',
+    completed: 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 dark:from-green-900/30 dark:to-emerald-900/30 dark:text-green-300 border border-green-200 dark:border-green-700'
 };
 
 const priorityLabels = {
@@ -629,97 +629,106 @@ const getStatusIcon = (status: string) => {
 
         <div class="p-6 space-y-6">
             <!-- Header -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">To Do List</h1>
-                    <p class="text-gray-600 dark:text-gray-400">
-                        {{ isSuperAdmin ? 'Kelola semua tugas dan jadwal marketing tim' : 'Kelola tugas dan jadwal marketing Anda' }}
-                    </p>
-                    <div v-if="isSuperAdmin" class="mt-1">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                            👑 Super Admin View - Semua Todo
-                        </span>
+            <div class="relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-6 border border-blue-100 dark:border-blue-800">
+                <div class="absolute inset-0 bg-grid-pattern opacity-5"></div>
+                <div class="relative flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div class="space-y-2">
+                        <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                            To Do List
+                        </h1>
+                        <p class="text-gray-600 dark:text-gray-300 text-lg">
+                            {{ isSuperAdmin ? '✨ Kelola semua tugas dan jadwal marketing tim' : '📋 Kelola tugas dan jadwal marketing Anda' }}
+                        </p>
+                        <div v-if="isSuperAdmin" class="mt-2">
+                            <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg">
+                                👑 Super Admin View - Akses Penuh
+                            </span>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="flex items-center gap-2">
-                    <Tabs :default-value="currentView" @update:model-value="changeView">
-                        <TabsList>
-                            <TabsTrigger value="calendar" class="flex items-center gap-2">
-                                <CalendarIcon class="h-4 w-4" />
-                                Kalender
-                            </TabsTrigger>
-                            <TabsTrigger value="board" class="flex items-center gap-2">
-                                <Columns3 class="h-4 w-4" />
-                                Board
-                            </TabsTrigger>
-                            <TabsTrigger value="list" class="flex items-center gap-2">
-                                <List class="h-4 w-4" />
-                                Daftar
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
                     
-                    <Button @click="openCreateModal" class="ml-2">
-                        <Plus class="h-4 w-4 mr-2" />
-                        Tambah Todo
-                    </Button>
+                    <div class="flex items-center gap-3">
+                        <Tabs :default-value="currentView" @update:model-value="changeView">
+                            <TabsList class="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-white/20 dark:border-gray-700/50 shadow-lg">
+                                <TabsTrigger value="calendar" class="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white transition-all duration-200">
+                                    <CalendarIcon class="h-4 w-4" />
+                                    Kalender
+                                </TabsTrigger>
+                                <TabsTrigger value="board" class="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white transition-all duration-200">
+                                    <Columns3 class="h-4 w-4" />
+                                    Board
+                                </TabsTrigger>
+                                <TabsTrigger value="list" class="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white transition-all duration-200">
+                                    <List class="h-4 w-4" />
+                                    Daftar
+                                </TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                        
+                        <Button @click="openCreateModal" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
+                            <Plus class="h-4 w-4 mr-2" />
+                            Tambah Todo
+                        </Button>
+                    </div>
                 </div>
             </div>
 
             <!-- Stats Cards -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card>
-                    <CardContent class="p-4">
-                        <div class="flex items-center space-x-2">
-                            <div class="p-2 bg-blue-100 rounded-lg">
-                                <List class="h-4 w-4 text-blue-600" />
+                <Card class="relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20"></div>
+                    <CardContent class="p-4 relative">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+                                <List class="h-5 w-5 text-white" />
                             </div>
                             <div>
-                                <p class="text-sm text-gray-600">Total</p>
-                                <p class="text-xl font-bold">{{ stats.total }}</p>
+                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Tugas</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ stats.total }}</p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
                 
-                <Card>
-                    <CardContent class="p-4">
-                        <div class="flex items-center space-x-2">
-                            <div class="p-2 bg-green-100 rounded-lg">
-                                <CheckCircle class="h-4 w-4 text-green-600" />
+                <Card class="relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                    <div class="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 dark:from-green-500/20 dark:to-emerald-500/20"></div>
+                    <CardContent class="p-4 relative">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg">
+                                <CheckCircle class="h-5 w-5 text-white" />
                             </div>
                             <div>
-                                <p class="text-sm text-gray-600">Selesai</p>
-                                <p class="text-xl font-bold">{{ stats.completed }}</p>
+                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Selesai</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ stats.completed }}</p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
                 
-                <Card>
-                    <CardContent class="p-4">
-                        <div class="flex items-center space-x-2">
-                            <div class="p-2 bg-yellow-100 rounded-lg">
-                                <Clock class="h-4 w-4 text-yellow-600" />
+                <Card class="relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                    <div class="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/10 dark:from-amber-500/20 dark:to-orange-500/20"></div>
+                    <CardContent class="p-4 relative">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
+                                <Clock class="h-5 w-5 text-white" />
                             </div>
                             <div>
-                                <p class="text-sm text-gray-600">Pending</p>
-                                <p class="text-xl font-bold">{{ stats.pending }}</p>
+                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Pending</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ stats.pending }}</p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
                 
-                <Card>
-                    <CardContent class="p-4">
-                        <div class="flex items-center space-x-2">
-                            <div class="p-2 bg-red-100 rounded-lg">
-                                <XCircle class="h-4 w-4 text-red-600" />
+                <Card class="relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                    <div class="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-red-500/10 dark:from-rose-500/20 dark:to-red-500/20"></div>
+                    <CardContent class="p-4 relative">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-3 bg-gradient-to-br from-rose-500 to-red-600 rounded-xl shadow-lg">
+                                <XCircle class="h-5 w-5 text-white" />
                             </div>
                             <div>
-                                <p class="text-sm text-gray-600">Terlambat</p>
-                                <p class="text-xl font-bold">{{ stats.overdue }}</p>
+                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Terlambat</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ stats.overdue }}</p>
                             </div>
                         </div>
                     </CardContent>
@@ -729,36 +738,41 @@ const getStatusIcon = (status: string) => {
             <!-- Calendar View -->
             <div v-if="currentView === 'calendar'" class="space-y-4">
                 <!-- Calendar Legend -->
-                <Card>
-                    <CardContent class="p-4">
-                        <div class="flex flex-wrap items-center gap-4 text-sm">
-                            <span class="font-medium text-gray-700 dark:text-gray-300">Legend:</span>
+                <Card class="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 border-blue-200 dark:border-blue-700">
+                    <CardContent class="p-5">
+                        <div class="flex flex-wrap items-center gap-6 text-sm">
+                            <span class="font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                                <CalendarIcon class="h-4 w-4" />
+                                Legend:
+                            </span>
                             
-                            <div class="flex items-center gap-2">
-                                <div class="w-3 h-3 rounded bg-gray-100 border"></div>
-                                <span class="text-gray-600">Pending</span>
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-4 h-4 rounded-lg bg-gradient-to-br from-slate-200 to-gray-200 dark:from-slate-600 dark:to-gray-600 border border-slate-300 dark:border-slate-500 shadow-sm"></div>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium">Pending</span>
                             </div>
                             
-                            <div class="flex items-center gap-2">
-                                <div class="w-3 h-3 rounded bg-blue-100 border"></div>
-                                <span class="text-gray-600">Dikerjakan</span>
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-4 h-4 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-500 border border-blue-300 shadow-sm"></div>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium">Dikerjakan</span>
                             </div>
                             
-                            <div class="flex items-center gap-2">
-                                <div class="w-3 h-3 rounded bg-green-100 border"></div>
-                                <span class="text-gray-600">Selesai</span>
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-4 h-4 rounded-lg bg-gradient-to-br from-green-400 to-emerald-500 border border-green-300 shadow-sm"></div>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium">Selesai</span>
                             </div>
                             
-                            <div class="flex items-center gap-2">
-                                <Flag class="w-3 h-3 text-red-600" />
-                                <span class="text-gray-600">Prioritas Tinggi</span>
-                            </div>
-                            
-                            <div class="flex items-center gap-2">
-                                <div class="flex items-center">
-                                    <span class="text-xs">●━━●</span>
+                            <div class="flex items-center gap-2.5">
+                                <div class="p-1 bg-gradient-to-br from-rose-100 to-red-100 dark:from-rose-900/30 dark:to-red-900/30 rounded-lg border border-rose-200 dark:border-rose-700">
+                                    <Flag class="w-3 h-3 text-rose-600 dark:text-rose-400" />
                                 </div>
-                                <span class="text-gray-600">Range Tanggal (Mulai - Selesai)</span>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium">Prioritas Tinggi</span>
+                            </div>
+                            
+                            <div class="flex items-center gap-2.5">
+                                <div class="flex items-center">
+                                    <span class="text-sm font-mono text-purple-600 dark:text-purple-400">●━━●</span>
+                                </div>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium">Range Tanggal</span>
                             </div>
                             
                             <span class="text-xs text-gray-500">💡 Todo dengan tanggal mulai ditampilkan sebagai bar dari mulai sampai deadline</span>
@@ -870,56 +884,75 @@ const getStatusIcon = (status: string) => {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="space-y-3">
+                        <div class="space-y-4">
                             <div v-for="todo in todosForSelectedDate" :key="todo.id"
-                                 class="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-                                <div class="flex items-center space-x-3">
-                                    <Checkbox 
-                                        :checked="todo.status === 'completed'"
-                                        @update:checked="(checked: boolean) => updateStatus(todo, checked)"
-                                    />
-                                    
-                                    <div class="flex-1">
-                                        <h4 class="font-medium text-gray-900 dark:text-gray-100">
-                                            {{ todo.title }}
-                                        </h4>
-                                        <div class="flex items-center gap-2 mt-1">
-                                            <Badge :class="priorityColors[todo.priority]">
-                                                {{ priorityLabels[todo.priority] }}
-                                            </Badge>
-                                            <Badge :class="statusColors[todo.status]">
-                                                {{ statusLabels[todo.status] }}
-                                            </Badge>
-                                            <span v-if="todo.due_time" class="text-sm text-gray-500">
-                                                {{ todo.due_time }}
-                                            </span>
-                                            <span class="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                                                📝 {{ todo.user.name }}
-                                            </span>
-                                            <span v-if="todo.assigned_user" class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
-                                                👤 {{ todo.assigned_user.name }}
-                                            </span>
+                                 class="group relative overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 hover:-translate-y-1">
+                                
+                                <!-- Priority indicator line -->
+                                <div 
+                                    class="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+                                    :class="{
+                                        'bg-gradient-to-b from-emerald-500 to-teal-500': todo.priority === 'low',
+                                        'bg-gradient-to-b from-amber-500 to-orange-500': todo.priority === 'medium',
+                                        'bg-gradient-to-b from-rose-500 to-red-500': todo.priority === 'high'
+                                    }"
+                                ></div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-4 flex-1">
+                                        <Checkbox 
+                                            :checked="todo.status === 'completed'"
+                                            @update:checked="(checked: boolean) => updateStatus(todo, checked)"
+                                            class="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                                        />
+                                        
+                                        <div class="flex-1">
+                                            <h4 class="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                                {{ todo.title }}
+                                            </h4>
+                                            <div class="flex flex-wrap items-center gap-2 mt-2">
+                                                <Badge :class="priorityColors[todo.priority]" class="text-xs font-medium shadow-sm">
+                                                    <Flag class="h-3 w-3 mr-1" />
+                                                    {{ priorityLabels[todo.priority] }}
+                                                </Badge>
+                                                <Badge :class="statusColors[todo.status]" class="text-xs font-medium shadow-sm">
+                                                    <component :is="getStatusIcon(todo.status)" class="h-3 w-3 mr-1" />
+                                                    {{ statusLabels[todo.status] }}
+                                                </Badge>
+                                                <div v-if="todo.due_time" class="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 text-cyan-700 dark:text-cyan-300 rounded-lg text-xs font-medium border border-cyan-200 dark:border-cyan-700">
+                                                    <Clock class="h-3 w-3" />
+                                                    {{ todo.due_time }}
+                                                </div>
+                                                <div class="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-medium border border-blue-200 dark:border-blue-700">
+                                                    <User class="h-3 w-3" />
+                                                    {{ todo.user.name }}
+                                                </div>
+                                                <div v-if="todo.assigned_user" class="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-700 dark:text-green-300 rounded-lg text-xs font-medium border border-green-200 dark:border-green-700">
+                                                    <UserCheck class="h-3 w-3" />
+                                                    {{ todo.assigned_user.name }}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+                                    
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger as-child>
+                                            <Button variant="ghost" size="sm" class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                <MoreVertical class="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem @click="openEditModal(todo)">
+                                                <Edit class="h-4 w-4 mr-2" />
+                                                Edit
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem @click="deleteTodo(todo)" class="text-red-600">
+                                                <Trash2 class="h-4 w-4 mr-2" />
+                                                Hapus
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
-                                
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger as-child>
-                                        <Button variant="ghost" size="sm">
-                                            <MoreVertical class="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuItem @click="openEditModal(todo)">
-                                            <Edit class="h-4 w-4 mr-2" />
-                                            Edit
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem @click="deleteTodo(todo)" class="text-red-600">
-                                            <Trash2 class="h-4 w-4 mr-2" />
-                                            Hapus
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
                             </div>
                         </div>
                     </CardContent>
@@ -977,68 +1010,79 @@ const getStatusIcon = (status: string) => {
                         <!-- Todo Cards -->
                         <div class="space-y-3">
                             <div v-for="todo in getTodosForWeekDay(day)" :key="todo.id"
-                                 class="bg-white dark:bg-gray-700 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-600 cursor-pointer hover:shadow-md transition-shadow"
+                                 class="group relative overflow-hidden bg-white dark:bg-gray-700 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-600 cursor-pointer hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 hover:-translate-y-1"
                                  @click="openEditModal(todo)">
                                 
+                                <!-- Priority indicator line -->
+                                <div 
+                                    class="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+                                    :class="{
+                                        'bg-gradient-to-b from-emerald-500 to-teal-500': todo.priority === 'low',
+                                        'bg-gradient-to-b from-amber-500 to-orange-500': todo.priority === 'medium',
+                                        'bg-gradient-to-b from-rose-500 to-red-500': todo.priority === 'high'
+                                    }"
+                                ></div>
+                                
                                 <!-- Card Header -->
-                                <div class="flex items-start justify-between mb-2">
-                                    <h4 class="font-medium text-sm text-gray-900 dark:text-gray-100 line-clamp-2">
+                                <div class="flex items-start justify-between mb-3">
+                                    <h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight">
                                         {{ todo.title }}
                                     </h4>
                                     <Checkbox 
                                         :checked="todo.status === 'completed'"
                                         @update:checked="(checked: boolean) => updateStatus(todo, checked)"
                                         @click.stop
-                                        class="ml-2 flex-shrink-0"
+                                        class="ml-2 flex-shrink-0 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
                                     />
                                 </div>
 
                                 <!-- Card Content -->
-                                <div class="space-y-2">
+                                <div class="space-y-2.5">
                                     <!-- Priority & Status -->
                                     <div class="flex items-center gap-2">
-                                        <Badge :class="priorityColors[todo.priority]" class="text-xs">
+                                        <Badge :class="priorityColors[todo.priority]" class="text-xs font-medium shadow-sm">
+                                            <Flag class="h-2.5 w-2.5 mr-1" />
                                             {{ priorityLabels[todo.priority] }}
                                         </Badge>
-                                        <Badge :class="statusColors[todo.status]" class="text-xs">
+                                        <Badge :class="statusColors[todo.status]" class="text-xs font-medium shadow-sm">
+                                            <component :is="getStatusIcon(todo.status)" class="h-2.5 w-2.5 mr-1" />
                                             {{ statusLabels[todo.status] }}
                                         </Badge>
                                     </div>
 
                                     <!-- Time & Duration -->
-                                    <div v-if="todo.due_time" class="flex items-center gap-1 text-xs text-gray-500">
+                                    <div v-if="todo.due_time" class="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 text-cyan-700 dark:text-cyan-300 rounded-md text-xs font-medium border border-cyan-200 dark:border-cyan-700">
                                         <Clock class="h-3 w-3" />
                                         {{ todo.due_time }}
                                     </div>
 
                                     <!-- Date Range (if applicable) -->
                                     <div v-if="todo.start_date && todo.start_date !== todo.due_date" 
-                                         class="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded">
-                                        📅 {{ formatDate(todo.start_date) }} - {{ formatDate(todo.due_date) }}
+                                         class="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 text-purple-700 dark:text-purple-300 rounded-md text-xs font-medium border border-purple-200 dark:border-purple-700">
+                                        <Calendar class="h-3 w-3" />
+                                        {{ formatDate(todo.start_date) }} - {{ formatDate(todo.due_date) }}
                                     </div>
 
                                     <!-- Assignee -->
-                                    <div class="flex items-center justify-between mt-2">
-                                        <div class="flex items-center gap-1">
-                                            <span class="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                                                📝 {{ todo.user.name.split(' ')[0] }}
-                                            </span>
-                                            <span v-if="todo.assigned_user" 
-                                                  class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
-                                                👤 {{ todo.assigned_user.name.split(' ')[0] }}
-                                            </span>
+                                    <div class="flex items-center justify-between mt-3">
+                                        <div class="flex items-center gap-1.5">
+                                            <div class="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 rounded-md text-xs font-medium border border-blue-200 dark:border-blue-700">
+                                                <User class="h-3 w-3" />
+                                                {{ todo.user.name.split(' ')[0] }}
+                                            </div>
+                                            <div v-if="todo.assigned_user" 
+                                                  class="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-700 dark:text-green-300 rounded-md text-xs font-medium border border-green-200 dark:border-green-700">
+                                                <UserCheck class="h-3 w-3" />
+                                                {{ todo.assigned_user.name.split(' ')[0] }}
+                                            </div>
                                         </div>
-                                        
-                                        <!-- Priority Flag -->
-                                        <Flag v-if="todo.priority === 'high'" 
-                                              class="h-3 w-3 text-red-500" />
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Add Todo Button for this day -->
                             <Button variant="ghost" 
-                                    class="w-full justify-start text-gray-500 border-2 border-dashed border-gray-300 hover:border-gray-400"
+                                    class="w-full justify-start text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 rounded-xl"
                                     @click="openCreateModalForDay(day)">
                                 <Plus class="h-4 w-4 mr-2" />
                                 Tambah Tugas
@@ -1169,68 +1213,102 @@ const getStatusIcon = (status: string) => {
                             Tidak ada tugas untuk tanggal ini
                         </div>
                         
-                        <div v-else class="space-y-3">
+                        <div v-else class="space-y-4">
                             <div v-for="todo in todosForSelectedDate" :key="todo.id"
-                                 class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                                <div class="flex items-center space-x-3">
-                                    <Checkbox 
-                                        :checked="todo.status === 'completed'"
-                                        @update:checked="(checked: boolean) => updateStatus(todo, checked)"
-                                    />
-                                    
-                                    <div class="flex-1">
-                                        <h4 class="font-medium text-gray-900 dark:text-gray-100">
-                                            {{ todo.title }}
-                                        </h4>
-                                        <p v-if="todo.description" class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                            {{ todo.description }}
-                                        </p>
-                                        <div class="flex items-center gap-2 mt-2">
-                                            <Badge :class="priorityColors[todo.priority]">
-                                                <Flag class="h-3 w-3 mr-1" />
-                                                {{ priorityLabels[todo.priority] }}
-                                            </Badge>
-                                            <Badge :class="statusColors[todo.status]">
-                                                <component :is="getStatusIcon(todo.status)" class="h-3 w-3 mr-1" />
-                                                {{ statusLabels[todo.status] }}
-                                            </Badge>
-                                            <span v-if="todo.start_date" class="text-sm text-purple-600 bg-purple-50 px-2 py-1 rounded">
-                                                📅 {{ formatDate(todo.start_date) }} - {{ formatDate(todo.due_date) }}
-                                            </span>
-                                            <span v-else class="text-sm text-gray-500">
-                                                📅 {{ formatDate(todo.due_date) }}
-                                            </span>
-                                            <span v-if="todo.due_time" class="text-sm text-gray-500">
-                                                <Clock class="h-3 w-3 inline mr-1" />
-                                                {{ todo.due_time }}
-                                            </span>
-                                            <span class="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                                                📝 {{ todo.user.name }}
-                                            </span>
-                                            <span v-if="todo.assigned_user" class="text-sm text-green-600 bg-green-50 px-2 py-1 rounded">
-                                                👤 {{ todo.assigned_user.name }}
-                                            </span>
+                                 class="group relative overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 hover:-translate-y-1">
+                                
+                                <!-- Priority indicator line -->
+                                <div 
+                                    class="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+                                    :class="{
+                                        'bg-gradient-to-b from-emerald-500 to-teal-500': todo.priority === 'low',
+                                        'bg-gradient-to-b from-amber-500 to-orange-500': todo.priority === 'medium',
+                                        'bg-gradient-to-b from-rose-500 to-red-500': todo.priority === 'high'
+                                    }"
+                                ></div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-start space-x-4 flex-1">
+                                        <div class="mt-1">
+                                            <Checkbox 
+                                                :checked="todo.status === 'completed'"
+                                                @update:checked="(checked: boolean) => updateStatus(todo, checked)"
+                                                class="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                                            />
+                                        </div>
+                                        
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-start justify-between mb-2">
+                                                <h4 class="font-semibold text-lg text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                                    {{ todo.title }}
+                                                </h4>
+                                                <div class="flex items-center gap-2 ml-4">
+                                                    <Badge :class="priorityColors[todo.priority]" class="text-xs font-medium shadow-sm">
+                                                        <Flag class="h-3 w-3 mr-1" />
+                                                        {{ priorityLabels[todo.priority] }}
+                                                    </Badge>
+                                                    <Badge :class="statusColors[todo.status]" class="text-xs font-medium shadow-sm">
+                                                        <component :is="getStatusIcon(todo.status)" class="h-3 w-3 mr-1" />
+                                                        {{ statusLabels[todo.status] }}
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                            
+                                            <p v-if="todo.description" class="text-sm text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
+                                                {{ todo.description }}
+                                            </p>
+                                            
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <!-- Date info -->
+                                                <div class="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 text-purple-700 dark:text-purple-300 rounded-lg text-sm font-medium border border-purple-200 dark:border-purple-700">
+                                                    <Calendar class="h-3.5 w-3.5" />
+                                                    <span v-if="todo.start_date">
+                                                        {{ formatDate(todo.start_date) }} - {{ formatDate(todo.due_date) }}
+                                                    </span>
+                                                    <span v-else>
+                                                        {{ formatDate(todo.due_date) }}
+                                                    </span>
+                                                </div>
+                                                
+                                                <!-- Time info -->
+                                                <div v-if="todo.due_time" class="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 text-cyan-700 dark:text-cyan-300 rounded-lg text-sm font-medium border border-cyan-200 dark:border-cyan-700">
+                                                    <Clock class="h-3.5 w-3.5" />
+                                                    {{ todo.due_time }}
+                                                </div>
+                                                
+                                                <!-- Creator info -->
+                                                <div class="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 rounded-lg text-sm font-medium border border-blue-200 dark:border-blue-700">
+                                                    <User class="h-3.5 w-3.5" />
+                                                    {{ todo.user.name }}
+                                                </div>
+                                                
+                                                <!-- Assignee info -->
+                                                <div v-if="todo.assigned_user" class="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-700 dark:text-green-300 rounded-lg text-sm font-medium border border-green-200 dark:border-green-700">
+                                                    <UserCheck class="h-3.5 w-3.5" />
+                                                    {{ todo.assigned_user.name }}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+                                    
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger as-child>
+                                            <Button variant="ghost" size="sm" class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                <MoreVertical class="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem @click="openEditModal(todo)">
+                                                <Edit class="h-4 w-4 mr-2" />
+                                                Edit
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem @click="deleteTodo(todo)" class="text-red-600">
+                                                <Trash2 class="h-4 w-4 mr-2" />
+                                                Hapus
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
-                                
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger as-child>
-                                        <Button variant="ghost" size="sm">
-                                            <MoreVertical class="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuItem @click="openEditModal(todo)">
-                                            <Edit class="h-4 w-4 mr-2" />
-                                            Edit
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem @click="deleteTodo(todo)" class="text-red-600">
-                                            <Trash2 class="h-4 w-4 mr-2" />
-                                            Hapus
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
                             </div>
                         </div>
                     </CardContent>
