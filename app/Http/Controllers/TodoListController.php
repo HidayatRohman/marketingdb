@@ -129,11 +129,23 @@ class TodoListController extends Controller
                               ->orderBy('priority')
                               ->get();
             } else {
-                // For all other cases (regular users or Super Admin without filters), filter by selected date
-                $todos = $query->whereDate('due_date', $selectedDate)
-                              ->orderBy('due_time')
-                              ->orderBy('priority')
-                              ->get();
+                // For all other cases (regular users or Super Admin without filters)
+                if (!$hasFilters) {
+                    // Default: show todos for 1 week ahead from today
+                    $startDate = now()->format('Y-m-d');
+                    $endDate = now()->addDays(7)->format('Y-m-d');
+                    $todos = $query->whereBetween('due_date', [$startDate, $endDate])
+                                  ->orderBy('due_date')
+                                  ->orderBy('due_time')
+                                  ->orderBy('priority')
+                                  ->get();
+                } else {
+                    // With filters: filter by selected date
+                    $todos = $query->whereDate('due_date', $selectedDate)
+                                  ->orderBy('due_time')
+                                  ->orderBy('priority')
+                                  ->get();
+                }
             }
         }
 

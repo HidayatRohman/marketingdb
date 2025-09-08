@@ -188,7 +188,25 @@ const todosForSelectedDate = computed(() => {
         return allFilteredTodos.value;
     }
     
-    // For all other cases (regular users or Super Admin without filters), show todos for selected date
+    // If no filters are active, show todos for 1 week ahead (default behavior)
+    if (!hasFilters) {
+        // Get current date and 7 days ahead
+        const today = new Date();
+        const weekAhead = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const todayKey = today.toISOString().split('T')[0];
+        const weekAheadKey = weekAhead.toISOString().split('T')[0];
+        
+        // Collect todos from today to 1 week ahead
+        const weekTodos: Todo[] = [];
+        props.todos.forEach(todo => {
+            if (todo.due_date >= todayKey && todo.due_date <= weekAheadKey) {
+                weekTodos.push(todo);
+            }
+        });
+        return weekTodos;
+    }
+    
+    // For filtered cases, show todos for selected date
     const dateKey = selectedDate.value.toISOString().split('T')[0];
     const todosForDate = todosGroupedByDate.value[dateKey] || [];
     
@@ -1133,8 +1151,8 @@ const getStatusIcon = (status: string) => {
                     <CardHeader>
                         <div class="flex items-center justify-between">
                             <CardTitle>
-                                <span v-if="filters.status === 'all' && filters.priority === 'all' && filters.assigned === 'all' && !filters.search">
-                                    Tugas untuk {{ formatDate(selectedDate.toISOString().split('T')[0]) }}
+                                <span v-if="filters.status === 'all' && filters.priority === 'all' && filters.assigned === 'all' && filters.user === 'all' && !filters.search">
+                                    Tugas 1 Minggu ke Depan ({{ formatDate(new Date().toISOString().split('T')[0]) }} - {{ formatDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]) }})
                                 </span>
                                 <span v-else>
                                     Hasil Filter Tugas
