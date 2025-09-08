@@ -59,8 +59,20 @@
     </div>
     
     <div id="results" style="margin: 20px 0; padding: 10px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;">
-        <h4>Test Results:</h4>
-        <p>Click the buttons above to test different export methods.</p>
+        <h4>Test Results & Status:</h4>
+        <p><strong>Export Function Updated:</strong> Now using window.location.href for most reliable download</p>
+        <p><strong>Backend:</strong> Added try-catch error handling and proper logging</p>
+        <p><strong>Routes Available:</strong> All export routes properly registered</p>
+        <p><strong>Dependencies:</strong> PhpSpreadsheet and all components working</p>
+        <hr>
+        <p><strong>Testing Order:</strong></p>
+        <ol>
+            <li>First test "Debug Auth Check" to verify you're logged in</li>
+            <li>Test "Debug Mitra Export" (no middleware) to verify basic function</li>
+            <li>Test "Download Mitra CSV" (with middleware) for full authentication</li>
+            <li>Finally test in actual application at /mitras page</li>
+        </ol>
+        <p><em>Click the buttons above to test different export methods.</em></p>
     </div>
 
     <script>

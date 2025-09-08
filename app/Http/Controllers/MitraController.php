@@ -254,18 +254,25 @@ class MitraController extends Controller
      */
     public function export(Request $request)
     {
-        // Add logging for debugging
-        \Log::info('Export request received', [
-            'user_id' => auth()->id(),
-            'user_role' => auth()->user()->role ?? 'unknown',
-            'filters' => $request->all()
-        ]);
+        try {
+            // Add logging for debugging
+            \Log::info('Export request received', [
+                'user_id' => auth()->id(),
+                'user_role' => auth()->user()->role ?? 'unknown',
+                'filters' => $request->all()
+            ]);
 
-        $user = auth()->user();
-        $query = Mitra::with(['brand', 'label', 'user']);
+            $user = auth()->user();
+            
+            if (!$user) {
+                \Log::error('Export failed: User not authenticated');
+                return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
+            }
 
-        // Apply role-based filtering
-        $query = $user->applyRoleFilter($query, 'user_id');
+            $query = Mitra::with(['brand', 'label', 'user']);
+
+            // Apply role-based filtering
+            $query = $user->applyRoleFilter($query, 'user_id');
 
         // Apply same filters as index method
         if ($request->has('search') && $request->search) {
@@ -424,6 +431,16 @@ class MitraController extends Controller
                 'Pragma' => 'no-cache',
                 'Expires' => '0'
             ]);
+        }
+        
+        } catch (\Exception $e) {
+            \Log::error('Export failed with exception', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'filters' => $request->all()
+            ]);
+            
+            return redirect()->back()->with('error', 'Export gagal: ' . $e->getMessage());
         }
     }
 
