@@ -539,8 +539,19 @@ const isCurrentMonth = (date: Date) => {
 const getWeekDays = () => {
     const startOfWeek = new Date(selectedDate.value);
     const day = startOfWeek.getDay();
-    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-    startOfWeek.setDate(diff);
+    
+    // If selected date is Sunday, show the upcoming week (next Monday to Sunday)
+    // This matches the backend logic for better user experience
+    if (day === 0) { // Sunday
+        // Move to next Monday
+        startOfWeek.setDate(startOfWeek.getDate() + 1);
+        const newDay = startOfWeek.getDay();
+        const diff = startOfWeek.getDate() - newDay + 1; // Start from Monday
+        startOfWeek.setDate(diff);
+    } else {
+        const diff = startOfWeek.getDate() - day + 1; // Start from Monday
+        startOfWeek.setDate(diff);
+    }
     
     const weekDays = [];
     for (let i = 0; i < 7; i++) {

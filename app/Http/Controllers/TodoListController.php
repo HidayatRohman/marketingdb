@@ -93,8 +93,17 @@ class TodoListController extends Controller
                           ->get();
         } elseif ($view === 'board') {
             // For board view, get todos for the entire week
-            $startOfWeek = Carbon::parse($selectedDate)->startOfWeek(Carbon::MONDAY);
-            $endOfWeek = Carbon::parse($selectedDate)->endOfWeek(Carbon::SUNDAY);
+            $selectedCarbon = Carbon::parse($selectedDate);
+            
+            // If the selected date is Sunday, show the upcoming week (next Monday to Sunday)
+            // This provides a better user experience for board view
+            if ($selectedCarbon->isSunday()) {
+                $startOfWeek = $selectedCarbon->copy()->addDay()->startOfWeek(Carbon::MONDAY);
+                $endOfWeek = $selectedCarbon->copy()->addDay()->endOfWeek(Carbon::SUNDAY);
+            } else {
+                $startOfWeek = $selectedCarbon->startOfWeek(Carbon::MONDAY);
+                $endOfWeek = $selectedCarbon->endOfWeek(Carbon::SUNDAY);
+            }
             
             $todos = $query->where(function($q) use ($startOfWeek, $endOfWeek) {
                         // Include todos that have due_date in this week
