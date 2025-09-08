@@ -138,6 +138,7 @@ interface TaskMarketingStats {
     pending_tasks: number;
     in_progress_tasks: number;
     completed_tasks: number;
+    overdue_tasks: number;
     completion_rate: number;
 }
 
@@ -1023,7 +1024,7 @@ onMounted(() => {
                                                 </td>
                                                 <td class="text-center p-3">
                                                     <Badge class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                                        {{ marketing.assigned_overdue }}
+                                                        {{ marketing.overdue_tasks }}
                                                     </Badge>
                                                 </td>
                                                 <td class="text-center p-3">

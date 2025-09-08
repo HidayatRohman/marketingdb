@@ -395,68 +395,74 @@ class DashboardController extends Controller
                         ->where('due_date', '<', Carbon::today())->count(),
         ];
 
-        // Task statistics per marketing user
+        // Task statistics per marketing user - using the same logic as TaskManagementController
         $marketingQuery = User::where('role', 'marketing');
         
         if ($currentUser->hasLimitedAccess()) {
             $marketingQuery->where('id', $currentUser->id);
         }
 
-        $marketingStats = $marketingQuery->withCount([
-                // Tasks created by user
-                'todoLists as created_total',
-                'todoLists as created_pending' => function ($query) {
-                    $query->where('status', 'pending');
-                },
-                'todoLists as created_in_progress' => function ($query) {
-                    $query->where('status', 'in_progress');
-                },
-                'todoLists as created_completed' => function ($query) {
-                    $query->where('status', 'completed');
-                },
-                // Tasks assigned to user
-                'assignedTodoLists as assigned_total',
-                'assignedTodoLists as assigned_pending' => function ($query) {
-                    $query->where('status', 'pending');
-                },
-                'assignedTodoLists as assigned_in_progress' => function ($query) {
-                    $query->where('status', 'in_progress');
-                },
-                'assignedTodoLists as assigned_completed' => function ($query) {
-                    $query->where('status', 'completed');
-                },
-                'assignedTodoLists as assigned_overdue' => function ($query) {
-                    $query->where('status', '!=', 'completed')
-                          ->where('due_date', '<', Carbon::today());
-                }
-            ])
-            ->get()
-            ->map(function ($user) {
-                $totalTasks = $user->created_total + $user->assigned_total;
-                $completedTasks = $user->created_completed + $user->assigned_completed;
-                $inProgressTasks = $user->created_in_progress + $user->assigned_in_progress;
-                $pendingTasks = $user->created_pending + $user->assigned_pending;
-                
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'created_total' => $user->created_total,
-                    'created_pending' => $user->created_pending,
-                    'created_in_progress' => $user->created_in_progress,
-                    'created_completed' => $user->created_completed,
-                    'assigned_total' => $user->assigned_total,
-                    'assigned_pending' => $user->assigned_pending,
-                    'assigned_in_progress' => $user->assigned_in_progress,
-                    'assigned_completed' => $user->assigned_completed,
-                    'assigned_overdue' => $user->assigned_overdue,
-                    'total_tasks' => $totalTasks,
-                    'pending_tasks' => $pendingTasks,
-                    'in_progress_tasks' => $inProgressTasks,
-                    'completed_tasks' => $completedTasks,
-                    'completion_rate' => $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 2) : 0,
-                ];
+        $marketingStats = $marketingQuery->get()->map(function ($user) use ($currentUser) {
+            // Build base query for this specific user with role-based access
+            $userTasksQuery = TodoList::query();
+            
+            if ($currentUser->hasLimitedAccess()) {
+                // If current user has limited access, apply the same restrictions
+                $userTasksQuery->where(function ($query) use ($currentUser) {
+                    $query->where('user_id', $currentUser->id)
+                          ->orWhere('assigned_to', $currentUser->id);
+                });
+            }
+            
+            // Apply user filter - tasks where user is creator OR assigned to
+            $userTasksQuery->where(function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                      ->orWhere('assigned_to', $user->id);
             });
+
+            // Get counts using the same logic as TaskManagementController
+            $totalTasks = (clone $userTasksQuery)->count();
+            $pendingTasks = (clone $userTasksQuery)->where('status', 'pending')->count();
+            $inProgressTasks = (clone $userTasksQuery)->where('status', 'in_progress')->count();
+            $completedTasks = (clone $userTasksQuery)->where('status', 'completed')->count();
+            $overdueTasks = (clone $userTasksQuery)->where('status', '!=', 'completed')
+                                                   ->where('due_date', '<', Carbon::today())->count();
+
+            // Also get separate counts for created vs assigned for reference
+            $createdTotal = TodoList::where('user_id', $user->id)->count();
+            $createdPending = TodoList::where('user_id', $user->id)->where('status', 'pending')->count();
+            $createdInProgress = TodoList::where('user_id', $user->id)->where('status', 'in_progress')->count();
+            $createdCompleted = TodoList::where('user_id', $user->id)->where('status', 'completed')->count();
+            
+            $assignedTotal = TodoList::where('assigned_to', $user->id)->count();
+            $assignedPending = TodoList::where('assigned_to', $user->id)->where('status', 'pending')->count();
+            $assignedInProgress = TodoList::where('assigned_to', $user->id)->where('status', 'in_progress')->count();
+            $assignedCompleted = TodoList::where('assigned_to', $user->id)->where('status', 'completed')->count();
+            $assignedOverdue = TodoList::where('assigned_to', $user->id)
+                                      ->where('status', '!=', 'completed')
+                                      ->where('due_date', '<', Carbon::today())->count();
+            
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'created_total' => $createdTotal,
+                'created_pending' => $createdPending,
+                'created_in_progress' => $createdInProgress,
+                'created_completed' => $createdCompleted,
+                'assigned_total' => $assignedTotal,
+                'assigned_pending' => $assignedPending,
+                'assigned_in_progress' => $assignedInProgress,
+                'assigned_completed' => $assignedCompleted,
+                'assigned_overdue' => $assignedOverdue,
+                'total_tasks' => $totalTasks,
+                'pending_tasks' => $pendingTasks,
+                'in_progress_tasks' => $inProgressTasks,
+                'completed_tasks' => $completedTasks,
+                'overdue_tasks' => $overdueTasks, // Add this field for total overdue tasks
+                'completion_rate' => $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 2) : 0,
+            ];
+        });
 
         return [
             'overall' => $overallStats,
