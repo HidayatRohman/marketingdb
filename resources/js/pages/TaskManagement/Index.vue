@@ -90,8 +90,8 @@ const form = ref({
     title: '',
     description: '',
     priority: 'medium' as 'low' | 'medium' | 'high',
-    start_date: undefined as Date | undefined,
-    due_date: undefined as Date | undefined,
+    start_date: '' as string,
+    due_date: '' as string,
     due_time: '',
     assigned_to: null as number | null,
     tags: [] as string[],
@@ -103,8 +103,8 @@ const resetForm = () => {
         title: '',
         description: '',
         priority: 'medium',
-        start_date: undefined,
-        due_date: undefined,
+        start_date: '',
+        due_date: '',
         due_time: '',
         assigned_to: null,
         tags: [],
@@ -125,8 +125,8 @@ const openEditDialog = (task: Task) => {
         title: task.title,
         description: task.description || '',
         priority: task.priority,
-        start_date: task.start_date ? new Date(task.start_date) : undefined,
-        due_date: new Date(task.due_date),
+        start_date: task.start_date || '',
+        due_date: task.due_date,
         due_time: task.due_time || '',
         assigned_to: task.assigned_to || null,
         tags: task.tags || [],
@@ -136,9 +136,31 @@ const openEditDialog = (task: Task) => {
 
 // Submit form
 const submitForm = () => {
+    // Debug: log form values
+    console.log('Form values before validation:', {
+        title: form.value.title,
+        priority: form.value.priority,
+        due_date: form.value.due_date,
+        start_date: form.value.start_date,
+        description: form.value.description,
+        due_time: form.value.due_time,
+        assigned_to: form.value.assigned_to,
+        tags: form.value.tags
+    });
+
     // Validasi form
-    if (!form.value.title || !form.value.priority || !form.value.due_date) {
-        alert('Mohon lengkapi field yang wajib diisi (Judul, Prioritas, dan Tanggal Deadline)');
+    if (!form.value.title) {
+        alert('Mohon isi Judul task');
+        return;
+    }
+    
+    if (!form.value.priority) {
+        alert('Mohon pilih Prioritas task');
+        return;
+    }
+    
+    if (!form.value.due_date) {
+        alert('Mohon pilih Tanggal Deadline');
         return;
     }
 
@@ -146,8 +168,8 @@ const submitForm = () => {
         title: form.value.title,
         description: form.value.description,
         priority: form.value.priority,
-        start_date: form.value.start_date ? format(form.value.start_date, 'yyyy-MM-dd') : null,
-        due_date: form.value.due_date ? format(form.value.due_date, 'yyyy-MM-dd') : null,
+        start_date: form.value.start_date || null,
+        due_date: form.value.due_date || null,
         due_time: form.value.due_time,
         assigned_to: form.value.assigned_to,
         tags: form.value.tags,
@@ -729,67 +751,50 @@ const canDeleteTask = (task: Task) => {
 
                                 <div>
                                     <Label for="priority" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Prioritas *</Label>
-                                    <Select v-model:model-value="form.priority" required>
-                                        <SelectTrigger class="mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100">
-                                            <SelectValue :placeholder="form.priority ? (form.priority === 'low' ? 'Low' : form.priority === 'medium' ? 'Medium' : 'High') : 'Pilih prioritas'" />
-                                        </SelectTrigger>
-                                        <SelectContent class="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
-                                            <SelectItem value="low" class="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">Low</SelectItem>
-                                            <SelectItem value="medium" class="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">Medium</SelectItem>
-                                            <SelectItem value="high" class="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">High</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <select 
+                                        v-model="form.priority" 
+                                        required
+                                        class="mt-2 w-full h-10 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-md"
+                                    >
+                                        <option value="">Pilih prioritas</option>
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                    </select>
                                 </div>
 
                                 <div>
                                     <Label for="assigned_to" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Assign ke User</Label>
-                                    <Select v-model:model-value="form.assigned_to">
-                                        <SelectTrigger class="mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100">
-                                            <SelectValue :placeholder="form.assigned_to ? users.find(u => u.id === form.assigned_to)?.name : 'Pilih user'" />
-                                        </SelectTrigger>
-                                        <SelectContent class="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
-                                            <SelectItem :value="null" class="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">Tidak di-assign</SelectItem>
-                                            <SelectItem v-for="user in users" :key="user.id" :value="user.id" class="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">
-                                                {{ user.name }}
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <select 
+                                        v-model="form.assigned_to"
+                                        class="mt-2 w-full h-10 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-md"
+                                    >
+                                        <option :value="null">Tidak di-assign</option>
+                                        <option v-for="user in users" :key="user.id" :value="user.id">
+                                            {{ user.name }}
+                                        </option>
+                                    </select>
                                 </div>
 
                                 <div>
                                     <Label for="start_date" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Tanggal Mulai</Label>
-                                    <Popover>
-                                        <PopoverTrigger as-child>
-                                            <Button
-                                                variant="outline"
-                                                :class="cn('w-full justify-start text-left font-normal mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100', !form.start_date && 'text-slate-500 dark:text-slate-400')"
-                                            >
-                                                <CalendarIcon class="mr-2 h-4 w-4" />
-                                                {{ form.start_date ? format(form.start_date, 'dd/MM/yyyy') : 'Pilih tanggal' }}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent class="w-auto p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
-                                            <Calendar v-model:model-value="form.start_date" />
-                                        </PopoverContent>
-                                    </Popover>
+                                    <Input
+                                        id="start_date"
+                                        type="date"
+                                        v-model="form.start_date"
+                                        class="mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-400"
+                                    />
                                 </div>
 
                                 <div>
                                     <Label for="due_date" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Tanggal Deadline *</Label>
-                                    <Popover>
-                                        <PopoverTrigger as-child>
-                                            <Button
-                                                variant="outline"
-                                                :class="cn('w-full justify-start text-left font-normal mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100', !form.due_date && 'text-slate-500 dark:text-slate-400')"
-                                            >
-                                                <CalendarIcon class="mr-2 h-4 w-4" />
-                                                {{ form.due_date ? format(form.due_date, 'dd/MM/yyyy') : 'Pilih tanggal' }}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent class="w-auto p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
-                                            <Calendar v-model:model-value="form.due_date" />
-                                        </PopoverContent>
-                                    </Popover>
+                                    <Input
+                                        id="due_date"
+                                        type="date"
+                                        v-model="form.due_date"
+                                        required
+                                        class="mt-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-400"
+                                    />
                                 </div>
 
                                 <div>
