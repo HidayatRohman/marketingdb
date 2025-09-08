@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Brand;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class BrandController extends Controller
@@ -24,10 +25,15 @@ class BrandController extends Controller
 
         $brands = $query->latest()->paginate(10)->withQueryString();
         
+        // Get province analytics by brand
+        $provinceAnalytics = $this->getProvinceAnalytics($currentUser, $request->get('selected_brand'));
+        
         return Inertia::render('Brand/Index', [
             'brands' => $brands,
+            'provinceAnalytics' => $provinceAnalytics,
             'filters' => [
                 'search' => $request->search,
+                'selected_brand' => $request->get('selected_brand'),
             ],
             'permissions' => [
                 'canCrud' => $currentUser->canCrud(),
@@ -151,5 +157,40 @@ class BrandController extends Controller
 
         return redirect()->route('brands.index')
             ->with('success', 'Brand berhasil dihapus.');
+    }
+
+    /**
+     * Get province analytics by brand for chart visualization
+     */
+    private function getProvinceAnalytics($currentUser, $selectedBrandId = null)
+    {
+        $query = \App\Models\Mitra::query();
+        
+        // Apply role-based filtering
+        if ($currentUser->hasLimitedAccess()) {
+            $query->where('user_id', $currentUser->id);
+        }
+        
+        // Filter by selected brand if provided
+        if ($selectedBrandId) {
+            $query->where('brand_id', $selectedBrandId);
+        }
+        
+        // Get top 7 provinces by mitra count
+        $provinceData = $query->select('provinsi', \DB::raw('COUNT(*) as total'))
+            ->whereNotNull('provinsi')
+            ->where('provinsi', '!=', '')
+            ->where('provinsi', '!=', 'Unknown')
+            ->groupBy('provinsi')
+            ->orderByDesc('total')
+            ->limit(7)
+            ->get();
+        
+        return [
+            'labels' => $provinceData->pluck('provinsi')->toArray(),
+            'data' => $provinceData->pluck('total')->toArray(),
+            'total' => $provinceData->sum('total'),
+            'selected_brand' => $selectedBrandId ? \App\Models\Brand::find($selectedBrandId)?->nama : 'Semua Brand',
+        ];
     }
 }

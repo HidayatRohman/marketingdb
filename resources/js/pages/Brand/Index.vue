@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import BrandModal from '@/components/BrandModal.vue';
 import BrandDeleteModal from '@/components/BrandDeleteModal.vue';
+import ProvinceChart from '@/components/ProvinceChart.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
-import { Search, Plus, Edit, Trash2, Eye, Zap, Filter } from 'lucide-vue-next';
+import { Search, Plus, Edit, Trash2, Eye, Zap, Filter, BarChart3, MapPin } from 'lucide-vue-next';
 
 interface Brand {
     id: number;
@@ -17,6 +18,13 @@ interface Brand {
     logo_url: string | null;
     created_at: string;
     updated_at: string;
+}
+
+interface ProvinceAnalytics {
+    labels: string[];
+    data: number[];
+    total: number;
+    selected_brand: string;
 }
 
 interface Props {
@@ -29,14 +37,17 @@ interface Props {
         prev_page_url: string | null;
         next_page_url: string | null;
     };
+    provinceAnalytics: ProvinceAnalytics;
     filters: {
         search?: string;
+        selected_brand?: string;
     };
 }
 
 const props = defineProps<Props>();
 
 const search = ref(props.filters.search || '');
+const selectedBrand = ref(props.filters.selected_brand || '');
 
 // Modal states
 const brandModal = ref({
@@ -58,11 +69,12 @@ const breadcrumbs = [
 let debounceTimer: number;
 
 // Watch for filter changes and update URL
-watch([search], () => {
+watch([search, selectedBrand], () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
         router.get('/brands', {
             search: search.value || undefined,
+            selected_brand: selectedBrand.value || undefined,
         }, {
             preserveState: true,
             replace: true,
@@ -208,6 +220,65 @@ const formatDate = (dateString: string) => {
                     </CardContent>
                 </Card>
             </div>
+
+            <!-- Province Analytics Section -->
+            <Card class="analytics-card">
+                <CardHeader class="analytics-card-header">
+                    <CardTitle class="analytics-card-title">
+                        <BarChart3 class="h-6 w-6" />
+                        Analisa Provinsi per Brand
+                    </CardTitle>
+                    <p class="analytics-card-subtitle">
+                        Distribusi 7 provinsi teratas berdasarkan jumlah mitra
+                    </p>
+                </CardHeader>
+                <CardContent class="analytics-card-content">
+                    <!-- Brand Filter -->
+                    <div class="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <MapPin class="h-5 w-5 text-muted-foreground" />
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <label for="brand-filter" class="text-sm font-medium text-muted-foreground">
+                                    Filter Brand:
+                                </label>
+                                <select
+                                    id="brand-filter"
+                                    v-model="selectedBrand"
+                                    class="flex h-9 w-full sm:w-48 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="">Semua Brand</option>
+                                    <option 
+                                        v-for="brand in brands.data" 
+                                        :key="brand.id" 
+                                        :value="brand.id"
+                                    >
+                                        {{ brand.nama }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-sm text-muted-foreground">
+                            Total: {{ provinceAnalytics.total }} mitra
+                        </div>
+                    </div>
+
+                    <!-- Chart Container -->
+                    <div class="chart-wrapper">
+                        <ProvinceChart 
+                            v-if="provinceAnalytics.labels.length > 0" 
+                            :data="provinceAnalytics" 
+                        />
+                        <div 
+                            v-else 
+                            class="flex flex-col items-center justify-center h-96 text-muted-foreground"
+                        >
+                            <BarChart3 class="h-16 w-16 mb-4 opacity-50" />
+                            <p class="text-lg font-medium">Tidak ada data</p>
+                            <p class="text-sm">Pilih brand untuk melihat analisa provinsi</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
             <!-- Search Bar -->
             <Card class="search-card">
@@ -363,3 +434,60 @@ const formatDate = (dateString: string) => {
         />
     </AppLayout>
 </template>
+
+<style scoped>
+.analytics-card {
+    border: none;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    background: linear-gradient(to bottom right, 
+        rgba(255, 255, 255, 1) 0%, 
+        rgba(219, 234, 254, 0.3) 50%, 
+        rgba(221, 214, 254, 0.3) 100%);
+}
+
+.dark .analytics-card {
+    background: linear-gradient(to bottom right, 
+        rgba(17, 24, 39, 1) 0%, 
+        rgba(30, 58, 138, 0.1) 50%, 
+        rgba(88, 28, 135, 0.1) 100%);
+}
+
+.analytics-card-header {
+    padding-bottom: 1rem;
+}
+
+.analytics-card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: rgb(17, 24, 39);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dark .analytics-card-title {
+    color: rgb(243, 244, 246);
+}
+
+.analytics-card-subtitle {
+    font-size: 0.875rem;
+    color: rgb(107, 114, 128);
+    margin-top: 0.5rem;
+}
+
+.analytics-card-content {
+    padding-top: 1rem;
+}
+
+.chart-wrapper {
+    background-color: white;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    border: 1px solid rgb(229, 231, 235);
+}
+
+.dark .chart-wrapper {
+    background-color: rgba(31, 41, 55, 0.5);
+    border-color: rgb(55, 65, 81);
+}
+</style>
