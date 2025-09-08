@@ -24,16 +24,6 @@ const mainNavItems = computed<NavItem[]>(() => {
             href: dashboard(),
             icon: LayoutGrid,
         },
-        {
-            title: 'To Do List',
-            href: '/todos',
-            icon: Calendar,
-        },
-        {
-            title: 'Task Management',
-            href: '/task-management',
-            icon: Kanban,
-        },
     ];
 
     // Mitra - accessible by all roles but with different permissions
@@ -44,6 +34,20 @@ const mainNavItems = computed<NavItem[]>(() => {
             icon: Handshake,
         });
     }
+
+    // Task Management - accessible by all authenticated users
+    items.push({
+        title: 'Task Management',
+        href: '/task-management',
+        icon: Kanban,
+    });
+
+    // To Do List - accessible by all authenticated users
+    items.push({
+        title: 'To Do List',
+        href: '/todos',
+        icon: Calendar,
+    });
 
     // Users - only Super Admin and Admin can access
     if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess) {
