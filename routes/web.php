@@ -11,6 +11,72 @@ use App\Http\Controllers\TestSiteSettingsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Test route for export debugging
+Route::get('/test-export-csv', function() {
+    $data = [
+        ['ID', 'Nama', 'No. Telepon', 'Tanggal Lead'],
+        [1, 'Test User', '081234567890', '2024-01-15'],
+        [2, 'User Kedua', '087654321098', '2024-01-16']
+    ];
+    
+    $csv = fopen('php://temp', 'w+');
+    foreach ($data as $row) {
+        fputcsv($csv, $row);
+    }
+    rewind($csv);
+    $output = stream_get_contents($csv);
+    fclose($csv);
+    
+    return response($output, 200, [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => 'attachment; filename="test-export.csv"',
+        'Cache-Control' => 'no-cache, no-store, must-revalidate',
+        'Pragma' => 'no-cache',
+        'Expires' => '0'
+    ]);
+});
+
+// Test PhpSpreadsheet export
+Route::get('/test-export-phpspreadsheet', function() {
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    
+    $sheet->setCellValue('A1', 'ID');
+    $sheet->setCellValue('B1', 'Nama');
+    $sheet->setCellValue('C1', 'No. Telepon');
+    
+    $sheet->setCellValue('A2', '1');
+    $sheet->setCellValue('B2', 'Test User');
+    $sheet->setCellValue('C2', '081234567890');
+    
+    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Csv($spreadsheet);
+    $writer->setDelimiter(',');
+    $writer->setEnclosure('"');
+    
+    return new \Symfony\Component\HttpFoundation\StreamedResponse(function() use ($writer) {
+        $writer->save('php://output');
+    }, 200, [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => 'attachment; filename="test-phpspreadsheet.csv"',
+        'Cache-Control' => 'no-cache, no-store, must-revalidate',
+        'Pragma' => 'no-cache',
+        'Expires' => '0'
+    ]);
+});
+
+// Debug export route (without middleware)
+Route::get('/debug-export', function() {
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Export endpoint is reachable',
+        'user' => auth()->check() ? auth()->user()->name : 'Not authenticated',
+        'timestamp' => now()
+    ]);
+});
+
+// Debug mitra export (without middleware for testing)
+Route::get('/debug-mitra-export', [\App\Http\Controllers\MitraController::class, 'export']);
+
 // Test route for debugging
 Route::match(['GET', 'POST'], '/test-site-settings', [TestSiteSettingsController::class, 'test'])->withoutMiddleware(['web']);
 

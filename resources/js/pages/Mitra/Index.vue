@@ -347,30 +347,30 @@ const exportData = async (format: 'csv' | 'xlsx') => {
         // Get current filter parameters
         const filters = getFilterParams();
         
-        // Create export URL with filters
-        const params = new URLSearchParams();
-        Object.entries(filters).forEach(([key, value]) => {
-            if (value !== undefined) {
-                params.append(key, String(value));
+        // Add export format to filters
+        const exportParams = {
+            ...filters,
+            export: format
+        };
+        
+        // Use Inertia visit with data parameter for proper authenticated request
+        router.visit('/mitras/export', {
+            method: 'get',
+            data: exportParams,
+            preserveState: true,
+            preserveScroll: true,
+            onError: (errors) => {
+                console.error('Export failed:', errors);
+                alert('Export gagal. Silakan coba lagi.');
+            },
+            onFinish: () => {
+                isExporting.value = false;
             }
         });
-        params.append('export', format);
-        
-        // Create download link
-        const url = `/mitras/export?${params.toString()}`;
-        
-        // Create temporary link and trigger download
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `mitra-data-${new Date().toISOString().split('T')[0]}.${format}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
         
     } catch (error) {
         console.error('Export failed:', error);
         alert('Export gagal. Silakan coba lagi.');
-    } finally {
         isExporting.value = false;
     }
 };

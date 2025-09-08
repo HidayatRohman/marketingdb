@@ -254,6 +254,13 @@ class MitraController extends Controller
      */
     public function export(Request $request)
     {
+        // Add logging for debugging
+        \Log::info('Export request received', [
+            'user_id' => auth()->id(),
+            'user_role' => auth()->user()->role ?? 'unknown',
+            'filters' => $request->all()
+        ]);
+
         $user = auth()->user();
         $query = Mitra::with(['brand', 'label', 'user']);
 
@@ -357,25 +364,67 @@ class MitraController extends Controller
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 
-        // Determine file format
+        // Determine file format and create output
         $format = $request->get('export', 'xlsx');
         $filename = 'mitra-data-' . date('Y-m-d') . '.' . $format;
         
         if ($format === 'csv') {
-            $writer = new Csv($spreadsheet);
-            $contentType = 'text/csv';
+            // Use simple CSV output for better compatibility
+            $output = fopen('php://temp', 'w+');
+            
+            // Write headers
+            fputcsv($output, [
+                'ID', 'Nama', 'No. Telepon', 'Tanggal Lead', 'Brand', 
+                'Label', 'Status Chat', 'Kota', 'Provinsi', 'Marketing', 
+                'Komentar', 'Dibuat Pada', 'Diupdate Pada'
+            ]);
+            
+            // Write data
+            foreach ($mitras as $mitra) {
+                fputcsv($output, [
+                    $mitra->id,
+                    $mitra->nama,
+                    $mitra->no_telp,
+                    $mitra->tanggal_lead,
+                    $mitra->brand->nama ?? '',
+                    $mitra->label->nama ?? '',
+                    $mitra->chat === 'masuk' ? 'Masuk' : 'Follow Up',
+                    $mitra->kota,
+                    $mitra->provinsi,
+                    $mitra->user->name ?? '',
+                    $mitra->komentar,
+                    $mitra->created_at->format('Y-m-d H:i:s'),
+                    $mitra->updated_at->format('Y-m-d H:i:s')
+                ]);
+            }
+            
+            rewind($output);
+            $csvContent = stream_get_contents($output);
+            fclose($output);
+            
+            return response($csvContent, 200, [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Content-Length' => strlen($csvContent),
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0'
+            ]);
         } else {
+            // Use PhpSpreadsheet for XLSX
             $writer = new Xlsx($spreadsheet);
             $contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            
+            return new StreamedResponse(function() use ($writer) {
+                $writer->save('php://output');
+            }, 200, [
+                'Content-Type' => $contentType,
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0'
+            ]);
         }
-
-        return new StreamedResponse(function() use ($writer) {
-            $writer->save('php://output');
-        }, 200, [
-            'Content-Type' => $contentType,
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            'Cache-Control' => 'max-age=0',
-        ]);
     }
 
     /**
@@ -548,6 +597,9 @@ class MitraController extends Controller
         
         if ($format === 'csv') {
             $writer = new Csv($spreadsheet);
+            $writer->setDelimiter(',');
+            $writer->setEnclosure('"');
+            $writer->setLineEnding("\r\n");
             $contentType = 'text/csv';
         } else {
             $writer = new Xlsx($spreadsheet);
@@ -559,7 +611,12 @@ class MitraController extends Controller
         }, 200, [
             'Content-Type' => $contentType,
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            'Cache-Control' => 'max-age=0',
+            'Cache-Control' => 'max-age=0, no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Methods' => 'GET',
+            'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With',
         ]);
     }
 
