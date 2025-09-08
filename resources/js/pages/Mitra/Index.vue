@@ -459,6 +459,25 @@ const downloadTemplate = async (format: 'csv' | 'xlsx') => {
         alert('Download template gagal. Silakan coba lagi.');
     }
 };
+
+const downloadGuide = async () => {
+    try {
+        // Create download link for guide
+        const url = `/mitras/guide`;
+        
+        // Create temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'panduan-import-mitra.md';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+    } catch (error) {
+        console.error('Guide download failed:', error);
+        alert('Download panduan gagal. Silakan coba lagi.');
+    }
+};
 </script>
 
 <template>
@@ -525,19 +544,42 @@ const downloadTemplate = async (format: 'csv' | 'xlsx') => {
                                             <Download class="h-4 w-4" />
                                             Download Template CSV
                                         </button>
+                                        <hr class="my-1 border-gray-200 dark:border-gray-600" />
+                                        <button
+                                            @click="downloadGuide"
+                                            class="w-full text-left px-3 py-2 text-sm text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/50 rounded-md flex items-center gap-2"
+                                        >
+                                            <FileSpreadsheet class="h-4 w-4" />
+                                            Panduan Import Lengkap
+                                        </button>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Import Button -->
-                            <Button 
-                                @click="triggerFileInput"
-                                :disabled="isImporting"
-                                class="bg-gradient-to-r from-orange-500 to-orange-600 text-white border border-orange-600 hover:from-orange-600 hover:to-orange-700 font-semibold shadow-lg px-4 py-2 transition-all duration-200"
-                            >
-                                <Upload class="mr-2 h-4 w-4" />
-                                {{ isImporting ? 'Importing...' : 'Import' }}
-                            </Button>
+                            <!-- Import Button with Tooltip -->
+                            <div class="relative group">
+                                <Button 
+                                    @click="triggerFileInput"
+                                    :disabled="isImporting"
+                                    class="bg-gradient-to-r from-orange-500 to-orange-600 text-white border border-orange-600 hover:from-orange-600 hover:to-orange-700 font-semibold shadow-lg px-4 py-2 transition-all duration-200"
+                                >
+                                    <Upload class="mr-2 h-4 w-4" />
+                                    {{ isImporting ? 'Importing...' : 'Import' }}
+                                </Button>
+
+                                <!-- Tooltip -->
+                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg py-2 px-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                    <div class="text-center">
+                                        <div class="font-semibold mb-1">Import Data Mitra</div>
+                                        <div class="text-gray-300">
+                                            Format: CSV, XLSX<br/>
+                                            Download template terlebih dahulu
+                                        </div>
+                                    </div>
+                                    <!-- Arrow -->
+                                    <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                </div>
+                            </div>
 
                             <!-- Hidden File Input -->
                             <input

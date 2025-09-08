@@ -391,7 +391,7 @@ class MitraController extends Controller
         $headers = [
             'A1' => 'ID',
             'B1' => 'Nama',
-            'C1' => 'No. Telepon',
+            'C1' => 'No. Telepon', 
             'D1' => 'Tanggal Lead',
             'E1' => 'Brand',
             'F1' => 'Label',
@@ -409,18 +409,58 @@ class MitraController extends Controller
         }
 
         // Style headers
-        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:M1')->getFill()
-            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-            ->getStartColor()->setRGB('E2E8F0');
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '4F46E5']
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+            ]
+        ];
+        $sheet->getStyle('A1:M1')->applyFromArray($headerStyle);
 
-        // Add sample data
-        $sampleData = [
-            ['', 'John Doe', '081234567890', '2024-01-15', 'Brand A', 'Hot Lead', 'Masuk', 'Jakarta', 'DKI Jakarta', '', 'Tertarik dengan produk', '', ''],
-            ['', 'Jane Smith', '087654321098', '2024-01-16', 'Brand B', 'Warm Lead', 'Follow Up', 'Surabaya', 'Jawa Timur', '', 'Perlu follow up lebih lanjut', '', ''],
+        // Add field requirements row
+        $requirements = [
+            'A2' => '(Opsional)',
+            'B2' => '(WAJIB)',
+            'C2' => '(WAJIB)',
+            'D2' => '(WAJIB)',
+            'E2' => '(Opsional)',
+            'F2' => '(Opsional)',
+            'G2' => '(Opsional)',
+            'H2' => '(Opsional)',
+            'I2' => '(Opsional)',
+            'J2' => '(Auto)',
+            'K2' => '(Opsional)',
+            'L2' => '(Auto)',
+            'M2' => '(Auto)'
         ];
 
-        $row = 2;
+        foreach ($requirements as $cell => $value) {
+            $sheet->setCellValue($cell, $value);
+        }
+
+        // Style requirements row
+        $reqStyle = [
+            'font' => ['italic' => true, 'size' => 9, 'color' => ['rgb' => '666666']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
+        ];
+        $sheet->getStyle('A2:M2')->applyFromArray($reqStyle);
+
+        // Add sample data with proper examples
+        $sampleData = [
+            // Row 3: Example 1
+            ['', 'John Doe', '081234567890', '2024-01-15', 'Brand A', 'Hot Lead', 'Masuk', 'Jakarta', 'DKI Jakarta', '', 'Tertarik dengan produk premium', '', ''],
+            // Row 4: Example 2  
+            ['', 'Jane Smith', '087654321098', '2024-01-16', 'Brand B', 'Warm Lead', 'Follow Up', 'Surabaya', 'Jawa Timur', '', 'Perlu follow up dalam 3 hari', '', ''],
+            // Row 5: Example 3
+            ['', 'Ahmad Rahman', '082111222333', '2024-01-17', 'Brand C', 'Cold Lead', 'Masuk', 'Bandung', 'Jawa Barat', '', 'Inquiry produk via WhatsApp', '', '']
+        ];
+
+        $row = 3;
         foreach ($sampleData as $data) {
             $col = 'A';
             foreach ($data as $value) {
@@ -430,17 +470,81 @@ class MitraController extends Controller
             $row++;
         }
 
-        // Add instructions as comments
-        $sheet->getComment('B1')->setText("INSTRUKSI IMPORT:\n\n1. ID: Kosongkan untuk data baru\n2. Nama: Wajib diisi\n3. No. Telepon: Wajib diisi\n4. Tanggal Lead: Format YYYY-MM-DD (wajib)\n5. Brand: Nama brand (akan dibuat otomatis jika belum ada)\n6. Label: Nama label yang sudah ada\n7. Status Chat: 'Masuk' atau 'Follow Up'\n8. Marketing: Akan diisi otomatis dengan user yang mengimport\n\nHapus baris contoh ini sebelum import!");
+        // Style sample data
+        $sampleStyle = [
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'F0FDF4']
+            ]
+        ];
+        $sheet->getStyle('A3:M5')->applyFromArray($sampleStyle);
+
+        // Add comprehensive instructions
+        $instructions = "PANDUAN IMPORT DATA MITRA\n\n";
+        $instructions .= "FIELD WAJIB:\n";
+        $instructions .= "• Nama: Nama lengkap mitra (tidak boleh kosong)\n";
+        $instructions .= "• No. Telepon: Nomor telepon (format bebas, sistem akan otomatis format)\n";
+        $instructions .= "• Tanggal Lead: Format YYYY-MM-DD (contoh: 2024-01-15)\n\n";
+        
+        $instructions .= "FIELD OPSIONAL:\n";
+        $instructions .= "• ID: Kosongkan untuk data baru\n";
+        $instructions .= "• Brand: Nama brand (akan dibuat otomatis jika belum ada)\n";
+        $instructions .= "• Label: Gunakan label yang sudah ada di sistem\n";
+        $instructions .= "• Status Chat: 'Masuk' (default) atau 'Follow Up'\n";
+        $instructions .= "• Kota & Provinsi: Boleh kosong\n";
+        $instructions .= "• Komentar: Catatan tambahan\n\n";
+        
+        $instructions .= "FIELD AUTO:\n";
+        $instructions .= "• Marketing: Otomatis diisi dengan user yang import\n";
+        $instructions .= "• Dibuat/Diupdate: Otomatis diisi sistem\n\n";
+        
+        $instructions .= "TIPS SUKSES:\n";
+        $instructions .= "1. Hapus baris contoh ini sebelum import\n";
+        $instructions .= "2. Pastikan format tanggal benar (YYYY-MM-DD)\n";
+        $instructions .= "3. Jangan import data terlalu banyak sekaligus\n";
+        $instructions .= "4. Test dengan 1-2 baris dulu\n";
+        $instructions .= "5. Backup data sebelum import\n\n";
+        
+        $instructions .= "CONTOH DATA VALID:\n";
+        $instructions .= "Nama: John Doe\n";
+        $instructions .= "Telepon: 081234567890\n";
+        $instructions .= "Tanggal: 2024-01-15\n";
+        $instructions .= "Brand: Brand A\n";
+        $instructions .= "Status: Masuk";
+
+        // Add instruction as comment to B1
+        $sheet->getComment('B1')->setText($instructions);
+        $sheet->getComment('B1')->setWidth('400px');
+        $sheet->getComment('B1')->setHeight('300px');
 
         // Auto-size columns
         foreach (range('A', 'M') as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 
+        // Set minimum column widths
+        $sheet->getColumnDimension('B')->setWidth(15); // Nama
+        $sheet->getColumnDimension('C')->setWidth(15); // No. Telepon
+        $sheet->getColumnDimension('D')->setWidth(12); // Tanggal Lead
+        $sheet->getColumnDimension('E')->setWidth(12); // Brand
+        $sheet->getColumnDimension('F')->setWidth(12); // Label
+        $sheet->getColumnDimension('G')->setWidth(12); // Status Chat
+        $sheet->getColumnDimension('K')->setWidth(25); // Komentar
+
+        // Add borders to data area
+        $borderStyle = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['rgb' => 'CCCCCC']
+                ]
+            ]
+        ];
+        $sheet->getStyle('A1:M5')->applyFromArray($borderStyle);
+
         // Determine file format
         $format = $request->get('format', 'xlsx');
-        $filename = 'mitra-template.' . $format;
+        $filename = 'mitra-import-template.' . $format;
         
         if ($format === 'csv') {
             $writer = new Csv($spreadsheet);
@@ -455,6 +559,20 @@ class MitraController extends Controller
         }, 200, [
             'Content-Type' => $contentType,
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'max-age=0',
+        ]);
+    }
+
+    /**
+     * Download import guide
+     */
+    public function downloadGuide()
+    {
+        $guideContent = file_get_contents(base_path('TEMPLATE_IMPORT_MITRA.md'));
+        
+        return response($guideContent, 200, [
+            'Content-Type' => 'text/markdown',
+            'Content-Disposition' => 'attachment; filename="panduan-import-mitra.md"',
             'Cache-Control' => 'max-age=0',
         ]);
     }
