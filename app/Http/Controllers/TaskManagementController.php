@@ -148,9 +148,34 @@ class TaskManagementController extends Controller
 
         $todoList->update(['status' => $request->status]);
 
+        // For Inertia requests, redirect back with success message
+        if ($request->header('X-Inertia')) {
+            return redirect()->back()->with('success', 'Status task berhasil diperbarui');
+        }
+
+        // For AJAX requests, return JSON
+        // Get updated summary counts
+        $user = auth()->user();
+        $baseQuery = TodoList::query();
+        
+        if (!$user->isSuperAdmin()) {
+            $baseQuery->where(function($q) {
+                $q->where('user_id', auth()->id())
+                  ->orWhere('assigned_to', auth()->id());
+            });
+        }
+
+        $summary = [
+            'total' => $baseQuery->count(),
+            'pending' => (clone $baseQuery)->where('status', 'pending')->count(),
+            'in_progress' => (clone $baseQuery)->where('status', 'in_progress')->count(),
+            'completed' => (clone $baseQuery)->where('status', 'completed')->count(),
+        ];
+
         return response()->json([
             'success' => true,
-            'message' => 'Status task berhasil diperbarui'
+            'message' => 'Status task berhasil diperbarui',
+            'summary' => $summary
         ]);
     }
 

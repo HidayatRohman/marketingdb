@@ -80,6 +80,7 @@ const props = defineProps<Props>();
 
 // Reactive data
 const tasks = ref(props.tasks);
+const summary = ref(props.summary);
 const isDialogOpen = ref(false);
 const editingTask = ref<Task | null>(null);
 const isDragging = ref(false);
@@ -159,6 +160,7 @@ const submitForm = () => {
             onSuccess: () => {
                 isDialogOpen.value = false;
                 resetForm();
+                router.reload({ only: ['tasks', 'summary'] });
             },
             onError: (errors) => {
                 console.error('Update error:', errors);
@@ -170,6 +172,7 @@ const submitForm = () => {
             onSuccess: () => {
                 isDialogOpen.value = false;
                 resetForm();
+                router.reload({ only: ['tasks', 'summary'] });
             },
             onError: (errors) => {
                 console.error('Create error:', errors);
@@ -190,32 +193,43 @@ const deleteTask = (task: Task) => {
 const moveTask = async (task: Task, newStatus: string) => {
     if (task.status === newStatus) return;
     
+    console.log('Moving task:', task.id, 'from', task.status, 'to', newStatus);
+    
     try {
-        // Update local state immediately for better UX
-        const currentTasks = tasks.value[task.status as keyof typeof tasks.value];
-        const taskIndex = currentTasks.findIndex(t => t.id === task.id);
-        
-        if (taskIndex !== -1) {
-            // Remove from current status
-            currentTasks.splice(taskIndex, 1);
-            
-            // Add to new status
-            const updatedTask = { ...task, status: newStatus as 'pending' | 'in_progress' | 'completed' };
-            tasks.value[newStatus as keyof typeof tasks.value].push(updatedTask);
-        }
-
-        // Update on server
-        await fetch(`/task-management/${task.id}/status`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-            },
-            body: JSON.stringify({ status: newStatus }),
-        });
+        // Try using Inertia router for better Laravel integration
+        router.patch(`/task-management/${task.id}/status`, 
+            { status: newStatus },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: (page) => {
+                    console.log('Status update success via Inertia');
+                    // Update local state
+                    const currentTasks = tasks.value[task.status as keyof typeof tasks.value];
+                    const taskIndex = currentTasks.findIndex(t => t.id === task.id);
+                    
+                    if (taskIndex !== -1) {
+                        // Remove from current status
+                        currentTasks.splice(taskIndex, 1);
+                        
+                        // Add to new status
+                        const updatedTask = { ...task, status: newStatus as 'pending' | 'in_progress' | 'completed' };
+                        tasks.value[newStatus as keyof typeof tasks.value].push(updatedTask);
+                    }
+                    
+                    // Refresh to get updated data
+                    router.reload({ only: ['tasks', 'summary'] });
+                },
+                onError: (errors) => {
+                    console.error('Status update error via Inertia:', errors);
+                    alert('Gagal mengubah status task: ' + JSON.stringify(errors));
+                }
+            }
+        );
     } catch (error) {
         console.error('Error updating task status:', error);
-        // Optionally revert local changes on error
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        alert('Gagal mengubah status task: ' + errorMessage);
     }
 };
 
@@ -251,29 +265,48 @@ const onDrop = async (dropResult: any, status: string) => {
     
     if (removedIndex === null && addedIndex === null) return;
     
-    // Update local state immediately for better UX
-    if (removedIndex !== null) {
-        tasks.value[status as keyof typeof tasks.value].splice(removedIndex, 1);
-    }
+    console.log('Drag and drop:', { removedIndex, addedIndex, payload, status });
     
-    if (addedIndex !== null) {
-        tasks.value[status as keyof typeof tasks.value].splice(addedIndex, 0, { ...payload, status });
-    }
-
-    // Update on server
+    // If the task was moved to a different status, update the server
     if (payload && payload.status !== status) {
-        try {
-            await fetch(`/task-management/${payload.id}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        console.log('Status change detected:', payload.status, '->', status);
+        
+        // Update local state immediately for better UX
+        if (removedIndex !== null) {
+            tasks.value[payload.status as keyof typeof tasks.value].splice(removedIndex, 1);
+        }
+        
+        if (addedIndex !== null) {
+            tasks.value[status as keyof typeof tasks.value].splice(addedIndex, 0, { ...payload, status });
+        }
+        
+        // Use Inertia router for server update
+        router.patch(`/task-management/${payload.id}/status`, 
+            { status },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    console.log('Drag drop status update success');
+                    // Refresh to ensure data consistency
+                    router.reload({ only: ['tasks', 'summary'] });
                 },
-                body: JSON.stringify({ status }),
-            });
-        } catch (error) {
-            console.error('Error updating task status:', error);
-            // Optionally revert local changes on error
+                onError: (errors) => {
+                    console.error('Drag drop status update error:', errors);
+                    alert('Gagal mengubah status task: ' + JSON.stringify(errors));
+                    // Reload page to revert changes
+                    router.reload();
+                }
+            }
+        );
+    } else {
+        // Just reordering within the same status
+        if (removedIndex !== null) {
+            tasks.value[status as keyof typeof tasks.value].splice(removedIndex, 1);
+        }
+        
+        if (addedIndex !== null) {
+            tasks.value[status as keyof typeof tasks.value].splice(addedIndex, 0, payload);
         }
     }
 };

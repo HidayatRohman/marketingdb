@@ -30,6 +30,7 @@
             }
         </style>
 
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <title inertia>{{ $siteTitle ?? config('app.name', 'Laravel') }}</title>
 
         @if($siteFavicon)
