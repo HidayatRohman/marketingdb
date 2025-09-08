@@ -1077,7 +1077,7 @@ onMounted(() => {
                                         </thead>
                                         <tbody>
                                             <tr v-for="marketing in taskStats.by_marketing" :key="marketing.id" 
-                                                class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                                                class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                                 <td class="p-3">
                                                     <div class="flex items-center gap-2">
                                                         <div class="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
