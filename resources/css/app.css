@@ -238,4 +238,61 @@
         -webkit-line-clamp: 3;
         line-clamp: 3;
     }
+    
+    /* Chart wrapper styles */
+    .chart-wrapper {
+        position: relative;
+        width: 100%;
+        min-height: 400px;
+    }
+    
+    .analytics-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        border: 1px solid #e5e7eb;
+    }
+    
+    .dark .analytics-card {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .analytics-card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .dark .analytics-card-header {
+        border-bottom-color: #374151;
+    }
+    
+    .analytics-card-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+    }
+    
+    .dark .analytics-card-title {
+        color: #f9fafb;
+    }
+    
+    .analytics-card-subtitle {
+        margin-top: 0.5rem;
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-bottom: 0;
+    }
+    
+    .dark .analytics-card-subtitle {
+        color: #9ca3af;
+    }
+    
+    .analytics-card-content {
+        padding: 1.5rem;
+    }
 }
