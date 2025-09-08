@@ -13,7 +13,7 @@ import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { 
-    Users, UserCheck, Shield, Briefcase, Plus, BarChart3, TrendingUp, Activity, 
+    Users, UserCheck, Shield, Briefcase, BarChart3, TrendingUp, Activity, 
     Clock, Calendar, MessageSquare, Target, Award, ChevronUp, ChevronDown,
     Phone, Mail, MapPin, Building2, Zap, Eye, Filter, RefreshCw,
     TrendingDown, ArrowUpRight, ArrowDownRight, Percent, Tag, PieChart, X, Settings,
@@ -429,12 +429,6 @@ onMounted(() => {
                                 <RefreshCw :class="['mr-2 h-4 w-4', refreshing && 'animate-spin']" />
                                 Refresh
                             </Button>
-                            <Link href="/mitras/create">
-                                <Button class="bg-white text-blue-600 hover:bg-blue-50 font-semibold btn-spacing w-full sm:w-auto">
-                                    <Plus class="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                                    Lead Baru
-                                </Button>
-                            </Link>
                         </div>
                     </div>
                 </div>
