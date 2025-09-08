@@ -14,7 +14,7 @@ import MitraModal from '@/components/MitraModal.vue';
 import MitraDeleteModal from '@/components/MitraDeleteModal.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
-import { Search, Plus, Edit, Trash2, Eye, Building2, Filter, MoreHorizontal, Calendar, ChevronDown, ChevronUp, X, User, Clock } from 'lucide-vue-next';
+import { Search, Plus, Edit, Trash2, Eye, Building2, Filter, MoreHorizontal, Calendar, ChevronDown, ChevronUp, X, User, Clock, Download, Upload, FileSpreadsheet } from 'lucide-vue-next';
 
 interface Brand {
     id: number;
@@ -334,6 +334,131 @@ const getFilterParams = () => {
         per_page: perPage.value || 30,
     };
 };
+
+// Export/Import functions
+const isExporting = ref(false);
+const isImporting = ref(false);
+const importFile = ref<File | null>(null);
+
+const exportData = async (format: 'csv' | 'xlsx') => {
+    try {
+        isExporting.value = true;
+        
+        // Get current filter parameters
+        const filters = getFilterParams();
+        
+        // Create export URL with filters
+        const params = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+            if (value !== undefined) {
+                params.append(key, String(value));
+            }
+        });
+        params.append('export', format);
+        
+        // Create download link
+        const url = `/mitras/export?${params.toString()}`;
+        
+        // Create temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `mitra-data-${new Date().toISOString().split('T')[0]}.${format}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+    } catch (error) {
+        console.error('Export failed:', error);
+        alert('Export gagal. Silakan coba lagi.');
+    } finally {
+        isExporting.value = false;
+    }
+};
+
+const handleFileSelect = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    
+    if (file) {
+        // Validate file type
+        const allowedTypes = [
+            'text/csv',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ];
+        
+        if (!allowedTypes.includes(file.type)) {
+            alert('Format file tidak didukung. Silakan pilih file CSV atau XLSX.');
+            return;
+        }
+        
+        importFile.value = file;
+        importData();
+    }
+};
+
+const importData = async () => {
+    if (!importFile.value) return;
+    
+    try {
+        isImporting.value = true;
+        
+        const formData = new FormData();
+        formData.append('file', importFile.value);
+        
+        const response = await fetch('/mitras/import', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            alert(`Import berhasil! ${result.imported || 0} data berhasil diimport.`);
+            handleModalSuccess(); // Refresh data
+        } else {
+            const error = await response.json();
+            alert(`Import gagal: ${error.message || 'Terjadi kesalahan'}`);
+        }
+        
+    } catch (error) {
+        console.error('Import failed:', error);
+        alert('Import gagal. Silakan coba lagi.');
+    } finally {
+        isImporting.value = false;
+        importFile.value = null;
+        
+        // Reset file input
+        const fileInput = document.getElementById('import-file') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+    }
+};
+
+const triggerFileInput = () => {
+    const fileInput = document.getElementById('import-file') as HTMLInputElement;
+    fileInput?.click();
+};
+
+const downloadTemplate = async (format: 'csv' | 'xlsx') => {
+    try {
+        // Create download link for template
+        const url = `/mitras/template?format=${format}`;
+        
+        // Create temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `mitra-template.${format}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+    } catch (error) {
+        console.error('Template download failed:', error);
+        alert('Download template gagal. Silakan coba lagi.');
+    }
+};
 </script>
 
 <template>
@@ -354,13 +479,84 @@ const getFilterParams = () => {
                                 Kelola mitra bisnis dengan mudah dan efisien
                             </p>
                         </div>
-                        <Button 
-                            @click="openCreateModal"
-                            class="bg-gradient-to-r from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 text-teal-600 dark:text-teal-400 border border-white/50 dark:border-gray-700 hover:from-teal-50 hover:to-white dark:hover:from-gray-700 dark:hover:to-gray-800 font-semibold shadow-lg px-4 py-2 transition-all duration-200"
-                        >
-                            <Plus class="mr-2 h-4 w-4" />
-                            Tambah Mitra
-                        </Button>
+                        <div class="flex items-center gap-3">
+                            <!-- Export Dropdown -->
+                            <div class="relative group">
+                                <Button 
+                                    :disabled="isExporting"
+                                    class="bg-gradient-to-r from-blue-500 to-blue-600 text-white border border-blue-600 hover:from-blue-600 hover:to-blue-700 font-semibold shadow-lg px-4 py-2 transition-all duration-200"
+                                >
+                                    <Download class="mr-2 h-4 w-4" />
+                                    {{ isExporting ? 'Exporting...' : 'Export' }}
+                                    <ChevronDown class="ml-2 h-4 w-4" />
+                                </Button>
+                                
+                                <!-- Dropdown Menu -->
+                                <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                    <div class="p-1">
+                                        <button
+                                            @click="exportData('csv')"
+                                            :disabled="isExporting"
+                                            class="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md flex items-center gap-2 disabled:opacity-50"
+                                        >
+                                            <FileSpreadsheet class="h-4 w-4" />
+                                            Export sebagai CSV
+                                        </button>
+                                        <button
+                                            @click="exportData('xlsx')"
+                                            :disabled="isExporting"
+                                            class="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md flex items-center gap-2 disabled:opacity-50"
+                                        >
+                                            <FileSpreadsheet class="h-4 w-4" />
+                                            Export sebagai XLSX
+                                        </button>
+                                        <hr class="my-1 border-gray-200 dark:border-gray-600" />
+                                        <button
+                                            @click="downloadTemplate('xlsx')"
+                                            class="w-full text-left px-3 py-2 text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/50 rounded-md flex items-center gap-2"
+                                        >
+                                            <Download class="h-4 w-4" />
+                                            Download Template XLSX
+                                        </button>
+                                        <button
+                                            @click="downloadTemplate('csv')"
+                                            class="w-full text-left px-3 py-2 text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/50 rounded-md flex items-center gap-2"
+                                        >
+                                            <Download class="h-4 w-4" />
+                                            Download Template CSV
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Import Button -->
+                            <Button 
+                                @click="triggerFileInput"
+                                :disabled="isImporting"
+                                class="bg-gradient-to-r from-orange-500 to-orange-600 text-white border border-orange-600 hover:from-orange-600 hover:to-orange-700 font-semibold shadow-lg px-4 py-2 transition-all duration-200"
+                            >
+                                <Upload class="mr-2 h-4 w-4" />
+                                {{ isImporting ? 'Importing...' : 'Import' }}
+                            </Button>
+
+                            <!-- Hidden File Input -->
+                            <input
+                                id="import-file"
+                                type="file"
+                                accept=".csv,.xlsx,.xls"
+                                @change="handleFileSelect"
+                                class="hidden"
+                            />
+
+                            <!-- Add Mitra Button -->
+                            <Button 
+                                @click="openCreateModal"
+                                class="bg-gradient-to-r from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 text-teal-600 dark:text-teal-400 border border-white/50 dark:border-gray-700 hover:from-teal-50 hover:to-white dark:hover:from-gray-700 dark:hover:to-gray-800 font-semibold shadow-lg px-4 py-2 transition-all duration-200"
+                            >
+                                <Plus class="mr-2 h-4 w-4" />
+                                Tambah Mitra
+                            </Button>
+                        </div>
                     </div>
                 </div>
                 <div class="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24"></div>

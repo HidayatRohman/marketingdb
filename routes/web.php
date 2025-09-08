@@ -94,6 +94,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('mitras/{mitra}', [MitraController::class, 'destroy'])->name('mitras.destroy');
     });
 
+    // Mitra Export/Import - Role-based access
+    Route::middleware('role.access:view')->group(function () {
+        Route::get('mitras/export', [MitraController::class, 'export'])->name('mitras.export');
+        Route::get('mitras/template', [MitraController::class, 'downloadTemplate'])->name('mitras.template');
+    });
+    
+    Route::middleware('role.access:create')->group(function () {
+        Route::post('mitras/import', [MitraController::class, 'import'])->name('mitras.import');
+    });
+
     // Brands Management - Only Super Admin can CRUD, others can view
     Route::middleware('role.access:view')->group(function () {
         Route::get('brands', [BrandController::class, 'index'])->name('brands.index');

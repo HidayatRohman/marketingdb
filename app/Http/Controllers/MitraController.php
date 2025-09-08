@@ -9,6 +9,10 @@ use App\Http\Requests\StoreMitraRequest;
 use App\Http\Requests\UpdateMitraRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Csv;
 
 class MitraController extends Controller
 {
@@ -243,6 +247,337 @@ class MitraController extends Controller
 
         return redirect()->route('mitras.index')
             ->with('success', 'Mitra berhasil diperbarui.');
+    }
+
+    /**
+     * Export mitras data
+     */
+    public function export(Request $request)
+    {
+        $user = auth()->user();
+        $query = Mitra::with(['brand', 'label', 'user']);
+
+        // Apply role-based filtering
+        $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply same filters as index method
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('no_telp', 'like', "%{$search}%")
+                  ->orWhere('kota', 'like', "%{$search}%")
+                  ->orWhere('provinsi', 'like', "%{$search}%")
+                  ->orWhereHas('brand', function ($brandQuery) use ($search) {
+                      $brandQuery->where('nama', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('label', function ($labelQuery) use ($search) {
+                      $labelQuery->where('nama', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('user', function ($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->has('periode_start') && $request->periode_start) {
+            $query->whereDate('tanggal_lead', '>=', $request->periode_start);
+        }
+
+        if ($request->has('periode_end') && $request->periode_end) {
+            $query->whereDate('tanggal_lead', '<=', $request->periode_end);
+        }
+
+        if ($request->has('chat') && $request->chat) {
+            $query->where('chat', $request->chat);
+        }
+
+        if ($request->has('label') && $request->label) {
+            $query->where('label_id', $request->label);
+        }
+
+        if ($request->has('user') && $request->user && $user->hasFullAccess()) {
+            $query->where('user_id', $request->user);
+        }
+
+        $mitras = $query->orderBy('tanggal_lead', 'desc')->get();
+
+        // Create spreadsheet
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set headers
+        $headers = [
+            'A1' => 'ID',
+            'B1' => 'Nama',
+            'C1' => 'No. Telepon',
+            'D1' => 'Tanggal Lead',
+            'E1' => 'Brand',
+            'F1' => 'Label',
+            'G1' => 'Status Chat',
+            'H1' => 'Kota',
+            'I1' => 'Provinsi',
+            'J1' => 'Marketing',
+            'K1' => 'Komentar',
+            'L1' => 'Dibuat Pada',
+            'M1' => 'Diupdate Pada'
+        ];
+
+        foreach ($headers as $cell => $value) {
+            $sheet->setCellValue($cell, $value);
+        }
+
+        // Style headers
+        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:M1')->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('E2E8F0');
+
+        // Add data
+        $row = 2;
+        foreach ($mitras as $mitra) {
+            $sheet->setCellValue('A' . $row, $mitra->id);
+            $sheet->setCellValue('B' . $row, $mitra->nama);
+            $sheet->setCellValue('C' . $row, $mitra->no_telp);
+            $sheet->setCellValue('D' . $row, $mitra->tanggal_lead);
+            $sheet->setCellValue('E' . $row, $mitra->brand->nama ?? '');
+            $sheet->setCellValue('F' . $row, $mitra->label->nama ?? '');
+            $sheet->setCellValue('G' . $row, $mitra->chat === 'masuk' ? 'Masuk' : 'Follow Up');
+            $sheet->setCellValue('H' . $row, $mitra->kota);
+            $sheet->setCellValue('I' . $row, $mitra->provinsi);
+            $sheet->setCellValue('J' . $row, $mitra->user->name ?? '');
+            $sheet->setCellValue('K' . $row, $mitra->komentar);
+            $sheet->setCellValue('L' . $row, $mitra->created_at->format('Y-m-d H:i:s'));
+            $sheet->setCellValue('M' . $row, $mitra->updated_at->format('Y-m-d H:i:s'));
+            $row++;
+        }
+
+        // Auto-size columns
+        foreach (range('A', 'M') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        // Determine file format
+        $format = $request->get('export', 'xlsx');
+        $filename = 'mitra-data-' . date('Y-m-d') . '.' . $format;
+        
+        if ($format === 'csv') {
+            $writer = new Csv($spreadsheet);
+            $contentType = 'text/csv';
+        } else {
+            $writer = new Xlsx($spreadsheet);
+            $contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        }
+
+        return new StreamedResponse(function() use ($writer) {
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type' => $contentType,
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'max-age=0',
+        ]);
+    }
+
+    /**
+     * Download import template
+     */
+    public function downloadTemplate(Request $request)
+    {
+        // Create spreadsheet
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set headers
+        $headers = [
+            'A1' => 'ID',
+            'B1' => 'Nama',
+            'C1' => 'No. Telepon',
+            'D1' => 'Tanggal Lead',
+            'E1' => 'Brand',
+            'F1' => 'Label',
+            'G1' => 'Status Chat',
+            'H1' => 'Kota',
+            'I1' => 'Provinsi',
+            'J1' => 'Marketing',
+            'K1' => 'Komentar',
+            'L1' => 'Dibuat Pada',
+            'M1' => 'Diupdate Pada'
+        ];
+
+        foreach ($headers as $cell => $value) {
+            $sheet->setCellValue($cell, $value);
+        }
+
+        // Style headers
+        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:M1')->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('E2E8F0');
+
+        // Add sample data
+        $sampleData = [
+            ['', 'John Doe', '081234567890', '2024-01-15', 'Brand A', 'Hot Lead', 'Masuk', 'Jakarta', 'DKI Jakarta', '', 'Tertarik dengan produk', '', ''],
+            ['', 'Jane Smith', '087654321098', '2024-01-16', 'Brand B', 'Warm Lead', 'Follow Up', 'Surabaya', 'Jawa Timur', '', 'Perlu follow up lebih lanjut', '', ''],
+        ];
+
+        $row = 2;
+        foreach ($sampleData as $data) {
+            $col = 'A';
+            foreach ($data as $value) {
+                $sheet->setCellValue($col . $row, $value);
+                $col++;
+            }
+            $row++;
+        }
+
+        // Add instructions as comments
+        $sheet->getComment('B1')->setText("INSTRUKSI IMPORT:\n\n1. ID: Kosongkan untuk data baru\n2. Nama: Wajib diisi\n3. No. Telepon: Wajib diisi\n4. Tanggal Lead: Format YYYY-MM-DD (wajib)\n5. Brand: Nama brand (akan dibuat otomatis jika belum ada)\n6. Label: Nama label yang sudah ada\n7. Status Chat: 'Masuk' atau 'Follow Up'\n8. Marketing: Akan diisi otomatis dengan user yang mengimport\n\nHapus baris contoh ini sebelum import!");
+
+        // Auto-size columns
+        foreach (range('A', 'M') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        // Determine file format
+        $format = $request->get('format', 'xlsx');
+        $filename = 'mitra-template.' . $format;
+        
+        if ($format === 'csv') {
+            $writer = new Csv($spreadsheet);
+            $contentType = 'text/csv';
+        } else {
+            $writer = new Xlsx($spreadsheet);
+            $contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        }
+
+        return new StreamedResponse(function() use ($writer) {
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type' => $contentType,
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'max-age=0',
+        ]);
+    }
+
+    /**
+     * Import mitras data
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,xlsx,xls|max:2048'
+        ]);
+
+        $file = $request->file('file');
+        $user = auth()->user();
+
+        try {
+            // Load the spreadsheet
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getPathname());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray();
+
+            // Remove header row
+            $header = array_shift($rows);
+            
+            $imported = 0;
+            $errors = [];
+
+            foreach ($rows as $index => $row) {
+                $rowNumber = $index + 2; // +2 because we removed header and arrays are 0-indexed
+                
+                // Skip empty rows
+                if (empty(array_filter($row))) {
+                    continue;
+                }
+
+                try {
+                    // Map columns (adjust based on your export format)
+                    $nama = $row[1] ?? null;
+                    $no_telp = $row[2] ?? null;
+                    $tanggal_lead = $row[3] ?? null;
+                    $brand_nama = $row[4] ?? null;
+                    $label_nama = $row[5] ?? null;
+                    $chat_status = $row[6] ?? null;
+                    $kota = $row[7] ?? null;
+                    $provinsi = $row[8] ?? null;
+                    $komentar = $row[10] ?? null;
+
+                    // Validate required fields
+                    if (empty($nama) || empty($no_telp) || empty($tanggal_lead)) {
+                        $errors[] = "Baris {$rowNumber}: Nama, No. Telepon, dan Tanggal Lead wajib diisi.";
+                        continue;
+                    }
+
+                    // Find or create brand
+                    $brand = null;
+                    if (!empty($brand_nama)) {
+                        $brand = Brand::firstOrCreate(['nama' => trim($brand_nama)]);
+                    }
+
+                    // Find label
+                    $label = null;
+                    if (!empty($label_nama)) {
+                        $label = Label::where('nama', trim($label_nama))->first();
+                    }
+
+                    // Determine chat status
+                    $chat = 'masuk';
+                    if (!empty($chat_status)) {
+                        $chat = (strtolower(trim($chat_status)) === 'follow up') ? 'followup' : 'masuk';
+                    }
+
+                    // Parse date
+                    try {
+                        $tanggal_lead = \Carbon\Carbon::parse($tanggal_lead)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        $errors[] = "Baris {$rowNumber}: Format tanggal tidak valid.";
+                        continue;
+                    }
+
+                    // Create mitra
+                    $mitraData = [
+                        'nama' => trim($nama),
+                        'no_telp' => trim($no_telp),
+                        'tanggal_lead' => $tanggal_lead,
+                        'brand_id' => $brand ? $brand->id : null,
+                        'label_id' => $label ? $label->id : null,
+                        'chat' => $chat,
+                        'kota' => trim($kota) ?: '',
+                        'provinsi' => trim($provinsi) ?: '',
+                        'komentar' => trim($komentar),
+                        'user_id' => $user->id, // Assign to current user
+                    ];
+
+                    Mitra::create($mitraData);
+                    $imported++;
+
+                } catch (\Exception $e) {
+                    $errors[] = "Baris {$rowNumber}: {$e->getMessage()}";
+                }
+            }
+
+            $response = [
+                'imported' => $imported,
+                'errors' => $errors
+            ];
+
+            if ($imported > 0) {
+                $response['message'] = "Berhasil mengimport {$imported} data mitra.";
+                if (!empty($errors)) {
+                    $response['message'] .= ' ' . count($errors) . ' baris memiliki error.';
+                }
+            } else {
+                $response['message'] = 'Tidak ada data yang berhasil diimport.';
+            }
+
+            return response()->json($response);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat mengimport data: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
