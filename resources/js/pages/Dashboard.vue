@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress/index';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs/index';
+import MarketingPerformanceChart from '@/components/MarketingPerformanceChart.vue';
+import BrandPerformanceChart from '@/components/BrandPerformanceChart.vue';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
@@ -147,6 +149,23 @@ interface TaskStats {
     by_marketing: TaskMarketingStats[];
 }
 
+interface MarketingUser {
+    id: number;
+    name: string;
+}
+
+interface Brand {
+    id: number;
+    nama: string;
+}
+
+interface Filters {
+    start_date: string | null;
+    end_date: string | null;
+    marketing: string | null;
+    brand: string | null;
+}
+
 interface Props {
     userStats: UserStats;
     mitraStats: MitraStats;
@@ -161,6 +180,9 @@ interface Props {
     topMarketing: TopMarketing[];
     brandPerformance: BrandPerformance[];
     recentActivities: RecentActivity[];
+    marketingUsers: MarketingUser[];
+    brands: Brand[];
+    filters: Filters;
 }
 
 const props = defineProps<Props>();
@@ -173,10 +195,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 // Refs for filters
-const startDate = ref('');
-const endDate = ref('');
-const selectedMarketing = ref('all');
-const selectedBrand = ref('all');
+const startDate = ref(props.filters.start_date || '');
+const endDate = ref(props.filters.end_date || '');
+const selectedMarketing = ref(props.filters.marketing || 'all');
+const selectedBrand = ref(props.filters.brand || 'all');
 const selectedDateRange = ref('this_month');
 const refreshing = ref(false);
 const showMarketingDropdown = ref(false);
@@ -839,6 +861,66 @@ onMounted(() => {
                             </CardContent>
                         </Card>
                     </div>
+
+                    <!-- Marketing Performance Chart Section -->
+                    <Card class="analytics-card">
+                        <CardHeader class="analytics-card-header">
+                            <CardTitle class="analytics-card-title">
+                                <User class="h-6 w-6" />
+                                Performa Marketing
+                            </CardTitle>
+                            <p class="analytics-card-subtitle">
+                                Analisis performa tim marketing berdasarkan total leads dan conversion rate
+                            </p>
+                        </CardHeader>
+                        <CardContent class="analytics-card-content">
+                            <div class="chart-wrapper">
+                                <MarketingPerformanceChart 
+                                    v-if="topMarketing.length > 0" 
+                                    :data="topMarketing" 
+                                    :title="`Performa Marketing ${selectedMarketing !== 'all' ? '- ' + (marketingUsers.find(m => m.id.toString() === selectedMarketing)?.name || '') : ''}`"
+                                />
+                                <div 
+                                    v-else 
+                                    class="flex flex-col items-center justify-center h-96 text-muted-foreground"
+                                >
+                                    <User class="h-16 w-16 mb-4 opacity-50" />
+                                    <p class="text-lg font-medium">Tidak ada data marketing</p>
+                                    <p class="text-sm">Data performa marketing akan muncul di sini</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Brand Performance Chart Section -->
+                    <Card class="analytics-card">
+                        <CardHeader class="analytics-card-header">
+                            <CardTitle class="analytics-card-title">
+                                <Tag class="h-6 w-6" />
+                                Performa Brand
+                            </CardTitle>
+                            <p class="analytics-card-subtitle">
+                                Analisis performa setiap brand berdasarkan total leads dan tingkat konversi
+                            </p>
+                        </CardHeader>
+                        <CardContent class="analytics-card-content">
+                            <div class="chart-wrapper">
+                                <BrandPerformanceChart 
+                                    v-if="brandPerformance.length > 0" 
+                                    :data="brandPerformance" 
+                                    :title="`Performa Brand ${selectedBrand !== 'all' ? '- ' + (brands.find(b => b.id.toString() === selectedBrand)?.nama || '') : ''}`"
+                                />
+                                <div 
+                                    v-else 
+                                    class="flex flex-col items-center justify-center h-96 text-muted-foreground"
+                                >
+                                    <Tag class="h-16 w-16 mb-4 opacity-50" />
+                                    <p class="text-lg font-medium">Tidak ada data brand</p>
+                                    <p class="text-sm">Data performa brand akan muncul di sini</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
 
                     <!-- Recent Activities -->
                     <Card class="border-0 shadow-lg">
