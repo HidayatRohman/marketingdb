@@ -49,7 +49,11 @@ class LabelController extends Controller
     {
         $validated = $request->validate([
             'nama' => 'required|string|max:255|unique:labels,nama',
-            'warna' => 'required|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
+            'warna' => [
+                'required',
+                'string',
+                'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'
+            ]
         ]);
 
         Label::create($validated);
@@ -85,7 +89,11 @@ class LabelController extends Controller
     {
         $validated = $request->validate([
             'nama' => 'required|string|max:255|unique:labels,nama,' . $label->id,
-            'warna' => 'required|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
+            'warna' => [
+                'required',
+                'string',
+                'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'
+            ]
         ]);
 
         $label->update($validated);
