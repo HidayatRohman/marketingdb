@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('site_settings', function (Blueprint $table) {
             $table->id();
-            $table->string('key')->unique();
+            $table->string('key', 191)->unique();
             $table->text('value')->nullable();
             $table->enum('type', ['text', 'textarea', 'file', 'url'])->default('text');
             $table->string('description')->nullable();
