@@ -16,6 +16,9 @@ class RoleBasedAccess
     public function handle(Request $request, Closure $next, string $permission = 'view'): Response
     {
         if (!auth()->check()) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['error' => 'Unauthenticated'], 401);
+            }
             return redirect()->route('login');
         }
 
@@ -29,6 +32,9 @@ class RoleBasedAccess
             case 'destroy':
                 // Only Super Admin can perform CRUD operations
                 if (!$user->canCrud()) {
+                    if ($request->wantsJson() || $request->expectsJson()) {
+                        return response()->json(['error' => 'Anda tidak memiliki izin untuk melakukan aksi ini.'], 403);
+                    }
                     abort(403, 'Anda tidak memiliki izin untuk melakukan aksi ini.');
                 }
                 break;
@@ -38,11 +44,17 @@ class RoleBasedAccess
             case 'show':
                 // All roles can view, but with different data scope
                 if (!$user->hasFullAccess() && !$user->hasReadOnlyAccess() && !$user->hasLimitedAccess()) {
+                    if ($request->wantsJson() || $request->expectsJson()) {
+                        return response()->json(['error' => 'Anda tidak memiliki izin untuk mengakses halaman ini.'], 403);
+                    }
                     abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
                 }
                 break;
                 
             default:
+                if ($request->wantsJson() || $request->expectsJson()) {
+                    return response()->json(['error' => 'Invalid permission type.'], 403);
+                }
                 abort(403, 'Invalid permission type.');
         }
 

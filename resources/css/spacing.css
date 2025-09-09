@@ -69,7 +69,7 @@
 }
 
 .form-input-date {
-    @apply transition-all duration-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600;
+    @apply border-gray-300 transition-all duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600;
 }
 
 /* Dropdown Components */
@@ -78,27 +78,27 @@
 }
 
 .dropdown-trigger {
-    @apply w-full justify-between h-10 border-gray-300 dark:border-gray-600 hover:border-emerald-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200;
+    @apply h-10 w-full justify-between border-gray-300 transition-all duration-200 hover:border-emerald-400 focus:ring-2 focus:ring-emerald-500 dark:border-gray-600;
 }
 
 .dropdown-trigger-purple {
-    @apply w-full justify-between h-10 border-gray-300 dark:border-gray-600 hover:border-purple-400 focus:ring-2 focus:ring-purple-500 transition-all duration-200;
+    @apply h-10 w-full justify-between border-gray-300 transition-all duration-200 hover:border-purple-400 focus:ring-2 focus:ring-purple-500 dark:border-gray-600;
 }
 
 .dropdown-content {
-    @apply flex items-center gap-2 text-left truncate;
+    @apply flex items-center gap-2 truncate text-left;
 }
 
 .dropdown-menu {
-    @apply absolute top-full left-0 right-0 z-[9999] mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-y-auto min-w-[250px];
+    @apply absolute top-full right-0 left-0 z-[9999] mt-1 max-h-60 min-w-[250px] overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-800;
 }
 
 .dropdown-item {
-    @apply p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 cursor-pointer transition-colors;
+    @apply cursor-pointer p-3 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-900/20;
 }
 
 .dropdown-item-border {
-    @apply p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors;
+    @apply cursor-pointer border-b border-gray-100 p-3 transition-colors hover:bg-emerald-50 dark:border-gray-700 dark:hover:bg-emerald-900/20;
 }
 
 .dropdown-item-content {
@@ -110,15 +110,15 @@
 }
 
 .dropdown-badge-emerald {
-    @apply bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 text-xs;
+    @apply bg-emerald-100 text-xs text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300;
 }
 
 .dropdown-badge-purple {
-    @apply bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 text-xs;
+    @apply bg-purple-100 text-xs text-purple-700 dark:bg-purple-900 dark:text-purple-300;
 }
 
 .dropdown-item-purple {
-    @apply p-3 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-colors;
+    @apply cursor-pointer p-3 transition-colors hover:bg-purple-50 dark:hover:bg-purple-900/20;
 }
 
 /* Button Spacing */
@@ -210,7 +210,7 @@
 
 /* Filter Components */
 .filter-section {
-    @apply p-6 space-y-4;
+    @apply space-y-4 p-6;
 }
 
 .filter-header {
@@ -218,7 +218,7 @@
 }
 
 .filter-toggle {
-    @apply p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm border;
+    @apply rounded-lg border bg-white p-4 shadow-sm dark:bg-gray-800;
 }
 
 .filter-content-section {
@@ -230,47 +230,47 @@
 }
 
 .filter-advanced-section {
-    @apply bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-4 overflow-visible;
+    @apply space-y-4 overflow-visible rounded-xl bg-gray-50 p-4 dark:bg-gray-800;
 }
 
 /* Button Filter Styles */
 .btn-filter-range {
-    @apply text-xs sm:text-sm font-medium transition-all duration-200 relative overflow-hidden;
+    @apply relative overflow-hidden text-xs font-medium transition-all duration-200 sm:text-sm;
 }
 
 .btn-filter-active {
-    @apply bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg transform scale-105;
+    @apply scale-105 transform bg-indigo-500 text-white shadow-lg hover:bg-indigo-600;
 }
 
 .btn-filter-inactive {
-    @apply bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-md;
+    @apply border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md;
 }
 
 /* Responsive Grid for Filter Buttons */
 .responsive-grid-6 {
-    @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2;
+    @apply grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6;
 }
 
 .responsive-grid-4 {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4;
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4;
 }
 
 /* Action Buttons */
 .action-buttons {
-    @apply flex flex-col sm:flex-row gap-3 pt-4;
+    @apply flex flex-col gap-3 pt-4 sm:flex-row;
 }
 
 .btn-primary-gradient {
-    @apply flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200;
+    @apply flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 font-medium text-white shadow-lg transition-all duration-200 hover:from-indigo-600 hover:to-purple-600 hover:shadow-xl;
 }
 
 .btn-reset {
-    @apply flex-1 sm:flex-none border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200;
+    @apply flex-1 border-gray-300 text-gray-700 transition-all duration-200 hover:bg-gray-50 sm:flex-none dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800;
 }
 
 /* Active Filters */
 .active-filters-container {
-    @apply flex flex-wrap items-center gap-2 pt-4 border-t border-gray-200 dark:border-gray-700;
+    @apply flex flex-wrap items-center gap-2 border-t border-gray-200 pt-4 dark:border-gray-700;
 }
 
 .active-filters-label {
@@ -290,7 +290,7 @@
 }
 
 .filter-remove-btn {
-    @apply h-4 w-4 p-0 ml-1 rounded-full;
+    @apply ml-1 h-4 w-4 rounded-full p-0;
 }
 
 .filter-remove-emerald {
@@ -303,7 +303,7 @@
 
 /* Stats Cards */
 .stats-grid {
-    @apply grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4;
 }
 
 .stats-card {
@@ -335,11 +335,11 @@
 }
 
 .stats-card-text {
-    @apply flex-1 min-w-0;
+    @apply min-w-0 flex-1;
 }
 
 .stats-card-label {
-    @apply text-sm font-medium mb-1;
+    @apply mb-1 text-sm font-medium;
 }
 
 .stats-label-blue {
@@ -359,11 +359,11 @@
 }
 
 .stats-card-value {
-    @apply text-2xl sm:text-3xl font-bold mb-1;
+    @apply mb-1 text-2xl font-bold sm:text-3xl;
 }
 
 .stats-card-value-with-icon {
-    @apply text-2xl sm:text-3xl font-bold flex items-center gap-2 mb-1;
+    @apply mb-1 flex items-center gap-2 text-2xl font-bold sm:text-3xl;
 }
 
 .stats-value-blue {
@@ -407,7 +407,7 @@
 }
 
 .stats-card-icon {
-    @apply p-2.5 sm:p-3 rounded-lg flex-shrink-0;
+    @apply flex-shrink-0 rounded-lg p-2.5 sm:p-3;
 }
 
 .stats-icon-blue {
@@ -427,7 +427,7 @@
 }
 
 .stats-icon-size {
-    @apply h-5 w-5 sm:h-6 sm:w-6 text-white;
+    @apply h-5 w-5 text-white sm:h-6 sm:w-6;
 }
 
 /* Page Headers */
@@ -444,7 +444,7 @@
 }
 
 .page-title {
-    @apply text-4xl font-bold tracking-tight mb-2 flex items-center gap-3;
+    @apply mb-2 flex items-center gap-3 text-4xl font-bold tracking-tight;
 }
 
 .page-subtitle {
@@ -452,15 +452,15 @@
 }
 
 .btn-primary-white {
-    @apply bg-white text-purple-600 hover:bg-purple-50 font-semibold shadow-lg;
+    @apply bg-white font-semibold text-purple-600 shadow-lg hover:bg-purple-50;
 }
 
 .page-header-decoration-right {
-    @apply absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32;
+    @apply absolute top-0 right-0 -mt-32 -mr-32 h-64 w-64 rounded-full bg-white/10;
 }
 
 .page-header-decoration-left {
-    @apply absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24;
+    @apply absolute bottom-0 left-0 -mb-24 -ml-24 h-48 w-48 rounded-full bg-white/5;
 }
 
 /* Stats Grid Variants */
@@ -473,7 +473,7 @@
 }
 
 .stats-card-icon-small {
-    @apply p-2 rounded-lg;
+    @apply rounded-lg p-2;
 }
 
 .stats-card-value-small {
@@ -523,7 +523,7 @@
 }
 
 .search-layout {
-    @apply flex flex-col sm:flex-row gap-4;
+    @apply flex flex-col gap-4 sm:flex-row;
 }
 
 .search-input-wrapper {
@@ -531,11 +531,11 @@
 }
 
 .search-icon {
-    @apply absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4;
+    @apply absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground;
 }
 
 .search-input {
-    @apply pl-10 h-11;
+    @apply h-11 pl-10;
 }
 
 .search-actions {

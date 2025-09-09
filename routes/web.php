@@ -44,15 +44,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     });
 
-    // Mitras Management - Role-based access with data filtering
+    // Mitra Export/Import - MUST BE BEFORE dynamic routes to prevent conflicts
     Route::middleware('role.access:view')->group(function () {
-        Route::get('mitras', [MitraController::class, 'index'])->name('mitras.index');
-        Route::get('mitras/{mitra}', [MitraController::class, 'show'])->name('mitras.show');
+        Route::get('mitras/export', [MitraController::class, 'export'])->name('mitras.export');
+        Route::get('mitras/template', [MitraController::class, 'downloadTemplate'])->name('mitras.template');
     });
     
     Route::middleware('role.access:create')->group(function () {
         Route::get('mitras/create', [MitraController::class, 'create'])->name('mitras.create');
         Route::post('mitras', [MitraController::class, 'store'])->name('mitras.store');
+        Route::post('mitras/import', [MitraController::class, 'import'])->name('mitras.import');
+    });
+
+    // Mitras Management - Role-based access with data filtering
+    Route::middleware('role.access:view')->group(function () {
+        Route::get('mitras', [MitraController::class, 'index'])->name('mitras.index');
+        Route::get('mitras/{mitra}', [MitraController::class, 'show'])->name('mitras.show');
     });
     
     Route::middleware('role.access:edit')->group(function () {
@@ -63,16 +70,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::middleware('role.access:destroy')->group(function () {
         Route::delete('mitras/{mitra}', [MitraController::class, 'destroy'])->name('mitras.destroy');
-    });
-
-    // Mitra Export/Import - Role-based access
-    Route::middleware('role.access:view')->group(function () {
-        Route::get('mitras/export', [MitraController::class, 'export'])->name('mitras.export');
-        Route::get('mitras/template', [MitraController::class, 'downloadTemplate'])->name('mitras.template');
-    });
-    
-    Route::middleware('role.access:create')->group(function () {
-        Route::post('mitras/import', [MitraController::class, 'import'])->name('mitras.import');
     });
 
     // Brands Management - Only Super Admin can CRUD, others can view

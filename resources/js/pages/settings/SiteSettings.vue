@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { Head, useForm, router } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
+import { ImageIcon, Settings, Trash2, Upload, X } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import { Upload, X, ImageIcon, Settings, Trash2, Eye } from 'lucide-vue-next';
 
-import AppLayout from '@/layouts/AppLayout.vue';
-import SettingsLayout from '@/layouts/settings/Layout.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import AppLayout from '@/layouts/AppLayout.vue';
+import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { type BreadcrumbItem } from '@/types';
 
 interface Settings {
@@ -44,13 +44,20 @@ const form = useForm({
 });
 
 // Debug: watch form changes
-watch(() => form.site_title, (newValue) => {
-    console.log('site_title changed:', newValue);
-});
+watch(
+    () => form.site_title,
+    (newValue) => {
+        console.log('site_title changed:', newValue);
+    },
+);
 
-watch(() => form.errors, (newErrors) => {
-    console.log('Form errors changed:', newErrors);
-}, { deep: true });
+watch(
+    () => form.errors,
+    (newErrors) => {
+        console.log('Form errors changed:', newErrors);
+    },
+    { deep: true },
+);
 
 const logoPreview = ref<string | null>(props.settings.site_logo_url);
 const faviconPreview = ref<string | null>(props.settings.site_favicon_url);
@@ -61,7 +68,7 @@ const deleteType = ref<'logo' | 'favicon'>('logo');
 const handleLogoChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
-    
+
     if (file) {
         form.site_logo = file;
         const reader = new FileReader();
@@ -76,7 +83,7 @@ const handleLogoChange = (event: Event) => {
 const handleFaviconChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
-    
+
     if (file) {
         form.site_favicon = file;
         const reader = new FileReader();
@@ -125,7 +132,7 @@ const confirmDeleteFile = () => {
                 form.site_favicon = null;
             }
             deleteModal.value = false;
-        }
+        },
     });
 };
 
@@ -137,7 +144,7 @@ const submit = () => {
         site_description: form.site_description,
         site_logo: form.site_logo,
         site_favicon: form.site_favicon,
-        errors: form.errors
+        errors: form.errors,
     });
 
     // Try POST instead of PATCH for file uploads
@@ -150,7 +157,7 @@ const submit = () => {
         },
         onError: (errors) => {
             console.log('Form submission errors:', errors);
-        }
+        },
     });
 };
 
@@ -169,10 +176,7 @@ const triggerFileInput = (inputId: string) => {
 
         <SettingsLayout>
             <div class="space-y-6">
-                <HeadingSmall 
-                    title="Site Settings" 
-                    description="Kelola pengaturan umum aplikasi seperti logo, favicon, dan informasi dasar" 
-                />
+                <HeadingSmall title="Site Settings" description="Kelola pengaturan umum aplikasi seperti logo, favicon, dan informasi dasar" />
 
                 <form @submit.prevent="submit" class="space-y-6">
                     <!-- Basic Information -->
@@ -182,9 +186,7 @@ const triggerFileInput = (inputId: string) => {
                                 <Settings class="h-5 w-5" />
                                 Informasi Dasar
                             </CardTitle>
-                            <CardDescription>
-                                Pengaturan informasi dasar aplikasi
-                            </CardDescription>
+                            <CardDescription> Pengaturan informasi dasar aplikasi </CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <div class="space-y-2">
@@ -224,17 +226,17 @@ const triggerFileInput = (inputId: string) => {
                                 <ImageIcon class="h-5 w-5" />
                                 Logo Aplikasi
                             </CardTitle>
-                            <CardDescription>
-                                Upload logo utama aplikasi (Format: JPEG, PNG, JPG, GIF, SVG - Max: 2MB)
-                            </CardDescription>
+                            <CardDescription> Upload logo utama aplikasi (Format: JPEG, PNG, JPG, GIF, SVG - Max: 2MB) </CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <!-- Logo Preview -->
                             <div v-if="logoPreview" class="relative">
-                                <div class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
+                                <div
+                                    class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800"
+                                >
                                     <div class="flex items-center gap-3">
-                                        <div class="w-16 h-16 bg-white dark:bg-gray-700 rounded-lg p-2 border border-gray-200 dark:border-gray-600">
-                                            <img :src="logoPreview" alt="Logo Preview" class="w-full h-full object-contain" />
+                                        <div class="h-16 w-16 rounded-lg border border-gray-200 bg-white p-2 dark:border-gray-600 dark:bg-gray-700">
+                                            <img :src="logoPreview" alt="Logo Preview" class="h-full w-full object-contain" />
                                         </div>
                                         <div>
                                             <p class="text-sm font-medium">Logo Preview</p>
@@ -254,13 +256,7 @@ const triggerFileInput = (inputId: string) => {
                                         >
                                             <Trash2 class="h-4 w-4" />
                                         </Button>
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            @click="removeLogo"
-                                            class="text-gray-500 hover:text-gray-700"
-                                        >
+                                        <Button type="button" variant="ghost" size="sm" @click="removeLogo" class="text-gray-500 hover:text-gray-700">
                                             <X class="h-4 w-4" />
                                         </Button>
                                     </div>
@@ -268,9 +264,9 @@ const triggerFileInput = (inputId: string) => {
                             </div>
 
                             <!-- Upload Area -->
-                            <div v-if="!logoPreview" class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
-                                <ImageIcon class="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                                <p class="text-sm text-gray-500 mb-2">Belum ada logo</p>
+                            <div v-if="!logoPreview" class="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center dark:border-gray-600">
+                                <ImageIcon class="mx-auto mb-2 h-8 w-8 text-gray-400" />
+                                <p class="mb-2 text-sm text-gray-500">Belum ada logo</p>
                             </div>
 
                             <!-- Upload Button -->
@@ -282,12 +278,8 @@ const triggerFileInput = (inputId: string) => {
                                     @change="handleLogoChange"
                                     class="hidden"
                                 />
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    @click="() => triggerFileInput('logo-input')"
-                                >
-                                    <Upload class="h-4 w-4 mr-2" />
+                                <Button type="button" variant="outline" @click="() => triggerFileInput('logo-input')">
+                                    <Upload class="mr-2 h-4 w-4" />
                                     {{ logoPreview ? 'Ganti Logo' : 'Upload Logo' }}
                                 </Button>
                             </div>
@@ -305,17 +297,17 @@ const triggerFileInput = (inputId: string) => {
                                 <ImageIcon class="h-5 w-5" />
                                 Favicon
                             </CardTitle>
-                            <CardDescription>
-                                Upload favicon aplikasi (Format: ICO, PNG - Max: 1MB)
-                            </CardDescription>
+                            <CardDescription> Upload favicon aplikasi (Format: ICO, PNG - Max: 1MB) </CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <!-- Favicon Preview -->
                             <div v-if="faviconPreview" class="relative">
-                                <div class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
+                                <div
+                                    class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800"
+                                >
                                     <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 bg-white dark:bg-gray-700 rounded p-1 border border-gray-200 dark:border-gray-600">
-                                            <img :src="faviconPreview" alt="Favicon Preview" class="w-full h-full object-contain" />
+                                        <div class="h-8 w-8 rounded border border-gray-200 bg-white p-1 dark:border-gray-600 dark:bg-gray-700">
+                                            <img :src="faviconPreview" alt="Favicon Preview" class="h-full w-full object-contain" />
                                         </div>
                                         <div>
                                             <p class="text-sm font-medium">Favicon Preview</p>
@@ -349,26 +341,19 @@ const triggerFileInput = (inputId: string) => {
                             </div>
 
                             <!-- Upload Area -->
-                            <div v-if="!faviconPreview" class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
-                                <ImageIcon class="h-6 w-6 mx-auto text-gray-400 mb-2" />
-                                <p class="text-sm text-gray-500 mb-2">Belum ada favicon</p>
+                            <div
+                                v-if="!faviconPreview"
+                                class="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center dark:border-gray-600"
+                            >
+                                <ImageIcon class="mx-auto mb-2 h-6 w-6 text-gray-400" />
+                                <p class="mb-2 text-sm text-gray-500">Belum ada favicon</p>
                             </div>
 
                             <!-- Upload Button -->
                             <div class="flex items-center gap-3">
-                                <input
-                                    id="favicon-input"
-                                    type="file"
-                                    accept="image/x-icon,image/png"
-                                    @change="handleFaviconChange"
-                                    class="hidden"
-                                />
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    @click="() => triggerFileInput('favicon-input')"
-                                >
-                                    <Upload class="h-4 w-4 mr-2" />
+                                <input id="favicon-input" type="file" accept="image/x-icon,image/png" @change="handleFaviconChange" class="hidden" />
+                                <Button type="button" variant="outline" @click="() => triggerFileInput('favicon-input')">
+                                    <Upload class="mr-2 h-4 w-4" />
                                     {{ faviconPreview ? 'Ganti Favicon' : 'Upload Favicon' }}
                                 </Button>
                             </div>
@@ -381,11 +366,7 @@ const triggerFileInput = (inputId: string) => {
 
                     <!-- Submit Button -->
                     <div class="flex justify-end">
-                        <Button 
-                            type="submit" 
-                            :disabled="form.processing"
-                            class="min-w-[120px]"
-                        >
+                        <Button type="submit" :disabled="form.processing" class="min-w-[120px]">
                             <span v-if="form.processing">Menyimpan...</span>
                             <span v-else>Simpan Perubahan</span>
                         </Button>
@@ -403,17 +384,12 @@ const triggerFileInput = (inputId: string) => {
                         Hapus {{ deleteType === 'logo' ? 'Logo' : 'Favicon' }}
                     </DialogTitle>
                     <DialogDescription>
-                        Apakah Anda yakin ingin menghapus {{ deleteType === 'logo' ? 'logo' : 'favicon' }} ini? 
-                        Tindakan ini tidak dapat dibatalkan.
+                        Apakah Anda yakin ingin menghapus {{ deleteType === 'logo' ? 'logo' : 'favicon' }} ini? Tindakan ini tidak dapat dibatalkan.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter class="gap-2">
-                    <Button variant="outline" @click="deleteModal = false">
-                        Batal
-                    </Button>
-                    <Button variant="destructive" @click="confirmDeleteFile">
-                        Hapus
-                    </Button>
+                    <Button variant="outline" @click="deleteModal = false"> Batal </Button>
+                    <Button variant="destructive" @click="confirmDeleteFile"> Hapus </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

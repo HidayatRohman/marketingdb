@@ -1,22 +1,36 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Checkbox } from '@/components/ui/checkbox';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { 
-    Plus, Calendar, CalendarIcon, List, Clock, Flag, 
-    User, UserCheck, CheckCircle, XCircle, AlertCircle, MoreVertical,
-    Edit, Trash2, ArrowLeft, ArrowRight, Columns3
+import {
+    AlertCircle,
+    ArrowLeft,
+    ArrowRight,
+    Calendar,
+    CalendarIcon,
+    CheckCircle,
+    Clock,
+    Columns3,
+    Edit,
+    Flag,
+    List,
+    MoreVertical,
+    Plus,
+    Trash2,
+    User,
+    UserCheck,
+    XCircle,
 } from 'lucide-vue-next';
-import { ref, computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 interface Todo {
     id: number;
@@ -81,7 +95,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-// State  
+// State
 const parseDate = (dateStr: string): Date => {
     const [year, month, day] = dateStr.split('-').map(Number);
     return new Date(year, month - 1, day);
@@ -100,7 +114,7 @@ const filters = ref({
     priority: (props.filters?.priority || 'all') as 'all' | 'low' | 'medium' | 'high',
     assigned: (props.filters?.assigned || 'all') as 'all' | 'me' | 'others',
     user: props.filters?.user || 'all',
-    search: props.filters?.search || ''
+    search: props.filters?.search || '',
 });
 
 // Form state
@@ -117,10 +131,7 @@ const form = useForm({
 });
 
 // Indonesian month names
-const monthNames = [
-    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-];
+const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
 const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 
@@ -159,7 +170,7 @@ const isSuperAdmin = computed(() => {
 
 const todosGroupedByDate = computed(() => {
     const grouped: Record<string, Todo[]> = {};
-    props.todos.forEach(todo => {
+    props.todos.forEach((todo) => {
         const dateKey = todo.due_date;
         if (!grouped[dateKey]) {
             grouped[dateKey] = [];
@@ -175,19 +186,20 @@ const todosForSelectedDate = computed(() => {
         const dateKey = selectedDate.value.toISOString().split('T')[0];
         return todosGroupedByDate.value[dateKey] || [];
     }
-    
+
     // For list view
-    const hasFilters = filters.value.status !== 'all' || 
-                      filters.value.priority !== 'all' || 
-                      filters.value.assigned !== 'all' || 
-                      filters.value.user !== 'all' ||
-                      !!filters.value.search;
-    
+    const hasFilters =
+        filters.value.status !== 'all' ||
+        filters.value.priority !== 'all' ||
+        filters.value.assigned !== 'all' ||
+        filters.value.user !== 'all' ||
+        !!filters.value.search;
+
     // If Super Admin has active filters, show all filtered todos
     if (isSuperAdmin.value && hasFilters) {
         return allFilteredTodos.value;
     }
-    
+
     // If no filters are active, show todos for 1 week ahead (default behavior)
     if (!hasFilters) {
         // Get current date and 7 days ahead
@@ -195,23 +207,23 @@ const todosForSelectedDate = computed(() => {
         const weekAhead = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
         const todayKey = today.toISOString().split('T')[0];
         const weekAheadKey = weekAhead.toISOString().split('T')[0];
-        
+
         // Collect todos from today to 1 week ahead
         const weekTodos: Todo[] = [];
-        props.todos.forEach(todo => {
+        props.todos.forEach((todo) => {
             if (todo.due_date >= todayKey && todo.due_date <= weekAheadKey) {
                 weekTodos.push(todo);
             }
         });
         return weekTodos;
     }
-    
+
     // For filtered cases, show todos for selected date
     const dateKey = selectedDate.value.toISOString().split('T')[0];
     const todosForDate = todosGroupedByDate.value[dateKey] || [];
-    
+
     // Apply filters to todos for the selected date
-    return todosForDate.filter(todo => {
+    return todosForDate.filter((todo) => {
         if (filters.value.status !== 'all' && todo.status !== filters.value.status) return false;
         if (filters.value.priority !== 'all' && todo.priority !== filters.value.priority) return false;
         if (filters.value.assigned !== 'all') {
@@ -221,8 +233,7 @@ const todosForSelectedDate = computed(() => {
         if (filters.value.user !== 'all' && todo.user_id.toString() !== filters.value.user) return false;
         if (filters.value.search) {
             const searchLower = filters.value.search.toLowerCase();
-            if (!todo.title.toLowerCase().includes(searchLower) && 
-                !(todo.description && todo.description.toLowerCase().includes(searchLower))) {
+            if (!todo.title.toLowerCase().includes(searchLower) && !(todo.description && todo.description.toLowerCase().includes(searchLower))) {
                 return false;
             }
         }
@@ -233,89 +244,91 @@ const todosForSelectedDate = computed(() => {
 // Get all todos for current view with filters applied
 const allFilteredTodos = computed(() => {
     let todos = props.todos;
-    
+
     // Apply filters
     if (filters.value.status !== 'all') {
-        todos = todos.filter(todo => todo.status === filters.value.status);
+        todos = todos.filter((todo) => todo.status === filters.value.status);
     }
-    
+
     if (filters.value.priority !== 'all') {
-        todos = todos.filter(todo => todo.priority === filters.value.priority);
+        todos = todos.filter((todo) => todo.priority === filters.value.priority);
     }
-    
+
     if (filters.value.assigned !== 'all') {
         if (filters.value.assigned === 'me') {
-            todos = todos.filter(todo => todo.assigned_to === null || todo.user_id === todo.assigned_to);
+            todos = todos.filter((todo) => todo.assigned_to === null || todo.user_id === todo.assigned_to);
         } else {
-            todos = todos.filter(todo => todo.assigned_to !== null && todo.user_id !== todo.assigned_to);
+            todos = todos.filter((todo) => todo.assigned_to !== null && todo.user_id !== todo.assigned_to);
         }
     }
-    
+
     if (filters.value.user !== 'all') {
-        todos = todos.filter(todo => todo.user_id.toString() === filters.value.user);
+        todos = todos.filter((todo) => todo.user_id.toString() === filters.value.user);
     }
-    
+
     if (filters.value.search) {
         const searchLower = filters.value.search.toLowerCase();
-        todos = todos.filter(todo => 
-            todo.title.toLowerCase().includes(searchLower) ||
-            (todo.description && todo.description.toLowerCase().includes(searchLower))
+        todos = todos.filter(
+            (todo) => todo.title.toLowerCase().includes(searchLower) || (todo.description && todo.description.toLowerCase().includes(searchLower)),
         );
     }
-    
+
     return todos;
 });
 
 const priorityColors = {
     low: 'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 dark:from-emerald-900/30 dark:to-teal-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700',
     medium: 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 dark:from-amber-900/30 dark:to-orange-900/30 dark:text-amber-300 border border-amber-200 dark:border-amber-700',
-    high: 'bg-gradient-to-r from-rose-100 to-red-100 text-rose-800 dark:from-rose-900/30 dark:to-red-900/30 dark:text-rose-300 border border-rose-200 dark:border-rose-700'
+    high: 'bg-gradient-to-r from-rose-100 to-red-100 text-rose-800 dark:from-rose-900/30 dark:to-red-900/30 dark:text-rose-300 border border-rose-200 dark:border-rose-700',
 };
 
 const statusColors = {
-    pending: 'bg-gradient-to-r from-slate-100 to-gray-100 text-slate-700 dark:from-slate-800/50 dark:to-gray-800/50 dark:text-slate-300 border border-slate-200 dark:border-slate-600',
-    in_progress: 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 dark:from-blue-900/30 dark:to-indigo-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-700',
-    completed: 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 dark:from-green-900/30 dark:to-emerald-900/30 dark:text-green-300 border border-green-200 dark:border-green-700'
+    pending:
+        'bg-gradient-to-r from-slate-100 to-gray-100 text-slate-700 dark:from-slate-800/50 dark:to-gray-800/50 dark:text-slate-300 border border-slate-200 dark:border-slate-600',
+    in_progress:
+        'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 dark:from-blue-900/30 dark:to-indigo-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-700',
+    completed:
+        'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 dark:from-green-900/30 dark:to-emerald-900/30 dark:text-green-300 border border-green-200 dark:border-green-700',
 };
 
 const priorityLabels = {
     low: 'Rendah',
     medium: 'Sedang',
-    high: 'Tinggi'
+    high: 'Tinggi',
 };
 
 const statusLabels = {
     pending: 'Pending',
     in_progress: 'Dikerjakan',
-    completed: 'Selesai'
+    completed: 'Selesai',
 };
 
 // Calendar generation
 const calendarDays = computed(() => {
     const year = currentDate.value.getFullYear();
     const month = currentDate.value.getMonth();
-    
+
     // First day of the month
     const firstDay = new Date(year, month, 1);
     // Last day of the month
     const lastDay = new Date(year, month + 1, 0);
-    
+
     // Start from the previous month to fill the first week
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
-    
+
     // End on the next month to fill the last week
     const endDate = new Date(lastDay);
     endDate.setDate(endDate.getDate() + (6 - lastDay.getDay()));
-    
+
     const days: Date[] = [];
     const currentDay = new Date(startDate);
-    
+
     while (currentDay <= endDate) {
         days.push(new Date(currentDay));
         currentDay.setDate(currentDay.getDate() + 1);
     }
-    
+
     return days;
 });
 
@@ -323,10 +336,14 @@ const calendarDays = computed(() => {
 const changeView = (view: string) => {
     if (view === 'calendar' || view === 'board' || view === 'list') {
         currentView.value = view;
-        router.get('/todos', { 
-            view: view, 
-            date: selectedDate.value.toISOString().split('T')[0]
-        }, { preserveState: true });
+        router.get(
+            '/todos',
+            {
+                view: view,
+                date: selectedDate.value.toISOString().split('T')[0],
+            },
+            { preserveState: true },
+        );
     }
 };
 
@@ -338,11 +355,15 @@ const navigateMonth = (direction: 'prev' | 'next') => {
         newDate.setMonth(newDate.getMonth() + 1);
     }
     currentDate.value = newDate;
-    
-    router.get('/todos', { 
-        view: currentView.value, 
-        date: newDate.toISOString().split('T')[0]
-    }, { preserveState: true });
+
+    router.get(
+        '/todos',
+        {
+            view: currentView.value,
+            date: newDate.toISOString().split('T')[0],
+        },
+        { preserveState: true },
+    );
 };
 
 const navigateWeek = (direction: 'prev' | 'next') => {
@@ -353,20 +374,28 @@ const navigateWeek = (direction: 'prev' | 'next') => {
         newDate.setDate(newDate.getDate() + 7);
     }
     selectedDate.value = newDate;
-    
-    router.get('/todos', { 
-        view: 'board', 
-        date: newDate.toISOString().split('T')[0]
-    }, { preserveState: true });
+
+    router.get(
+        '/todos',
+        {
+            view: 'board',
+            date: newDate.toISOString().split('T')[0],
+        },
+        { preserveState: true },
+    );
 };
 
 const selectDate = (date: Date) => {
     selectedDate.value = date;
     if (currentView.value === 'list') {
-        router.get('/todos', { 
-            view: 'list', 
-            date: date.toISOString().split('T')[0]
-        }, { preserveState: true });
+        router.get(
+            '/todos',
+            {
+                view: 'list',
+                date: date.toISOString().split('T')[0],
+            },
+            { preserveState: true },
+        );
     }
 };
 
@@ -407,11 +436,11 @@ const submitForm = () => {
                 editingTodo.value = null;
                 form.reset();
                 // Use router.reload to get fresh data
-                router.reload({ 
+                router.reload({
                     only: ['todos', 'stats'],
-                    preserveUrl: true
+                    preserveUrl: true,
                 });
-            }
+            },
         });
     } else {
         form.post('/todos', {
@@ -419,11 +448,11 @@ const submitForm = () => {
                 showCreateModal.value = false;
                 form.reset();
                 // Use router.reload to get fresh data including the new todo
-                router.reload({ 
+                router.reload({
                     only: ['todos', 'stats'],
-                    preserveUrl: true
+                    preserveUrl: true,
                 });
-            }
+            },
         });
     }
 };
@@ -431,10 +460,10 @@ const submitForm = () => {
 const clearFilters = () => {
     filters.value = {
         status: 'all',
-        priority: 'all', 
+        priority: 'all',
         assigned: 'all',
         user: 'all',
-        search: ''
+        search: '',
     };
     applyFilters();
 };
@@ -443,67 +472,79 @@ const applyFilters = () => {
     const params = new URLSearchParams();
     params.set('view', currentView.value);
     params.set('date', selectedDate.value.toISOString().split('T')[0]);
-    
+
     if (filters.value.status !== 'all') params.set('status', filters.value.status);
     if (filters.value.priority !== 'all') params.set('priority', filters.value.priority);
     if (filters.value.assigned !== 'all') params.set('assigned', filters.value.assigned);
     if (filters.value.user !== 'all') params.set('user', filters.value.user);
     if (filters.value.search) params.set('search', filters.value.search);
-    
-    router.get('/todos?' + params.toString(), {}, { 
-        preserveUrl: true
-    });
+
+    router.get(
+        '/todos?' + params.toString(),
+        {},
+        {
+            preserveUrl: true,
+        },
+    );
 };
 
 // Watch for filter changes and apply them
-watch(filters, () => {
-    applyFilters();
-}, { deep: true });
+watch(
+    filters,
+    () => {
+        applyFilters();
+    },
+    { deep: true },
+);
 
 const deleteTodo = (todo: Todo) => {
     if (confirm('Apakah Anda yakin ingin menghapus todo ini?')) {
         router.delete(`/todos/${todo.id}`, {
             onSuccess: () => {
                 // Reload page to update data
-                router.reload({ 
+                router.reload({
                     only: ['todos', 'stats'],
-                    preserveUrl: true
+                    preserveUrl: true,
                 });
-            }
+            },
         });
     }
 };
 
 const updateStatus = (todo: Todo, checked: boolean) => {
     const status = checked ? 'completed' : 'pending';
-    router.patch(`/todos/${todo.id}/status`, { status }, {
-        preserveUrl: true,
-        onSuccess: () => {
-            // Reload to update stats and data
-            router.reload({ 
-                only: ['todos', 'stats'],
-                preserveUrl: true
-            });
-        }
-    });
+    router.patch(
+        `/todos/${todo.id}/status`,
+        { status },
+        {
+            preserveUrl: true,
+            onSuccess: () => {
+                // Reload to update stats and data
+                router.reload({
+                    only: ['todos', 'stats'],
+                    preserveUrl: true,
+                });
+            },
+        },
+    );
 };
 
 const getDayTodos = (date: Date) => {
     const dateKey = date.toISOString().split('T')[0];
     const todos = todosGroupedByDate.value[dateKey] || [];
-    
+
     // Sort todos by priority and time for better display
     return todos.sort((a, b) => {
         // Prioritize high priority todos
         const priorityOrder = { high: 3, medium: 2, low: 1 };
         const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
         if (priorityDiff !== 0) return priorityDiff;
-        
+
         // Then sort by time if available
         if (a.due_time && b.due_time) {
             return a.due_time.localeCompare(b.due_time);
         }
-        
+
         // Finally by title
         return a.title.localeCompare(b.title);
     });
@@ -512,40 +553,42 @@ const getDayTodos = (date: Date) => {
 // Get todos that span across date ranges (for bar visualization)
 const getTodosForDateRange = (date: Date) => {
     const dateKey = date.toISOString().split('T')[0];
-    
-    return props.todos.filter(todo => {
-        // If todo has start_date, check if current date is within the range
-        if (todo.start_date) {
-            return dateKey >= todo.start_date && dateKey <= todo.due_date;
-        }
-        // If no start_date, only show on due_date (original behavior)
-        return todo.due_date === dateKey;
-    }).sort((a, b) => {
-        const priorityOrder = { high: 3, medium: 2, low: 1 };
-        const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
-        if (priorityDiff !== 0) return priorityDiff;
-        
-        if (a.due_time && b.due_time) {
-            return a.due_time.localeCompare(b.due_time);
-        }
-        
-        return a.title.localeCompare(b.title);
-    });
+
+    return props.todos
+        .filter((todo) => {
+            // If todo has start_date, check if current date is within the range
+            if (todo.start_date) {
+                return dateKey >= todo.start_date && dateKey <= todo.due_date;
+            }
+            // If no start_date, only show on due_date (original behavior)
+            return todo.due_date === dateKey;
+        })
+        .sort((a, b) => {
+            const priorityOrder = { high: 3, medium: 2, low: 1 };
+            const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
+            if (priorityDiff !== 0) return priorityDiff;
+
+            if (a.due_time && b.due_time) {
+                return a.due_time.localeCompare(b.due_time);
+            }
+
+            return a.title.localeCompare(b.title);
+        });
 };
 
 // Get position of date within todo's date range (for bar visualization)
 const getTodoBarPosition = (todo: Todo, date: Date) => {
     if (!todo.start_date) return 'full';
-    
+
     const dateKey = date.toISOString().split('T')[0];
     const startDate = todo.start_date;
     const endDate = todo.due_date;
-    
+
     if (dateKey === startDate && dateKey === endDate) return 'full';
     if (dateKey === startDate) return 'start';
     if (dateKey === endDate) return 'end';
     if (dateKey > startDate && dateKey < endDate) return 'middle';
-    
+
     return 'none';
 };
 
@@ -557,10 +600,11 @@ const isCurrentMonth = (date: Date) => {
 const getWeekDays = () => {
     const startOfWeek = new Date(selectedDate.value);
     const day = startOfWeek.getDay();
-    
+
     // If selected date is Sunday, show the upcoming week (next Monday to Sunday)
     // This matches the backend logic for better user experience
-    if (day === 0) { // Sunday
+    if (day === 0) {
+        // Sunday
         // Move to next Monday
         startOfWeek.setDate(startOfWeek.getDate() + 1);
         const newDay = startOfWeek.getDay();
@@ -570,7 +614,7 @@ const getWeekDays = () => {
         const diff = startOfWeek.getDate() - day + 1; // Start from Monday
         startOfWeek.setDate(diff);
     }
-    
+
     const weekDays = [];
     for (let i = 0; i < 7; i++) {
         const date = new Date(startOfWeek);
@@ -582,24 +626,26 @@ const getWeekDays = () => {
 
 const getTodosForWeekDay = (date: Date) => {
     const dateKey = date.toISOString().split('T')[0];
-    
-    return props.todos.filter(todo => {
-        // Include todos that span across this date or have due_date on this date
-        if (todo.start_date) {
-            return dateKey >= todo.start_date && dateKey <= todo.due_date;
-        }
-        return todo.due_date === dateKey;
-    }).sort((a, b) => {
-        const priorityOrder = { high: 3, medium: 2, low: 1 };
-        const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
-        if (priorityDiff !== 0) return priorityDiff;
-        
-        if (a.due_time && b.due_time) {
-            return a.due_time.localeCompare(b.due_time);
-        }
-        
-        return a.title.localeCompare(b.title);
-    });
+
+    return props.todos
+        .filter((todo) => {
+            // Include todos that span across this date or have due_date on this date
+            if (todo.start_date) {
+                return dateKey >= todo.start_date && dateKey <= todo.due_date;
+            }
+            return todo.due_date === dateKey;
+        })
+        .sort((a, b) => {
+            const priorityOrder = { high: 3, medium: 2, low: 1 };
+            const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
+            if (priorityDiff !== 0) return priorityDiff;
+
+            if (a.due_time && b.due_time) {
+                return a.due_time.localeCompare(b.due_time);
+            }
+
+            return a.title.localeCompare(b.title);
+        });
 };
 
 const getDayName = (date: Date) => {
@@ -627,45 +673,63 @@ const getStatusIcon = (status: string) => {
     <AppLayout>
         <Head title="To Do List" />
 
-        <div class="p-6 space-y-6">
+        <div class="space-y-6 p-6">
             <!-- Header -->
-            <div class="relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-6 border border-blue-100 dark:border-blue-800">
-                <div class="absolute inset-0 bg-grid-pattern opacity-5"></div>
-                <div class="relative flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div
+                class="relative overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6 dark:border-blue-800 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20"
+            >
+                <div class="bg-grid-pattern absolute inset-0 opacity-5"></div>
+                <div class="relative flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div class="space-y-2">
-                        <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                        <h1 class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-4xl font-bold text-transparent">
                             To Do List
                         </h1>
-                        <p class="text-gray-600 dark:text-gray-300 text-lg">
+                        <p class="text-lg text-gray-600 dark:text-gray-300">
                             {{ isSuperAdmin ? '✨ Kelola semua tugas dan jadwal marketing tim' : '📋 Kelola tugas dan jadwal marketing Anda' }}
                         </p>
                         <div v-if="isSuperAdmin" class="mt-2">
-                            <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg">
+                            <span
+                                class="inline-flex items-center rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 px-3 py-1.5 text-sm font-semibold text-white shadow-lg"
+                            >
                                 👑 Super Admin View - Akses Penuh
                             </span>
                         </div>
                     </div>
-                    
+
                     <div class="flex items-center gap-3">
                         <Tabs :default-value="currentView" @update:model-value="changeView">
-                            <TabsList class="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-white/20 dark:border-gray-700/50 shadow-lg">
-                                <TabsTrigger value="calendar" class="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white transition-all duration-200">
+                            <TabsList
+                                class="border border-white/20 bg-white/70 shadow-lg backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-800/70"
+                            >
+                                <TabsTrigger
+                                    value="calendar"
+                                    class="flex items-center gap-2 transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white"
+                                >
                                     <CalendarIcon class="h-4 w-4" />
                                     Kalender
                                 </TabsTrigger>
-                                <TabsTrigger value="board" class="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white transition-all duration-200">
+                                <TabsTrigger
+                                    value="board"
+                                    class="flex items-center gap-2 transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white"
+                                >
                                     <Columns3 class="h-4 w-4" />
                                     Board
                                 </TabsTrigger>
-                                <TabsTrigger value="list" class="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white transition-all duration-200">
+                                <TabsTrigger
+                                    value="list"
+                                    class="flex items-center gap-2 transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white"
+                                >
                                     <List class="h-4 w-4" />
                                     Daftar
                                 </TabsTrigger>
                             </TabsList>
                         </Tabs>
-                        
-                        <Button @click="openCreateModal" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
-                            <Plus class="h-4 w-4 mr-2" />
+
+                        <Button
+                            @click="openCreateModal"
+                            class="transform rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-2.5 font-semibold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-600 hover:to-indigo-700 hover:shadow-xl"
+                        >
+                            <Plus class="mr-2 h-4 w-4" />
                             Tambah Todo
                         </Button>
                     </div>
@@ -673,12 +737,14 @@ const getStatusIcon = (status: string) => {
             </div>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card class="relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20"></div>
-                    <CardContent class="p-4 relative">
+            <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                <Card class="relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20"
+                    ></div>
+                    <CardContent class="relative p-4">
                         <div class="flex items-center space-x-3">
-                            <div class="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+                            <div class="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-3 shadow-lg">
                                 <List class="h-5 w-5 text-white" />
                             </div>
                             <div>
@@ -688,12 +754,14 @@ const getStatusIcon = (status: string) => {
                         </div>
                     </CardContent>
                 </Card>
-                
-                <Card class="relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                    <div class="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 dark:from-green-500/20 dark:to-emerald-500/20"></div>
-                    <CardContent class="p-4 relative">
+
+                <Card class="relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 dark:from-green-500/20 dark:to-emerald-500/20"
+                    ></div>
+                    <CardContent class="relative p-4">
                         <div class="flex items-center space-x-3">
-                            <div class="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg">
+                            <div class="rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 p-3 shadow-lg">
                                 <CheckCircle class="h-5 w-5 text-white" />
                             </div>
                             <div>
@@ -703,12 +771,14 @@ const getStatusIcon = (status: string) => {
                         </div>
                     </CardContent>
                 </Card>
-                
-                <Card class="relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                    <div class="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/10 dark:from-amber-500/20 dark:to-orange-500/20"></div>
-                    <CardContent class="p-4 relative">
+
+                <Card class="relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/10 dark:from-amber-500/20 dark:to-orange-500/20"
+                    ></div>
+                    <CardContent class="relative p-4">
                         <div class="flex items-center space-x-3">
-                            <div class="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
+                            <div class="rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 p-3 shadow-lg">
                                 <Clock class="h-5 w-5 text-white" />
                             </div>
                             <div>
@@ -718,12 +788,12 @@ const getStatusIcon = (status: string) => {
                         </div>
                     </CardContent>
                 </Card>
-                
-                <Card class="relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+
+                <Card class="relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                     <div class="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-red-500/10 dark:from-rose-500/20 dark:to-red-500/20"></div>
-                    <CardContent class="p-4 relative">
+                    <CardContent class="relative p-4">
                         <div class="flex items-center space-x-3">
-                            <div class="p-3 bg-gradient-to-br from-rose-500 to-red-600 rounded-xl shadow-lg">
+                            <div class="rounded-xl bg-gradient-to-br from-rose-500 to-red-600 p-3 shadow-lg">
                                 <XCircle class="h-5 w-5 text-white" />
                             </div>
                             <div>
@@ -738,48 +808,54 @@ const getStatusIcon = (status: string) => {
             <!-- Calendar View -->
             <div v-if="currentView === 'calendar'" class="space-y-4">
                 <!-- Calendar Legend -->
-                <Card class="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 border-blue-200 dark:border-blue-700">
+                <Card class="border-blue-200 bg-gradient-to-r from-gray-50 to-blue-50 dark:border-blue-700 dark:from-gray-800 dark:to-blue-900/20">
                     <CardContent class="p-5">
                         <div class="flex flex-wrap items-center gap-6 text-sm">
-                            <span class="font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                            <span class="flex items-center gap-2 font-semibold text-gray-800 dark:text-gray-200">
                                 <CalendarIcon class="h-4 w-4" />
                                 Legend:
                             </span>
-                            
+
                             <div class="flex items-center gap-2.5">
-                                <div class="w-4 h-4 rounded-lg bg-gradient-to-br from-slate-200 to-gray-200 dark:from-slate-600 dark:to-gray-600 border border-slate-300 dark:border-slate-500 shadow-sm"></div>
-                                <span class="text-gray-700 dark:text-gray-300 font-medium">Pending</span>
+                                <div
+                                    class="h-4 w-4 rounded-lg border border-slate-300 bg-gradient-to-br from-slate-200 to-gray-200 shadow-sm dark:border-slate-500 dark:from-slate-600 dark:to-gray-600"
+                                ></div>
+                                <span class="font-medium text-gray-700 dark:text-gray-300">Pending</span>
                             </div>
-                            
+
                             <div class="flex items-center gap-2.5">
-                                <div class="w-4 h-4 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-500 border border-blue-300 shadow-sm"></div>
-                                <span class="text-gray-700 dark:text-gray-300 font-medium">Dikerjakan</span>
+                                <div class="h-4 w-4 rounded-lg border border-blue-300 bg-gradient-to-br from-blue-400 to-indigo-500 shadow-sm"></div>
+                                <span class="font-medium text-gray-700 dark:text-gray-300">Dikerjakan</span>
                             </div>
-                            
+
                             <div class="flex items-center gap-2.5">
-                                <div class="w-4 h-4 rounded-lg bg-gradient-to-br from-green-400 to-emerald-500 border border-green-300 shadow-sm"></div>
-                                <span class="text-gray-700 dark:text-gray-300 font-medium">Selesai</span>
+                                <div
+                                    class="h-4 w-4 rounded-lg border border-green-300 bg-gradient-to-br from-green-400 to-emerald-500 shadow-sm"
+                                ></div>
+                                <span class="font-medium text-gray-700 dark:text-gray-300">Selesai</span>
                             </div>
-                            
+
                             <div class="flex items-center gap-2.5">
-                                <div class="p-1 bg-gradient-to-br from-rose-100 to-red-100 dark:from-rose-900/30 dark:to-red-900/30 rounded-lg border border-rose-200 dark:border-rose-700">
-                                    <Flag class="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                                <div
+                                    class="rounded-lg border border-rose-200 bg-gradient-to-br from-rose-100 to-red-100 p-1 dark:border-rose-700 dark:from-rose-900/30 dark:to-red-900/30"
+                                >
+                                    <Flag class="h-3 w-3 text-rose-600 dark:text-rose-400" />
                                 </div>
-                                <span class="text-gray-700 dark:text-gray-300 font-medium">Prioritas Tinggi</span>
+                                <span class="font-medium text-gray-700 dark:text-gray-300">Prioritas Tinggi</span>
                             </div>
-                            
+
                             <div class="flex items-center gap-2.5">
                                 <div class="flex items-center">
-                                    <span class="text-sm font-mono text-purple-600 dark:text-purple-400">●━━●</span>
+                                    <span class="font-mono text-sm text-purple-600 dark:text-purple-400">●━━●</span>
                                 </div>
-                                <span class="text-gray-700 dark:text-gray-300 font-medium">Range Tanggal</span>
+                                <span class="font-medium text-gray-700 dark:text-gray-300">Range Tanggal</span>
                             </div>
-                            
+
                             <span class="text-xs text-gray-500">💡 Todo dengan tanggal mulai ditampilkan sebagai bar dari mulai sampai deadline</span>
                         </div>
                     </CardContent>
                 </Card>
-                
+
                 <!-- Calendar Header -->
                 <Card>
                     <CardHeader class="pb-4">
@@ -795,77 +871,92 @@ const getStatusIcon = (status: string) => {
                             </div>
                         </div>
                     </CardHeader>
-                    
+
                     <CardContent>
                         <!-- Calendar Grid -->
                         <div class="grid grid-cols-7 gap-1">
                             <!-- Day headers -->
-                            <div v-for="day in dayNames" :key="day" 
-                                 class="p-3 text-center text-sm font-medium text-gray-500">
+                            <div v-for="day in dayNames" :key="day" class="p-3 text-center text-sm font-medium text-gray-500">
                                 {{ day }}
                             </div>
-                            
+
                             <!-- Calendar days -->
-                            <div v-for="date in calendarDays" :key="date.toString()"
-                                 @click="selectDate(date)"
-                                         :class="[
-                                     'p-2 border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 min-h-[100px]',
-                                     {
-                                         'bg-blue-50 dark:bg-blue-900/20': isSameDate(date, selectedDate),
-                                         'text-gray-400 dark:text-gray-600': !isCurrentMonth(date),
-                                         'bg-yellow-50 dark:bg-yellow-900/20': isToday(date.toISOString().split('T')[0]),
-                                         'ring-2 ring-blue-500': isSameDate(date, selectedDate)
-                                     }
-                                 ]">
-                                <div class="flex flex-col h-full">
-                                    <div class="text-sm font-medium mb-1">
+                            <div
+                                v-for="date in calendarDays"
+                                :key="date.toString()"
+                                @click="selectDate(date)"
+                                :class="[
+                                    'min-h-[100px] cursor-pointer border border-gray-200 p-2 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800',
+                                    {
+                                        'bg-blue-50 dark:bg-blue-900/20': isSameDate(date, selectedDate),
+                                        'text-gray-400 dark:text-gray-600': !isCurrentMonth(date),
+                                        'bg-yellow-50 dark:bg-yellow-900/20': isToday(date.toISOString().split('T')[0]),
+                                        'ring-2 ring-blue-500': isSameDate(date, selectedDate),
+                                    },
+                                ]"
+                            >
+                                <div class="flex h-full flex-col">
+                                    <div class="mb-1 text-sm font-medium">
                                         {{ date.getDate() }}
                                     </div>
-                                    
+
                                     <!-- Todos for this date with bar visualization -->
                                     <div class="flex-1 space-y-1">
-                                        <div v-for="todo in getTodosForDateRange(date).slice(0, 3)" :key="todo.id"
-                                             :class="[
-                                                 'text-xs p-1 cursor-pointer transition-colors relative',
-                                                 statusColors[todo.status],
-                                                 'hover:opacity-80',
-                                                 {
-                                                     // Bar styling based on position in date range
-                                                     'rounded-l rounded-r': getTodoBarPosition(todo, date) === 'full',
-                                                     'rounded-l': getTodoBarPosition(todo, date) === 'start',
-                                                     'rounded-r': getTodoBarPosition(todo, date) === 'end',
-                                                     'rounded-none': getTodoBarPosition(todo, date) === 'middle',
-                                                 }
-                                             ]"
-                                             :title="`${todo.title} - ${statusLabels[todo.status]} - ${priorityLabels[todo.priority]}${todo.due_time ? ' (' + todo.due_time + ')' : ''}${todo.start_date ? '\nPeriode: ' + formatDate(todo.start_date) + ' - ' + formatDate(todo.due_date) : ''}`"
-                                             @click.stop="openEditModal(todo)">
+                                        <div
+                                            v-for="todo in getTodosForDateRange(date).slice(0, 3)"
+                                            :key="todo.id"
+                                            :class="[
+                                                'relative cursor-pointer p-1 text-xs transition-colors',
+                                                statusColors[todo.status],
+                                                'hover:opacity-80',
+                                                {
+                                                    // Bar styling based on position in date range
+                                                    'rounded-l rounded-r': getTodoBarPosition(todo, date) === 'full',
+                                                    'rounded-l': getTodoBarPosition(todo, date) === 'start',
+                                                    'rounded-r': getTodoBarPosition(todo, date) === 'end',
+                                                    'rounded-none': getTodoBarPosition(todo, date) === 'middle',
+                                                },
+                                            ]"
+                                            :title="`${todo.title} - ${statusLabels[todo.status]} - ${priorityLabels[todo.priority]}${todo.due_time ? ' (' + todo.due_time + ')' : ''}${todo.start_date ? '\nPeriode: ' + formatDate(todo.start_date) + ' - ' + formatDate(todo.due_date) : ''}`"
+                                            @click.stop="openEditModal(todo)"
+                                        >
                                             <div class="flex items-center gap-1">
-                                                <component :is="getStatusIcon(todo.status)" 
-                                                          class="h-3 w-3 flex-shrink-0" />
+                                                <component :is="getStatusIcon(todo.status)" class="h-3 w-3 flex-shrink-0" />
                                                 <span class="truncate">{{ todo.title }}</span>
                                                 <!-- Show date range indicator -->
-                                                <span v-if="todo.start_date && getTodoBarPosition(todo, date) === 'start'" 
-                                                      class="text-xs opacity-60">●</span>
-                                                <span v-else-if="todo.start_date && getTodoBarPosition(todo, date) === 'middle'" 
-                                                      class="text-xs opacity-60">━</span>
-                                                <span v-else-if="todo.start_date && getTodoBarPosition(todo, date) === 'end'" 
-                                                      class="text-xs opacity-60">●</span>
+                                                <span v-if="todo.start_date && getTodoBarPosition(todo, date) === 'start'" class="text-xs opacity-60"
+                                                    >●</span
+                                                >
+                                                <span
+                                                    v-else-if="todo.start_date && getTodoBarPosition(todo, date) === 'middle'"
+                                                    class="text-xs opacity-60"
+                                                    >━</span
+                                                >
+                                                <span
+                                                    v-else-if="todo.start_date && getTodoBarPosition(todo, date) === 'end'"
+                                                    class="text-xs opacity-60"
+                                                    >●</span
+                                                >
                                             </div>
                                             <div v-if="todo.due_time && getTodoBarPosition(todo, date) === 'end'" class="text-xs opacity-75">
                                                 {{ todo.due_time }}
                                             </div>
                                         </div>
-                                        
-                                        <div v-if="getTodosForDateRange(date).length > 3" 
-                                             class="text-xs text-gray-500 p-1 cursor-pointer hover:bg-gray-100 rounded"
-                                             @click.stop="selectDate(date)"
-                                             :title="`Klik untuk melihat semua ${getTodosForDateRange(date).length} tugas`">
+
+                                        <div
+                                            v-if="getTodosForDateRange(date).length > 3"
+                                            class="cursor-pointer rounded p-1 text-xs text-gray-500 hover:bg-gray-100"
+                                            @click.stop="selectDate(date)"
+                                            :title="`Klik untuk melihat semua ${getTodosForDateRange(date).length} tugas`"
+                                        >
                                             +{{ getTodosForDateRange(date).length - 3 }} lainnya
                                         </div>
-                                        
+
                                         <!-- Show priority indicator if any high priority todos -->
-                                        <div v-if="getTodosForDateRange(date).some(todo => todo.priority === 'high' && todo.status !== 'completed')" 
-                                             class="text-xs text-red-600 font-medium flex items-center gap-1">
+                                        <div
+                                            v-if="getTodosForDateRange(date).some((todo) => todo.priority === 'high' && todo.status !== 'completed')"
+                                            class="flex items-center gap-1 text-xs font-medium text-red-600"
+                                        >
                                             <Flag class="h-3 w-3" />
                                             Prioritas Tinggi
                                         </div>
@@ -879,75 +970,89 @@ const getStatusIcon = (status: string) => {
                 <!-- Selected Date Todos -->
                 <Card v-if="todosForSelectedDate.length > 0">
                     <CardHeader>
-                        <CardTitle>
-                            Tugas untuk {{ formatDate(selectedDate.toISOString().split('T')[0]) }}
-                        </CardTitle>
+                        <CardTitle> Tugas untuk {{ formatDate(selectedDate.toISOString().split('T')[0]) }} </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div class="space-y-4">
-                            <div v-for="todo in todosForSelectedDate" :key="todo.id"
-                                 class="group relative overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 hover:-translate-y-1">
-                                
+                            <div
+                                v-for="todo in todosForSelectedDate"
+                                :key="todo.id"
+                                class="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-4 transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-600"
+                            >
                                 <!-- Priority indicator line -->
-                                <div 
-                                    class="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+                                <div
+                                    class="absolute top-0 bottom-0 left-0 w-1 rounded-l-xl"
                                     :class="{
                                         'bg-gradient-to-b from-emerald-500 to-teal-500': todo.priority === 'low',
                                         'bg-gradient-to-b from-amber-500 to-orange-500': todo.priority === 'medium',
-                                        'bg-gradient-to-b from-rose-500 to-red-500': todo.priority === 'high'
+                                        'bg-gradient-to-b from-rose-500 to-red-500': todo.priority === 'high',
                                     }"
                                 ></div>
-                                
+
                                 <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-4 flex-1">
-                                        <Checkbox 
+                                    <div class="flex flex-1 items-center space-x-4">
+                                        <Checkbox
                                             :checked="todo.status === 'completed'"
                                             @update:checked="(checked: boolean) => updateStatus(todo, checked)"
-                                            class="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                                            class="data-[state=checked]:border-green-500 data-[state=checked]:bg-green-500"
                                         />
-                                        
+
                                         <div class="flex-1">
-                                            <h4 class="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                            <h4
+                                                class="font-semibold text-gray-900 transition-colors group-hover:text-blue-600 dark:text-gray-100 dark:group-hover:text-blue-400"
+                                            >
                                                 {{ todo.title }}
                                             </h4>
-                                            <div class="flex flex-wrap items-center gap-2 mt-2">
+                                            <div class="mt-2 flex flex-wrap items-center gap-2">
                                                 <Badge :class="priorityColors[todo.priority]" class="text-xs font-medium shadow-sm">
-                                                    <Flag class="h-3 w-3 mr-1" />
+                                                    <Flag class="mr-1 h-3 w-3" />
                                                     {{ priorityLabels[todo.priority] }}
                                                 </Badge>
                                                 <Badge :class="statusColors[todo.status]" class="text-xs font-medium shadow-sm">
-                                                    <component :is="getStatusIcon(todo.status)" class="h-3 w-3 mr-1" />
+                                                    <component :is="getStatusIcon(todo.status)" class="mr-1 h-3 w-3" />
                                                     {{ statusLabels[todo.status] }}
                                                 </Badge>
-                                                <div v-if="todo.due_time" class="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 text-cyan-700 dark:text-cyan-300 rounded-lg text-xs font-medium border border-cyan-200 dark:border-cyan-700">
+                                                <div
+                                                    v-if="todo.due_time"
+                                                    class="flex items-center gap-1 rounded-lg border border-cyan-200 bg-gradient-to-r from-cyan-50 to-blue-50 px-2 py-1 text-xs font-medium text-cyan-700 dark:border-cyan-700 dark:from-cyan-900/20 dark:to-blue-900/20 dark:text-cyan-300"
+                                                >
                                                     <Clock class="h-3 w-3" />
                                                     {{ todo.due_time }}
                                                 </div>
-                                                <div class="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-medium border border-blue-200 dark:border-blue-700">
+                                                <div
+                                                    class="flex items-center gap-1 rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-2 py-1 text-xs font-medium text-blue-700 dark:border-blue-700 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-blue-300"
+                                                >
                                                     <User class="h-3 w-3" />
                                                     {{ todo.user.name }}
                                                 </div>
-                                                <div v-if="todo.assigned_user" class="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-700 dark:text-green-300 rounded-lg text-xs font-medium border border-green-200 dark:border-green-700">
+                                                <div
+                                                    v-if="todo.assigned_user"
+                                                    class="flex items-center gap-1 rounded-lg border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 px-2 py-1 text-xs font-medium text-green-700 dark:border-green-700 dark:from-green-900/20 dark:to-emerald-900/20 dark:text-green-300"
+                                                >
                                                     <UserCheck class="h-3 w-3" />
                                                     {{ todo.assigned_user.name }}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <DropdownMenu>
                                         <DropdownMenuTrigger as-child>
-                                            <Button variant="ghost" size="sm" class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                class="opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                            >
                                                 <MoreVertical class="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
                                             <DropdownMenuItem @click="openEditModal(todo)">
-                                                <Edit class="h-4 w-4 mr-2" />
+                                                <Edit class="mr-2 h-4 w-4" />
                                                 Edit
                                             </DropdownMenuItem>
                                             <DropdownMenuItem @click="deleteTodo(todo)" class="text-red-600">
-                                                <Trash2 class="h-4 w-4 mr-2" />
+                                                <Trash2 class="mr-2 h-4 w-4" />
                                                 Hapus
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
@@ -970,16 +1075,14 @@ const getStatusIcon = (status: string) => {
                                     <Columns3 class="h-5 w-5" />
                                     Board View - Weekly Planning
                                 </CardTitle>
-                                <p class="text-sm text-gray-600 mt-1">
-                                    Kelola tugas berdasarkan hari dalam minggu
-                                </p>
+                                <p class="mt-1 text-sm text-gray-600">Kelola tugas berdasarkan hari dalam minggu</p>
                             </div>
                             <div class="flex items-center gap-2">
                                 <Button variant="outline" size="sm" @click="navigateWeek('prev')">
                                     <ArrowLeft class="h-4 w-4" />
                                 </Button>
-                                <span class="text-sm font-medium px-3">
-                                    {{ formatDate(getWeekDays()[0].toISOString().split('T')[0]) }} - 
+                                <span class="px-3 text-sm font-medium">
+                                    {{ formatDate(getWeekDays()[0].toISOString().split('T')[0]) }} -
                                     {{ formatDate(getWeekDays()[6].toISOString().split('T')[0]) }}
                                 </span>
                                 <Button variant="outline" size="sm" @click="navigateWeek('next')">
@@ -991,9 +1094,8 @@ const getStatusIcon = (status: string) => {
                 </Card>
 
                 <!-- Kanban Board -->
-                <div class="grid grid-cols-1 md:grid-cols-7 gap-4 min-h-[600px]">
-                    <div v-for="(day, index) in getWeekDays()" :key="index"
-                         class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <div class="grid min-h-[600px] grid-cols-1 gap-4 md:grid-cols-7">
+                    <div v-for="(day, index) in getWeekDays()" :key="index" class="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
                         <!-- Day Header -->
                         <div class="mb-4">
                             <h3 class="font-semibold text-gray-900 dark:text-gray-100">
@@ -1002,37 +1104,39 @@ const getStatusIcon = (status: string) => {
                             <p class="text-sm text-gray-500">
                                 {{ formatDate(day.toISOString().split('T')[0]) }}
                             </p>
-                            <div class="text-xs text-gray-400 mt-1">
-                                {{ getTodosForWeekDay(day).length }} tugas
-                            </div>
+                            <div class="mt-1 text-xs text-gray-400">{{ getTodosForWeekDay(day).length }} tugas</div>
                         </div>
 
                         <!-- Todo Cards -->
                         <div class="space-y-3">
-                            <div v-for="todo in getTodosForWeekDay(day)" :key="todo.id"
-                                 class="group relative overflow-hidden bg-white dark:bg-gray-700 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-600 cursor-pointer hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 hover:-translate-y-1"
-                                 @click="openEditModal(todo)">
-                                
+                            <div
+                                v-for="todo in getTodosForWeekDay(day)"
+                                :key="todo.id"
+                                class="group relative cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg dark:border-gray-600 dark:bg-gray-700 dark:hover:border-blue-600"
+                                @click="openEditModal(todo)"
+                            >
                                 <!-- Priority indicator line -->
-                                <div 
-                                    class="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+                                <div
+                                    class="absolute top-0 bottom-0 left-0 w-1 rounded-l-xl"
                                     :class="{
                                         'bg-gradient-to-b from-emerald-500 to-teal-500': todo.priority === 'low',
                                         'bg-gradient-to-b from-amber-500 to-orange-500': todo.priority === 'medium',
-                                        'bg-gradient-to-b from-rose-500 to-red-500': todo.priority === 'high'
+                                        'bg-gradient-to-b from-rose-500 to-red-500': todo.priority === 'high',
                                     }"
                                 ></div>
-                                
+
                                 <!-- Card Header -->
-                                <div class="flex items-start justify-between mb-3">
-                                    <h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight">
+                                <div class="mb-3 flex items-start justify-between">
+                                    <h4
+                                        class="line-clamp-2 text-sm leading-tight font-semibold text-gray-900 transition-colors group-hover:text-blue-600 dark:text-gray-100 dark:group-hover:text-blue-400"
+                                    >
                                         {{ todo.title }}
                                     </h4>
-                                    <Checkbox 
+                                    <Checkbox
                                         :checked="todo.status === 'completed'"
                                         @update:checked="(checked: boolean) => updateStatus(todo, checked)"
                                         @click.stop
-                                        class="ml-2 flex-shrink-0 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                                        class="ml-2 flex-shrink-0 data-[state=checked]:border-green-500 data-[state=checked]:bg-green-500"
                                     />
                                 </div>
 
@@ -1041,37 +1145,46 @@ const getStatusIcon = (status: string) => {
                                     <!-- Priority & Status -->
                                     <div class="flex items-center gap-2">
                                         <Badge :class="priorityColors[todo.priority]" class="text-xs font-medium shadow-sm">
-                                            <Flag class="h-2.5 w-2.5 mr-1" />
+                                            <Flag class="mr-1 h-2.5 w-2.5" />
                                             {{ priorityLabels[todo.priority] }}
                                         </Badge>
                                         <Badge :class="statusColors[todo.status]" class="text-xs font-medium shadow-sm">
-                                            <component :is="getStatusIcon(todo.status)" class="h-2.5 w-2.5 mr-1" />
+                                            <component :is="getStatusIcon(todo.status)" class="mr-1 h-2.5 w-2.5" />
                                             {{ statusLabels[todo.status] }}
                                         </Badge>
                                     </div>
 
                                     <!-- Time & Duration -->
-                                    <div v-if="todo.due_time" class="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 text-cyan-700 dark:text-cyan-300 rounded-md text-xs font-medium border border-cyan-200 dark:border-cyan-700">
+                                    <div
+                                        v-if="todo.due_time"
+                                        class="flex items-center gap-1 rounded-md border border-cyan-200 bg-gradient-to-r from-cyan-50 to-blue-50 px-2 py-1 text-xs font-medium text-cyan-700 dark:border-cyan-700 dark:from-cyan-900/20 dark:to-blue-900/20 dark:text-cyan-300"
+                                    >
                                         <Clock class="h-3 w-3" />
                                         {{ todo.due_time }}
                                     </div>
 
                                     <!-- Date Range (if applicable) -->
-                                    <div v-if="todo.start_date && todo.start_date !== todo.due_date" 
-                                         class="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 text-purple-700 dark:text-purple-300 rounded-md text-xs font-medium border border-purple-200 dark:border-purple-700">
+                                    <div
+                                        v-if="todo.start_date && todo.start_date !== todo.due_date"
+                                        class="flex items-center gap-1 rounded-md border border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50 px-2 py-1 text-xs font-medium text-purple-700 dark:border-purple-700 dark:from-purple-900/20 dark:to-indigo-900/20 dark:text-purple-300"
+                                    >
                                         <Calendar class="h-3 w-3" />
                                         {{ formatDate(todo.start_date) }} - {{ formatDate(todo.due_date) }}
                                     </div>
 
                                     <!-- Assignee -->
-                                    <div class="flex items-center justify-between mt-3">
+                                    <div class="mt-3 flex items-center justify-between">
                                         <div class="flex items-center gap-1.5">
-                                            <div class="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 rounded-md text-xs font-medium border border-blue-200 dark:border-blue-700">
+                                            <div
+                                                class="flex items-center gap-1 rounded-md border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-2 py-1 text-xs font-medium text-blue-700 dark:border-blue-700 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-blue-300"
+                                            >
                                                 <User class="h-3 w-3" />
                                                 {{ todo.user.name.split(' ')[0] }}
                                             </div>
-                                            <div v-if="todo.assigned_user" 
-                                                  class="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-700 dark:text-green-300 rounded-md text-xs font-medium border border-green-200 dark:border-green-700">
+                                            <div
+                                                v-if="todo.assigned_user"
+                                                class="flex items-center gap-1 rounded-md border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 px-2 py-1 text-xs font-medium text-green-700 dark:border-green-700 dark:from-green-900/20 dark:to-emerald-900/20 dark:text-green-300"
+                                            >
                                                 <UserCheck class="h-3 w-3" />
                                                 {{ todo.assigned_user.name.split(' ')[0] }}
                                             </div>
@@ -1081,10 +1194,12 @@ const getStatusIcon = (status: string) => {
                             </div>
 
                             <!-- Add Todo Button for this day -->
-                            <Button variant="ghost" 
-                                    class="w-full justify-start text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 rounded-xl"
-                                    @click="openCreateModalForDay(day)">
-                                <Plus class="h-4 w-4 mr-2" />
+                            <Button
+                                variant="ghost"
+                                class="w-full justify-start rounded-xl border-2 border-dashed border-gray-300 text-gray-500 transition-all duration-200 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 dark:border-gray-600 dark:text-gray-400 dark:hover:border-blue-500 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
+                                @click="openCreateModalForDay(day)"
+                            >
+                                <Plus class="mr-2 h-4 w-4" />
                                 Tambah Tugas
                             </Button>
                         </div>
@@ -1099,31 +1214,29 @@ const getStatusIcon = (status: string) => {
                     <CardHeader>
                         <CardTitle class="flex items-center justify-between">
                             <span>Filter & Pencarian</span>
-                            <Button variant="outline" size="sm" @click="clearFilters">
-                                Reset Filter
-                            </Button>
+                            <Button variant="outline" size="sm" @click="clearFilters"> Reset Filter </Button>
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-6">
                             <!-- Date Filter -->
                             <div>
                                 <Label for="dateFilter">Tanggal</Label>
-                                <Input 
+                                <Input
                                     id="dateFilter"
                                     type="date"
                                     :value="selectedDate.toISOString().split('T')[0]"
                                     @change="(e: Event) => selectDate(new Date((e.target as HTMLInputElement).value))"
                                 />
                             </div>
-                            
+
                             <!-- Status Filter -->
                             <div>
                                 <Label for="statusFilter">Status</Label>
-                                <select 
+                                <select
                                     id="statusFilter"
                                     v-model="filters.status"
-                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <option value="all">Semua Status</option>
                                     <option value="pending">Pending</option>
@@ -1131,14 +1244,14 @@ const getStatusIcon = (status: string) => {
                                     <option value="completed">Selesai</option>
                                 </select>
                             </div>
-                            
+
                             <!-- Priority Filter -->
                             <div>
                                 <Label for="priorityFilter">Prioritas</Label>
-                                <select 
+                                <select
                                     id="priorityFilter"
                                     v-model="filters.priority"
-                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <option value="all">Semua Prioritas</option>
                                     <option value="high">Tinggi</option>
@@ -1146,14 +1259,14 @@ const getStatusIcon = (status: string) => {
                                     <option value="low">Rendah</option>
                                 </select>
                             </div>
-                            
+
                             <!-- User Filter -->
                             <div>
                                 <Label for="userFilter">Dibuat Oleh</Label>
-                                <select 
+                                <select
                                     id="userFilter"
                                     v-model="filters.user"
-                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <option value="all">Semua User</option>
                                     <option v-for="user in users" :key="user.id" :value="user.id.toString()">
@@ -1161,14 +1274,14 @@ const getStatusIcon = (status: string) => {
                                     </option>
                                 </select>
                             </div>
-                            
+
                             <!-- Assigned Filter -->
                             <div>
                                 <Label for="assignedFilter">Assignment</Label>
-                                <select 
+                                <select
                                     id="assignedFilter"
                                     v-model="filters.assigned"
-                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <option value="all">Semua</option>
                                     <option v-if="!isSuperAdmin" value="me">Tugas Saya</option>
@@ -1176,15 +1289,11 @@ const getStatusIcon = (status: string) => {
                                     <option v-if="isSuperAdmin" value="unassigned">Belum Di-assign</option>
                                 </select>
                             </div>
-                            
+
                             <!-- Search -->
                             <div>
                                 <Label for="searchFilter">Pencarian</Label>
-                                <Input 
-                                    id="searchFilter"
-                                    v-model="filters.search"
-                                    placeholder="Cari judul atau deskripsi..."
-                                />
+                                <Input id="searchFilter" v-model="filters.search" placeholder="Cari judul atau deskripsi..." />
                             </div>
                         </div>
                     </CardContent>
@@ -1195,72 +1304,83 @@ const getStatusIcon = (status: string) => {
                     <CardHeader>
                         <div class="flex items-center justify-between">
                             <CardTitle>
-                                <span v-if="filters.status === 'all' && filters.priority === 'all' && filters.assigned === 'all' && filters.user === 'all' && !filters.search">
-                                    Tugas 1 Minggu ke Depan ({{ formatDate(new Date().toISOString().split('T')[0]) }} - {{ formatDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]) }})
+                                <span
+                                    v-if="
+                                        filters.status === 'all' &&
+                                        filters.priority === 'all' &&
+                                        filters.assigned === 'all' &&
+                                        filters.user === 'all' &&
+                                        !filters.search
+                                    "
+                                >
+                                    Tugas 1 Minggu ke Depan ({{ formatDate(new Date().toISOString().split('T')[0]) }} -
+                                    {{ formatDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]) }})
                                 </span>
-                                <span v-else>
-                                    Hasil Filter Tugas
-                                </span>
-                                <span v-if="todosForSelectedDate.length !== props.todos.length" class="text-sm font-normal text-gray-500 ml-2">
+                                <span v-else> Hasil Filter Tugas </span>
+                                <span v-if="todosForSelectedDate.length !== props.todos.length" class="ml-2 text-sm font-normal text-gray-500">
                                     ({{ todosForSelectedDate.length }} hasil)
                                 </span>
                             </CardTitle>
                         </div>
                     </CardHeader>
-                    
+
                     <CardContent>
-                        <div v-if="todosForSelectedDate.length === 0" class="text-center py-8 text-gray-500">
-                            Tidak ada tugas untuk tanggal ini
-                        </div>
-                        
+                        <div v-if="todosForSelectedDate.length === 0" class="py-8 text-center text-gray-500">Tidak ada tugas untuk tanggal ini</div>
+
                         <div v-else class="space-y-4">
-                            <div v-for="todo in todosForSelectedDate" :key="todo.id"
-                                 class="group relative overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 hover:-translate-y-1">
-                                
+                            <div
+                                v-for="todo in todosForSelectedDate"
+                                :key="todo.id"
+                                class="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-600"
+                            >
                                 <!-- Priority indicator line -->
-                                <div 
-                                    class="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+                                <div
+                                    class="absolute top-0 bottom-0 left-0 w-1 rounded-l-xl"
                                     :class="{
                                         'bg-gradient-to-b from-emerald-500 to-teal-500': todo.priority === 'low',
                                         'bg-gradient-to-b from-amber-500 to-orange-500': todo.priority === 'medium',
-                                        'bg-gradient-to-b from-rose-500 to-red-500': todo.priority === 'high'
+                                        'bg-gradient-to-b from-rose-500 to-red-500': todo.priority === 'high',
                                     }"
                                 ></div>
-                                
+
                                 <div class="flex items-center justify-between">
-                                    <div class="flex items-start space-x-4 flex-1">
+                                    <div class="flex flex-1 items-start space-x-4">
                                         <div class="mt-1">
-                                            <Checkbox 
+                                            <Checkbox
                                                 :checked="todo.status === 'completed'"
                                                 @update:checked="(checked: boolean) => updateStatus(todo, checked)"
-                                                class="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                                                class="data-[state=checked]:border-green-500 data-[state=checked]:bg-green-500"
                                             />
                                         </div>
-                                        
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex items-start justify-between mb-2">
-                                                <h4 class="font-semibold text-lg text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+
+                                        <div class="min-w-0 flex-1">
+                                            <div class="mb-2 flex items-start justify-between">
+                                                <h4
+                                                    class="text-lg font-semibold text-gray-900 transition-colors group-hover:text-blue-600 dark:text-gray-100 dark:group-hover:text-blue-400"
+                                                >
                                                     {{ todo.title }}
                                                 </h4>
-                                                <div class="flex items-center gap-2 ml-4">
+                                                <div class="ml-4 flex items-center gap-2">
                                                     <Badge :class="priorityColors[todo.priority]" class="text-xs font-medium shadow-sm">
-                                                        <Flag class="h-3 w-3 mr-1" />
+                                                        <Flag class="mr-1 h-3 w-3" />
                                                         {{ priorityLabels[todo.priority] }}
                                                     </Badge>
                                                     <Badge :class="statusColors[todo.status]" class="text-xs font-medium shadow-sm">
-                                                        <component :is="getStatusIcon(todo.status)" class="h-3 w-3 mr-1" />
+                                                        <component :is="getStatusIcon(todo.status)" class="mr-1 h-3 w-3" />
                                                         {{ statusLabels[todo.status] }}
                                                     </Badge>
                                                 </div>
                                             </div>
-                                            
-                                            <p v-if="todo.description" class="text-sm text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
+
+                                            <p v-if="todo.description" class="mb-3 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                                                 {{ todo.description }}
                                             </p>
-                                            
+
                                             <div class="flex flex-wrap items-center gap-2">
                                                 <!-- Date info -->
-                                                <div class="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 text-purple-700 dark:text-purple-300 rounded-lg text-sm font-medium border border-purple-200 dark:border-purple-700">
+                                                <div
+                                                    class="flex items-center gap-1 rounded-lg border border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50 px-3 py-1.5 text-sm font-medium text-purple-700 dark:border-purple-700 dark:from-purple-900/20 dark:to-indigo-900/20 dark:text-purple-300"
+                                                >
                                                     <Calendar class="h-3.5 w-3.5" />
                                                     <span v-if="todo.start_date">
                                                         {{ formatDate(todo.start_date) }} - {{ formatDate(todo.due_date) }}
@@ -1269,41 +1389,53 @@ const getStatusIcon = (status: string) => {
                                                         {{ formatDate(todo.due_date) }}
                                                     </span>
                                                 </div>
-                                                
+
                                                 <!-- Time info -->
-                                                <div v-if="todo.due_time" class="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 text-cyan-700 dark:text-cyan-300 rounded-lg text-sm font-medium border border-cyan-200 dark:border-cyan-700">
+                                                <div
+                                                    v-if="todo.due_time"
+                                                    class="flex items-center gap-1 rounded-lg border border-cyan-200 bg-gradient-to-r from-cyan-50 to-blue-50 px-3 py-1.5 text-sm font-medium text-cyan-700 dark:border-cyan-700 dark:from-cyan-900/20 dark:to-blue-900/20 dark:text-cyan-300"
+                                                >
                                                     <Clock class="h-3.5 w-3.5" />
                                                     {{ todo.due_time }}
                                                 </div>
-                                                
+
                                                 <!-- Creator info -->
-                                                <div class="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 rounded-lg text-sm font-medium border border-blue-200 dark:border-blue-700">
+                                                <div
+                                                    class="flex items-center gap-1 rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-1.5 text-sm font-medium text-blue-700 dark:border-blue-700 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-blue-300"
+                                                >
                                                     <User class="h-3.5 w-3.5" />
                                                     {{ todo.user.name }}
                                                 </div>
-                                                
+
                                                 <!-- Assignee info -->
-                                                <div v-if="todo.assigned_user" class="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-700 dark:text-green-300 rounded-lg text-sm font-medium border border-green-200 dark:border-green-700">
+                                                <div
+                                                    v-if="todo.assigned_user"
+                                                    class="flex items-center gap-1 rounded-lg border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 px-3 py-1.5 text-sm font-medium text-green-700 dark:border-green-700 dark:from-green-900/20 dark:to-emerald-900/20 dark:text-green-300"
+                                                >
                                                     <UserCheck class="h-3.5 w-3.5" />
                                                     {{ todo.assigned_user.name }}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <DropdownMenu>
                                         <DropdownMenuTrigger as-child>
-                                            <Button variant="ghost" size="sm" class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                class="opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                            >
                                                 <MoreVertical class="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
                                             <DropdownMenuItem @click="openEditModal(todo)">
-                                                <Edit class="h-4 w-4 mr-2" />
+                                                <Edit class="mr-2 h-4 w-4" />
                                                 Edit
                                             </DropdownMenuItem>
                                             <DropdownMenuItem @click="deleteTodo(todo)" class="text-red-600">
-                                                <Trash2 class="h-4 w-4 mr-2" />
+                                                <Trash2 class="mr-2 h-4 w-4" />
                                                 Hapus
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
@@ -1316,44 +1448,42 @@ const getStatusIcon = (status: string) => {
             </div>
 
             <!-- Create/Edit Todo Modal -->
-            <Dialog :open="showCreateModal || showEditModal" @update:open="(open) => { showCreateModal = open; showEditModal = open; }">
+            <Dialog
+                :open="showCreateModal || showEditModal"
+                @update:open="
+                    (open) => {
+                        showCreateModal = open;
+                        showEditModal = open;
+                    }
+                "
+            >
                 <DialogContent class="max-w-2xl">
                     <DialogHeader>
                         <DialogTitle>
                             {{ editingTodo ? 'Edit Todo' : 'Tambah Todo Baru' }}
                         </DialogTitle>
                     </DialogHeader>
-                    
+
                     <form @submit.prevent="submitForm" class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="md:col-span-2">
                                 <Label for="title">Judul *</Label>
-                                <Input 
-                                    id="title"
-                                    v-model="form.title"
-                                    placeholder="Masukkan judul todo"
-                                    required
-                                />
+                                <Input id="title" v-model="form.title" placeholder="Masukkan judul todo" required />
                                 <span v-if="form.errors.title" class="text-sm text-red-600">{{ form.errors.title }}</span>
                             </div>
-                            
+
                             <div class="md:col-span-2">
                                 <Label for="description">Deskripsi</Label>
-                                <Textarea 
-                                    id="description"
-                                    v-model="form.description"
-                                    placeholder="Masukkan deskripsi todo"
-                                    :rows="3"
-                                />
+                                <Textarea id="description" v-model="form.description" placeholder="Masukkan deskripsi todo" :rows="3" />
                                 <span v-if="form.errors.description" class="text-sm text-red-600">{{ form.errors.description }}</span>
                             </div>
-                            
+
                             <div>
                                 <Label for="priority">Prioritas *</Label>
-                                <select 
+                                <select
                                     id="priority"
                                     v-model="form.priority"
-                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <option value="low">Rendah</option>
                                     <option value="medium">Sedang</option>
@@ -1361,13 +1491,13 @@ const getStatusIcon = (status: string) => {
                                 </select>
                                 <span v-if="form.errors.priority" class="text-sm text-red-600">{{ form.errors.priority }}</span>
                             </div>
-                            
+
                             <div>
                                 <Label for="status">Status *</Label>
-                                <select 
+                                <select
                                     id="status"
                                     v-model="form.status"
-                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <option value="pending">Pending</option>
                                     <option value="in_progress">Sedang Dikerjakan</option>
@@ -1375,44 +1505,31 @@ const getStatusIcon = (status: string) => {
                                 </select>
                                 <span v-if="form.errors.status" class="text-sm text-red-600">{{ form.errors.status }}</span>
                             </div>
-                            
+
                             <div>
                                 <Label for="start_date">Tanggal Mulai</Label>
-                                <Input 
-                                    id="start_date"
-                                    v-model="form.start_date"
-                                    type="date"
-                                />
+                                <Input id="start_date" v-model="form.start_date" type="date" />
                                 <span v-if="form.errors.start_date" class="text-sm text-red-600">{{ form.errors.start_date }}</span>
                             </div>
-                            
+
                             <div>
                                 <Label for="due_date">Tanggal Deadline *</Label>
-                                <Input 
-                                    id="due_date"
-                                    v-model="form.due_date"
-                                    type="date"
-                                    required
-                                />
+                                <Input id="due_date" v-model="form.due_date" type="date" required />
                                 <span v-if="form.errors.due_date" class="text-sm text-red-600">{{ form.errors.due_date }}</span>
                             </div>
-                            
+
                             <div>
                                 <Label for="due_time">Waktu Deadline</Label>
-                                <Input 
-                                    id="due_time"
-                                    v-model="form.due_time"
-                                    type="time"
-                                />
+                                <Input id="due_time" v-model="form.due_time" type="time" />
                                 <span v-if="form.errors.due_time" class="text-sm text-red-600">{{ form.errors.due_time }}</span>
                             </div>
-                            
+
                             <div class="md:col-span-2">
                                 <Label for="assigned_to">Assign ke User</Label>
-                                <select 
+                                <select
                                     id="assigned_to"
                                     v-model="form.assigned_to"
-                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <option :value="null">Tidak ada</option>
                                     <option v-for="user in users" :key="user.id" :value="user.id">
@@ -1422,10 +1539,16 @@ const getStatusIcon = (status: string) => {
                                 <span v-if="form.errors.assigned_to" class="text-sm text-red-600">{{ form.errors.assigned_to }}</span>
                             </div>
                         </div>
-                        
+
                         <div class="flex justify-end space-x-2 pt-4">
-                            <Button type="button" variant="outline" 
-                                    @click="showCreateModal = false; showEditModal = false">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                @click="
+                                    showCreateModal = false;
+                                    showEditModal = false;
+                                "
+                            >
                                 Batal
                             </Button>
                             <Button type="submit" :disabled="form.processing">

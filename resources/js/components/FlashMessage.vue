@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
-import { computed, watch, ref } from 'vue';
-import { CheckCircle, XCircle, AlertCircle, X } from 'lucide-vue-next';
+import { AlertCircle, CheckCircle, X, XCircle } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 
 const page = usePage();
 const show = ref(false);
@@ -17,18 +17,22 @@ const flashMessages = computed(() => {
 });
 
 const hasMessages = computed(() => {
-    return Object.values(flashMessages.value).some(message => message);
+    return Object.values(flashMessages.value).some((message) => message);
 });
 
-watch(hasMessages, (newVal) => {
-    if (newVal) {
-        show.value = true;
-        // Auto hide after 5 seconds
-        setTimeout(() => {
-            show.value = false;
-        }, 5000);
-    }
-}, { immediate: true });
+watch(
+    hasMessages,
+    (newVal) => {
+        if (newVal) {
+            show.value = true;
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                show.value = false;
+            }, 5000);
+        }
+    },
+    { immediate: true },
+);
 
 const close = () => {
     show.value = false;
@@ -45,7 +49,10 @@ const close = () => {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-            <div v-if="show && hasMessages" class="max-w-sm w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg pointer-events-auto ring-1 ring-black dark:ring-gray-600 ring-opacity-5 overflow-hidden">
+            <div
+                v-if="show && hasMessages"
+                class="ring-opacity-5 pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black dark:bg-gray-800 dark:ring-gray-600"
+            >
                 <!-- Success Message -->
                 <div v-if="flashMessages.success" class="p-4">
                     <div class="flex items-start">
@@ -56,8 +63,11 @@ const close = () => {
                             <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Success!</p>
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-300">{{ flashMessages.success }}</p>
                         </div>
-                        <div class="ml-4 flex-shrink-0 flex">
-                            <button @click="close" class="bg-white dark:bg-gray-800 rounded-md inline-flex text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <div class="ml-4 flex flex-shrink-0">
+                            <button
+                                @click="close"
+                                class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none dark:bg-gray-800 dark:text-gray-300 dark:hover:text-gray-200"
+                            >
                                 <X class="h-5 w-5" />
                             </button>
                         </div>
@@ -74,8 +84,11 @@ const close = () => {
                             <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Error!</p>
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-300">{{ flashMessages.error }}</p>
                         </div>
-                        <div class="ml-4 flex-shrink-0 flex">
-                            <button @click="close" class="bg-white dark:bg-gray-800 rounded-md inline-flex text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <div class="ml-4 flex flex-shrink-0">
+                            <button
+                                @click="close"
+                                class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none dark:bg-gray-800 dark:text-gray-300 dark:hover:text-gray-200"
+                            >
                                 <X class="h-5 w-5" />
                             </button>
                         </div>
@@ -92,8 +105,11 @@ const close = () => {
                             <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Warning!</p>
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-300">{{ flashMessages.warning }}</p>
                         </div>
-                        <div class="ml-4 flex-shrink-0 flex">
-                            <button @click="close" class="bg-white dark:bg-gray-800 rounded-md inline-flex text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <div class="ml-4 flex flex-shrink-0">
+                            <button
+                                @click="close"
+                                class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none dark:bg-gray-800 dark:text-gray-300 dark:hover:text-gray-200"
+                            >
                                 <X class="h-5 w-5" />
                             </button>
                         </div>
@@ -110,8 +126,11 @@ const close = () => {
                             <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Info</p>
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-300">{{ flashMessages.info }}</p>
                         </div>
-                        <div class="ml-4 flex-shrink-0 flex">
-                            <button @click="close" class="bg-white dark:bg-gray-800 rounded-md inline-flex text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <div class="ml-4 flex flex-shrink-0">
+                            <button
+                                @click="close"
+                                class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none dark:bg-gray-800 dark:text-gray-300 dark:hover:text-gray-200"
+                            >
                                 <X class="h-5 w-5" />
                             </button>
                         </div>

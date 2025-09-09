@@ -1,6 +1,6 @@
 <template>
     <div class="chart-container">
-        <div v-if="error" class="error-message text-red-500 p-4 text-center">
+        <div v-if="error" class="error-message p-4 text-center text-red-500">
             {{ error }}
         </div>
         <canvas v-else ref="chartRef" class="max-h-96"></canvas>
@@ -8,18 +8,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from 'vue';
-import {
-    Chart,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    BarController,
-    Title,
-    Tooltip,
-    Legend,
-    type ChartConfiguration
-} from 'chart.js';
+import { BarController, BarElement, CategoryScale, Chart, Legend, LinearScale, Title, Tooltip, type ChartConfiguration } from 'chart.js';
+import { nextTick, onMounted, ref, watch } from 'vue';
 
 // Register Chart.js components
 Chart.register(CategoryScale, LinearScale, BarElement, BarController, Title, Tooltip, Legend);
@@ -39,7 +29,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    title: 'Performa Marketing'
+    title: 'Performa Marketing',
 });
 
 const chartRef = ref<HTMLCanvasElement | null>(null);
@@ -49,19 +39,19 @@ let chartInstance: Chart | null = null;
 const createChart = async () => {
     try {
         error.value = null;
-        
+
         if (!chartRef.value) {
             console.warn('Chart canvas ref not available');
             return;
         }
-        
+
         if (!props.data || !props.data.length) {
             console.warn('No marketing data available');
             return;
         }
-        
+
         console.log('Creating marketing chart with data:', props.data);
-        
+
         // Destroy existing chart
         if (chartInstance) {
             chartInstance.destroy();
@@ -76,9 +66,9 @@ const createChart = async () => {
             return;
         }
 
-        const labels = props.data.map(item => item.name);
-        const totalLeadsData = props.data.map(item => item.total_leads);
-        const closedLeadsData = props.data.map(item => item.closed_leads);
+        const labels = props.data.map((item) => item.name);
+        const totalLeadsData = props.data.map((item) => item.total_leads);
+        const closedLeadsData = props.data.map((item) => item.closed_leads);
 
         const config: ChartConfiguration = {
             type: 'bar',
@@ -102,8 +92,8 @@ const createChart = async () => {
                         borderWidth: 2,
                         borderRadius: 8,
                         borderSkipped: false,
-                    }
-                ]
+                    },
+                ],
             },
             options: {
                 responsive: true,
@@ -114,17 +104,17 @@ const createChart = async () => {
                         text: props.title,
                         font: {
                             size: 16,
-                            weight: 'bold'
+                            weight: 'bold',
                         },
                         color: 'rgb(55, 65, 81)', // gray-700
                         padding: {
                             top: 10,
-                            bottom: 30
-                        }
+                            bottom: 30,
+                        },
                     },
                     legend: {
                         display: true,
-                        position: 'top'
+                        position: 'top',
                     },
                     tooltip: {
                         backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -135,13 +125,13 @@ const createChart = async () => {
                         cornerRadius: 8,
                         displayColors: true,
                         callbacks: {
-                            afterLabel: function(context) {
+                            afterLabel: function (context) {
                                 const dataIndex = context.dataIndex;
                                 const marketing = props.data[dataIndex];
                                 return `Closing Rate: ${marketing.closing_rate}%`;
-                            }
-                        }
-                    }
+                            },
+                        },
+                    },
                 },
                 scales: {
                     y: {
@@ -150,37 +140,36 @@ const createChart = async () => {
                             stepSize: 1,
                             color: 'rgb(107, 114, 128)', // gray-500
                             font: {
-                                size: 12
-                            }
+                                size: 12,
+                            },
                         },
                         grid: {
-                            color: 'rgba(107, 114, 128, 0.1)'
-                        }
+                            color: 'rgba(107, 114, 128, 0.1)',
+                        },
                     },
                     x: {
                         ticks: {
                             color: 'rgb(107, 114, 128)', // gray-500
                             font: {
-                                size: 12
+                                size: 12,
                             },
                             maxRotation: 45,
-                            minRotation: 0
+                            minRotation: 0,
                         },
                         grid: {
-                            display: false
-                        }
-                    }
+                            display: false,
+                        },
+                    },
                 },
                 animation: {
                     duration: 1000,
-                    easing: 'easeInOutQuart'
-                }
-            }
+                    easing: 'easeInOutQuart',
+                },
+            },
         };
 
         chartInstance = new Chart(ctx, config);
         console.log('Marketing chart created successfully');
-        
     } catch (err) {
         console.error('Error creating marketing chart:', err);
         error.value = `Failed to create chart: ${err instanceof Error ? err.message : String(err)}`;
@@ -191,9 +180,13 @@ onMounted(() => {
     createChart();
 });
 
-watch(() => props.data, () => {
-    createChart();
-}, { deep: true });
+watch(
+    () => props.data,
+    () => {
+        createChart();
+    },
+    { deep: true },
+);
 </script>
 
 <style scoped>

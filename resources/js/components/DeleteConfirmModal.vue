@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { router } from '@inertiajs/vue3';
-import { Loader2, AlertTriangle, Trash2 } from 'lucide-vue-next';
+import { AlertTriangle, Loader2, Trash2 } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 interface User {
     id: number;
@@ -27,9 +27,9 @@ const isDeleting = ref(false);
 
 const deleteUser = async () => {
     if (!props.user) return;
-    
+
     isDeleting.value = true;
-    
+
     router.delete(`/users/${props.user.id}`, {
         onSuccess: () => {
             emit('success');
@@ -37,7 +37,7 @@ const deleteUser = async () => {
         },
         onFinish: () => {
             isDeleting.value = false;
-        }
+        },
     });
 };
 </script>
@@ -50,31 +50,21 @@ const deleteUser = async () => {
                     <AlertTriangle class="h-5 w-5" />
                     Konfirmasi Hapus
                 </DialogTitle>
-                <DialogDescription>
-                    Aksi ini tidak dapat dibatalkan. User akan dihapus secara permanen.
-                </DialogDescription>
+                <DialogDescription> Aksi ini tidak dapat dibatalkan. User akan dihapus secara permanen. </DialogDescription>
             </DialogHeader>
 
             <div v-if="user" class="py-4">
-                <div class="bg-red-50 dark:bg-red-950/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
+                <div class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/20">
                     <div class="flex items-start gap-3">
-                        <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                        <div class="rounded-lg bg-red-100 p-2 dark:bg-red-900/30">
                             <Trash2 class="h-5 w-5 text-red-600" />
                         </div>
                         <div class="flex-1">
-                            <h4 class="font-medium text-red-900 dark:text-red-100">
-                                Yakin ingin menghapus user ini?
-                            </h4>
+                            <h4 class="font-medium text-red-900 dark:text-red-100">Yakin ingin menghapus user ini?</h4>
                             <div class="mt-2 space-y-1">
-                                <p class="text-sm text-red-700 dark:text-red-300">
-                                    <span class="font-medium">Nama:</span> {{ user.name }}
-                                </p>
-                                <p class="text-sm text-red-700 dark:text-red-300">
-                                    <span class="font-medium">Email:</span> {{ user.email }}
-                                </p>
-                                <p class="text-sm text-red-700 dark:text-red-300">
-                                    <span class="font-medium">Role:</span> {{ user.role }}
-                                </p>
+                                <p class="text-sm text-red-700 dark:text-red-300"><span class="font-medium">Nama:</span> {{ user.name }}</p>
+                                <p class="text-sm text-red-700 dark:text-red-300"><span class="font-medium">Email:</span> {{ user.email }}</p>
+                                <p class="text-sm text-red-700 dark:text-red-300"><span class="font-medium">Role:</span> {{ user.role }}</p>
                             </div>
                         </div>
                     </div>
@@ -82,23 +72,10 @@ const deleteUser = async () => {
             </div>
 
             <DialogFooter>
-                <Button 
-                    type="button" 
-                    variant="outline" 
-                    @click="$emit('close')"
-                    :disabled="isDeleting"
-                >
-                    Batal
-                </Button>
-                <Button 
-                    type="button" 
-                    variant="destructive"
-                    @click="deleteUser"
-                    :disabled="isDeleting"
-                    class="min-w-[100px]"
-                >
-                    <Loader2 v-if="isDeleting" class="h-4 w-4 animate-spin mr-2" />
-                    <Trash2 v-else class="h-4 w-4 mr-2" />
+                <Button type="button" variant="outline" @click="$emit('close')" :disabled="isDeleting"> Batal </Button>
+                <Button type="button" variant="destructive" @click="deleteUser" :disabled="isDeleting" class="min-w-[100px]">
+                    <Loader2 v-if="isDeleting" class="mr-2 h-4 w-4 animate-spin" />
+                    <Trash2 v-else class="mr-2 h-4 w-4" />
                     Hapus
                 </Button>
             </DialogFooter>

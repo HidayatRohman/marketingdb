@@ -1,25 +1,48 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import BrandPerformanceChart from '@/components/BrandPerformanceChart.vue';
+import MarketingPerformanceChart from '@/components/MarketingPerformanceChart.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress/index';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs/index';
-import MarketingPerformanceChart from '@/components/MarketingPerformanceChart.vue';
-import BrandPerformanceChart from '@/components/BrandPerformanceChart.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { 
-    Users, UserCheck, Shield, Briefcase, BarChart3, TrendingUp, Activity, 
-    Clock, Calendar, MessageSquare, Target, Award, ChevronUp, ChevronDown,
-    Phone, Mail, MapPin, Building2, Zap, Eye, Filter, RefreshCw,
-    TrendingDown, ArrowUpRight, ArrowDownRight, Percent, Tag, PieChart, X, Settings,
-    CheckCircle, AlertCircle, Star, User
+import {
+    Activity,
+    AlertCircle,
+    ArrowDownRight,
+    ArrowUpRight,
+    Award,
+    BarChart3,
+    Briefcase,
+    Building2,
+    Calendar,
+    CheckCircle,
+    ChevronDown,
+    Clock,
+    Eye,
+    Filter,
+    MessageSquare,
+    Phone,
+    PieChart,
+    RefreshCw,
+    Settings,
+    Shield,
+    Tag,
+    Target,
+    TrendingUp,
+    User,
+    UserCheck,
+    Users,
+    X,
+    Zap,
 } from 'lucide-vue-next';
-import { ref, computed, onMounted, onUnmounted, Transition } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 interface UserStats {
     total: number;
@@ -207,8 +230,7 @@ const isFilterExpanded = ref(false);
 
 // Computed values
 const totalConversionRate = computed(() => {
-    return props.mitraStats.total > 0 ? 
-        Math.round((props.mitraStats.followup / props.mitraStats.total) * 100) : 0;
+    return props.mitraStats.total > 0 ? Math.round((props.mitraStats.followup / props.mitraStats.total) * 100) : 0;
 });
 
 const growthIndicators = computed(() => {
@@ -222,32 +244,36 @@ const growthIndicators = computed(() => {
 // Functions
 const refreshData = () => {
     refreshing.value = true;
-    router.reload({ 
+    router.reload({
         only: ['chatAnalytics', 'periodAnalytics', 'dailyTrends', 'closingAnalysis', 'recentActivities'],
         onFinish: () => {
             refreshing.value = false;
-        }
+        },
     });
 };
 
 const applyDateFilter = () => {
     if (startDate.value && endDate.value) {
-        router.get('/dashboard', {
-            start_date: startDate.value,
-            end_date: endDate.value,
-            marketing: selectedMarketing.value !== 'all' ? selectedMarketing.value : null,
-            brand: selectedBrand.value !== 'all' ? selectedBrand.value : null,
-        }, {
-            preserveState: true,
-            replace: true,
-        });
+        router.get(
+            '/dashboard',
+            {
+                start_date: startDate.value,
+                end_date: endDate.value,
+                marketing: selectedMarketing.value !== 'all' ? selectedMarketing.value : null,
+                brand: selectedBrand.value !== 'all' ? selectedBrand.value : null,
+            },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     }
 };
 
 const applyQuickDateFilter = (range: string) => {
     const now = new Date();
     let start, end;
-    
+
     switch (range) {
         case 'today':
             start = end = now.toISOString().split('T')[0];
@@ -282,7 +308,7 @@ const applyQuickDateFilter = (range: string) => {
         default:
             return;
     }
-    
+
     startDate.value = start;
     endDate.value = end;
     selectedDateRange.value = range;
@@ -301,20 +327,20 @@ const applyBrandFilter = (brandId: string) => {
 
 const applyFilters = () => {
     const params: any = {};
-    
+
     if (startDate.value && endDate.value) {
         params.start_date = startDate.value;
         params.end_date = endDate.value;
     }
-    
+
     if (selectedMarketing.value !== 'all') {
         params.marketing = selectedMarketing.value;
     }
-    
+
     if (selectedBrand.value !== 'all') {
         params.brand = selectedBrand.value;
     }
-    
+
     router.get('/dashboard', params, {
         preserveState: true,
         replace: true,
@@ -349,32 +375,32 @@ const getGrowthColor = (value: number) => {
 const getArcPath = (label: LabelDistribution, index: number) => {
     const total = props.labelDistribution.reduce((sum, item) => sum + item.count, 0);
     if (total === 0) return '';
-    
+
     const centerX = 100;
     const centerY = 100;
     const radius = 80;
-    
+
     // Calculate cumulative percentage up to current index
     let cumulativePercentage = 0;
     for (let i = 0; i < index; i++) {
         cumulativePercentage += props.labelDistribution[i].percentage;
     }
-    
+
     const startAngle = (cumulativePercentage / 100) * 2 * Math.PI;
     const endAngle = ((cumulativePercentage + label.percentage) / 100) * 2 * Math.PI;
-    
+
     const startX = centerX + radius * Math.cos(startAngle);
     const startY = centerY + radius * Math.sin(startAngle);
     const endX = centerX + radius * Math.cos(endAngle);
     const endY = centerY + radius * Math.sin(endAngle);
-    
+
     const largeArcFlag = endAngle - startAngle <= Math.PI ? '0' : '1';
-    
+
     if (label.percentage === 100) {
         // Full circle
         return `M ${centerX - radius},${centerY} A ${radius},${radius} 0 1,1 ${centerX - radius},${centerY + 0.1} Z`;
     }
-    
+
     return `M ${centerX},${centerY} L ${startX},${startY} A ${radius},${radius} 0 ${largeArcFlag},1 ${endX},${endY} Z`;
 };
 
@@ -384,7 +410,7 @@ onMounted(() => {
     startDate.value = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
     endDate.value = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
     selectedDateRange.value = 'this_month';
-    
+
     // Close dropdowns when clicking outside
     const handleClickOutside = (event: Event) => {
         const target = event.target as Element;
@@ -393,9 +419,9 @@ onMounted(() => {
             showBrandDropdown.value = false;
         }
     };
-    
+
     document.addEventListener('click', handleClickOutside);
-    
+
     onUnmounted(() => {
         document.removeEventListener('click', handleClickOutside);
     });
@@ -404,27 +430,29 @@ onMounted(() => {
 
 <template>
     <Head title="Analytics Dashboard" />
-    
+
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="layout-main">
             <!-- Enhanced Welcome Section -->
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dashboard-welcome text-white">
+            <div
+                class="dashboard-welcome relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white"
+            >
                 <div class="relative z-10">
-                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between responsive-gap">
+                    <div class="responsive-gap flex flex-col lg:flex-row lg:items-center lg:justify-between">
                         <div class="flex-1">
-                            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-4 flex items-center gap-3">
+                            <h1 class="mb-4 flex items-center gap-3 text-3xl font-bold tracking-tight sm:text-4xl">
                                 <BarChart3 class="h-8 w-8 sm:h-10 sm:w-10" />
                                 Analytics Dashboard
                             </h1>
-                            <p class="text-lg sm:text-xl text-blue-100 mb-6 max-w-2xl">
+                            <p class="mb-6 max-w-2xl text-lg text-blue-100 sm:text-xl">
                                 Pantau performa marketing dan analisa data lead secara real-time
                             </p>
                         </div>
-                        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                            <Button 
+                        <div class="flex flex-col gap-3 sm:flex-row sm:gap-4">
+                            <Button
                                 @click="refreshData"
                                 :disabled="refreshing"
-                                class="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border-white/30 btn-spacing"
+                                class="btn-spacing border-white/30 bg-white/20 text-white backdrop-blur-sm hover:bg-white/30"
                             >
                                 <RefreshCw :class="['mr-2 h-4 w-4', refreshing && 'animate-spin']" />
                                 Refresh
@@ -432,275 +460,260 @@ onMounted(() => {
                         </div>
                     </div>
                 </div>
-                <div class="absolute top-0 right-0 w-48 h-48 sm:w-64 sm:h-64 bg-white/10 rounded-full -mr-24 sm:-mr-32 -mt-24 sm:-mt-32"></div>
-                <div class="absolute bottom-0 left-0 w-32 h-32 sm:w-48 sm:h-48 bg-white/5 rounded-full -ml-16 sm:-ml-24 -mb-16 sm:-mb-24"></div>
+                <div class="absolute top-0 right-0 -mt-24 -mr-24 h-48 w-48 rounded-full bg-white/10 sm:-mt-32 sm:-mr-32 sm:h-64 sm:w-64"></div>
+                <div class="absolute bottom-0 left-0 -mb-16 -ml-16 h-32 w-32 rounded-full bg-white/5 sm:-mb-24 sm:-ml-24 sm:h-48 sm:w-48"></div>
             </div>
 
             <!-- Enhanced Collapsible Filter Section -->
-            <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-0.5 rounded-lg shadow-lg">
-                <Card class="border-0 overflow-visible bg-white dark:bg-gray-900 rounded-lg">
+            <div class="rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-0.5 shadow-lg">
+                <Card class="overflow-visible rounded-lg border-0 bg-white dark:bg-gray-900">
                     <CardContent class="layout-content py-6">
-                            <!-- Filter Toggle Header -->
-                            <div 
-                                class="flex items-center justify-between cursor-pointer group"
-                                @click="isFilterExpanded = !isFilterExpanded"
-                            >
-                                <div class="flex items-center gap-3">
-                                    <div class="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg shadow-lg group-hover:shadow-xl transition-all duration-300">
-                                        <Filter class="h-5 w-5 text-white" />
-                                    </div>
-                                    <div>
-                                        <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                                            Filter Dashboard
-                                        </h3>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                                            {{ isFilterExpanded ? 'Klik untuk menyembunyikan filter' : 'Klik untuk menampilkan opsi filter' }}
-                                        </p>
-                                    </div>
+                        <!-- Filter Toggle Header -->
+                        <div class="group flex cursor-pointer items-center justify-between" @click="isFilterExpanded = !isFilterExpanded">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 p-2 shadow-lg transition-all duration-300 group-hover:shadow-xl"
+                                >
+                                    <Filter class="h-5 w-5 text-white" />
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <!-- Active Filters Count -->
-                                    <div v-if="selectedMarketing !== 'all' || selectedBrand !== 'all'" 
-                                         class="px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full text-xs font-medium">
-                                        {{ (selectedMarketing !== 'all' ? 1 : 0) + (selectedBrand !== 'all' ? 1 : 0) }} filter aktif
-                                    </div>
-                                    <ChevronDown 
-                                        :class="['h-5 w-5 text-gray-500 dark:text-gray-400 transition-transform duration-300', 
-                                                isFilterExpanded ? 'transform rotate-180' : '']" 
-                                    />
+                                <div>
+                                    <h3
+                                        class="text-lg font-bold text-gray-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400"
+                                    >
+                                        Filter Dashboard
+                                    </h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                                        {{ isFilterExpanded ? 'Klik untuk menyembunyikan filter' : 'Klik untuk menampilkan opsi filter' }}
+                                    </p>
                                 </div>
                             </div>
+                            <div class="flex items-center gap-2">
+                                <!-- Active Filters Count -->
+                                <div
+                                    v-if="selectedMarketing !== 'all' || selectedBrand !== 'all'"
+                                    class="rounded-full bg-indigo-100 px-3 py-1.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300"
+                                >
+                                    {{ (selectedMarketing !== 'all' ? 1 : 0) + (selectedBrand !== 'all' ? 1 : 0) }} filter aktif
+                                </div>
+                                <ChevronDown
+                                    :class="[
+                                        'h-5 w-5 text-gray-500 transition-transform duration-300 dark:text-gray-400',
+                                        isFilterExpanded ? 'rotate-180 transform' : '',
+                                    ]"
+                                />
+                            </div>
+                        </div>
 
-                            <!-- Expandable Filter Content -->
-                            <Transition
-                                enter-active-class="transition-all duration-300 ease-out"
-                                enter-from-class="max-h-0 opacity-0"
-                                enter-to-class="max-h-[800px] opacity-100"
-                                leave-active-class="transition-all duration-300 ease-in"
-                                leave-from-class="max-h-[800px] opacity-100"
-                                leave-to-class="max-h-0 opacity-0"
-                            >
-                                <div v-if="isFilterExpanded" class="filter-content-section">
-                                    <!-- Quick Date Range Filters -->
-                                    <div class="filter-group">
-                                        <div class="filter-header">
-                                            <Calendar class="h-4 w-4 text-indigo-500" />
-                                            <Label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Periode Waktu:</Label>
-                                        </div>
-                                        <div class="responsive-grid-6">
-                                            <Button
-                                                v-for="range in [
-                                                    { key: 'today', label: 'Hari Ini', color: 'emerald' },
-                                                    { key: 'yesterday', label: 'Kemarin', color: 'blue' },
-                                                    { key: 'this_week', label: 'Minggu Ini', color: 'purple' },
-                                                    { key: 'last_week', label: 'Minggu Lalu', color: 'pink' },
-                                                    { key: 'this_month', label: 'Bulan Ini', color: 'indigo' },
-                                                    { key: 'last_month', label: 'Bulan Lalu', color: 'orange' }
-                                                ]"
-                                                :key="range.key"
-                                                :class="[
-                                                    'btn-filter-range',
-                                                    selectedDateRange === range.key 
-                                                        ? 'btn-filter-active' 
-                                                        : 'btn-filter-inactive'
-                                                ]"
-                                                size="sm"
-                                                @click="applyQuickDateFilter(range.key)"
-                                            >
-                                                {{ range.label }}
-                                            </Button>
-                                        </div>
+                        <!-- Expandable Filter Content -->
+                        <Transition
+                            enter-active-class="transition-all duration-300 ease-out"
+                            enter-from-class="max-h-0 opacity-0"
+                            enter-to-class="max-h-[800px] opacity-100"
+                            leave-active-class="transition-all duration-300 ease-in"
+                            leave-from-class="max-h-[800px] opacity-100"
+                            leave-to-class="max-h-0 opacity-0"
+                        >
+                            <div v-if="isFilterExpanded" class="filter-content-section">
+                                <!-- Quick Date Range Filters -->
+                                <div class="filter-group">
+                                    <div class="filter-header">
+                                        <Calendar class="h-4 w-4 text-indigo-500" />
+                                        <Label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Periode Waktu:</Label>
                                     </div>
-
-                                    <!-- Custom Date Range & Advanced Filters -->
-                                    <div class="filter-advanced-section">
-                                        <div class="filter-header">
-                                            <Settings class="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                                            <Label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Filter Lanjutan:</Label>
-                                        </div>
-                                        
-                                        <div class="responsive-grid-4">
-                                            <!-- Custom Start Date -->
-                                            <div class="form-group">
-                                                <Label for="custom-start-date" class="form-label">
-                                                    Tanggal Mulai:
-                                                </Label>
-                                                <Input
-                                                    id="custom-start-date"
-                                                    v-model="startDate"
-                                                    type="date"
-                                                    class="form-input-date"
-                                                />
-                                            </div>
-                                            
-                                            <!-- Custom End Date -->
-                                            <div class="form-group">
-                                                <Label for="custom-end-date" class="form-label">
-                                                    Tanggal Akhir:
-                                                </Label>
-                                                <Input
-                                                    id="custom-end-date"
-                                                    v-model="endDate"
-                                                    type="date"
-                                                    class="form-input-date"
-                                                />
-                                            </div>
-                                            
-                                            <!-- Marketing Filter Dropdown -->
-                                            <div class="form-group dropdown-wrapper">
-                                                <Label class="form-label">Marketing:</Label>
-                                                <Button
-                                                    variant="outline"
-                                                    class="dropdown-trigger"
-                                                    @click="showMarketingDropdown = !showMarketingDropdown"
-                                                >
-                                                    <span class="dropdown-content">
-                                                        <Users class="h-4 w-4 text-emerald-500" />
-                                                        <span class="truncate">
-                                                            {{ selectedMarketing === 'all' ? 'Semua Marketing' : topMarketing.find(m => m.id.toString() === selectedMarketing)?.name }}
-                                                        </span>
-                                                    </span>
-                                                    <ChevronDown class="h-4 w-4 text-gray-400 flex-shrink-0" />
-                                                </Button>
-                                                <div 
-                                                    v-if="showMarketingDropdown"
-                                                    class="dropdown-menu"
-                                                >
-                                                    <div 
-                                                        class="dropdown-item dropdown-item-border"
-                                                        @click="applyMarketingFilter('all'); showMarketingDropdown = false"
-                                                    >
-                                                        <div class="dropdown-item-content">
-                                                            <Target class="h-4 w-4 text-emerald-500" />
-                                                            <span class="font-medium text-gray-700 dark:text-gray-300">Semua Marketing</span>
-                                                        </div>
-                                                    </div>
-                                                    <div 
-                                                        v-for="marketing in topMarketing" 
-                                                        :key="marketing.id"
-                                                        class="dropdown-item"
-                                                        @click="applyMarketingFilter(marketing.id.toString()); showMarketingDropdown = false"
-                                                    >
-                                                        <div class="dropdown-item-with-badge">
-                                                            <div class="dropdown-item-content">
-                                                                <Users class="h-4 w-4 text-emerald-500" />
-                                                                <span class="font-medium text-gray-700 dark:text-gray-300">{{ marketing.name }}</span>
-                                                            </div>
-                                                            <Badge class="dropdown-badge-emerald">
-                                                                {{ marketing.total_leads }} leads
-                                                            </Badge>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Brand Filter Dropdown -->
-                                            <div class="form-group dropdown-wrapper">
-                                                <Label class="form-label">Brand:</Label>
-                                                <Button
-                                                    variant="outline"
-                                                    class="dropdown-trigger dropdown-trigger-purple"
-                                                    @click="showBrandDropdown = !showBrandDropdown"
-                                                >
-                                                    <span class="dropdown-content">
-                                                        <Building2 class="h-4 w-4 text-purple-500" />
-                                                        <span class="truncate">
-                                                            {{ selectedBrand === 'all' ? 'Semua Brand' : brandPerformance.find(b => b.id.toString() === selectedBrand)?.nama }}
-                                                        </span>
-                                                    </span>
-                                                    <ChevronDown class="h-4 w-4 text-gray-400 flex-shrink-0" />
-                                                </Button>
-                                                <div 
-                                                    v-if="showBrandDropdown"
-                                                    class="dropdown-menu"
-                                                >
-                                                    <div 
-                                                        class="dropdown-item-purple dropdown-item-border"
-                                                        @click="applyBrandFilter('all'); showBrandDropdown = false"
-                                                    >
-                                                        <div class="dropdown-item-content">
-                                                            <Target class="h-4 w-4 text-purple-500" />
-                                                            <span class="font-medium text-gray-700 dark:text-gray-300">Semua Brand</span>
-                                                        </div>
-                                                    </div>
-                                                    <div 
-                                                        v-for="brand in brandPerformance" 
-                                                        :key="brand.id"
-                                                        class="dropdown-item-purple"
-                                                        @click="applyBrandFilter(brand.id.toString()); showBrandDropdown = false"
-                                                    >
-                                                        <div class="dropdown-item-with-badge">
-                                                            <div class="dropdown-item-content">
-                                                                <Building2 class="h-4 w-4 text-purple-500" />
-                                                                <span class="font-medium text-gray-700 dark:text-gray-300">{{ brand.nama }}</span>
-                                                            </div>
-                                                            <Badge class="dropdown-badge-purple">
-                                                                {{ brand.total_leads }} leads
-                                                            </Badge>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Action Buttons -->
-                                    <div class="action-buttons">
-                                        <Button 
-                                            @click="applyFilters" 
-                                            class="btn-primary-gradient"
+                                    <div class="responsive-grid-6">
+                                        <Button
+                                            v-for="range in [
+                                                { key: 'today', label: 'Hari Ini', color: 'emerald' },
+                                                { key: 'yesterday', label: 'Kemarin', color: 'blue' },
+                                                { key: 'this_week', label: 'Minggu Ini', color: 'purple' },
+                                                { key: 'last_week', label: 'Minggu Lalu', color: 'pink' },
+                                                { key: 'this_month', label: 'Bulan Ini', color: 'indigo' },
+                                                { key: 'last_month', label: 'Bulan Lalu', color: 'orange' },
+                                            ]"
+                                            :key="range.key"
+                                            :class="[
+                                                'btn-filter-range',
+                                                selectedDateRange === range.key ? 'btn-filter-active' : 'btn-filter-inactive',
+                                            ]"
+                                            size="sm"
+                                            @click="applyQuickDateFilter(range.key)"
                                         >
-                                            <Filter class="h-4 w-4 mr-2" />
-                                            Terapkan Filter
+                                            {{ range.label }}
                                         </Button>
-                                        <Button 
-                                            variant="outline" 
-                                            @click="resetFilters"
-                                            class="btn-reset"
-                                        >
-                                            <RefreshCw class="h-4 w-4 mr-2" />
-                                            Reset
-                                        </Button>
-                                    </div>
-
-                                    <!-- Active Filters Display -->
-                                    <div v-if="selectedMarketing !== 'all' || selectedBrand !== 'all'" 
-                                         class="active-filters-container">
-                                        <span class="active-filters-label">Filter Aktif:</span>
-                                        <Badge 
-                                            v-if="selectedMarketing !== 'all'" 
-                                            class="active-filter-badge active-filter-emerald"
-                                        >
-                                            <Users class="h-3 w-3" />
-                                            <span>{{ topMarketing.find(m => m.id.toString() === selectedMarketing)?.name }}</span>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
-                                                class="filter-remove-btn filter-remove-emerald" 
-                                                @click="applyMarketingFilter('all')"
-                                            >
-                                                <X class="h-3 w-3" />
-                                            </Button>
-                                        </Badge>
-                                        <Badge 
-                                            v-if="selectedBrand !== 'all'" 
-                                            class="active-filter-badge active-filter-purple"
-                                        >
-                                            <Building2 class="h-3 w-3" />
-                                            <span>{{ brandPerformance.find(b => b.id.toString() === selectedBrand)?.nama }}</span>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
-                                                class="filter-remove-btn filter-remove-purple" 
-                                                @click="applyBrandFilter('all')"
-                                            >
-                                                <X class="h-3 w-3" />
-                                            </Button>
-                                        </Badge>
                                     </div>
                                 </div>
-                            </Transition>
-                        </CardContent>
+
+                                <!-- Custom Date Range & Advanced Filters -->
+                                <div class="filter-advanced-section">
+                                    <div class="filter-header">
+                                        <Settings class="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                                        <Label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Filter Lanjutan:</Label>
+                                    </div>
+
+                                    <div class="responsive-grid-4">
+                                        <!-- Custom Start Date -->
+                                        <div class="form-group">
+                                            <Label for="custom-start-date" class="form-label"> Tanggal Mulai: </Label>
+                                            <Input id="custom-start-date" v-model="startDate" type="date" class="form-input-date" />
+                                        </div>
+
+                                        <!-- Custom End Date -->
+                                        <div class="form-group">
+                                            <Label for="custom-end-date" class="form-label"> Tanggal Akhir: </Label>
+                                            <Input id="custom-end-date" v-model="endDate" type="date" class="form-input-date" />
+                                        </div>
+
+                                        <!-- Marketing Filter Dropdown -->
+                                        <div class="form-group dropdown-wrapper">
+                                            <Label class="form-label">Marketing:</Label>
+                                            <Button
+                                                variant="outline"
+                                                class="dropdown-trigger"
+                                                @click="showMarketingDropdown = !showMarketingDropdown"
+                                            >
+                                                <span class="dropdown-content">
+                                                    <Users class="h-4 w-4 text-emerald-500" />
+                                                    <span class="truncate">
+                                                        {{
+                                                            selectedMarketing === 'all'
+                                                                ? 'Semua Marketing'
+                                                                : topMarketing.find((m) => m.id.toString() === selectedMarketing)?.name
+                                                        }}
+                                                    </span>
+                                                </span>
+                                                <ChevronDown class="h-4 w-4 flex-shrink-0 text-gray-400" />
+                                            </Button>
+                                            <div v-if="showMarketingDropdown" class="dropdown-menu">
+                                                <div
+                                                    class="dropdown-item dropdown-item-border"
+                                                    @click="
+                                                        applyMarketingFilter('all');
+                                                        showMarketingDropdown = false;
+                                                    "
+                                                >
+                                                    <div class="dropdown-item-content">
+                                                        <Target class="h-4 w-4 text-emerald-500" />
+                                                        <span class="font-medium text-gray-700 dark:text-gray-300">Semua Marketing</span>
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    v-for="marketing in topMarketing"
+                                                    :key="marketing.id"
+                                                    class="dropdown-item"
+                                                    @click="
+                                                        applyMarketingFilter(marketing.id.toString());
+                                                        showMarketingDropdown = false;
+                                                    "
+                                                >
+                                                    <div class="dropdown-item-with-badge">
+                                                        <div class="dropdown-item-content">
+                                                            <Users class="h-4 w-4 text-emerald-500" />
+                                                            <span class="font-medium text-gray-700 dark:text-gray-300">{{ marketing.name }}</span>
+                                                        </div>
+                                                        <Badge class="dropdown-badge-emerald"> {{ marketing.total_leads }} leads </Badge>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Brand Filter Dropdown -->
+                                        <div class="form-group dropdown-wrapper">
+                                            <Label class="form-label">Brand:</Label>
+                                            <Button
+                                                variant="outline"
+                                                class="dropdown-trigger dropdown-trigger-purple"
+                                                @click="showBrandDropdown = !showBrandDropdown"
+                                            >
+                                                <span class="dropdown-content">
+                                                    <Building2 class="h-4 w-4 text-purple-500" />
+                                                    <span class="truncate">
+                                                        {{
+                                                            selectedBrand === 'all'
+                                                                ? 'Semua Brand'
+                                                                : brandPerformance.find((b) => b.id.toString() === selectedBrand)?.nama
+                                                        }}
+                                                    </span>
+                                                </span>
+                                                <ChevronDown class="h-4 w-4 flex-shrink-0 text-gray-400" />
+                                            </Button>
+                                            <div v-if="showBrandDropdown" class="dropdown-menu">
+                                                <div
+                                                    class="dropdown-item-purple dropdown-item-border"
+                                                    @click="
+                                                        applyBrandFilter('all');
+                                                        showBrandDropdown = false;
+                                                    "
+                                                >
+                                                    <div class="dropdown-item-content">
+                                                        <Target class="h-4 w-4 text-purple-500" />
+                                                        <span class="font-medium text-gray-700 dark:text-gray-300">Semua Brand</span>
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    v-for="brand in brandPerformance"
+                                                    :key="brand.id"
+                                                    class="dropdown-item-purple"
+                                                    @click="
+                                                        applyBrandFilter(brand.id.toString());
+                                                        showBrandDropdown = false;
+                                                    "
+                                                >
+                                                    <div class="dropdown-item-with-badge">
+                                                        <div class="dropdown-item-content">
+                                                            <Building2 class="h-4 w-4 text-purple-500" />
+                                                            <span class="font-medium text-gray-700 dark:text-gray-300">{{ brand.nama }}</span>
+                                                        </div>
+                                                        <Badge class="dropdown-badge-purple"> {{ brand.total_leads }} leads </Badge>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="action-buttons">
+                                    <Button @click="applyFilters" class="btn-primary-gradient">
+                                        <Filter class="mr-2 h-4 w-4" />
+                                        Terapkan Filter
+                                    </Button>
+                                    <Button variant="outline" @click="resetFilters" class="btn-reset">
+                                        <RefreshCw class="mr-2 h-4 w-4" />
+                                        Reset
+                                    </Button>
+                                </div>
+
+                                <!-- Active Filters Display -->
+                                <div v-if="selectedMarketing !== 'all' || selectedBrand !== 'all'" class="active-filters-container">
+                                    <span class="active-filters-label">Filter Aktif:</span>
+                                    <Badge v-if="selectedMarketing !== 'all'" class="active-filter-badge active-filter-emerald">
+                                        <Users class="h-3 w-3" />
+                                        <span>{{ topMarketing.find((m) => m.id.toString() === selectedMarketing)?.name }}</span>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            class="filter-remove-btn filter-remove-emerald"
+                                            @click="applyMarketingFilter('all')"
+                                        >
+                                            <X class="h-3 w-3" />
+                                        </Button>
+                                    </Badge>
+                                    <Badge v-if="selectedBrand !== 'all'" class="active-filter-badge active-filter-purple">
+                                        <Building2 class="h-3 w-3" />
+                                        <span>{{ brandPerformance.find((b) => b.id.toString() === selectedBrand)?.nama }}</span>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            class="filter-remove-btn filter-remove-purple"
+                                            @click="applyBrandFilter('all')"
+                                        >
+                                            <X class="h-3 w-3" />
+                                        </Button>
+                                    </Badge>
+                                </div>
+                            </div>
+                        </Transition>
+                    </CardContent>
                 </Card>
             </div>
 
@@ -713,9 +726,7 @@ onMounted(() => {
                             <div class="stats-card-text">
                                 <p class="stats-card-label stats-label-blue">Total Leads</p>
                                 <p class="stats-card-value stats-value-blue">{{ mitraStats.total }}</p>
-                                <p class="stats-card-subtitle stats-subtitle-blue">
-                                    +{{ mitraStats.today }} hari ini
-                                </p>
+                                <p class="stats-card-subtitle stats-subtitle-blue">+{{ mitraStats.today }} hari ini</p>
                             </div>
                             <div class="stats-card-icon stats-icon-blue">
                                 <Users class="stats-icon-size" />
@@ -732,14 +743,12 @@ onMounted(() => {
                                 <p class="stats-card-label stats-label-green">Conversion Rate</p>
                                 <p class="stats-card-value-with-icon stats-value-green">
                                     {{ totalConversionRate }}%
-                                    <component 
-                                        :is="getGrowthIcon(totalConversionRate)" 
+                                    <component
+                                        :is="getGrowthIcon(totalConversionRate)"
                                         :class="['stats-growth-icon', getGrowthColor(totalConversionRate)]"
                                     />
                                 </p>
-                                <p class="stats-card-subtitle stats-subtitle-green">
-                                    {{ mitraStats.followup }} dari {{ mitraStats.total }}
-                                </p>
+                                <p class="stats-card-subtitle stats-subtitle-green">{{ mitraStats.followup }} dari {{ mitraStats.total }}</p>
                             </div>
                             <div class="stats-card-icon stats-icon-green">
                                 <Target class="stats-icon-size" />
@@ -755,9 +764,7 @@ onMounted(() => {
                             <div class="stats-card-text">
                                 <p class="stats-card-label stats-label-orange">Chat Masuk</p>
                                 <p class="stats-card-value stats-value-orange">{{ mitraStats.masuk }}</p>
-                                <p class="stats-card-subtitle stats-subtitle-orange">
-                                    {{ mitraStats.this_week }} minggu ini
-                                </p>
+                                <p class="stats-card-subtitle stats-subtitle-orange">{{ mitraStats.this_week }} minggu ini</p>
                             </div>
                             <div class="stats-card-icon stats-icon-orange">
                                 <MessageSquare class="stats-icon-size" />
@@ -773,9 +780,7 @@ onMounted(() => {
                             <div class="stats-card-text">
                                 <p class="stats-card-label stats-label-purple">Follow Up</p>
                                 <p class="stats-card-value stats-value-purple">{{ mitraStats.followup }}</p>
-                                <p class="stats-card-subtitle stats-subtitle-purple">
-                                    {{ mitraStats.this_month }} bulan ini
-                                </p>
+                                <p class="stats-card-subtitle stats-subtitle-purple">{{ mitraStats.this_month }} bulan ini</p>
                             </div>
                             <div class="stats-card-icon stats-icon-purple">
                                 <Phone class="stats-icon-size" />
@@ -807,7 +812,7 @@ onMounted(() => {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent class="space-y-4">
-                                <div class="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                                <div class="flex items-center justify-between rounded-lg bg-muted/50 p-4">
                                     <div>
                                         <p class="text-sm text-muted-foreground">Overall Closing Rate</p>
                                         <p class="text-2xl font-bold">{{ closingAnalysis.closing_rate }}%</p>
@@ -831,23 +836,23 @@ onMounted(() => {
                             </CardHeader>
                             <CardContent class="space-y-4">
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                                        <Users class="h-6 w-6 mx-auto mb-2 text-blue-600" />
+                                    <div class="rounded-lg bg-blue-50 p-3 text-center dark:bg-blue-900/20">
+                                        <Users class="mx-auto mb-2 h-6 w-6 text-blue-600" />
                                         <p class="text-sm text-muted-foreground">Total Users</p>
                                         <p class="text-xl font-bold">{{ userStats.total }}</p>
                                     </div>
-                                    <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                                        <Briefcase class="h-6 w-6 mx-auto mb-2 text-green-600" />
+                                    <div class="rounded-lg bg-green-50 p-3 text-center dark:bg-green-900/20">
+                                        <Briefcase class="mx-auto mb-2 h-6 w-6 text-green-600" />
                                         <p class="text-sm text-muted-foreground">Marketing</p>
                                         <p class="text-xl font-bold">{{ userStats.marketing }}</p>
                                     </div>
-                                    <div class="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                                        <Zap class="h-6 w-6 mx-auto mb-2 text-purple-600" />
+                                    <div class="rounded-lg bg-purple-50 p-3 text-center dark:bg-purple-900/20">
+                                        <Zap class="mx-auto mb-2 h-6 w-6 text-purple-600" />
                                         <p class="text-sm text-muted-foreground">Brands</p>
                                         <p class="text-xl font-bold">{{ brandStats.total }}</p>
                                     </div>
-                                    <div class="text-center p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                                        <Tag class="h-6 w-6 mx-auto mb-2 text-orange-600" />
+                                    <div class="rounded-lg bg-orange-50 p-3 text-center dark:bg-orange-900/20">
+                                        <Tag class="mx-auto mb-2 h-6 w-6 text-orange-600" />
                                         <p class="text-sm text-muted-foreground">Labels</p>
                                         <p class="text-xl font-bold">{{ labelStats.total }}</p>
                                     </div>
@@ -863,22 +868,17 @@ onMounted(() => {
                                 <User class="h-6 w-6" />
                                 Performa Marketing
                             </CardTitle>
-                            <p class="analytics-card-subtitle">
-                                Analisis performa tim marketing berdasarkan total leads dan conversion rate
-                            </p>
+                            <p class="analytics-card-subtitle">Analisis performa tim marketing berdasarkan total leads dan conversion rate</p>
                         </CardHeader>
                         <CardContent class="analytics-card-content">
                             <div class="chart-wrapper">
-                                <MarketingPerformanceChart 
-                                    v-if="topMarketing.length > 0" 
-                                    :data="topMarketing" 
-                                    :title="`Performa Marketing ${selectedMarketing !== 'all' ? '- ' + (marketingUsers.find(m => m.id.toString() === selectedMarketing)?.name || '') : ''}`"
+                                <MarketingPerformanceChart
+                                    v-if="topMarketing.length > 0"
+                                    :data="topMarketing"
+                                    :title="`Performa Marketing ${selectedMarketing !== 'all' ? '- ' + (marketingUsers.find((m) => m.id.toString() === selectedMarketing)?.name || '') : ''}`"
                                 />
-                                <div 
-                                    v-else 
-                                    class="flex flex-col items-center justify-center h-96 text-muted-foreground"
-                                >
-                                    <User class="h-16 w-16 mb-4 opacity-50" />
+                                <div v-else class="flex h-96 flex-col items-center justify-center text-muted-foreground">
+                                    <User class="mb-4 h-16 w-16 opacity-50" />
                                     <p class="text-lg font-medium">Tidak ada data marketing</p>
                                     <p class="text-sm">Data performa marketing akan muncul di sini</p>
                                 </div>
@@ -893,22 +893,17 @@ onMounted(() => {
                                 <Tag class="h-6 w-6" />
                                 Performa Brand
                             </CardTitle>
-                            <p class="analytics-card-subtitle">
-                                Analisis performa setiap brand berdasarkan total leads dan tingkat konversi
-                            </p>
+                            <p class="analytics-card-subtitle">Analisis performa setiap brand berdasarkan total leads dan tingkat konversi</p>
                         </CardHeader>
                         <CardContent class="analytics-card-content">
                             <div class="chart-wrapper">
-                                <BrandPerformanceChart 
-                                    v-if="brandPerformance.length > 0" 
-                                    :data="brandPerformance" 
-                                    :title="`Performa Brand ${selectedBrand !== 'all' ? '- ' + (brands.find(b => b.id.toString() === selectedBrand)?.nama || '') : ''}`"
+                                <BrandPerformanceChart
+                                    v-if="brandPerformance.length > 0"
+                                    :data="brandPerformance"
+                                    :title="`Performa Brand ${selectedBrand !== 'all' ? '- ' + (brands.find((b) => b.id.toString() === selectedBrand)?.nama || '') : ''}`"
                                 />
-                                <div 
-                                    v-else 
-                                    class="flex flex-col items-center justify-center h-96 text-muted-foreground"
-                                >
-                                    <Tag class="h-16 w-16 mb-4 opacity-50" />
+                                <div v-else class="flex h-96 flex-col items-center justify-center text-muted-foreground">
+                                    <Tag class="mb-4 h-16 w-16 opacity-50" />
                                     <p class="text-lg font-medium">Tidak ada data brand</p>
                                     <p class="text-sm">Data performa brand akan muncul di sini</p>
                                 </div>
@@ -926,13 +921,13 @@ onMounted(() => {
                         </CardHeader>
                         <CardContent>
                             <div class="space-y-3">
-                                <div 
-                                    v-for="activity in recentActivities.slice(0, 5)" 
+                                <div
+                                    v-for="activity in recentActivities.slice(0, 5)"
                                     :key="activity.id"
-                                    class="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                                    class="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
                                 >
                                     <div class="flex items-center gap-3">
-                                        <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                        <div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
                                             <Users class="h-4 w-4 text-blue-600" />
                                         </div>
                                         <div>
@@ -943,10 +938,7 @@ onMounted(() => {
                                         </div>
                                     </div>
                                     <div class="text-right">
-                                        <Badge 
-                                            :variant="activity.chat === 'followup' ? 'default' : 'secondary'"
-                                            class="mb-1"
-                                        >
+                                        <Badge :variant="activity.chat === 'followup' ? 'default' : 'secondary'" class="mb-1">
                                             {{ activity.chat }}
                                         </Badge>
                                         <p class="text-xs text-muted-foreground">
@@ -967,114 +959,161 @@ onMounted(() => {
                     </Card>
 
                     <!-- Task Management Report -->
-                    <Card class="border-0 shadow-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/50 dark:to-purple-950/50">
+                    <Card class="border-0 bg-gradient-to-br from-indigo-50 to-purple-50 shadow-xl dark:from-indigo-950/50 dark:to-purple-950/50">
                         <CardHeader class="pb-3 sm:pb-4">
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                <CardTitle class="flex items-center gap-3 text-lg sm:text-xl font-bold">
-                                    <div class="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg shadow-lg">
-                                        <CheckCircle class="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <CardTitle class="flex items-center gap-3 text-lg font-bold sm:text-xl">
+                                    <div class="rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 p-2 shadow-lg">
+                                        <CheckCircle class="h-5 w-5 text-white sm:h-6 sm:w-6" />
                                     </div>
                                     Report Task Management
                                 </CardTitle>
-                                <Badge class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-3 py-1 self-start sm:self-center">
+                                <Badge class="self-start bg-gradient-to-r from-indigo-500 to-purple-500 px-3 py-1 text-white sm:self-center">
                                     Real-time Data
                                 </Badge>
                             </div>
                         </CardHeader>
-                        <CardContent class="space-y-6 sm:space-y-8 p-4 sm:p-6">
+                        <CardContent class="space-y-6 p-4 sm:space-y-8 sm:p-6">
                             <!-- Overall Task Statistics -->
-                            <div class="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 shadow-md">
-                                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                                    <BarChart3 class="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600" />
+                            <div class="rounded-xl bg-white p-4 shadow-md sm:p-6 dark:bg-gray-800">
+                                <h3 class="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900 sm:text-lg dark:text-white">
+                                    <BarChart3 class="h-4 w-4 text-indigo-600 sm:h-5 sm:w-5" />
                                     Total Keseluruhan Task
                                 </h3>
-                                <div class="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-5">
+                                <div class="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-5">
                                     <!-- Total Tasks -->
-                                    <div class="text-center p-3 sm:p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg">
-                                        <div class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 bg-gradient-to-r from-gray-500 to-gray-600 rounded-lg flex items-center justify-center">
-                                            <Clock class="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                                    <div
+                                        class="rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 p-3 text-center sm:p-4 dark:from-gray-700 dark:to-gray-800"
+                                    >
+                                        <div
+                                            class="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-gray-500 to-gray-600 sm:h-10 sm:w-10"
+                                        >
+                                            <Clock class="h-4 w-4 text-white sm:h-5 sm:w-5" />
                                         </div>
-                                        <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1">Total Task</p>
-                                        <p class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">{{ taskStats.overall.total }}</p>
+                                        <p class="mb-1 text-xs text-gray-600 sm:text-sm dark:text-gray-400">Total Task</p>
+                                        <p class="text-lg font-bold text-gray-900 sm:text-xl dark:text-white">{{ taskStats.overall.total }}</p>
                                     </div>
 
                                     <!-- Pending Tasks -->
-                                    <div class="text-center p-3 sm:p-4 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/30 dark:to-orange-900/30 rounded-lg">
-                                        <div class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
-                                            <Clock class="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                                    <div
+                                        class="rounded-lg bg-gradient-to-br from-yellow-50 to-orange-50 p-3 text-center sm:p-4 dark:from-yellow-900/30 dark:to-orange-900/30"
+                                    >
+                                        <div
+                                            class="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-yellow-500 to-orange-500 sm:h-10 sm:w-10"
+                                        >
+                                            <Clock class="h-4 w-4 text-white sm:h-5 sm:w-5" />
                                         </div>
-                                        <p class="text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 mb-1">Rencana</p>
-                                        <p class="text-lg sm:text-xl font-bold text-yellow-900 dark:text-yellow-100">{{ taskStats.overall.pending }}</p>
+                                        <p class="mb-1 text-xs text-yellow-700 sm:text-sm dark:text-yellow-400">Rencana</p>
+                                        <p class="text-lg font-bold text-yellow-900 sm:text-xl dark:text-yellow-100">
+                                            {{ taskStats.overall.pending }}
+                                        </p>
                                         <p class="text-xs text-yellow-600 dark:text-yellow-400">
-                                            {{ taskStats.overall.total > 0 ? Math.round((taskStats.overall.pending / taskStats.overall.total) * 100) : 0 }}%
+                                            {{
+                                                taskStats.overall.total > 0
+                                                    ? Math.round((taskStats.overall.pending / taskStats.overall.total) * 100)
+                                                    : 0
+                                            }}%
                                         </p>
                                     </div>
 
                                     <!-- In Progress Tasks -->
-                                    <div class="text-center p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-lg">
-                                        <div class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                                            <Activity class="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                                    <div
+                                        class="rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 p-3 text-center sm:p-4 dark:from-blue-900/30 dark:to-indigo-900/30"
+                                    >
+                                        <div
+                                            class="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 sm:h-10 sm:w-10"
+                                        >
+                                            <Activity class="h-4 w-4 text-white sm:h-5 sm:w-5" />
                                         </div>
-                                        <p class="text-xs sm:text-sm text-blue-700 dark:text-blue-400 mb-1">Dikerjakan</p>
-                                        <p class="text-lg sm:text-xl font-bold text-blue-900 dark:text-blue-100">{{ taskStats.overall.in_progress }}</p>
+                                        <p class="mb-1 text-xs text-blue-700 sm:text-sm dark:text-blue-400">Dikerjakan</p>
+                                        <p class="text-lg font-bold text-blue-900 sm:text-xl dark:text-blue-100">
+                                            {{ taskStats.overall.in_progress }}
+                                        </p>
                                         <p class="text-xs text-blue-600 dark:text-blue-400">
-                                            {{ taskStats.overall.total > 0 ? Math.round((taskStats.overall.in_progress / taskStats.overall.total) * 100) : 0 }}%
+                                            {{
+                                                taskStats.overall.total > 0
+                                                    ? Math.round((taskStats.overall.in_progress / taskStats.overall.total) * 100)
+                                                    : 0
+                                            }}%
                                         </p>
                                     </div>
 
                                     <!-- Completed Tasks -->
-                                    <div class="text-center p-3 sm:p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-lg">
-                                        <div class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                                            <CheckCircle class="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                                    <div
+                                        class="rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 p-3 text-center sm:p-4 dark:from-green-900/30 dark:to-emerald-900/30"
+                                    >
+                                        <div
+                                            class="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 sm:h-10 sm:w-10"
+                                        >
+                                            <CheckCircle class="h-4 w-4 text-white sm:h-5 sm:w-5" />
                                         </div>
-                                        <p class="text-xs sm:text-sm text-green-700 dark:text-green-400 mb-1">Selesai</p>
-                                        <p class="text-lg sm:text-xl font-bold text-green-900 dark:text-green-100">{{ taskStats.overall.completed }}</p>
+                                        <p class="mb-1 text-xs text-green-700 sm:text-sm dark:text-green-400">Selesai</p>
+                                        <p class="text-lg font-bold text-green-900 sm:text-xl dark:text-green-100">
+                                            {{ taskStats.overall.completed }}
+                                        </p>
                                         <p class="text-xs text-green-600 dark:text-green-400">
-                                            {{ taskStats.overall.total > 0 ? Math.round((taskStats.overall.completed / taskStats.overall.total) * 100) : 0 }}%
+                                            {{
+                                                taskStats.overall.total > 0
+                                                    ? Math.round((taskStats.overall.completed / taskStats.overall.total) * 100)
+                                                    : 0
+                                            }}%
                                         </p>
                                     </div>
 
                                     <!-- Overdue Tasks -->
-                                    <div class="text-center p-3 sm:p-4 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/30 dark:to-pink-900/30 rounded-lg">
-                                        <div class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center">
-                                            <AlertCircle class="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                                    <div
+                                        class="rounded-lg bg-gradient-to-br from-red-50 to-pink-50 p-3 text-center sm:p-4 dark:from-red-900/30 dark:to-pink-900/30"
+                                    >
+                                        <div
+                                            class="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-red-500 to-pink-500 sm:h-10 sm:w-10"
+                                        >
+                                            <AlertCircle class="h-4 w-4 text-white sm:h-5 sm:w-5" />
                                         </div>
-                                        <p class="text-xs sm:text-sm text-red-700 dark:text-red-400 mb-1">Terlambat</p>
-                                        <p class="text-lg sm:text-xl font-bold text-red-900 dark:text-red-100">{{ taskStats.overall.overdue }}</p>
+                                        <p class="mb-1 text-xs text-red-700 sm:text-sm dark:text-red-400">Terlambat</p>
+                                        <p class="text-lg font-bold text-red-900 sm:text-xl dark:text-red-100">{{ taskStats.overall.overdue }}</p>
                                         <p class="text-xs text-red-600 dark:text-red-400">
-                                            {{ taskStats.overall.total > 0 ? Math.round((taskStats.overall.overdue / taskStats.overall.total) * 100) : 0 }}%
+                                            {{
+                                                taskStats.overall.total > 0
+                                                    ? Math.round((taskStats.overall.overdue / taskStats.overall.total) * 100)
+                                                    : 0
+                                            }}%
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Task Statistics by Marketing -->
-                            <div class="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 shadow-md">
-                                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                                    <Users class="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+                            <div class="rounded-xl bg-white p-4 shadow-md sm:p-6 dark:bg-gray-800">
+                                <h3 class="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900 sm:text-lg dark:text-white">
+                                    <Users class="h-4 w-4 text-purple-600 sm:h-5 sm:w-5" />
                                     Report Task per Marketing
                                 </h3>
-                                
+
                                 <!-- Table Header -->
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-sm">
                                         <thead>
                                             <tr class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30">
-                                                <th class="text-left p-3 font-semibold text-gray-700 dark:text-gray-300">Marketing</th>
-                                                <th class="text-center p-3 font-semibold text-yellow-700 dark:text-yellow-400">Rencana</th>
-                                                <th class="text-center p-3 font-semibold text-blue-700 dark:text-blue-400">Dikerjakan</th>
-                                                <th class="text-center p-3 font-semibold text-green-700 dark:text-green-400">Selesai</th>
-                                                <th class="text-center p-3 font-semibold text-red-700 dark:text-red-400">Terlambat</th>
-                                                <th class="text-center p-3 font-semibold text-indigo-700 dark:text-indigo-400">Total</th>
-                                                <th class="text-center p-3 font-semibold text-purple-700 dark:text-purple-400">Completion %</th>
+                                                <th class="p-3 text-left font-semibold text-gray-700 dark:text-gray-300">Marketing</th>
+                                                <th class="p-3 text-center font-semibold text-yellow-700 dark:text-yellow-400">Rencana</th>
+                                                <th class="p-3 text-center font-semibold text-blue-700 dark:text-blue-400">Dikerjakan</th>
+                                                <th class="p-3 text-center font-semibold text-green-700 dark:text-green-400">Selesai</th>
+                                                <th class="p-3 text-center font-semibold text-red-700 dark:text-red-400">Terlambat</th>
+                                                <th class="p-3 text-center font-semibold text-indigo-700 dark:text-indigo-400">Total</th>
+                                                <th class="p-3 text-center font-semibold text-purple-700 dark:text-purple-400">Completion %</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr v-for="marketing in taskStats.by_marketing" :key="marketing.id" 
-                                                class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                            <tr
+                                                v-for="marketing in taskStats.by_marketing"
+                                                :key="marketing.id"
+                                                class="border-b border-gray-200 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
+                                            >
                                                 <td class="p-3">
                                                     <div class="flex items-center gap-2">
-                                                        <div class="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
+                                                        <div
+                                                            class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-500"
+                                                        >
                                                             <User class="h-4 w-4 text-white" />
                                                         </div>
                                                         <div>
@@ -1083,36 +1122,38 @@ onMounted(() => {
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td class="text-center p-3">
+                                                <td class="p-3 text-center">
                                                     <Badge class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
                                                         {{ marketing.pending_tasks }}
                                                     </Badge>
                                                 </td>
-                                                <td class="text-center p-3">
+                                                <td class="p-3 text-center">
                                                     <Badge class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                                                         {{ marketing.in_progress_tasks }}
                                                     </Badge>
                                                 </td>
-                                                <td class="text-center p-3">
+                                                <td class="p-3 text-center">
                                                     <Badge class="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                                                         {{ marketing.completed_tasks }}
                                                     </Badge>
                                                 </td>
-                                                <td class="text-center p-3">
+                                                <td class="p-3 text-center">
                                                     <Badge class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
                                                         {{ marketing.overdue_tasks }}
                                                     </Badge>
                                                 </td>
-                                                <td class="text-center p-3">
+                                                <td class="p-3 text-center">
                                                     <Badge class="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
                                                         {{ marketing.total_tasks }}
                                                     </Badge>
                                                 </td>
-                                                <td class="text-center p-3">
+                                                <td class="p-3 text-center">
                                                     <div class="flex items-center justify-center gap-2">
-                                                        <div class="w-12 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                                            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full transition-all duration-300"
-                                                                 :style="{ width: `${marketing.completion_rate}%` }"></div>
+                                                        <div class="h-2 w-12 rounded-full bg-gray-200 dark:bg-gray-700">
+                                                            <div
+                                                                class="h-2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-300"
+                                                                :style="{ width: `${marketing.completion_rate}%` }"
+                                                            ></div>
                                                         </div>
                                                         <span class="text-xs font-medium text-purple-600 dark:text-purple-400">
                                                             {{ marketing.completion_rate }}%
@@ -1125,8 +1166,10 @@ onMounted(() => {
                                 </div>
 
                                 <!-- Summary Row -->
-                                <div class="mt-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-lg">
-                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                <div
+                                    class="mt-4 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 p-4 dark:from-indigo-900/20 dark:to-purple-900/20"
+                                >
+                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                         <div class="flex items-center gap-2">
                                             <Award class="h-5 w-5 text-purple-600" />
                                             <span class="font-semibold text-gray-900 dark:text-white">Total Keseluruhan:</span>
@@ -1166,45 +1209,42 @@ onMounted(() => {
                             <CardContent>
                                 <div class="space-y-4">
                                     <!-- Simple Pie Chart Visualization -->
-                                    <div class="relative mx-auto w-64 h-64">
-                                        <svg viewBox="0 0 200 200" class="w-full h-full transform -rotate-90">
+                                    <div class="relative mx-auto h-64 w-64">
+                                        <svg viewBox="0 0 200 200" class="h-full w-full -rotate-90 transform">
                                             <template v-for="(label, index) in labelDistribution" :key="label.id">
                                                 <path
                                                     :d="getArcPath(label, index)"
                                                     :fill="label.warna"
                                                     :stroke="label.warna"
                                                     stroke-width="2"
-                                                    class="hover:brightness-110 transition-all duration-200 cursor-pointer drop-shadow-sm"
+                                                    class="cursor-pointer drop-shadow-sm transition-all duration-200 hover:brightness-110"
                                                     :title="`${label.nama}: ${label.count} (${label.percentage}%)`"
                                                 />
                                             </template>
                                         </svg>
                                         <!-- Center text -->
                                         <div class="absolute inset-0 flex items-center justify-center">
-                                            <div class="text-center bg-white/90 dark:bg-gray-900/90 rounded-full p-4 backdrop-blur-sm">
+                                            <div class="rounded-full bg-white/90 p-4 text-center backdrop-blur-sm dark:bg-gray-900/90">
                                                 <p class="text-2xl font-bold">{{ labelStats.total }}</p>
                                                 <p class="text-sm text-muted-foreground">Total Labels</p>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Legend -->
                                     <div class="space-y-2">
-                                        <div 
-                                            v-for="label in labelDistribution" 
+                                        <div
+                                            v-for="label in labelDistribution"
                                             :key="label.id"
-                                            class="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                                            class="flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-muted/50"
                                         >
                                             <div class="flex items-center gap-3">
-                                                <div 
-                                                    class="w-4 h-4 rounded-full"
-                                                    :style="{ backgroundColor: label.warna }"
-                                                ></div>
+                                                <div class="h-4 w-4 rounded-full" :style="{ backgroundColor: label.warna }"></div>
                                                 <span class="font-medium">{{ label.nama }}</span>
                                             </div>
                                             <div class="text-right">
                                                 <span class="font-bold">{{ label.count }}</span>
-                                                <span class="text-sm text-muted-foreground ml-1">({{ label.percentage }}%)</span>
+                                                <span class="ml-1 text-sm text-muted-foreground">({{ label.percentage }}%)</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1222,30 +1262,21 @@ onMounted(() => {
                             </CardHeader>
                             <CardContent class="space-y-4">
                                 <div class="grid gap-4">
-                                    <div 
-                                        v-for="label in labelDistribution.slice(0, 5)" 
-                                        :key="label.id"
-                                        class="p-4 border rounded-lg"
-                                    >
-                                        <div class="flex items-center justify-between mb-2">
+                                    <div v-for="label in labelDistribution.slice(0, 5)" :key="label.id" class="rounded-lg border p-4">
+                                        <div class="mb-2 flex items-center justify-between">
                                             <div class="flex items-center gap-2">
-                                                <div 
-                                                    class="w-3 h-3 rounded-full"
-                                                    :style="{ backgroundColor: label.warna }"
-                                                ></div>
+                                                <div class="h-3 w-3 rounded-full" :style="{ backgroundColor: label.warna }"></div>
                                                 <span class="font-medium">{{ label.nama }}</span>
                                             </div>
                                             <span class="text-sm font-bold">{{ label.count }} leads</span>
                                         </div>
                                         <Progress :value="label.percentage" class="h-2" />
-                                        <p class="text-xs text-muted-foreground mt-1">
-                                            {{ label.percentage }}% dari total leads
-                                        </p>
+                                        <p class="mt-1 text-xs text-muted-foreground">{{ label.percentage }}% dari total leads</p>
                                     </div>
                                 </div>
-                                
-                                <div class="mt-4 p-4 bg-muted/50 rounded-lg">
-                                    <h4 class="font-medium mb-2">Summary</h4>
+
+                                <div class="mt-4 rounded-lg bg-muted/50 p-4">
+                                    <h4 class="mb-2 font-medium">Summary</h4>
                                     <div class="grid grid-cols-2 gap-4 text-sm">
                                         <div>
                                             <p class="text-muted-foreground">Total Labels</p>
@@ -1275,13 +1306,13 @@ onMounted(() => {
                             </CardHeader>
                             <CardContent>
                                 <div class="space-y-4">
-                                    <div 
-                                        v-for="marketing in topMarketing.slice(0, 5)" 
+                                    <div
+                                        v-for="marketing in topMarketing.slice(0, 5)"
                                         :key="marketing.id"
-                                        class="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                                        class="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                                     >
                                         <div class="flex items-center gap-3">
-                                            <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                            <div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
                                                 <Users class="h-4 w-4 text-blue-600" />
                                             </div>
                                             <div>
@@ -1308,7 +1339,7 @@ onMounted(() => {
                             </CardHeader>
                             <CardContent class="space-y-4">
                                 <div class="grid gap-4">
-                                    <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                    <div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
                                         <div class="flex items-center justify-between">
                                             <div>
                                                 <p class="text-sm text-muted-foreground">Total Marketing</p>
@@ -1317,18 +1348,25 @@ onMounted(() => {
                                             <Briefcase class="h-8 w-8 text-blue-600" />
                                         </div>
                                     </div>
-                                    
-                                    <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+
+                                    <div class="rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
                                         <div class="flex items-center justify-between">
                                             <div>
                                                 <p class="text-sm text-muted-foreground">Avg. Closing Rate</p>
-                                                <p class="text-2xl font-bold">{{ Math.round(topMarketing.reduce((sum, m) => sum + m.closing_rate, 0) / Math.max(topMarketing.length, 1)) }}%</p>
+                                                <p class="text-2xl font-bold">
+                                                    {{
+                                                        Math.round(
+                                                            topMarketing.reduce((sum, m) => sum + m.closing_rate, 0) /
+                                                                Math.max(topMarketing.length, 1),
+                                                        )
+                                                    }}%
+                                                </p>
                                             </div>
                                             <Target class="h-8 w-8 text-green-600" />
                                         </div>
                                     </div>
-                                    
-                                    <div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+
+                                    <div class="rounded-lg bg-purple-50 p-4 dark:bg-purple-900/20">
                                         <div class="flex items-center justify-between">
                                             <div>
                                                 <p class="text-sm text-muted-foreground">Total Leads</p>
@@ -1356,19 +1394,14 @@ onMounted(() => {
                             </CardHeader>
                             <CardContent>
                                 <div class="space-y-4">
-                                    <div 
-                                        v-for="brand in brandPerformance.slice(0, 5)" 
+                                    <div
+                                        v-for="brand in brandPerformance.slice(0, 5)"
                                         :key="brand.id"
-                                        class="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                                        class="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                                     >
                                         <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                                                <img 
-                                                    v-if="brand.logo_url" 
-                                                    :src="brand.logo_url" 
-                                                    :alt="brand.nama"
-                                                    class="w-8 h-8 object-contain"
-                                                />
+                                            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
+                                                <img v-if="brand.logo_url" :src="brand.logo_url" :alt="brand.nama" class="h-8 w-8 object-contain" />
                                                 <Building2 v-else class="h-5 w-5 text-muted-foreground" />
                                             </div>
                                             <div>
@@ -1395,7 +1428,7 @@ onMounted(() => {
                             </CardHeader>
                             <CardContent class="space-y-4">
                                 <div class="grid gap-4">
-                                    <div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                                    <div class="rounded-lg bg-purple-50 p-4 dark:bg-purple-900/20">
                                         <div class="flex items-center justify-between">
                                             <div>
                                                 <p class="text-sm text-muted-foreground">Total Brands</p>
@@ -1404,8 +1437,8 @@ onMounted(() => {
                                             <Building2 class="h-8 w-8 text-purple-600" />
                                         </div>
                                     </div>
-                                    
-                                    <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+
+                                    <div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
                                         <div class="flex items-center justify-between">
                                             <div>
                                                 <p class="text-sm text-muted-foreground">With Logo</p>
@@ -1414,8 +1447,8 @@ onMounted(() => {
                                             <Zap class="h-8 w-8 text-blue-600" />
                                         </div>
                                     </div>
-                                    
-                                    <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+
+                                    <div class="rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
                                         <div class="flex items-center justify-between">
                                             <div>
                                                 <p class="text-sm text-muted-foreground">Best Performer</p>
@@ -1444,40 +1477,44 @@ onMounted(() => {
                             <CardContent>
                                 <div class="space-y-4">
                                     <!-- Simple Line Chart Visualization -->
-                                    <div class="h-64 flex items-end justify-between gap-2 p-4 bg-muted/20 rounded-lg">
-                                        <div 
-                                            v-for="(trend, index) in dailyTrends.slice(-10)" 
+                                    <div class="flex h-64 items-end justify-between gap-2 rounded-lg bg-muted/20 p-4">
+                                        <div
+                                            v-for="(trend, index) in dailyTrends.slice(-10)"
                                             :key="trend.date"
-                                            class="flex-1 flex flex-col items-center gap-2"
+                                            class="flex flex-1 flex-col items-center gap-2"
                                         >
                                             <div class="flex flex-col items-center gap-1">
                                                 <!-- Total bar -->
-                                                <div 
-                                                    class="w-4 bg-blue-500 rounded-t transition-all duration-300 hover:bg-blue-600"
-                                                    :style="{ height: `${Math.max((trend.total / Math.max(...dailyTrends.map(d => d.total))) * 150, 4)}px` }"
+                                                <div
+                                                    class="w-4 rounded-t bg-blue-500 transition-all duration-300 hover:bg-blue-600"
+                                                    :style="{
+                                                        height: `${Math.max((trend.total / Math.max(...dailyTrends.map((d) => d.total))) * 150, 4)}px`,
+                                                    }"
                                                     :title="`Total: ${trend.total}`"
                                                 ></div>
                                                 <!-- Follow up bar -->
-                                                <div 
-                                                    class="w-4 bg-green-500 rounded-t transition-all duration-300 hover:bg-green-600"
-                                                    :style="{ height: `${Math.max((trend.followup / Math.max(...dailyTrends.map(d => d.followup))) * 100, 2)}px` }"
+                                                <div
+                                                    class="w-4 rounded-t bg-green-500 transition-all duration-300 hover:bg-green-600"
+                                                    :style="{
+                                                        height: `${Math.max((trend.followup / Math.max(...dailyTrends.map((d) => d.followup))) * 100, 2)}px`,
+                                                    }"
                                                     :title="`Follow up: ${trend.followup}`"
                                                 ></div>
                                             </div>
-                                            <div class="text-xs text-muted-foreground text-center">
+                                            <div class="text-center text-xs text-muted-foreground">
                                                 {{ trend.date_formatted }}
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Legend -->
                                     <div class="flex justify-center gap-6">
                                         <div class="flex items-center gap-2">
-                                            <div class="w-3 h-3 bg-blue-500 rounded"></div>
+                                            <div class="h-3 w-3 rounded bg-blue-500"></div>
                                             <span class="text-sm">Total Leads</span>
                                         </div>
                                         <div class="flex items-center gap-2">
-                                            <div class="w-3 h-3 bg-green-500 rounded"></div>
+                                            <div class="h-3 w-3 rounded bg-green-500"></div>
                                             <span class="text-sm">Follow Up</span>
                                         </div>
                                     </div>
@@ -1492,7 +1529,7 @@ onMounted(() => {
                                     <div class="flex items-center justify-between">
                                         <div>
                                             <p class="text-sm text-muted-foreground">Today's Growth</p>
-                                            <p class="text-2xl font-bold flex items-center gap-2">
+                                            <p class="flex items-center gap-2 text-2xl font-bold">
                                                 +{{ mitraStats.today }}
                                                 <TrendingUp class="h-5 w-5 text-green-600" />
                                             </p>
@@ -1501,7 +1538,7 @@ onMounted(() => {
                                     </div>
                                 </CardContent>
                             </Card>
-                            
+
                             <Card class="border-0 shadow-lg">
                                 <CardContent class="p-6">
                                     <div class="flex items-center justify-between">
@@ -1513,7 +1550,7 @@ onMounted(() => {
                                     </div>
                                 </CardContent>
                             </Card>
-                            
+
                             <Card class="border-0 shadow-lg">
                                 <CardContent class="p-6">
                                     <div class="flex items-center justify-between">
@@ -1535,69 +1572,69 @@ onMounted(() => {
                 <Card class="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium text-blue-700 dark:text-blue-300">Total Users</CardTitle>
-                        <div class="p-2 bg-blue-500 rounded-lg">
+                        <div class="rounded-lg bg-blue-500 p-2">
                             <Users class="h-5 w-5 text-white" />
                         </div>
                     </CardHeader>
                     <CardContent>
                         <div class="text-3xl font-bold text-blue-900 dark:text-blue-100">{{ userStats.total }}</div>
-                        <p class="text-xs text-blue-600 dark:text-blue-400 flex items-center mt-1">
-                            <TrendingUp class="h-3 w-3 mr-1" />
+                        <p class="mt-1 flex items-center text-xs text-blue-600 dark:text-blue-400">
+                            <TrendingUp class="mr-1 h-3 w-3" />
                             Total pengguna aktif
                         </p>
                     </CardContent>
-                    <div class="absolute bottom-0 right-0 w-16 h-16 bg-blue-200/30 rounded-full -mr-8 -mb-8"></div>
+                    <div class="absolute right-0 bottom-0 -mr-8 -mb-8 h-16 w-16 rounded-full bg-blue-200/30"></div>
                 </Card>
 
                 <Card class="relative overflow-hidden border-0 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium text-red-700 dark:text-red-300">Super Admin</CardTitle>
-                        <div class="p-2 bg-red-500 rounded-lg">
+                        <div class="rounded-lg bg-red-500 p-2">
                             <Shield class="h-5 w-5 text-white" />
                         </div>
                     </CardHeader>
                     <CardContent>
                         <div class="text-3xl font-bold text-red-900 dark:text-red-100">{{ userStats.super_admin }}</div>
-                        <p class="text-xs text-red-600 dark:text-red-400 flex items-center mt-1">
-                            <Activity class="h-3 w-3 mr-1" />
+                        <p class="mt-1 flex items-center text-xs text-red-600 dark:text-red-400">
+                            <Activity class="mr-1 h-3 w-3" />
                             Akses penuh sistem
                         </p>
                     </CardContent>
-                    <div class="absolute bottom-0 right-0 w-16 h-16 bg-red-200/30 rounded-full -mr-8 -mb-8"></div>
+                    <div class="absolute right-0 bottom-0 -mr-8 -mb-8 h-16 w-16 rounded-full bg-red-200/30"></div>
                 </Card>
 
                 <Card class="relative overflow-hidden border-0 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium text-amber-700 dark:text-amber-300">Admin</CardTitle>
-                        <div class="p-2 bg-amber-500 rounded-lg">
+                        <div class="rounded-lg bg-amber-500 p-2">
                             <UserCheck class="h-5 w-5 text-white" />
                         </div>
                     </CardHeader>
                     <CardContent>
                         <div class="text-3xl font-bold text-amber-900 dark:text-amber-100">{{ userStats.admin }}</div>
-                        <p class="text-xs text-amber-600 dark:text-amber-400 flex items-center mt-1">
-                            <BarChart3 class="h-3 w-3 mr-1" />
+                        <p class="mt-1 flex items-center text-xs text-amber-600 dark:text-amber-400">
+                            <BarChart3 class="mr-1 h-3 w-3" />
                             Kelola operasional
                         </p>
                     </CardContent>
-                    <div class="absolute bottom-0 right-0 w-16 h-16 bg-amber-200/30 rounded-full -mr-8 -mb-8"></div>
+                    <div class="absolute right-0 bottom-0 -mr-8 -mb-8 h-16 w-16 rounded-full bg-amber-200/30"></div>
                 </Card>
 
                 <Card class="relative overflow-hidden border-0 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium text-green-700 dark:text-green-300">Marketing</CardTitle>
-                        <div class="p-2 bg-green-500 rounded-lg">
+                        <div class="rounded-lg bg-green-500 p-2">
                             <Briefcase class="h-5 w-5 text-white" />
                         </div>
                     </CardHeader>
                     <CardContent>
                         <div class="text-3xl font-bold text-green-900 dark:text-green-100">{{ userStats.marketing }}</div>
-                        <p class="text-xs text-green-600 dark:text-green-400 flex items-center mt-1">
-                            <Calendar class="h-3 w-3 mr-1" />
+                        <p class="mt-1 flex items-center text-xs text-green-600 dark:text-green-400">
+                            <Calendar class="mr-1 h-3 w-3" />
                             Tim pemasaran
                         </p>
                     </CardContent>
-                    <div class="absolute bottom-0 right-0 w-16 h-16 bg-green-200/30 rounded-full -mr-8 -mb-8"></div>
+                    <div class="absolute right-0 bottom-0 -mr-8 -mb-8 h-16 w-16 rounded-full bg-green-200/30"></div>
                 </Card>
             </div>
 
@@ -1610,64 +1647,72 @@ onMounted(() => {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <Link href="/users" class="group">
-                            <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white transition-all duration-300 hover:from-blue-600 hover:to-blue-700 hover:scale-105 hover:shadow-xl">
+                            <div
+                                class="relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white transition-all duration-300 hover:scale-105 hover:from-blue-600 hover:to-blue-700 hover:shadow-xl"
+                            >
                                 <div class="flex items-center">
-                                    <div class="p-2 bg-white/20 rounded-lg mr-4">
+                                    <div class="mr-4 rounded-lg bg-white/20 p-2">
                                         <Users class="h-6 w-6" />
                                     </div>
                                     <div>
-                                        <h3 class="font-semibold text-lg">Tambah User</h3>
-                                        <p class="text-blue-100 text-sm">Buat pengguna baru</p>
+                                        <h3 class="text-lg font-semibold">Tambah User</h3>
+                                        <p class="text-sm text-blue-100">Buat pengguna baru</p>
                                     </div>
                                 </div>
-                                <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+                                <div class="absolute top-0 right-0 -mt-10 -mr-10 h-20 w-20 rounded-full bg-white/10"></div>
                             </div>
                         </Link>
-                        
+
                         <Link href="/brands" class="group">
-                            <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 p-6 text-white transition-all duration-300 hover:from-purple-600 hover:to-purple-700 hover:scale-105 hover:shadow-xl">
+                            <div
+                                class="relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 p-6 text-white transition-all duration-300 hover:scale-105 hover:from-purple-600 hover:to-purple-700 hover:shadow-xl"
+                            >
                                 <div class="flex items-center">
-                                    <div class="p-2 bg-white/20 rounded-lg mr-4">
+                                    <div class="mr-4 rounded-lg bg-white/20 p-2">
                                         <Tag class="h-6 w-6" />
                                     </div>
                                     <div>
-                                        <h3 class="font-semibold text-lg">Tambah Brand</h3>
-                                        <p class="text-purple-100 text-sm">Buat brand baru</p>
+                                        <h3 class="text-lg font-semibold">Tambah Brand</h3>
+                                        <p class="text-sm text-purple-100">Buat brand baru</p>
                                     </div>
                                 </div>
-                                <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+                                <div class="absolute top-0 right-0 -mt-10 -mr-10 h-20 w-20 rounded-full bg-white/10"></div>
                             </div>
                         </Link>
 
                         <Link href="/labels" class="group">
-                            <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white transition-all duration-300 hover:from-orange-600 hover:to-orange-700 hover:scale-105 hover:shadow-xl">
+                            <div
+                                class="relative overflow-hidden rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white transition-all duration-300 hover:scale-105 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl"
+                            >
                                 <div class="flex items-center">
-                                    <div class="p-2 bg-white/20 rounded-lg mr-4">
+                                    <div class="mr-4 rounded-lg bg-white/20 p-2">
                                         <Target class="h-6 w-6" />
                                     </div>
                                     <div>
-                                        <h3 class="font-semibold text-lg">Tambah Label</h3>
-                                        <p class="text-orange-100 text-sm">Buat label baru</p>
+                                        <h3 class="text-lg font-semibold">Tambah Label</h3>
+                                        <p class="text-sm text-orange-100">Buat label baru</p>
                                     </div>
                                 </div>
-                                <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+                                <div class="absolute top-0 right-0 -mt-10 -mr-10 h-20 w-20 rounded-full bg-white/10"></div>
                             </div>
                         </Link>
 
                         <Link href="/users" class="group">
-                            <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-green-500 to-green-600 p-6 text-white transition-all duration-300 hover:from-green-600 hover:to-green-700 hover:scale-105 hover:shadow-xl">
+                            <div
+                                class="relative overflow-hidden rounded-xl bg-gradient-to-r from-green-500 to-green-600 p-6 text-white transition-all duration-300 hover:scale-105 hover:from-green-600 hover:to-green-700 hover:shadow-xl"
+                            >
                                 <div class="flex items-center">
-                                    <div class="p-2 bg-white/20 rounded-lg mr-4">
+                                    <div class="mr-4 rounded-lg bg-white/20 p-2">
                                         <Users class="h-6 w-6" />
                                     </div>
                                     <div>
-                                        <h3 class="font-semibold text-lg">Kelola Users</h3>
-                                        <p class="text-green-100 text-sm">Lihat dan edit semua pengguna</p>
+                                        <h3 class="text-lg font-semibold">Kelola Users</h3>
+                                        <p class="text-sm text-green-100">Lihat dan edit semua pengguna</p>
                                     </div>
                                 </div>
-                                <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+                                <div class="absolute top-0 right-0 -mt-10 -mr-10 h-20 w-20 rounded-full bg-white/10"></div>
                             </div>
                         </Link>
                     </div>
@@ -1676,9 +1721,8 @@ onMounted(() => {
 
             <!-- Main Content Grid -->
             <div class="grid gap-6 lg:grid-cols-3">
-
                 <!-- System Status -->
-                <Card class="border-0 shadow-lg hidden">
+                <Card class="hidden border-0 shadow-lg">
                     <CardHeader>
                         <CardTitle class="flex items-center text-xl">
                             <Clock class="mr-3 h-6 w-6 text-green-500" />
@@ -1687,24 +1731,24 @@ onMounted(() => {
                     </CardHeader>
                     <CardContent>
                         <div class="space-y-4">
-                            <div class="flex items-center p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                                <div class="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
+                            <div class="flex items-center rounded-lg bg-green-50 p-4 dark:bg-green-950/20">
+                                <div class="mr-3 h-3 w-3 animate-pulse rounded-full bg-green-500"></div>
                                 <div class="flex-1">
                                     <p class="text-sm font-medium text-green-800 dark:text-green-200">Server Online</p>
                                     <p class="text-xs text-green-600 dark:text-green-400">Semua sistem berjalan normal</p>
                                 </div>
                             </div>
-                            
-                            <div class="flex items-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                                <div class="w-3 h-3 bg-blue-500 rounded-full mr-3 animate-pulse"></div>
+
+                            <div class="flex items-center rounded-lg bg-blue-50 p-4 dark:bg-blue-950/20">
+                                <div class="mr-3 h-3 w-3 animate-pulse rounded-full bg-blue-500"></div>
                                 <div class="flex-1">
                                     <p class="text-sm font-medium text-blue-800 dark:text-blue-200">Database Aktif</p>
                                     <p class="text-xs text-blue-600 dark:text-blue-400">Koneksi database stabil</p>
                                 </div>
                             </div>
-                            
-                            <div class="flex items-center p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
-                                <div class="w-3 h-3 bg-purple-500 rounded-full mr-3 animate-pulse"></div>
+
+                            <div class="flex items-center rounded-lg bg-purple-50 p-4 dark:bg-purple-950/20">
+                                <div class="mr-3 h-3 w-3 animate-pulse rounded-full bg-purple-500"></div>
                                 <div class="flex-1">
                                     <p class="text-sm font-medium text-purple-800 dark:text-purple-200">CRUD Tersedia</p>
                                     <p class="text-xs text-purple-600 dark:text-purple-400">Operasi user management aktif</p>

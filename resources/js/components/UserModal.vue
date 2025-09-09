@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/vue3';
-import { Loader2, User, Mail, Shield } from 'lucide-vue-next';
+import { Loader2, Mail, Shield, User } from 'lucide-vue-next';
+import { watch } from 'vue';
 
 interface User {
     id?: number;
@@ -36,25 +36,32 @@ const form = useForm({
 });
 
 // Watch for user prop changes
-watch(() => props.user, (newUser) => {
-    if (newUser) {
-        form.name = newUser.name || '';
-        form.email = newUser.email || '';
-        form.role = newUser.role || 'marketing';
-        form.password = '';
-        form.password_confirmation = '';
-    } else {
-        form.reset();
-    }
-}, { immediate: true });
+watch(
+    () => props.user,
+    (newUser) => {
+        if (newUser) {
+            form.name = newUser.name || '';
+            form.email = newUser.email || '';
+            form.role = newUser.role || 'marketing';
+            form.password = '';
+            form.password_confirmation = '';
+        } else {
+            form.reset();
+        }
+    },
+    { immediate: true },
+);
 
 // Reset form when modal closes
-watch(() => props.open, (isOpen) => {
-    if (!isOpen) {
-        form.reset();
-        form.clearErrors();
-    }
-});
+watch(
+    () => props.open,
+    (isOpen) => {
+        if (!isOpen) {
+            form.reset();
+            form.clearErrors();
+        }
+    },
+);
 
 const submit = () => {
     if (props.mode === 'create') {
@@ -62,14 +69,14 @@ const submit = () => {
             onSuccess: () => {
                 emit('success');
                 emit('close');
-            }
+            },
         });
     } else if (props.mode === 'edit' && props.user?.id) {
         form.put(`/users/${props.user.id}`, {
             onSuccess: () => {
                 emit('success');
                 emit('close');
-            }
+            },
         });
     }
 };
@@ -146,27 +153,27 @@ const roleDescriptions = {
                             <Shield class="h-4 w-4" />
                             Role
                         </Label>
-                        <div v-if="mode === 'view'" class="p-3 bg-muted rounded-lg">
+                        <div v-if="mode === 'view'" class="rounded-lg bg-muted p-3">
                             <div class="flex items-center justify-between">
                                 <span class="font-medium">{{ roleLabels[form.role] }}</span>
-                                <span 
-                                    class="px-3 py-1 rounded-full text-xs font-medium"
+                                <span
+                                    class="rounded-full px-3 py-1 text-xs font-medium"
                                     :class="{
                                         'bg-red-100 text-red-800': form.role === 'super_admin',
                                         'bg-blue-100 text-blue-800': form.role === 'admin',
-                                        'bg-green-100 text-green-800': form.role === 'marketing'
+                                        'bg-green-100 text-green-800': form.role === 'marketing',
                                     }"
                                 >
                                     {{ roleLabels[form.role] }}
                                 </span>
                             </div>
-                            <p class="text-sm text-muted-foreground mt-1">{{ roleDescriptions[form.role] }}</p>
+                            <p class="mt-1 text-sm text-muted-foreground">{{ roleDescriptions[form.role] }}</p>
                         </div>
-                        <select 
+                        <select
                             v-else
                             id="role"
                             v-model="form.role"
-                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                             :class="{ 'border-red-500': form.errors.role }"
                         >
                             <option value="marketing">Marketing</option>
@@ -208,20 +215,11 @@ const roleDescriptions = {
                 </div>
 
                 <DialogFooter>
-                    <Button 
-                        type="button" 
-                        variant="outline" 
-                        @click="$emit('close')"
-                    >
+                    <Button type="button" variant="outline" @click="$emit('close')">
                         {{ mode === 'view' ? 'Tutup' : 'Batal' }}
                     </Button>
-                    <Button 
-                        v-if="mode !== 'view'"
-                        type="submit" 
-                        :disabled="form.processing"
-                        class="min-w-[100px]"
-                    >
-                        <Loader2 v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
+                    <Button v-if="mode !== 'view'" type="submit" :disabled="form.processing" class="min-w-[100px]">
+                        <Loader2 v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" />
                         {{ mode === 'create' ? 'Buat User' : 'Update User' }}
                     </Button>
                 </DialogFooter>

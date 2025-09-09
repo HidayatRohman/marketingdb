@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run lint)",
+      "Bash(npm run format:check:*)",
+      "Bash(npm run format:*)",
+      "Bash(php artisan route:list:*)",
+      "Bash(php -l:*)",
+      "Bash(php artisan tinker:*)",
+      "Bash(composer:*)",
+      "Bash(php artisan make:command:*)",
+      "Bash(php artisan serve:*)",
+      "Bash(curl:*)",
+      "Bash(taskkill:*)",
+      "Bash(php artisan:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

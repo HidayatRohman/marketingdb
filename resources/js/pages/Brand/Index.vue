@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import BrandModal from '@/components/BrandModal.vue';
 import BrandDeleteModal from '@/components/BrandDeleteModal.vue';
+import BrandModal from '@/components/BrandModal.vue';
 import ProvinceChart from '@/components/ProvinceChart.vue';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
+import { BarChart3, Edit, Eye, Filter, MapPin, Plus, Search, Trash2, Zap } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import { Search, Plus, Edit, Trash2, Eye, Zap, Filter, BarChart3, MapPin } from 'lucide-vue-next';
 
 interface Brand {
     id: number;
@@ -72,13 +72,17 @@ let debounceTimer: number;
 watch([search, selectedBrand], () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
-        router.get('/brands', {
-            search: search.value || undefined,
-            selected_brand: selectedBrand.value || undefined,
-        }, {
-            preserveState: true,
-            replace: true,
-        });
+        router.get(
+            '/brands',
+            {
+                search: search.value || undefined,
+                selected_brand: selectedBrand.value || undefined,
+            },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     }, 300);
 });
 
@@ -145,7 +149,7 @@ const formatDate = (dateString: string) => {
 
 <template>
     <Head title="Brand" />
-    
+
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="layout-main">
             <!-- Header Section -->
@@ -157,14 +161,9 @@ const formatDate = (dateString: string) => {
                                 <Zap class="h-10 w-10" />
                                 Manajemen Brand
                             </h1>
-                            <p class="page-subtitle">
-                                Kelola brand dengan mudah dan efisien
-                            </p>
+                            <p class="page-subtitle">Kelola brand dengan mudah dan efisien</p>
                         </div>
-                        <Button 
-                            @click="openCreateModal"
-                            class="btn-primary-white"
-                        >
+                        <Button @click="openCreateModal" class="btn-primary-white">
                             <Plus class="mr-2 h-5 w-5" />
                             Tambah Brand
                         </Button>
@@ -189,7 +188,7 @@ const formatDate = (dateString: string) => {
                         </div>
                     </CardContent>
                 </Card>
-                
+
                 <Card class="stats-card stats-card-purple">
                     <CardContent class="stats-card-content-small">
                         <div class="stats-card-layout">
@@ -210,7 +209,7 @@ const formatDate = (dateString: string) => {
                             <div>
                                 <p class="stats-card-label stats-label-indigo">Dengan Logo</p>
                                 <p class="stats-card-value-small stats-value-indigo">
-                                    {{ brands.data.filter(b => b.logo).length }}
+                                    {{ brands.data.filter((b) => b.logo).length }}
                                 </p>
                             </div>
                             <div class="stats-card-icon-small stats-icon-indigo">
@@ -228,51 +227,35 @@ const formatDate = (dateString: string) => {
                         <BarChart3 class="h-6 w-6" />
                         Analisa Provinsi per Brand
                     </CardTitle>
-                    <p class="analytics-card-subtitle">
-                        Distribusi 7 provinsi teratas berdasarkan jumlah mitra
-                    </p>
+                    <p class="analytics-card-subtitle">Distribusi 7 provinsi teratas berdasarkan jumlah mitra</p>
                 </CardHeader>
                 <CardContent class="analytics-card-content">
                     <!-- Brand Filter -->
-                    <div class="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                    <div class="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                         <div class="flex items-center gap-3">
                             <MapPin class="h-5 w-5 text-muted-foreground" />
-                            <div class="flex flex-col sm:flex-row gap-2">
-                                <label for="brand-filter" class="text-sm font-medium text-muted-foreground">
-                                    Filter Brand:
-                                </label>
+                            <div class="flex flex-col gap-2 sm:flex-row">
+                                <label for="brand-filter" class="text-sm font-medium text-muted-foreground"> Filter Brand: </label>
                                 <select
                                     id="brand-filter"
                                     v-model="selectedBrand"
-                                    class="flex h-9 w-full sm:w-48 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-48"
                                 >
                                     <option value="">Semua Brand</option>
-                                    <option 
-                                        v-for="brand in brands.data" 
-                                        :key="brand.id" 
-                                        :value="brand.id"
-                                    >
+                                    <option v-for="brand in brands.data" :key="brand.id" :value="brand.id">
                                         {{ brand.nama }}
                                     </option>
                                 </select>
                             </div>
                         </div>
-                        <div class="text-sm text-muted-foreground">
-                            Total: {{ provinceAnalytics.total }} mitra
-                        </div>
+                        <div class="text-sm text-muted-foreground">Total: {{ provinceAnalytics.total }} mitra</div>
                     </div>
 
                     <!-- Chart Container -->
                     <div class="chart-wrapper">
-                        <ProvinceChart 
-                            v-if="provinceAnalytics.labels.length > 0" 
-                            :data="provinceAnalytics" 
-                        />
-                        <div 
-                            v-else 
-                            class="flex flex-col items-center justify-center h-96 text-muted-foreground"
-                        >
-                            <BarChart3 class="h-16 w-16 mb-4 opacity-50" />
+                        <ProvinceChart v-if="provinceAnalytics.labels.length > 0" :data="provinceAnalytics" />
+                        <div v-else class="flex h-96 flex-col items-center justify-center text-muted-foreground">
+                            <BarChart3 class="mb-4 h-16 w-16 opacity-50" />
                             <p class="text-lg font-medium">Tidak ada data</p>
                             <p class="text-sm">Pilih brand untuk melihat analisa provinsi</p>
                         </div>
@@ -286,11 +269,7 @@ const formatDate = (dateString: string) => {
                     <div class="search-layout">
                         <div class="search-input-wrapper">
                             <Search class="search-icon" />
-                            <Input
-                                v-model="search"
-                                placeholder="Cari berdasarkan nama brand..."
-                                class="search-input"
-                            />
+                            <Input v-model="search" placeholder="Cari berdasarkan nama brand..." class="search-input" />
                         </div>
                         <div class="search-actions">
                             <Button variant="outline" size="icon" class="search-action-btn">
@@ -311,18 +290,20 @@ const formatDate = (dateString: string) => {
                         <div class="overflow-x-auto">
                             <Table>
                                 <TableHeader>
-                                    <TableRow class="hover:bg-transparent border-b border-border">
+                                    <TableRow class="border-b border-border hover:bg-transparent">
                                         <TableHead class="font-semibold text-foreground">Nama Brand</TableHead>
                                         <TableHead class="font-semibold text-foreground">Logo</TableHead>
                                         <TableHead class="font-semibold text-foreground">Tanggal Dibuat</TableHead>
-                                        <TableHead class="font-semibold text-foreground text-center w-[120px]">Aksi</TableHead>
+                                        <TableHead class="w-[120px] text-center font-semibold text-foreground">Aksi</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    <TableRow v-for="brand in brands.data" :key="brand.id" class="hover:bg-muted/30 transition-colors">
+                                    <TableRow v-for="brand in brands.data" :key="brand.id" class="transition-colors hover:bg-muted/30">
                                         <TableCell class="font-medium">
                                             <div class="flex items-center gap-3">
-                                                <div class="p-2 bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 rounded-lg">
+                                                <div
+                                                    class="rounded-lg bg-gradient-to-br from-violet-100 to-purple-100 p-2 dark:from-violet-900/30 dark:to-purple-900/30"
+                                                >
                                                     <Zap class="h-4 w-4 text-violet-600 dark:text-violet-400" />
                                                 </div>
                                                 <span>{{ brand.nama }}</span>
@@ -330,19 +311,26 @@ const formatDate = (dateString: string) => {
                                         </TableCell>
                                         <TableCell>
                                             <div class="flex items-center gap-2">
-                                                <div v-if="brand.logo_url" class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
-                                                    <img :src="brand.logo_url" :alt="brand.nama" class="w-6 h-6 object-contain" />
+                                                <div
+                                                    v-if="brand.logo_url"
+                                                    class="flex h-8 w-8 items-center justify-center rounded bg-gray-100 dark:bg-gray-800"
+                                                >
+                                                    <img :src="brand.logo_url" :alt="brand.nama" class="h-6 w-6 object-contain" />
                                                 </div>
-                                                <div v-else class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
+                                                <div v-else class="flex h-8 w-8 items-center justify-center rounded bg-gray-100 dark:bg-gray-800">
                                                     <Zap class="h-4 w-4 text-gray-400" />
                                                 </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <div class="flex items-center gap-2">
-                                                <div class="p-1 bg-gray-100 dark:bg-gray-800 rounded">
+                                                <div class="rounded bg-gray-100 p-1 dark:bg-gray-800">
                                                     <svg class="h-4 w-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                                                        <path
+                                                            fill-rule="evenodd"
+                                                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                                                            clip-rule="evenodd"
+                                                        ></path>
                                                     </svg>
                                                 </div>
                                                 <span class="text-sm">{{ formatDate(brand.created_at) }}</span>
@@ -350,24 +338,24 @@ const formatDate = (dateString: string) => {
                                         </TableCell>
                                         <TableCell>
                                             <div class="flex justify-center gap-2">
-                                                <Button 
-                                                    variant="ghost" 
+                                                <Button
+                                                    variant="ghost"
                                                     size="sm"
                                                     @click="openViewModal(brand)"
                                                     class="h-9 w-9 p-0 hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900/30"
                                                 >
                                                     <Eye class="h-4 w-4" />
                                                 </Button>
-                                                <Button 
-                                                    variant="ghost" 
+                                                <Button
+                                                    variant="ghost"
                                                     size="sm"
                                                     @click="openEditModal(brand)"
                                                     class="h-9 w-9 p-0 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900/30"
                                                 >
                                                     <Edit class="h-4 w-4" />
                                                 </Button>
-                                                <Button 
-                                                    variant="ghost" 
+                                                <Button
+                                                    variant="ghost"
                                                     size="sm"
                                                     @click="openDeleteModal(brand)"
                                                     class="h-9 w-9 p-0 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30"
@@ -382,32 +370,19 @@ const formatDate = (dateString: string) => {
                         </div>
 
                         <!-- Enhanced Pagination -->
-                        <div class="mt-6 flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                        <div class="mt-6 flex items-center justify-between rounded-lg bg-muted/30 p-4">
                             <div class="text-sm text-muted-foreground">
-                                Menampilkan <span class="font-medium">{{ brands.data.length }}</span> dari <span class="font-medium">{{ brands.total }}</span> brand
+                                Menampilkan <span class="font-medium">{{ brands.data.length }}</span> dari
+                                <span class="font-medium">{{ brands.total }}</span> brand
                             </div>
                             <div class="flex items-center gap-2">
-                                <Button 
-                                    v-if="brands.prev_page_url" 
-                                    variant="outline" 
-                                    size="sm"
-                                    @click="router.get(brands.prev_page_url)"
-                                    class="h-9"
-                                >
+                                <Button v-if="brands.prev_page_url" variant="outline" size="sm" @click="router.get(brands.prev_page_url)" class="h-9">
                                     ← Previous
                                 </Button>
-                                <div class="flex items-center gap-1 mx-2">
-                                    <span class="text-sm text-muted-foreground">
-                                        Page {{ brands.current_page }} of {{ brands.last_page }}
-                                    </span>
+                                <div class="mx-2 flex items-center gap-1">
+                                    <span class="text-sm text-muted-foreground"> Page {{ brands.current_page }} of {{ brands.last_page }} </span>
                                 </div>
-                                <Button 
-                                    v-if="brands.next_page_url" 
-                                    variant="outline" 
-                                    size="sm"
-                                    @click="router.get(brands.next_page_url)"
-                                    class="h-9"
-                                >
+                                <Button v-if="brands.next_page_url" variant="outline" size="sm" @click="router.get(brands.next_page_url)" class="h-9">
                                     Next →
                                 </Button>
                             </div>
@@ -426,30 +401,21 @@ const formatDate = (dateString: string) => {
             @success="handleModalSuccess"
         />
 
-        <BrandDeleteModal
-            :open="deleteModal.open"
-            :brand="deleteModal.brand"
-            @close="closeDeleteModal"
-            @success="handleModalSuccess"
-        />
+        <BrandDeleteModal :open="deleteModal.open" :brand="deleteModal.brand" @close="closeDeleteModal" @success="handleModalSuccess" />
     </AppLayout>
 </template>
 
 <style scoped>
 .analytics-card {
     border: none;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    background: linear-gradient(to bottom right, 
-        rgba(255, 255, 255, 1) 0%, 
-        rgba(219, 234, 254, 0.3) 50%, 
-        rgba(221, 214, 254, 0.3) 100%);
+    box-shadow:
+        0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    background: linear-gradient(to bottom right, rgba(255, 255, 255, 1) 0%, rgba(219, 234, 254, 0.3) 50%, rgba(221, 214, 254, 0.3) 100%);
 }
 
 .dark .analytics-card {
-    background: linear-gradient(to bottom right, 
-        rgba(17, 24, 39, 1) 0%, 
-        rgba(30, 58, 138, 0.1) 50%, 
-        rgba(88, 28, 135, 0.1) 100%);
+    background: linear-gradient(to bottom right, rgba(17, 24, 39, 1) 0%, rgba(30, 58, 138, 0.1) 50%, rgba(88, 28, 135, 0.1) 100%);
 }
 
 .analytics-card-header {

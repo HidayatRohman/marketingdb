@@ -172,48 +172,48 @@
     .text-enhanced {
         @apply text-gray-900 dark:text-gray-100;
     }
-    
+
     .text-muted-enhanced {
         @apply text-gray-600 dark:text-gray-300;
     }
-    
+
     .bg-enhanced {
         @apply bg-white dark:bg-gray-800;
     }
-    
+
     .border-enhanced {
         @apply border-gray-200 dark:border-gray-600;
     }
-    
+
     /* Better contrast for icons */
     .icon-enhanced {
         @apply text-gray-500 dark:text-gray-400;
     }
-    
+
     /* Better shadow for dark mode */
     .shadow-enhanced {
         @apply shadow-lg dark:shadow-gray-700/50;
     }
-    
+
     /* Select and option dark mode fix */
     select {
         color-scheme: light dark;
     }
-    
+
     .dark select {
         color-scheme: dark;
     }
-    
+
     select option {
         background-color: var(--background);
         color: var(--foreground);
     }
-    
+
     .dark select option {
         background-color: var(--background);
         color: var(--foreground);
     }
-    
+
     /* Line clamp utilities */
     .line-clamp-1 {
         overflow: hidden;
@@ -222,7 +222,7 @@
         -webkit-line-clamp: 1;
         line-clamp: 1;
     }
-    
+
     .line-clamp-2 {
         overflow: hidden;
         display: -webkit-box;
@@ -230,7 +230,7 @@
         -webkit-line-clamp: 2;
         line-clamp: 2;
     }
-    
+
     .line-clamp-3 {
         overflow: hidden;
         display: -webkit-box;
@@ -238,35 +238,37 @@
         -webkit-line-clamp: 3;
         line-clamp: 3;
     }
-    
+
     /* Chart wrapper styles */
     .chart-wrapper {
         position: relative;
         width: 100%;
         min-height: 400px;
     }
-    
+
     .analytics-card {
         background: white;
         border-radius: 12px;
-        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        box-shadow:
+            0 1px 3px 0 rgb(0 0 0 / 0.1),
+            0 1px 2px -1px rgb(0 0 0 / 0.1);
         border: 1px solid #e5e7eb;
     }
-    
+
     .dark .analytics-card {
         background: #1f2937;
         border-color: #374151;
     }
-    
+
     .analytics-card-header {
         padding: 1.5rem;
         border-bottom: 1px solid #e5e7eb;
     }
-    
+
     .dark .analytics-card-header {
         border-bottom-color: #374151;
     }
-    
+
     .analytics-card-title {
         display: flex;
         align-items: center;
@@ -276,22 +278,22 @@
         color: #111827;
         margin: 0;
     }
-    
+
     .dark .analytics-card-title {
         color: #f9fafb;
     }
-    
+
     .analytics-card-subtitle {
         margin-top: 0.5rem;
         color: #6b7280;
         font-size: 0.875rem;
         margin-bottom: 0;
     }
-    
+
     .dark .analytics-card-subtitle {
         color: #9ca3af;
     }
-    
+
     .analytics-card-content {
         padding: 1.5rem;
     }

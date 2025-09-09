@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useForm } from '@inertiajs/vue3';
 import { AlertTriangle, Loader2 } from 'lucide-vue-next';
 
@@ -46,12 +46,12 @@ const form = useForm({});
 
 const deleteMitra = () => {
     if (!props.mitra?.id) return;
-    
+
     form.delete(`/mitras/${props.mitra.id}`, {
         onSuccess: () => {
             emit('success');
             emit('close');
-        }
+        },
     });
 };
 </script>
@@ -65,18 +65,16 @@ const deleteMitra = () => {
                     Hapus Mitra
                 </DialogTitle>
                 <DialogDescription class="text-left">
-                    Apakah Anda yakin ingin menghapus mitra <strong>{{ mitra?.nama }}</strong>?
-                    <br><br>
-                    <span class="text-destructive font-medium">
-                        Tindakan ini tidak dapat dibatalkan.
-                    </span>
+                    Apakah Anda yakin ingin menghapus mitra <strong>{{ mitra?.nama }}</strong
+                    >? <br /><br />
+                    <span class="font-medium text-destructive"> Tindakan ini tidak dapat dibatalkan. </span>
                 </DialogDescription>
             </DialogHeader>
 
-            <div v-if="mitra" class="space-y-3 py-4 px-4 bg-muted/30 rounded-lg">
+            <div v-if="mitra" class="space-y-3 rounded-lg bg-muted/30 px-4 py-4">
                 <div class="space-y-1">
                     <p class="text-sm font-medium">Detail Mitra:</p>
-                    <div class="text-sm text-muted-foreground space-y-1">
+                    <div class="space-y-1 text-sm text-muted-foreground">
                         <p><span class="font-medium">Nama:</span> {{ mitra.nama }}</p>
                         <p><span class="font-medium">Telepon:</span> {{ mitra.no_telp }}</p>
                         <p><span class="font-medium">Brand:</span> {{ mitra.brand?.nama || 'N/A' }}</p>
@@ -86,20 +84,8 @@ const deleteMitra = () => {
             </div>
 
             <DialogFooter>
-                <Button
-                    type="button"
-                    variant="outline"
-                    @click="$emit('close')"
-                    :disabled="form.processing"
-                >
-                    Batal
-                </Button>
-                <Button
-                    variant="destructive"
-                    @click="deleteMitra"
-                    :disabled="form.processing"
-                    class="min-w-[80px]"
-                >
+                <Button type="button" variant="outline" @click="$emit('close')" :disabled="form.processing"> Batal </Button>
+                <Button variant="destructive" @click="deleteMitra" :disabled="form.processing" class="min-w-[80px]">
                     <Loader2 v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" />
                     Hapus
                 </Button>
