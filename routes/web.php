@@ -69,7 +69,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role.access:view')->group(function () {
         Route::get('mitras/export', [MitraController::class, 'export'])->name('mitras.export');
         Route::get('mitras/template', [MitraController::class, 'downloadTemplate'])->name('mitras.template');
-        Route::get('mitras/guide', [MitraController::class, 'downloadGuide'])->name('mitras.guide');
     });
     
     Route::middleware('role.access:create')->group(function () {

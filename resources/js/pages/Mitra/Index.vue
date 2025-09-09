@@ -340,7 +340,7 @@ const isExporting = ref(false);
 const isImporting = ref(false);
 const importFile = ref<File | null>(null);
 
-const exportData = async (format: 'csv' | 'xlsx') => {
+const exportData = async () => {
     try {
         isExporting.value = true;
         
@@ -354,20 +354,54 @@ const exportData = async (format: 'csv' | 'xlsx') => {
                 params.append(key, String(value));
             }
         });
-        params.append('export', format);
         
-        // Use window.location for authenticated download - most reliable
-        const url = `/mitras/export?${params.toString()}`;
-        window.location.href = url;
+        // Use fetch API for authenticated request with proper blob handling
+        const response = await fetch(`/mitras/export?${params.toString()}`, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Export failed with status: ${response.status}`);
+        }
+
+        // Get the blob
+        const blob = await response.blob();
+        
+        // Create filename from Content-Disposition header or use default
+        let filename = 'data-mitra.xlsx';
+        const contentDisposition = response.headers.get('content-disposition');
+        if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (filenameMatch && filenameMatch[1]) {
+                filename = filenameMatch[1].replace(/['"]/g, '');
+            }
+        }
+        
+        // Create download link and trigger download
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.style.display = 'none';
+        
+        // Append to body, click, and remove
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        // Clean up object URL
+        window.URL.revokeObjectURL(url);
         
     } catch (error) {
         console.error('Export failed:', error);
         alert('Export gagal. Silakan coba lagi.');
     } finally {
-        // Reset loading state after a short delay
-        setTimeout(() => {
-            isExporting.value = false;
-        }, 2000);
+        isExporting.value = false;
     }
 };
 
@@ -376,15 +410,14 @@ const handleFileSelect = (event: Event) => {
     const file = target.files?.[0];
     
     if (file) {
-        // Validate file type
+        // Validate file type - only XLSX
         const allowedTypes = [
-            'text/csv',
-            'application/vnd.ms-excel',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel'
         ];
         
-        if (!allowedTypes.includes(file.type)) {
-            alert('Format file tidak didukung. Silakan pilih file CSV atau XLSX.');
+        if (!allowedTypes.includes(file.type) && !file.name.toLowerCase().endsWith('.xlsx')) {
+            alert('Format file tidak didukung. Silakan pilih file XLSX.');
             return;
         }
         
@@ -410,13 +443,21 @@ const importData = async () => {
             },
         });
         
-        if (response.ok) {
-            const result = await response.json();
-            alert(`Import berhasil! ${result.imported || 0} data berhasil diimport.`);
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+            let message = result.message;
+            if (result.errors && result.errors.length > 0) {
+                message += '\n\nDetail error:\n' + result.errors.slice(0, 5).join('\n');
+                if (result.errors.length > 5) {
+                    message += `\n... dan ${result.errors.length - 5} error lainnya.`;
+                }
+            }
+            alert(message);
             handleModalSuccess(); // Refresh data
         } else {
-            const error = await response.json();
-            alert(`Import gagal: ${error.message || 'Terjadi kesalahan'}`);
+            const errorMessage = result.message || 'Terjadi kesalahan tidak dikenal';
+            alert(`Import gagal: ${errorMessage}`);
         }
         
     } catch (error) {
@@ -437,15 +478,15 @@ const triggerFileInput = () => {
     fileInput?.click();
 };
 
-const downloadTemplate = async (format: 'csv' | 'xlsx') => {
+const downloadTemplate = async () => {
     try {
         // Create download link for template
-        const url = `/mitras/template?format=${format}`;
+        const url = `/mitras/template`;
         
         // Create temporary link and trigger download
         const link = document.createElement('a');
         link.href = url;
-        link.download = `mitra-template.${format}`;
+        link.download = 'template-import-mitra.xlsx';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -453,25 +494,6 @@ const downloadTemplate = async (format: 'csv' | 'xlsx') => {
     } catch (error) {
         console.error('Template download failed:', error);
         alert('Download template gagal. Silakan coba lagi.');
-    }
-};
-
-const downloadGuide = async () => {
-    try {
-        // Create download link for guide
-        const url = `/mitras/guide`;
-        
-        // Create temporary link and trigger download
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'panduan-import-mitra.md';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-    } catch (error) {
-        console.error('Guide download failed:', error);
-        alert('Download panduan gagal. Silakan coba lagi.');
     }
 };
 </script>
@@ -495,62 +517,24 @@ const downloadGuide = async () => {
                             </p>
                         </div>
                         <div class="flex items-center gap-3">
-                            <!-- Export Dropdown -->
-                            <div class="relative group">
-                                <Button 
-                                    :disabled="isExporting"
-                                    class="bg-gradient-to-r from-blue-500 to-blue-600 text-white border border-blue-600 hover:from-blue-600 hover:to-blue-700 font-semibold shadow-lg px-4 py-2 transition-all duration-200"
-                                >
-                                    <Download class="mr-2 h-4 w-4" />
-                                    {{ isExporting ? 'Exporting...' : 'Export' }}
-                                    <ChevronDown class="ml-2 h-4 w-4" />
-                                </Button>
-                                
-                                <!-- Dropdown Menu -->
-                                <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                    <div class="p-1">
-                                        <button
-                                            @click="exportData('csv')"
-                                            :disabled="isExporting"
-                                            class="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md flex items-center gap-2 disabled:opacity-50"
-                                        >
-                                            <FileSpreadsheet class="h-4 w-4" />
-                                            Export sebagai CSV
-                                        </button>
-                                        <button
-                                            @click="exportData('xlsx')"
-                                            :disabled="isExporting"
-                                            class="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md flex items-center gap-2 disabled:opacity-50"
-                                        >
-                                            <FileSpreadsheet class="h-4 w-4" />
-                                            Export sebagai XLSX
-                                        </button>
-                                        <hr class="my-1 border-gray-200 dark:border-gray-600" />
-                                        <button
-                                            @click="downloadTemplate('xlsx')"
-                                            class="w-full text-left px-3 py-2 text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/50 rounded-md flex items-center gap-2"
-                                        >
-                                            <Download class="h-4 w-4" />
-                                            Download Template XLSX
-                                        </button>
-                                        <button
-                                            @click="downloadTemplate('csv')"
-                                            class="w-full text-left px-3 py-2 text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/50 rounded-md flex items-center gap-2"
-                                        >
-                                            <Download class="h-4 w-4" />
-                                            Download Template CSV
-                                        </button>
-                                        <hr class="my-1 border-gray-200 dark:border-gray-600" />
-                                        <button
-                                            @click="downloadGuide"
-                                            class="w-full text-left px-3 py-2 text-sm text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/50 rounded-md flex items-center gap-2"
-                                        >
-                                            <FileSpreadsheet class="h-4 w-4" />
-                                            Panduan Import Lengkap
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- Export Button -->
+                            <Button 
+                                @click="exportData"
+                                :disabled="isExporting"
+                                class="bg-gradient-to-r from-blue-500 to-blue-600 text-white border border-blue-600 hover:from-blue-600 hover:to-blue-700 font-semibold shadow-lg px-4 py-2 transition-all duration-200"
+                            >
+                                <Download class="mr-2 h-4 w-4" />
+                                {{ isExporting ? 'Exporting...' : 'Export XLSX' }}
+                            </Button>
+
+                            <!-- Template Download Button -->
+                            <Button 
+                                @click="downloadTemplate"
+                                class="bg-gradient-to-r from-green-500 to-green-600 text-white border border-green-600 hover:from-green-600 hover:to-green-700 font-semibold shadow-lg px-4 py-2 transition-all duration-200"
+                            >
+                                <FileSpreadsheet class="mr-2 h-4 w-4" />
+                                Template XLSX
+                            </Button>
 
                             <!-- Import Button with Tooltip -->
                             <div class="relative group">
@@ -560,7 +544,7 @@ const downloadGuide = async () => {
                                     class="bg-gradient-to-r from-orange-500 to-orange-600 text-white border border-orange-600 hover:from-orange-600 hover:to-orange-700 font-semibold shadow-lg px-4 py-2 transition-all duration-200"
                                 >
                                     <Upload class="mr-2 h-4 w-4" />
-                                    {{ isImporting ? 'Importing...' : 'Import' }}
+                                    {{ isImporting ? 'Importing...' : 'Import XLSX' }}
                                 </Button>
 
                                 <!-- Tooltip -->
@@ -568,7 +552,7 @@ const downloadGuide = async () => {
                                     <div class="text-center">
                                         <div class="font-semibold mb-1">Import Data Mitra</div>
                                         <div class="text-gray-300">
-                                            Format: CSV, XLSX<br/>
+                                            Format: XLSX saja<br/>
                                             Download template terlebih dahulu
                                         </div>
                                     </div>
@@ -581,7 +565,7 @@ const downloadGuide = async () => {
                             <input
                                 id="import-file"
                                 type="file"
-                                accept=".csv,.xlsx,.xls"
+                                accept=".xlsx,.xls"
                                 @change="handleFileSelect"
                                 class="hidden"
                             />
