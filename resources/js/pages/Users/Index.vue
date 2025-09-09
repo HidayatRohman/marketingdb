@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import UserModal from '@/components/UserModal.vue';
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue';
-import { Head, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { ref, watch, computed } from 'vue';
 import { Search, Plus, Edit, Trash2, Eye, Users, Filter, MoreHorizontal } from 'lucide-vue-next';
 
 interface User {
@@ -34,6 +34,14 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const page = usePage();
+const auth = computed(() => page.props.auth as any);
+
+// Check if current user is admin (should hide actions)
+const isAdmin = computed(() => {
+    return auth.value?.user?.role === 'admin';
+});
 
 const search = ref(props.filters.search || '');
 const role = ref(props.filters.role || '');
@@ -162,7 +170,9 @@ const formatDate = (dateString: string) => {
                                 Kelola pengguna sistem dengan mudah dan efisien
                             </p>
                         </div>
+                        <!-- Hide create button for admin users -->
                         <Button 
+                            v-if="!isAdmin"
                             @click="openCreateModal"
                             class="bg-white text-purple-600 hover:bg-purple-50 font-semibold shadow-lg"
                         >
@@ -332,7 +342,9 @@ const formatDate = (dateString: string) => {
                                             >
                                                 <Eye class="h-4 w-4" />
                                             </Button>
+                                            <!-- Hide Edit and Delete buttons for admin users -->
                                             <Button 
+                                                v-if="!isAdmin"
                                                 variant="ghost" 
                                                 size="sm"
                                                 @click="openEditModal(user)"
@@ -341,6 +353,7 @@ const formatDate = (dateString: string) => {
                                                 <Edit class="h-4 w-4" />
                                             </Button>
                                             <Button 
+                                                v-if="!isAdmin"
                                                 variant="ghost" 
                                                 size="sm"
                                                 @click="openDeleteModal(user)"
