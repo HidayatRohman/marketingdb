@@ -322,22 +322,52 @@ class MitraController extends Controller
      */
     public function import(Request $request)
     {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls|max:10240' // Max 10MB
-        ], [
-            'file.required' => 'File import wajib dipilih.',
-            'file.mimes' => 'File harus berformat XLSX atau XLS.',
-            'file.max' => 'Ukuran file maksimal 10MB.'
-        ]);
-
-        $file = $request->file('file');
+        // Force JSON response for API calls
+        $request->headers->set('Accept', 'application/json');
         
         try {
+            $request->validate([
+                'file' => 'required|mimes:xlsx,xls|max:10240' // Max 10MB
+            ], [
+                'file.required' => 'File import wajib dipilih.',
+                'file.mimes' => 'File harus berformat XLSX atau XLS.',
+                'file.max' => 'Ukuran file maksimal 10MB.'
+            ]);
+
+            $file = $request->file('file');
+            
+            if (!$file) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File import tidak ditemukan.',
+                    'imported' => 0,
+                    'skipped' => 0,
+                    'errors' => ['File import tidak ditemukan.'],
+                    'warnings' => [],
+                    'total_processed' => 0
+                ], 400);
+            }
+            
             $importService = app(\App\Services\MitraImportService::class);
             $result = $importService->import($file);
             return response()->json($result);
             
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal: ' . implode(', ', $e->validator->errors()->all()),
+                'imported' => 0,
+                'skipped' => 0,
+                'errors' => $e->validator->errors()->all(),
+                'warnings' => [],
+                'total_processed' => 0
+            ], 422);
         } catch (\Exception $e) {
+            \Log::error('Import error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'file' => $request->hasFile('file') ? $request->file('file')->getClientOriginalName() : 'No file'
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Import gagal: ' . $e->getMessage(),

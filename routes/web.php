@@ -45,15 +45,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Mitra Export/Import - MUST BE BEFORE dynamic routes to prevent conflicts
+    // All users can export, download template, and import
     Route::middleware('role.access:view')->group(function () {
         Route::get('mitras/export', [MitraController::class, 'export'])->name('mitras.export');
         Route::get('mitras/template', [MitraController::class, 'downloadTemplate'])->name('mitras.template');
+        Route::post('mitras/import', [MitraController::class, 'import'])->name('mitras.import');
     });
     
     Route::middleware('role.access:create')->group(function () {
         Route::get('mitras/create', [MitraController::class, 'create'])->name('mitras.create');
         Route::post('mitras', [MitraController::class, 'store'])->name('mitras.store');
-        Route::post('mitras/import', [MitraController::class, 'import'])->name('mitras.import');
     });
 
     // Mitras Management - Role-based access with data filtering

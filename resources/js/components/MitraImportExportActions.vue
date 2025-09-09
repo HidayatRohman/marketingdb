@@ -326,8 +326,24 @@ const handleImport = async (file: File) => {
             body: formData,
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json',
             },
         });
+
+        if (!response.ok) {
+            // Try to get JSON error response, fallback to text
+            let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch (e) {
+                // If JSON parsing fails, get text response
+                const textResponse = await response.text();
+                console.error('Non-JSON response received:', textResponse);
+                throw new Error(`Server returned HTML instead of JSON: ${errorMessage}`);
+            }
+            throw new Error(errorMessage);
+        }
 
         const result = await response.json();
         importResult.value = result;
