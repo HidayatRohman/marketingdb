@@ -37,7 +37,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role.access:edit')->group(function () {
         Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
-        Route::patch('users/{user}', [UserController::class, 'update'])->name('users.update');
     });
     
     Route::middleware('role.access:destroy')->group(function () {
@@ -66,7 +65,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role.access:edit')->group(function () {
         Route::get('mitras/{mitra}/edit', [MitraController::class, 'edit'])->name('mitras.edit');
         Route::put('mitras/{mitra}', [MitraController::class, 'update'])->name('mitras.update');
-        Route::patch('mitras/{mitra}', [MitraController::class, 'update'])->name('mitras.update');
     });
     
     Route::middleware('role.access:destroy')->group(function () {
@@ -87,7 +85,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role.access:edit')->group(function () {
         Route::get('brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
         Route::put('brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
-        Route::patch('brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
     });
     
     Route::middleware('role.access:destroy')->group(function () {
@@ -108,7 +105,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role.access:edit')->group(function () {
         Route::get('labels/{label}/edit', [LabelController::class, 'edit'])->name('labels.edit');
         Route::put('labels/{label}', [LabelController::class, 'update'])->name('labels.update');
-        Route::patch('labels/{label}', [LabelController::class, 'update'])->name('labels.update');
     });
     
     Route::middleware('role.access:destroy')->group(function () {
