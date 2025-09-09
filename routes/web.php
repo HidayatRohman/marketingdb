@@ -77,6 +77,23 @@ Route::get('/debug-export', function() {
 // Debug mitra export (without middleware for testing)
 Route::get('/debug-mitra-export', [\App\Http\Controllers\MitraController::class, 'export']);
 
+// Direct test for authenticated export
+Route::get('/test-auth-export', function() {
+    $user = auth()->user();
+    if (!$user) {
+        return response()->json([
+            'error' => 'Not authenticated',
+            'message' => 'Please login first'
+        ]);
+    }
+    
+    return response()->json([
+        'authenticated' => true,
+        'user' => $user->only(['id', 'name', 'email', 'role']),
+        'message' => 'User is authenticated, export should work'
+    ]);
+});
+
 // Test route for debugging
 Route::match(['GET', 'POST'], '/test-site-settings', [TestSiteSettingsController::class, 'test'])->withoutMiddleware(['web']);
 
