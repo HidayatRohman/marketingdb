@@ -13,6 +13,7 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
+        // Admin utama
         User::create([
             'name' => 'Admin User',
             'email' => 'admin@marketingdb.com',
@@ -21,11 +22,27 @@ class AdminSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
-        // Buat additional admin untuk testing
+        // Super Admin
+        User::create([
+            'name' => 'Super Admin',
+            'email' => 'superadmin@marketingdb.com',
+            'password' => Hash::make('password'),
+            'role' => 'superAdmin',
+            'email_verified_at' => now(),
+        ]);
+
+        // Tambahkan 3 admin untuk testing
         User::factory()
             ->count(3)
             ->create([
                 'role' => 'admin',
+            ]);
+
+        // Tambahkan 5 marketing untuk testing
+        User::factory()
+            ->count(5)
+            ->create([
+                'role' => 'marketing',
             ]);
     }
 }
