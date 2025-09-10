@@ -278,6 +278,14 @@ const formatDate = (dateString: string) => {
     });
 };
 
+// Function to open date picker
+const openDatePicker = (inputId: string) => {
+    const inputElement = document.getElementById(inputId) as HTMLInputElement;
+    if (inputElement && inputElement.showPicker) {
+        inputElement.showPicker();
+    }
+};
+
 // Function to format phone number for WhatsApp
 const formatWhatsAppNumber = (phoneNumber: string) => {
     // Remove all non-numeric characters
@@ -530,7 +538,19 @@ const getFilterParams = () => {
                                     <Calendar class="h-4 w-4" />
                                     Dari Tanggal
                                 </label>
-                                <Input type="date" v-model="periodeStart" class="h-9" />
+                                <div class="relative">
+                                    <Input 
+                                        id="periode-start-input"
+                                        type="date" 
+                                        v-model="periodeStart" 
+                                        class="h-9 cursor-pointer w-full pr-10" 
+                                        placeholder="Pilih tanggal mulai"
+                                    />
+                                    <Calendar 
+                                        class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground cursor-pointer hover:text-foreground" 
+                                        @click="openDatePicker('periode-start-input')"
+                                    />
+                                </div>
                             </div>
 
                             <!-- Periode End -->
@@ -539,7 +559,19 @@ const getFilterParams = () => {
                                     <Calendar class="h-4 w-4" />
                                     Sampai Tanggal
                                 </label>
-                                <Input type="date" v-model="periodeEnd" class="h-9" />
+                                <div class="relative">
+                                    <Input 
+                                        id="periode-end-input"
+                                        type="date" 
+                                        v-model="periodeEnd" 
+                                        class="h-9 cursor-pointer w-full pr-10" 
+                                        placeholder="Pilih tanggal akhir"
+                                    />
+                                    <Calendar 
+                                        class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground cursor-pointer hover:text-foreground" 
+                                        @click="openDatePicker('periode-end-input')"
+                                    />
+                                </div>
                             </div>
 
                             <!-- Marketing Filter -->

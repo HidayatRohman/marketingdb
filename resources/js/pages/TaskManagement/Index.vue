@@ -940,23 +940,33 @@ const canDeleteTask = (task: Task) => {
 
                                 <div>
                                     <Label for="start_date" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Tanggal Mulai</Label>
-                                    <Input
-                                        id="start_date"
-                                        type="date"
-                                        v-model="form.start_date"
-                                        class="mt-2 border-slate-300 bg-white text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-blue-400"
-                                    />
+                                    <div class="relative">
+                                        <Input
+                                            id="start_date"
+                                            type="date"
+                                            v-model="form.start_date"
+                                            class="mt-2 w-full border-slate-300 bg-white pr-10 text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-blue-400"
+                                        />
+                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                                            <CalendarIcon class="h-5 w-5 text-slate-400" />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div>
                                     <Label for="due_date" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Tanggal Deadline *</Label>
-                                    <Input
-                                        id="due_date"
-                                        type="date"
-                                        v-model="form.due_date"
-                                        required
-                                        class="mt-2 border-slate-300 bg-white text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-blue-400"
-                                    />
+                                    <div class="relative">
+                                        <Input
+                                            id="due_date"
+                                            type="date"
+                                            v-model="form.due_date"
+                                            required
+                                            class="mt-2 w-full border-slate-300 bg-white pr-10 text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-blue-400"
+                                        />
+                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                                            <CalendarIcon class="h-5 w-5 text-slate-400" />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div>

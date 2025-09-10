@@ -404,6 +404,14 @@ const getArcPath = (label: LabelDistribution, index: number) => {
     return `M ${centerX},${centerY} L ${startX},${startY} A ${radius},${radius} 0 ${largeArcFlag},1 ${endX},${endY} Z`;
 };
 
+// Function to open date picker
+const openDatePicker = (inputId: string) => {
+    const inputElement = document.getElementById(inputId) as HTMLInputElement;
+    if (inputElement && inputElement.showPicker) {
+        inputElement.showPicker();
+    }
+};
+
 onMounted(() => {
     // Set default date range to current month
     const now = new Date();
@@ -554,13 +562,37 @@ onMounted(() => {
                                         <!-- Custom Start Date -->
                                         <div class="form-group">
                                             <Label for="custom-start-date" class="form-label"> Tanggal Mulai: </Label>
-                                            <Input id="custom-start-date" v-model="startDate" type="date" class="form-input-date" />
+                                            <div class="relative">
+                                                <Input 
+                                                    id="custom-start-date" 
+                                                    v-model="startDate" 
+                                                    type="date" 
+                                                    class="form-input-date cursor-pointer w-full pr-10" 
+                                                    placeholder="Pilih tanggal mulai"
+                                                />
+                                                <Calendar 
+                                                    class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700" 
+                                                    @click="openDatePicker('custom-start-date')"
+                                                />
+                                            </div>
                                         </div>
 
                                         <!-- Custom End Date -->
                                         <div class="form-group">
                                             <Label for="custom-end-date" class="form-label"> Tanggal Akhir: </Label>
-                                            <Input id="custom-end-date" v-model="endDate" type="date" class="form-input-date" />
+                                            <div class="relative">
+                                                <Input 
+                                                    id="custom-end-date" 
+                                                    v-model="endDate" 
+                                                    type="date" 
+                                                    class="form-input-date cursor-pointer w-full pr-10" 
+                                                    placeholder="Pilih tanggal akhir"
+                                                />
+                                                <Calendar 
+                                                    class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700" 
+                                                    @click="openDatePicker('custom-end-date')"
+                                                />
+                                            </div>
                                         </div>
 
                                         <!-- Marketing Filter Dropdown -->

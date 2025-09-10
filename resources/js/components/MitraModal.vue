@@ -342,12 +342,17 @@ const chatLabels = {
                                     {{ formatDate(form.tanggal_lead) }}
                                 </span>
                             </div>
-                            <Input
-                                v-else
-                                id="tanggal_lead"
-                                v-model="form.tanggal_lead"
-                                type="date"
-                                :class="{ 'border-destructive': form.errors.tanggal_lead }"
+                            <div v-else class="relative">
+                                <Input
+                                    id="tanggal_lead"
+                                    v-model="form.tanggal_lead"
+                                    type="date"
+                                    class="cursor-pointer w-full pr-10"
+                                    placeholder="Pilih tanggal lead"
+                                    :class="{ 'border-destructive': form.errors.tanggal_lead }"
+                                />
+                                <Calendar class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                            </div>
                             />
                             <p v-if="form.errors.tanggal_lead" class="text-sm text-destructive">
                                 {{ form.errors.tanggal_lead }}

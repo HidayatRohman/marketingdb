@@ -1222,12 +1222,17 @@ const getStatusIcon = (status: string) => {
                             <!-- Date Filter -->
                             <div>
                                 <Label for="dateFilter">Tanggal</Label>
-                                <Input
-                                    id="dateFilter"
-                                    type="date"
-                                    :value="selectedDate.toISOString().split('T')[0]"
-                                    @change="(e: Event) => selectDate(new Date((e.target as HTMLInputElement).value))"
-                                />
+                                <div class="relative">
+                                    <Input
+                                        id="dateFilter"
+                                        type="date"
+                                        class="cursor-pointer w-full pr-10"
+                                        placeholder="Pilih tanggal"
+                                        :value="selectedDate.toISOString().split('T')[0]"
+                                        @change="(e: Event) => selectDate(new Date((e.target as HTMLInputElement).value))"
+                                    />
+                                    <Calendar class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                                </div>
                             </div>
 
                             <!-- Status Filter -->
@@ -1508,13 +1513,32 @@ const getStatusIcon = (status: string) => {
 
                             <div>
                                 <Label for="start_date">Tanggal Mulai</Label>
-                                <Input id="start_date" v-model="form.start_date" type="date" />
+                                <div class="relative">
+                                    <Input 
+                                        id="start_date" 
+                                        v-model="form.start_date" 
+                                        type="date" 
+                                        class="cursor-pointer w-full pr-10"
+                                        placeholder="Pilih tanggal mulai"
+                                    />
+                                    <Calendar class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                                </div>
                                 <span v-if="form.errors.start_date" class="text-sm text-red-600">{{ form.errors.start_date }}</span>
                             </div>
 
                             <div>
                                 <Label for="due_date">Tanggal Deadline *</Label>
-                                <Input id="due_date" v-model="form.due_date" type="date" required />
+                                <div class="relative">
+                                    <Input 
+                                        id="due_date" 
+                                        v-model="form.due_date" 
+                                        type="date" 
+                                        class="cursor-pointer w-full pr-10"
+                                        placeholder="Pilih tanggal deadline"
+                                        required 
+                                    />
+                                    <Calendar class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                                </div>
                                 <span v-if="form.errors.due_date" class="text-sm text-red-600">{{ form.errors.due_date }}</span>
                             </div>
 
