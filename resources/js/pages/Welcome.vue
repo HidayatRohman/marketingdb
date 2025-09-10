@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { dashboard, login, register } from '@/routes';
 import { Head, Link } from '@inertiajs/vue3';
-import { Briefcase, Building2, ChevronLeft, ChevronRight, Play, TrendingUp, Users } from 'lucide-vue-next';
+import { Briefcase, Building2, ChevronLeft, ChevronRight, Menu, Play, TrendingUp, Users, X } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 interface Brand {
@@ -17,10 +17,23 @@ interface Props {
 
 const props = defineProps<Props>();
 
+// Mobile menu state
+const isMobileMenuOpen = ref(false);
+
 // Brand slider state
 const currentSlide = ref(0);
 const isAutoPlay = ref(true);
 let autoPlayInterval: number | null = null;
+
+// Mobile menu toggle
+const toggleMobileMenu = () => {
+    isMobileMenuOpen.value = !isMobileMenuOpen.value;
+};
+
+// Close mobile menu when clicking outside
+const closeMobileMenu = () => {
+    isMobileMenuOpen.value = false;
+};
 
 // Slider functionality
 const nextSlide = () => {
@@ -68,12 +81,21 @@ const stopAutoPlay = () => {
     }
 };
 
+// Handle escape key
+const handleEscapeKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && isMobileMenuOpen.value) {
+        closeMobileMenu();
+    }
+};
+
 onMounted(() => {
     startAutoPlay();
+    document.addEventListener('keydown', handleEscapeKey);
 });
 
 onUnmounted(() => {
     stopAutoPlay();
+    document.removeEventListener('keydown', handleEscapeKey);
 });
 </script>
 
@@ -85,6 +107,7 @@ onUnmounted(() => {
 
     <!-- Main Container with Soft Blue-Orange Gradient Background -->
     <div class="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-300 via-blue-200 to-orange-300">
+        
         <!-- Decorative Elements -->
         <div class="absolute top-0 left-0 h-full w-full">
             <!-- Floating circles for decoration with more transparency -->
@@ -95,21 +118,22 @@ onUnmounted(() => {
         </div>
 
         <!-- Header Navigation -->
-        <header class="relative z-10 border-b border-white/10 bg-black/5 backdrop-blur-sm">
+        <header class="relative z-20 border-b border-white/10 bg-black/5 backdrop-blur-sm">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="flex h-16 items-center justify-between">
-                    <!-- Logo -->
-                    <div class="flex items-center space-x-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 bg-white/15 p-1 backdrop-blur-sm">
+                <div class="flex h-16 items-center justify-between w-full">
+                    <!-- Logo - Always visible -->
+                    <div class="flex items-center space-x-2">
+                        <div class="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg border border-white/20 bg-white/15 p-1 backdrop-blur-sm">
                             <img src="/images/partner-bisnismu-logo.png" alt="Partner Bisnismu" class="h-full w-full object-contain" />
                         </div>
-                        <div class="hidden sm:block">
+                        <!-- Hide text on mobile, show on desktop -->
+                        <div class="mobile-logo-text">
                             <h1 class="text-xl font-bold text-gray-700">Partner Bisnismu</h1>
                         </div>
                     </div>
 
-                    <!-- Auth Buttons -->
-                    <div class="flex items-center space-x-4">
+                    <!-- Desktop Auth Buttons - Hide on mobile -->
+                    <div class="desktop-buttons items-center space-x-4">
                         <Link
                             v-if="$page.props.auth.user"
                             :href="dashboard()"
@@ -118,12 +142,64 @@ onUnmounted(() => {
                             Dashboard
                         </Link>
                         <template v-else>
-                            <Link :href="login()" class="hidden font-medium text-gray-600 transition-colors hover:text-gray-800 sm:block">
+                            <Link :href="login()" class="font-medium text-gray-600 transition-colors hover:text-gray-800">
                                 Log In
                             </Link>
                             <Link
                                 :href="register()"
                                 class="rounded-full border border-white/20 bg-white/15 px-6 py-2 font-medium text-gray-700 backdrop-blur-sm transition-all duration-300 hover:bg-white/25"
+                            >
+                                Join Now
+                            </Link>
+                        </template>
+                    </div>
+
+                    <!-- Mobile Hamburger Button - Show only on mobile -->
+                    <button
+                        @click="toggleMobileMenu"
+                        class="mobile-hamburger items-center justify-center h-10 w-10 rounded-lg border border-white/20 bg-white/15 backdrop-blur-sm transition-all duration-300 hover:bg-white/25"
+                        :class="{ 'bg-white/25': isMobileMenuOpen }"
+                        type="button"
+                        aria-label="Toggle mobile menu"
+                    >
+                        <Menu v-if="!isMobileMenuOpen" class="h-6 w-6 text-gray-700" />
+                        <X v-else class="h-6 w-6 text-gray-700" />
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Overlay - Only show on mobile when menu is open -->
+                <div 
+                    v-if="isMobileMenuOpen"
+                    @click="closeMobileMenu"
+                    class="sm:hidden fixed inset-0 top-16 bg-black/20 backdrop-blur-sm z-10"
+                ></div>
+
+                <!-- Mobile Menu Dropdown - Only show on mobile when menu is open -->
+                <div 
+                    v-if="isMobileMenuOpen"
+                    class="sm:hidden absolute left-0 right-0 top-full bg-white/90 backdrop-blur-md border-b border-white/20 shadow-lg z-20"
+                >
+                    <div class="px-4 py-4 space-y-3">
+                        <Link
+                            v-if="$page.props.auth.user"
+                            :href="dashboard()"
+                            @click="isMobileMenuOpen = false"
+                            class="block w-full text-center rounded-lg border border-blue-200 bg-blue-50 px-6 py-3 font-medium text-blue-700 transition-all duration-300 hover:bg-blue-100"
+                        >
+                            Dashboard
+                        </Link>
+                        <template v-else>
+                            <Link 
+                                :href="login()" 
+                                @click="isMobileMenuOpen = false"
+                                class="block w-full text-center rounded-lg border border-gray-200 bg-gray-50 px-6 py-3 font-medium text-gray-700 transition-all duration-300 hover:bg-gray-100"
+                            >
+                                Log In
+                            </Link>
+                            <Link
+                                :href="register()"
+                                @click="isMobileMenuOpen = false"
+                                class="block w-full text-center rounded-lg border border-orange-200 bg-gradient-to-r from-orange-50 to-orange-100 px-6 py-3 font-medium text-orange-700 transition-all duration-300 hover:from-orange-100 hover:to-orange-200"
                             >
                                 Join Now
                             </Link>
@@ -399,5 +475,30 @@ html {
     line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 639px) {
+    .mobile-hamburger {
+        display: flex !important;
+    }
+    .desktop-buttons {
+        display: none !important;
+    }
+    .mobile-logo-text {
+        display: none !important;
+    }
+}
+
+@media (min-width: 640px) {
+    .mobile-hamburger {
+        display: none !important;
+    }
+    .desktop-buttons {
+        display: flex !important;
+    }
+    .mobile-logo-text {
+        display: block !important;
+    }
 }
 </style>
