@@ -160,31 +160,40 @@ const formatDate = (dateString: string) => {
     <Head title="Users" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-8">
+        <div class="mx-6 mt-6 space-y-6">
             <!-- Header Section -->
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 text-white">
+            <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-4 text-white sm:p-6">
                 <div class="relative z-10">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h1 class="mb-2 flex items-center gap-3 text-4xl font-bold tracking-tight">
-                                <Users class="h-10 w-10" />
+                    <!-- Header Content - Responsive Layout -->
+                    <div class="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+                        <!-- Title Section -->
+                        <div class="flex-1">
+                            <h1 class="mb-2 flex items-center gap-2 text-xl font-bold tracking-tight sm:gap-3 sm:text-2xl lg:text-3xl">
+                                <Users class="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
                                 Manajemen Users
                             </h1>
-                            <p class="text-xl text-purple-100">Kelola pengguna sistem dengan mudah dan efisien</p>
+                            <p class="text-sm text-purple-100 sm:text-base lg:text-lg">Kelola pengguna sistem dengan mudah dan efisien</p>
                         </div>
-                        <!-- Hide create button for admin users -->
-                        <Button v-if="!isAdmin" @click="openCreateModal" class="bg-white font-semibold text-purple-600 shadow-lg hover:bg-purple-50">
-                            <Plus class="mr-2 h-5 w-5" />
-                            Tambah User
-                        </Button>
+                        
+                        <!-- Action Button - Responsive -->
+                        <div v-if="!isAdmin" class="lg:flex-shrink-0">
+                            <Button 
+                                @click="openCreateModal" 
+                                class="w-full border border-white/50 bg-gradient-to-r from-white to-gray-100 px-4 py-2 text-sm font-semibold text-purple-600 shadow-lg transition-all duration-200 hover:from-purple-50 hover:to-white dark:border-gray-700 dark:from-gray-800 dark:to-gray-900 dark:text-purple-400 dark:hover:from-gray-700 dark:hover:to-gray-800 sm:w-auto sm:text-base lg:text-base"
+                            >
+                                <Plus class="mr-1 h-4 w-4 sm:mr-2" />
+                                <span class="sm:hidden">Tambah</span>
+                                <span class="hidden sm:inline">Tambah User</span>
+                            </Button>
+                        </div>
                     </div>
                 </div>
-                <div class="absolute top-0 right-0 -mt-32 -mr-32 h-64 w-64 rounded-full bg-white/10"></div>
-                <div class="absolute bottom-0 left-0 -mb-24 -ml-24 h-48 w-48 rounded-full bg-white/5"></div>
+                <div class="absolute top-0 right-0 -mt-24 -mr-24 h-48 w-48 rounded-full bg-white/10"></div>
+                <div class="absolute bottom-0 left-0 -mb-16 -ml-16 h-32 w-32 rounded-full bg-white/5"></div>
             </div>
 
             <!-- Statistics Bar -->
-            <div class="grid gap-4 md:grid-cols-4">
+            <div class="stats-grid grid gap-4 md:grid-cols-4">
                 <Card class="border-0 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg dark:from-blue-950 dark:to-blue-900">
                     <CardContent class="p-4">
                         <div class="flex items-center justify-between">
@@ -245,16 +254,16 @@ const formatDate = (dateString: string) => {
             </div>
 
             <!-- Filters -->
-            <Card class="border-0 shadow-lg">
+            <Card class="border-0 shadow-md">
                 <CardContent class="pt-6">
-                    <div class="flex gap-4">
+                    <div class="flex flex-col gap-4 sm:flex-row">
                         <div class="flex-1">
                             <div class="relative">
                                 <Search class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
                                 <Input v-model="search" placeholder="Cari nama atau email..." class="h-12 pl-10 text-base" />
                             </div>
                         </div>
-                        <div class="w-48">
+                        <div class="w-full sm:w-48">
                             <select
                                 v-model="role"
                                 class="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
@@ -270,16 +279,14 @@ const formatDate = (dateString: string) => {
             </Card>
 
             <!-- Users Table -->
-            <Card class="border-0 shadow-lg">
-                <CardHeader>
-                    <CardTitle class="flex items-center gap-2 text-xl">
-                        <Users class="h-6 w-6" />
-                        Daftar Users
-                    </CardTitle>
+            <Card class="border-0 shadow-md">
+                <CardHeader class="pb-2">
+                    <CardTitle class="text-lg font-semibold">Daftar Users</CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div class="overflow-x-auto">
-                        <table class="w-full caption-bottom text-sm">
+                <CardContent class="p-0">
+                    <div class="relative overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full caption-bottom text-sm">
                             <thead class="border-b-2">
                                 <tr class="border-b transition-colors">
                                     <th class="h-14 px-4 text-left align-middle font-semibold text-muted-foreground">Nama</th>
@@ -368,10 +375,11 @@ const formatDate = (dateString: string) => {
                                 </tr>
                             </tbody>
                         </table>
+                        </div>
                     </div>
 
                     <!-- Enhanced Pagination -->
-                    <div class="mt-6 flex items-center justify-between rounded-lg bg-muted/30 p-4">
+                    <div class="pagination-wrapper mt-6 flex flex-col gap-4 rounded-lg bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
                         <div class="text-sm text-muted-foreground">
                             Menampilkan <span class="font-medium">{{ users.data.length }}</span> dari
                             <span class="font-medium">{{ users.total }}</span> users
@@ -398,3 +406,48 @@ const formatDate = (dateString: string) => {
         <DeleteConfirmModal :open="deleteModal.open" :user="deleteModal.user" @close="closeDeleteModal" @success="handleModalSuccess" />
     </AppLayout>
 </template>
+
+<style scoped>
+/* Responsive table improvements */
+@media (max-width: 768px) {
+    /* Stack pagination on mobile */
+    .pagination-wrapper {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    /* Improve table readability on mobile */
+    table {
+        font-size: 0.875rem;
+    }
+    
+    th, td {
+        padding: 0.5rem !important;
+    }
+    
+    /* Hide less important columns on very small screens */
+    .hide-on-mobile {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    /* Further optimize for very small screens */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Ensure consistent card spacing */
+.space-y-6 > * + * {
+    margin-top: 1.5rem;
+}
+
+/* Improve button touch targets on mobile */
+@media (max-width: 640px) {
+    button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+</style>
