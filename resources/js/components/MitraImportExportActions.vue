@@ -1,39 +1,42 @@
 <template>
-    <div class="flex items-center gap-3">
+    <div class="button-group flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-x-2 sm:space-y-0 lg:space-x-3">
         <!-- Export Button -->
         <Button
             @click="handleExport"
             :disabled="isExporting"
-            class="border border-blue-600 bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2 font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-600 hover:to-blue-700"
+            class="w-full border border-blue-600 bg-gradient-to-r from-blue-500 to-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-600 hover:to-blue-700 sm:w-auto lg:px-4"
         >
-            <Download class="mr-2 h-4 w-4" />
-            {{ isExporting ? 'Mengekspor...' : 'Export XLSX' }}
+            <Download class="mr-1 h-4 w-4 lg:mr-2" />
+            <span class="hidden sm:inline">{{ isExporting ? 'Mengekspor...' : 'Export XLSX' }}</span>
+            <span class="sm:hidden">{{ isExporting ? 'Export...' : 'Export' }}</span>
         </Button>
 
         <!-- Template Download Button -->
         <Button
             @click="handleTemplateDownload"
             :disabled="isDownloadingTemplate"
-            class="border border-green-600 bg-gradient-to-r from-green-500 to-green-600 px-4 py-2 font-semibold text-white shadow-lg transition-all duration-200 hover:from-green-600 hover:to-green-700"
+            class="w-full border border-green-600 bg-gradient-to-r from-green-500 to-green-600 px-3 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:from-green-600 hover:to-green-700 sm:w-auto lg:px-4"
         >
-            <FileSpreadsheet class="mr-2 h-4 w-4" />
-            {{ isDownloadingTemplate ? 'Mengunduh...' : 'Template XLSX' }}
+            <FileSpreadsheet class="mr-1 h-4 w-4 lg:mr-2" />
+            <span class="hidden sm:inline">{{ isDownloadingTemplate ? 'Mengunduh...' : 'Template XLSX' }}</span>
+            <span class="sm:hidden">{{ isDownloadingTemplate ? 'Template...' : 'Template' }}</span>
         </Button>
 
         <!-- Import Button with Tooltip -->
-        <div class="group relative">
+        <div class="group relative w-full sm:w-auto">
             <Button
                 @click="triggerFileInput"
                 :disabled="isImporting"
-                class="border border-orange-600 bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2 font-semibold text-white shadow-lg transition-all duration-200 hover:from-orange-600 hover:to-orange-700"
+                class="w-full border border-orange-600 bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:from-orange-600 hover:to-orange-700 lg:px-4"
             >
-                <Upload class="mr-2 h-4 w-4" />
-                {{ isImporting ? 'Mengimpor...' : 'Import XLSX' }}
+                <Upload class="mr-1 h-4 w-4 lg:mr-2" />
+                <span class="hidden sm:inline">{{ isImporting ? 'Mengimpor...' : 'Import XLSX' }}</span>
+                <span class="sm:hidden">{{ isImporting ? 'Import...' : 'Import' }}</span>
             </Button>
 
-            <!-- Tooltip -->
+            <!-- Tooltip - Only show on larger screens -->
             <div
-                class="invisible absolute bottom-full left-1/2 z-50 mb-2 w-64 -translate-x-1/2 transform rounded-lg bg-gray-900 px-3 py-2 text-xs text-white opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100"
+                class="invisible absolute bottom-full left-1/2 z-50 mb-2 w-64 -translate-x-1/2 transform rounded-lg bg-gray-900 px-3 py-2 text-xs text-white opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100 hidden sm:block"
             >
                 <div class="text-center">
                     <div class="mb-1 font-semibold">Import Data Mitra</div>
@@ -381,3 +384,39 @@ const closeResultModal = () => {
     importResult.value = undefined;
 };
 </script>
+
+<style scoped>
+/* Responsive button adjustments */
+@media (max-width: 640px) {
+    /* Mobile: Stack buttons vertically with full width */
+    .flex-col button {
+        min-height: 44px; /* Touch-friendly button height */
+        justify-content: center;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    /* Tablet: Ensure buttons don't get too cramped */
+    button {
+        min-width: 100px;
+    }
+}
+
+@media (min-width: 1025px) {
+    /* Desktop: Full button text and proper spacing */
+    button {
+        min-width: 140px;
+    }
+}
+
+/* Ensure buttons have consistent spacing and alignment */
+.button-group {
+    gap: 0.5rem;
+}
+
+@media (min-width: 1024px) {
+    .button-group {
+        gap: 0.75rem;
+    }
+}
+</style>

@@ -349,28 +349,37 @@ const getFilterParams = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-6 mt-6 space-y-6">
             <!-- Header Section -->
-            <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 text-white">
+            <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-4 text-white sm:p-6">
                 <div class="relative z-10">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h1 class="mb-2 flex items-center gap-3 text-3xl font-bold tracking-tight">
-                                <Building2 class="h-8 w-8" />
+                    <!-- Header Content - Responsive Layout -->
+                    <div class="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+                        <!-- Title Section -->
+                        <div class="flex-1">
+                            <h1 class="mb-2 flex items-center gap-2 text-xl font-bold tracking-tight sm:gap-3 sm:text-2xl lg:text-3xl">
+                                <Building2 class="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
                                 Manajemen Mitra
                             </h1>
-                            <p class="text-lg text-teal-100">Kelola mitra bisnis dengan mudah dan efisien</p>
+                            <p class="text-sm text-teal-100 sm:text-base lg:text-lg">Kelola mitra bisnis dengan mudah dan efisien</p>
                         </div>
-                        <div class="flex items-center gap-3">
+                        
+                        <!-- Action Buttons - Responsive -->
+                        <div class="flex flex-col space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0 lg:flex-shrink-0">
                             <!-- Import/Export Actions -->
-                            <MitraImportExportActions :filters="getFilterParams()" @import-success="handleImportSuccess" />
+                            <div class="order-1 sm:order-2">
+                                <MitraImportExportActions :filters="getFilterParams()" @import-success="handleImportSuccess" />
+                            </div>
 
                             <!-- Add Mitra Button -->
-                            <Button
-                                @click="openCreateModal"
-                                class="border border-white/50 bg-gradient-to-r from-white to-gray-100 px-4 py-2 font-semibold text-teal-600 shadow-lg transition-all duration-200 hover:from-teal-50 hover:to-white dark:border-gray-700 dark:from-gray-800 dark:to-gray-900 dark:text-teal-400 dark:hover:from-gray-700 dark:hover:to-gray-800"
-                            >
-                                <Plus class="mr-2 h-4 w-4" />
-                                Tambah Mitra
-                            </Button>
+                            <div class="order-2 sm:order-1">
+                                <Button
+                                    @click="openCreateModal"
+                                    class="w-full border border-white/50 bg-gradient-to-r from-white to-gray-100 px-4 py-2 text-sm font-semibold text-teal-600 shadow-lg transition-all duration-200 hover:from-teal-50 hover:to-white dark:border-gray-700 dark:from-gray-800 dark:to-gray-900 dark:text-teal-400 dark:hover:from-gray-700 dark:hover:to-gray-800 sm:w-auto sm:text-base lg:text-base"
+                                >
+                                    <Plus class="mr-1 h-4 w-4 sm:mr-2" />
+                                    <span class="sm:hidden">Tambah</span>
+                                    <span class="hidden sm:inline">Tambah Mitra</span>
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
