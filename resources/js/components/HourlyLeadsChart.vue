@@ -50,6 +50,55 @@
             </Button>
           </div>
           
+          <!-- Brand Filter Dropdown -->
+          <div class="relative" ref="filterDropdown">
+            <Button
+              variant="outline"
+              size="sm"
+              @click="showBrandFilter = !showBrandFilter"
+              class="h-8 px-3 text-xs border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800 min-w-[100px] justify-between"
+            >
+              <span>
+                {{ selectedBrands.length === 0 ? 'Semua Brand' : 
+                   selectedBrands.length === 1 ? selectedBrands[0] : 
+                   `${selectedBrands.length} Brand` }}
+              </span>
+              <ChevronDown class="h-3 w-3 ml-2" />
+            </Button>
+            
+            <!-- Dropdown Menu -->
+            <div 
+              v-if="showBrandFilter"
+              class="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+            >
+              <div class="p-2 max-h-48 overflow-y-auto">
+                <div class="mb-2">
+                  <label class="flex items-center space-x-2 cursor-pointer p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded">
+                    <input 
+                      type="checkbox" 
+                      :checked="selectedBrands.length === 0"
+                      @change="toggleAllBrands"
+                      class="rounded border-gray-300 dark:border-gray-600"
+                    />
+                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Semua Brand</span>
+                  </label>
+                </div>
+                <hr class="border-gray-200 dark:border-gray-600 mb-2" />
+                <div v-for="brand in availableBrands" :key="brand" class="mb-1">
+                  <label class="flex items-center space-x-2 cursor-pointer p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded">
+                    <input 
+                      type="checkbox" 
+                      :value="brand"
+                      v-model="selectedBrands"
+                      class="rounded border-gray-300 dark:border-gray-600"
+                    />
+                    <span class="text-xs text-gray-700 dark:text-gray-300">{{ brand }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
           <!-- Refresh Button -->
           <Button
             variant="outline"
@@ -153,8 +202,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, BarChart3, RefreshCw, Clock, Palette } from 'lucide-vue-next';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { TrendingUp, BarChart3, RefreshCw, Clock, Palette, ChevronDown } from 'lucide-vue-next';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -214,9 +263,32 @@ const chartCanvas = ref<HTMLCanvasElement>();
 const chartInstance = ref<ChartJS | null>(null);
 const viewMode = ref<'line' | 'bar'>('line');
 
+// Brand filtering state
+const selectedBrands = ref<string[]>([]);
+const showBrandFilter = ref(false);
+const filterDropdown = ref<HTMLElement>();
+
 // Canvas management to avoid reuse issues
 const canvasKey = ref(0);
 const canvasId = computed(() => `hourly-leads-chart-${canvasKey.value}`);
+
+// Available brands computed from data
+const availableBrands = computed(() => {
+  if (!props.data || !Array.isArray(props.data)) return [];
+  
+  const brands = new Set<string>();
+  props.data.forEach(item => {
+    if (item.brands) {
+      Object.keys(item.brands).forEach(brandName => {
+        if (brandName && brandName.trim()) {
+          brands.add(brandName);
+        }
+      });
+    }
+  });
+  
+  return Array.from(brands).sort();
+});
 
 // Brand colors - consistent palette
 const brandColors = [
@@ -244,7 +316,12 @@ const chartData = computed(() => {
     Object.keys(hourData.brands).forEach(brand => brands.add(brand));
   });
 
-  const brandList = Array.from(brands).sort();
+  let brandList = Array.from(brands).sort();
+  
+  // Apply brand filtering if any brands are selected
+  if (selectedBrands.value.length > 0) {
+    brandList = brandList.filter(brand => selectedBrands.value.includes(brand));
+  }
   
   // Create datasets for each brand
   const datasets = brandList.map((brand, index) => {
@@ -319,40 +396,54 @@ const getTotalLeadsForBrand = (brandName: string): number => {
   }, 0);
 };
 
+// Brand filtering methods
+const toggleAllBrands = () => {
+  if (selectedBrands.value.length === 0) {
+    // If none selected, don't change (keep showing all)
+    return;
+  } else {
+    // If some selected, clear selection (show all)
+    selectedBrands.value = [];
+  }
+};
+
+const closeBrandFilter = () => {
+  showBrandFilter.value = false;
+};
+
 const createChart = async () => {
   if (!chartCanvas.value || !chartData.value) return;
 
-  try {
-    // Destroy existing chart safely
-    if (chartInstance.value) {
-      try {
-        chartInstance.value.stop();
-        
-        // Clear Chart.js instances registry
-        const canvasId = chartCanvas.value?.id;
-        if (canvasId && (ChartJS as any).instances) {
-          delete (ChartJS as any).instances[canvasId];
-        }
-        
-        chartInstance.value.destroy();
-      } catch (error) {
-        console.warn('Error destroying previous chart:', error);
-      }
-      chartInstance.value = null;
+  // Destroy existing chart safely
+  if (chartInstance.value) {
+    try {
+      chartInstance.value.stop();
       
-      // Force canvas recreation to avoid reuse issues
-      canvasKey.value += 1;
-      await nextTick();
-      await new Promise(resolve => setTimeout(resolve, 50));
+      // Clear Chart.js instances registry
+      const canvasId = chartCanvas.value?.id;
+      if (canvasId && (ChartJS as any).instances) {
+        delete (ChartJS as any).instances[canvasId];
+      }
+      
+      chartInstance.value.destroy();
+    } catch (error) {
+      console.warn('Error destroying previous chart:', error);
     }
+    chartInstance.value = null;
+    
+    // Force canvas recreation to avoid reuse issues
+    canvasKey.value += 1;
+    await nextTick();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
 
-    // Ensure canvas has unique ID
-    if (chartCanvas.value && !chartCanvas.value.id) {
-      chartCanvas.value.id = canvasId.value;
-    }
+  // Ensure canvas has unique ID
+  if (chartCanvas.value && !chartCanvas.value.id) {
+    chartCanvas.value.id = canvasId.value;
+  }
 
-    const ctx = chartCanvas.value?.getContext('2d');
-    if (!ctx) return;
+  const ctx = chartCanvas.value?.getContext('2d');
+  if (!ctx) return;
 
   const config: ChartOptions<'line' | 'bar'> = {
     responsive: true,
@@ -443,12 +534,12 @@ const createChart = async () => {
     },
   };
 
-  chartInstance.value = new ChartJS(ctx, {
-    type: viewMode.value,
-    data: chartData.value,
-    options: config,
-  });
-  
+  try {
+    chartInstance.value = new ChartJS(ctx, {
+      type: viewMode.value,
+      data: chartData.value,
+      options: config,
+    });
   } catch (error) {
     console.error('Error creating chart:', error);
     if (chartInstance.value) {
@@ -459,15 +550,30 @@ const createChart = async () => {
 };
 
 // Watch for data or view mode changes
-watch([() => props.data, viewMode], async () => {
+watch([() => props.data, viewMode, selectedBrands], async () => {
   await nextTick();
   createChart();
 }, { deep: true });
+
+// Click outside handler for brand filter
+const handleClickOutside = (event: Event) => {
+  if (filterDropdown.value && !filterDropdown.value.contains(event.target as Node)) {
+    showBrandFilter.value = false;
+  }
+};
 
 // Initialize chart on mount
 onMounted(async () => {
   await nextTick();
   createChart();
+  
+  // Add click outside listener
+  document.addEventListener('click', handleClickOutside);
+});
+
+// Cleanup on unmount
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
 });
 </script>
 
