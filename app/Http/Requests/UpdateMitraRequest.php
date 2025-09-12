@@ -34,7 +34,7 @@ class UpdateMitraRequest extends FormRequest
             'user_id' => 'nullable|exists:users,id',
             'brand_id' => 'required|exists:brands,id',
             'label_id' => 'nullable|exists:labels,id',
-            'chat' => 'required|in:masuk,followup',
+            'chat' => 'required|in:masuk,followup,followup_2,followup_3',
             'kota' => 'nullable|string|max:255',
             'provinsi' => 'nullable|string|max:255',
             'komentar' => 'nullable|string',

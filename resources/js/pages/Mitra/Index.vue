@@ -47,7 +47,7 @@ interface Mitra {
     user: User | null;
     label_id: number | null;
     label: Label | null;
-    chat: 'masuk' | 'followup';
+    chat: 'masuk' | 'followup' | 'followup_2' | 'followup_3';
     kota: string;
     provinsi: string;
     komentar: string | null;
@@ -182,11 +182,15 @@ const breadcrumbs = [
 const chatColors = {
     masuk: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 px-3 py-1 rounded-full text-xs font-medium',
     followup: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-medium',
+    followup_2: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 px-3 py-1 rounded-full text-xs font-medium',
+    followup_3: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 px-3 py-1 rounded-full text-xs font-medium',
 };
 
 const chatLabels = {
     masuk: 'Masuk',
     followup: 'Follow Up',
+    followup_2: 'Follow Up 2',
+    followup_3: 'Follow Up 3',
 };
 
 let debounceTimer: number;
@@ -396,7 +400,7 @@ const getFilterParams = () => {
             </div>
 
             <!-- Statistics Bar -->
-            <div class="grid gap-4 md:grid-cols-4">
+            <div class="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
                 <Card class="border-0 bg-gradient-to-br from-emerald-50 to-emerald-100 shadow-md dark:from-emerald-950 dark:to-emerald-900">
                     <CardContent class="p-4">
                         <div class="flex items-center justify-between">
@@ -452,6 +456,38 @@ const getFilterParams = () => {
                             </div>
                             <div class="rounded-lg bg-blue-500 p-2">
                                 <Edit class="h-5 w-5 text-white" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card class="border-0 bg-gradient-to-br from-yellow-50 to-yellow-100 shadow-md dark:from-yellow-950 dark:to-yellow-900">
+                    <CardContent class="p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="mb-1 text-sm font-medium text-yellow-700 dark:text-yellow-300">Follow Up 2</p>
+                                <p class="text-2xl font-bold text-yellow-900 dark:text-yellow-100">
+                                    {{ mitras.data.filter((m) => m.chat === 'followup_2').length }}
+                                </p>
+                            </div>
+                            <div class="rounded-lg bg-yellow-500 p-2">
+                                <Clock class="h-5 w-5 text-white" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card class="border-0 bg-gradient-to-br from-purple-50 to-purple-100 shadow-md dark:from-purple-950 dark:to-purple-900">
+                    <CardContent class="p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="mb-1 text-sm font-medium text-purple-700 dark:text-purple-300">Follow Up 3</p>
+                                <p class="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                                    {{ mitras.data.filter((m) => m.chat === 'followup_3').length }}
+                                </p>
+                            </div>
+                            <div class="rounded-lg bg-purple-500 p-2">
+                                <Calendar class="h-5 w-5 text-white" />
                             </div>
                         </div>
                     </CardContent>
@@ -606,6 +642,8 @@ const getFilterParams = () => {
                                     <option value="" class="bg-background text-foreground">Semua Chat</option>
                                     <option value="masuk" class="bg-background text-foreground">Masuk</option>
                                     <option value="followup" class="bg-background text-foreground">Follow Up</option>
+                                    <option value="followup_2" class="bg-background text-foreground">Follow Up 2</option>
+                                    <option value="followup_3" class="bg-background text-foreground">Follow Up 3</option>
                                 </select>
                             </div>
 

@@ -208,6 +208,123 @@ const rightNavItems: NavItem[] = [
                     </div>
                 </div>
             </div>
+                                </Link>
+                                <div
+                                    v-if="isCurrentRoute(item.href)"
+                                    class="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"
+                                ></div>
+                            </NavigationMenuItem>
+                        </NavigationMenuList>
+                    </NavigationMenu>
+                </div>
+
+                <!-- Right side - Actions and Mobile Menu -->
+                <div class="flex items-center space-x-2">
+                    <!-- Desktop Actions -->
+                    <div class="hidden lg:flex items-center space-x-1">
+                        <Button variant="ghost" size="icon" class="group h-9 w-9 cursor-pointer">
+                            <Search class="size-5 opacity-80 group-hover:opacity-100" />
+                        </Button>
+
+                        <div class="flex space-x-1">
+                            <template v-for="item in rightNavItems" :key="item.title">
+                                <TooltipProvider :delay-duration="0">
+                                    <Tooltip>
+                                        <TooltipTrigger>
+                                            <Button variant="ghost" size="icon" as-child class="group h-9 w-9 cursor-pointer">
+                                                <a :href="toUrl(item.href)" target="_blank" rel="noopener noreferrer">
+                                                    <span class="sr-only">{{ item.title }}</span>
+                                                    <component :is="item.icon" class="size-5 opacity-80 group-hover:opacity-100" />
+                                                </a>
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>{{ item.title }}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </template>
+                        </div>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger :as-child="true">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    class="relative size-10 w-auto rounded-full p-1 focus-within:ring-2 focus-within:ring-primary"
+                                >
+                                    <Avatar class="size-8 overflow-hidden rounded-full">
+                                        <AvatarFallback class="rounded-lg bg-neutral-200 font-semibold text-black dark:bg-neutral-700 dark:text-white">
+                                            {{ getInitials(auth.user?.name) }}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" class="w-56">
+                                <UserMenuContent :user="auth.user" />
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+
+                    <!-- Mobile Menu -->
+                    <div class="lg:hidden">
+                        <Sheet>
+                            <SheetTrigger :as-child="true">
+                                <Button variant="ghost" size="icon" class="h-9 w-9">
+                                    <Menu class="h-5 w-5" />
+                                    <span class="sr-only">Open menu</span>
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent side="right" class="w-[300px] p-6">
+                                <SheetTitle class="sr-only">{{ siteTitle }} Navigation</SheetTitle>
+                                <SheetHeader class="flex justify-start text-left mb-6">
+                                    <div class="flex items-center gap-2">
+                                        <AppLogoIcon class="size-6 fill-current text-black dark:text-white" />
+                                        <span class="font-semibold">{{ siteTitle }}</span>
+                                    </div>
+                                </SheetHeader>
+                                <div class="flex h-full flex-1 flex-col justify-between space-y-4">
+                                    <nav class="-mx-3 space-y-1">
+                                        <Link
+                                            v-for="item in mainNavItems"
+                                            :key="item.title"
+                                            :href="item.href"
+                                            class="flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent transition-colors"
+                                            :class="activeItemStyles(item.href)"
+                                        >
+                                            <component v-if="item.icon" :is="item.icon" class="h-5 w-5" />
+                                            {{ item.title }}
+                                        </Link>
+                                    </nav>
+                                    <div class="flex flex-col space-y-4">
+                                        <div class="border-t pt-4 space-y-2">
+                                            <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Quick Links</p>
+                                            <div class="space-y-2">
+                                                <a
+                                                    v-for="item in rightNavItems"
+                                                    :key="item.title"
+                                                    :href="toUrl(item.href)"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="flex items-center space-x-2 text-sm font-medium hover:text-primary transition-colors"
+                                                >
+                                                    <component v-if="item.icon" :is="item.icon" class="h-4 w-4" />
+                                                    <span>{{ item.title }}</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <!-- Mobile User Profile -->
+                                        <div class="border-t pt-4">
+                                            <UserMenuContent :user="auth.user" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </SheetContent>
+                        </Sheet>
+                    </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div v-if="props.breadcrumbs.length > 1" class="flex w-full border-b border-sidebar-border/70">
