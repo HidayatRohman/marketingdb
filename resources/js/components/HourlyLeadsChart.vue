@@ -75,7 +75,7 @@
       <!-- Chart Container -->
       <div v-else-if="chartData && chartData.datasets.length > 0" class="relative">
         <div class="h-80 w-full">
-          <canvas ref="chartCanvas"></canvas>
+          <canvas :key="canvasKey" ref="chartCanvas" :id="canvasId"></canvas>
         </div>
         
         <!-- Legend & Stats -->
@@ -162,9 +162,12 @@ import {
   PointElement,
   LineElement,
   BarElement,
+  LineController,
+  BarController,
   Title,
   Tooltip,
   Legend,
+  Filler,
   ChartOptions,
   ChartData,
 } from 'chart.js';
@@ -176,9 +179,12 @@ ChartJS.register(
   PointElement,
   LineElement,
   BarElement,
+  LineController,
+  BarController,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
 interface HourlyLeadData {
@@ -207,6 +213,10 @@ const emit = defineEmits<{
 const chartCanvas = ref<HTMLCanvasElement>();
 const chartInstance = ref<ChartJS | null>(null);
 const viewMode = ref<'line' | 'bar'>('line');
+
+// Canvas management to avoid reuse issues
+const canvasKey = ref(0);
+const canvasId = computed(() => `hourly-leads-chart-${canvasKey.value}`);
 
 // Brand colors - consistent palette
 const brandColors = [
@@ -242,13 +252,12 @@ const chartData = computed(() => {
     
     const data = props.data!.map(hourData => hourData.brands[brand] || 0);
     
-    return {
+    const baseConfig = {
       label: brand,
       data: data,
       borderColor: color,
       backgroundColor: viewMode.value === 'bar' ? color + '20' : color + '10',
       borderWidth: 2,
-      fill: viewMode.value === 'line',
       tension: 0.4,
       pointBackgroundColor: color,
       pointBorderColor: '#ffffff',
@@ -256,6 +265,19 @@ const chartData = computed(() => {
       pointRadius: 4,
       pointHoverRadius: 6,
     };
+
+    // Add fill only for line charts with proper configuration
+    if (viewMode.value === 'line') {
+      return {
+        ...baseConfig,
+        fill: {
+          target: 'origin',
+          above: color + '08',
+        },
+      };
+    }
+
+    return baseConfig;
   });
 
   // Create labels (hours)
@@ -300,13 +322,37 @@ const getTotalLeadsForBrand = (brandName: string): number => {
 const createChart = async () => {
   if (!chartCanvas.value || !chartData.value) return;
 
-  // Destroy existing chart
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-  }
+  try {
+    // Destroy existing chart safely
+    if (chartInstance.value) {
+      try {
+        chartInstance.value.stop();
+        
+        // Clear Chart.js instances registry
+        const canvasId = chartCanvas.value?.id;
+        if (canvasId && (ChartJS as any).instances) {
+          delete (ChartJS as any).instances[canvasId];
+        }
+        
+        chartInstance.value.destroy();
+      } catch (error) {
+        console.warn('Error destroying previous chart:', error);
+      }
+      chartInstance.value = null;
+      
+      // Force canvas recreation to avoid reuse issues
+      canvasKey.value += 1;
+      await nextTick();
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
 
-  const ctx = chartCanvas.value.getContext('2d');
-  if (!ctx) return;
+    // Ensure canvas has unique ID
+    if (chartCanvas.value && !chartCanvas.value.id) {
+      chartCanvas.value.id = canvasId.value;
+    }
+
+    const ctx = chartCanvas.value?.getContext('2d');
+    if (!ctx) return;
 
   const config: ChartOptions<'line' | 'bar'> = {
     responsive: true,
@@ -318,6 +364,10 @@ const createChart = async () => {
     plugins: {
       legend: {
         display: false, // We show custom legend
+      },
+      filler: {
+        propagate: false,
+        drawTime: 'beforeDatasetsDraw'
       },
       tooltip: {
         backgroundColor: 'rgba(17, 24, 39, 0.95)',
@@ -398,6 +448,14 @@ const createChart = async () => {
     data: chartData.value,
     options: config,
   });
+  
+  } catch (error) {
+    console.error('Error creating chart:', error);
+    if (chartInstance.value) {
+      chartInstance.value.destroy();
+      chartInstance.value = null;
+    }
+  }
 };
 
 // Watch for data or view mode changes
