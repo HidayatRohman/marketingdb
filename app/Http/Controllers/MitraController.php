@@ -439,12 +439,24 @@ class MitraController extends Controller
             $query->where('user_id', $request->user);
         }
 
+        // Get database driver to use appropriate hour extraction function
+        $driver = config('database.default');
+        $connection = config("database.connections.{$driver}.driver");
+        
+        if ($connection === 'sqlite') {
+            // SQLite uses strftime function
+            $hourExpression = "strftime('%H', mitras.created_at)";
+        } else {
+            // MySQL/PostgreSQL use HOUR function
+            $hourExpression = "HOUR(mitras.created_at)";
+        }
+
         // Get data with hour extraction from mitras.created_at
-        $results = $query->selectRaw('
-                strftime(\'%H\', mitras.created_at) as hour,
+        $results = $query->selectRaw("
+                {$hourExpression} as hour,
                 brands.nama as brand_name,
                 COUNT(*) as lead_count
-            ')
+            ")
             ->join('brands', 'mitras.brand_id', '=', 'brands.id')
             ->groupBy('hour', 'brands.nama')
             ->orderBy('hour')
