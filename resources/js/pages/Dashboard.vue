@@ -792,13 +792,30 @@ onMounted(() => {
 
             <!-- Tabs for Different Analytics Views -->
             <Tabs default-value="overview" class="w-full">
-                <TabsList class="grid w-full grid-cols-5">
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="marketing">Per Marketing</TabsTrigger>
-                    <TabsTrigger value="brands">Per Brand</TabsTrigger>
-                    <TabsTrigger value="labels">Label Analysis</TabsTrigger>
-                    <TabsTrigger value="trends">Trends</TabsTrigger>
-                </TabsList>
+                <div class="w-full overflow-x-auto pb-2">
+                    <TabsList class="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground min-w-max">
+                        <TabsTrigger value="overview" class="text-xs md:text-sm whitespace-nowrap px-3 py-2 min-w-[80px] md:min-w-[100px]">
+                            <span class="hidden sm:inline">Overview</span>
+                            <span class="sm:hidden">Overview</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="marketing" class="text-xs md:text-sm whitespace-nowrap px-3 py-2 min-w-[80px] md:min-w-[120px]">
+                            <span class="hidden sm:inline">Per Marketing</span>
+                            <span class="sm:hidden">Marketing</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="brands" class="text-xs md:text-sm whitespace-nowrap px-3 py-2 min-w-[80px] md:min-w-[100px]">
+                            <span class="hidden sm:inline">Per Brand</span>
+                            <span class="sm:hidden">Brands</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="labels" class="text-xs md:text-sm whitespace-nowrap px-3 py-2 min-w-[80px] md:min-w-[120px]">
+                            <span class="hidden sm:inline">Label Analysis</span>
+                            <span class="sm:hidden">Labels</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="trends" class="text-xs md:text-sm whitespace-nowrap px-3 py-2 min-w-[80px] md:min-w-[100px]">
+                            <span class="hidden sm:inline">Trends</span>
+                            <span class="sm:hidden">Trends</span>
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
 
                 <!-- Overview Tab -->
                 <TabsContent value="overview" class="space-y-6">
