@@ -120,10 +120,10 @@ onUnmounted(() => {
         <!-- Header Navigation -->
         <header class="relative z-20 border-b border-white/10 bg-black/5 backdrop-blur-sm">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-2 h-16 items-center">
-                    <!-- Kolom Kiri - Logo (rata kiri) -->
-                    <div class="flex items-center justify-start space-x-2">
-                        <div class="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg border border-white/20 bg-white/15 p-1 backdrop-blur-sm">
+                <div class="flex justify-between h-16 items-center">
+                    <!-- Kolom Kiri - Logo (standard spacing) -->
+                    <div class="flex items-center space-x-3">
+                        <div class="flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 bg-white/15 p-1 backdrop-blur-sm">
                             <img src="/images/partner-bisnismu-logo.png" alt="Partner Bisnismu" class="h-full w-full object-contain" />
                         </div>
                         <!-- Hide text on mobile, show on desktop -->
@@ -132,41 +132,41 @@ onUnmounted(() => {
                         </div>
                     </div>
 
-                    <!-- Kolom Kanan - Menu (rata kanan) -->
-                    <div class="flex items-center justify-end">
+                    <!-- Kolom Kanan - Menu (standard spacing) -->
+                    <div class="flex items-center">
                         <!-- Desktop Auth Buttons - Hide on mobile -->
-                    <div class="desktop-buttons items-center space-x-4">
-                        <Link
-                            v-if="$page.props.auth.user"
-                            :href="dashboard()"
-                            class="rounded-full border border-white/20 bg-white/15 px-6 py-2 font-medium text-gray-700 backdrop-blur-sm transition-all duration-300 hover:bg-white/25"
-                        >
-                            Dashboard
-                        </Link>
-                        <template v-else>
-                            <Link :href="login()" class="font-medium text-gray-600 transition-colors hover:text-gray-800">
-                                Log In
-                            </Link>
+                        <div class="desktop-buttons items-center space-x-4">
                             <Link
-                                :href="register()"
+                                v-if="$page.props.auth.user"
+                                :href="dashboard()"
                                 class="rounded-full border border-white/20 bg-white/15 px-6 py-2 font-medium text-gray-700 backdrop-blur-sm transition-all duration-300 hover:bg-white/25"
                             >
-                                Join Now
+                                Dashboard
                             </Link>
-                        </template>
-                    </div>
+                            <template v-else>
+                                <Link :href="login()" class="font-medium text-gray-600 transition-colors hover:text-gray-800">
+                                    Log In
+                                </Link>
+                                <Link
+                                    :href="register()"
+                                    class="rounded-full border border-white/20 bg-white/15 px-6 py-2 font-medium text-gray-700 backdrop-blur-sm transition-all duration-300 hover:bg-white/25"
+                                >
+                                    Join Now
+                                </Link>
+                            </template>
+                        </div>
 
-                    <!-- Mobile Hamburger Button - Show only on mobile -->
-                    <button
-                        @click="toggleMobileMenu"
-                        class="mobile-hamburger flex items-center justify-center h-10 w-10 rounded-lg border border-white/20 bg-white/15 backdrop-blur-sm transition-all duration-300 hover:bg-white/25"
-                        :class="{ 'bg-white/25': isMobileMenuOpen }"
-                        type="button"
-                        aria-label="Toggle mobile menu"
-                    >
-                        <Menu v-if="!isMobileMenuOpen" class="h-6 w-6 text-gray-700" />
-                        <X v-else class="h-6 w-6 text-gray-700" />
-                    </button>
+                        <!-- Mobile Hamburger Button - Show only on mobile -->
+                        <button
+                            @click="toggleMobileMenu"
+                            class="mobile-hamburger flex items-center justify-center h-10 w-10 rounded-lg border border-white/20 bg-white/15 backdrop-blur-sm transition-all duration-300 hover:bg-white/25"
+                            :class="{ 'bg-white/25': isMobileMenuOpen }"
+                            type="button"
+                            aria-label="Toggle mobile menu"
+                        >
+                            <Menu v-if="!isMobileMenuOpen" class="h-5 w-5 text-gray-700" />
+                            <X v-else class="h-5 w-5 text-gray-700" />
+                        </button>
                     </div>
                 </div>
 
@@ -445,8 +445,8 @@ onUnmounted(() => {
         text-align: center !important;
     }
 
-    /* Exception for flex items that should remain centered */
-    .flex {
+    /* Exception for flex items that should remain centered - exclude header */
+    .flex:not(.justify-between) {
         justify-content: center !important;
     }
 }
@@ -505,29 +505,7 @@ html {
     }
 }
 
-/* Header Grid Layout - 2 kolom eksplisit */
-.header-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-    height: 4rem;
-}
-
-/* Kolom kiri - Logo rata kiri */
-.header-left {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.5rem;
-}
-
-/* Kolom kanan - Menu rata kanan */
-.header-right {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 1rem;
-}
+/* Header responsive layout - Logo mepet kiri, Menu mepet kanan */
 
 /* Ensure proper flex layout for navigation */
 .desktop-buttons {
