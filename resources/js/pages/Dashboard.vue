@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress/index';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs/index';
+import { DatePicker } from '@/components/ui/datepicker';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
@@ -404,13 +405,6 @@ const getArcPath = (label: LabelDistribution, index: number) => {
     return `M ${centerX},${centerY} L ${startX},${startY} A ${radius},${radius} 0 ${largeArcFlag},1 ${endX},${endY} Z`;
 };
 
-// Function to open date picker
-const openDatePicker = (inputId: string) => {
-    const inputElement = document.getElementById(inputId) as HTMLInputElement;
-    if (inputElement && inputElement.showPicker) {
-        inputElement.showPicker();
-    }
-};
 
 onMounted(() => {
     // Set default date range to current month
@@ -470,6 +464,79 @@ onMounted(() => {
                 </div>
                 <div class="absolute top-0 right-0 -mt-24 -mr-24 h-48 w-48 rounded-full bg-white/10 sm:-mt-32 sm:-mr-32 sm:h-64 sm:w-64"></div>
                 <div class="absolute bottom-0 left-0 -mb-16 -ml-16 h-32 w-32 rounded-full bg-white/5 sm:-mb-24 sm:-ml-24 sm:h-48 sm:w-48"></div>
+            </div>
+
+            <!-- Main KPI Cards -->
+            <div class="stats-grid">
+                <!-- Total Leads -->
+                <Card class="stats-card stats-card-blue">
+                    <CardContent class="stats-card-content">
+                        <div class="stats-card-layout">
+                            <div class="stats-card-text">
+                                <p class="stats-card-label stats-label-blue">Total Leads</p>
+                                <p class="stats-card-value stats-value-blue">{{ mitraStats.total }}</p>
+                                <p class="stats-card-subtitle stats-subtitle-blue">+{{ mitraStats.today }} hari ini</p>
+                            </div>
+                            <div class="stats-card-icon stats-icon-blue">
+                                <Users class="stats-icon-size" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Conversion Rate -->
+                <Card class="stats-card stats-card-green">
+                    <CardContent class="stats-card-content">
+                        <div class="stats-card-layout">
+                            <div class="stats-card-text">
+                                <p class="stats-card-label stats-label-green">Conversion Rate</p>
+                                <p class="stats-card-value-with-icon stats-value-green">
+                                    {{ totalConversionRate }}%
+                                    <component
+                                        :is="getGrowthIcon(totalConversionRate)"
+                                        :class="['stats-growth-icon', getGrowthColor(totalConversionRate)]"
+                                    />
+                                </p>
+                                <p class="stats-card-subtitle stats-subtitle-green">{{ mitraStats.followup }} dari {{ mitraStats.total }}</p>
+                            </div>
+                            <div class="stats-card-icon stats-icon-green">
+                                <Target class="stats-icon-size" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Active Chats -->
+                <Card class="stats-card stats-card-orange">
+                    <CardContent class="stats-card-content">
+                        <div class="stats-card-layout">
+                            <div class="stats-card-text">
+                                <p class="stats-card-label stats-label-orange">Chat Masuk</p>
+                                <p class="stats-card-value stats-value-orange">{{ mitraStats.masuk }}</p>
+                                <p class="stats-card-subtitle stats-subtitle-orange">{{ mitraStats.this_week }} minggu ini</p>
+                            </div>
+                            <div class="stats-card-icon stats-icon-orange">
+                                <MessageSquare class="stats-icon-size" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Follow Ups -->
+                <Card class="stats-card stats-card-purple">
+                    <CardContent class="stats-card-content">
+                        <div class="stats-card-layout">
+                            <div class="stats-card-text">
+                                <p class="stats-card-label stats-label-purple">Follow Up</p>
+                                <p class="stats-card-value stats-value-purple">{{ mitraStats.followup }}</p>
+                                <p class="stats-card-subtitle stats-subtitle-purple">{{ mitraStats.this_month }} bulan ini</p>
+                            </div>
+                            <div class="stats-card-icon stats-icon-purple">
+                                <Phone class="stats-icon-size" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
 
             <!-- Enhanced Collapsible Filter Section -->
@@ -561,38 +628,22 @@ onMounted(() => {
                                     <div class="responsive-grid-4">
                                         <!-- Custom Start Date -->
                                         <div class="form-group">
-                                            <Label for="custom-start-date" class="form-label"> Tanggal Mulai: </Label>
-                                            <div class="relative">
-                                                <Input 
-                                                    id="custom-start-date" 
-                                                    v-model="startDate" 
-                                                    type="date" 
-                                                    class="form-input-date cursor-pointer w-full pr-10" 
-                                                    placeholder="Pilih tanggal mulai"
-                                                />
-                                                <Calendar 
-                                                    class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700" 
-                                                    @click="openDatePicker('custom-start-date')"
-                                                />
-                                            </div>
+                                            <Label class="form-label"> Tanggal Mulai: </Label>
+                                            <DatePicker
+                                                v-model="startDate"
+                                                placeholder="Pilih tanggal mulai"
+                                                :max-date="endDate || undefined"
+                                            />
                                         </div>
 
                                         <!-- Custom End Date -->
                                         <div class="form-group">
-                                            <Label for="custom-end-date" class="form-label"> Tanggal Akhir: </Label>
-                                            <div class="relative">
-                                                <Input 
-                                                    id="custom-end-date" 
-                                                    v-model="endDate" 
-                                                    type="date" 
-                                                    class="form-input-date cursor-pointer w-full pr-10" 
-                                                    placeholder="Pilih tanggal akhir"
-                                                />
-                                                <Calendar 
-                                                    class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700" 
-                                                    @click="openDatePicker('custom-end-date')"
-                                                />
-                                            </div>
+                                            <Label class="form-label"> Tanggal Akhir: </Label>
+                                            <DatePicker
+                                                v-model="endDate"
+                                                placeholder="Pilih tanggal akhir"
+                                                :min-date="startDate || undefined"
+                                            />
                                         </div>
 
                                         <!-- Marketing Filter Dropdown -->
@@ -745,79 +796,6 @@ onMounted(() => {
                                 </div>
                             </div>
                         </Transition>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <!-- Main KPI Cards -->
-            <div class="stats-grid">
-                <!-- Total Leads -->
-                <Card class="stats-card stats-card-blue">
-                    <CardContent class="stats-card-content">
-                        <div class="stats-card-layout">
-                            <div class="stats-card-text">
-                                <p class="stats-card-label stats-label-blue">Total Leads</p>
-                                <p class="stats-card-value stats-value-blue">{{ mitraStats.total }}</p>
-                                <p class="stats-card-subtitle stats-subtitle-blue">+{{ mitraStats.today }} hari ini</p>
-                            </div>
-                            <div class="stats-card-icon stats-icon-blue">
-                                <Users class="stats-icon-size" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <!-- Conversion Rate -->
-                <Card class="stats-card stats-card-green">
-                    <CardContent class="stats-card-content">
-                        <div class="stats-card-layout">
-                            <div class="stats-card-text">
-                                <p class="stats-card-label stats-label-green">Conversion Rate</p>
-                                <p class="stats-card-value-with-icon stats-value-green">
-                                    {{ totalConversionRate }}%
-                                    <component
-                                        :is="getGrowthIcon(totalConversionRate)"
-                                        :class="['stats-growth-icon', getGrowthColor(totalConversionRate)]"
-                                    />
-                                </p>
-                                <p class="stats-card-subtitle stats-subtitle-green">{{ mitraStats.followup }} dari {{ mitraStats.total }}</p>
-                            </div>
-                            <div class="stats-card-icon stats-icon-green">
-                                <Target class="stats-icon-size" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <!-- Active Chats -->
-                <Card class="stats-card stats-card-orange">
-                    <CardContent class="stats-card-content">
-                        <div class="stats-card-layout">
-                            <div class="stats-card-text">
-                                <p class="stats-card-label stats-label-orange">Chat Masuk</p>
-                                <p class="stats-card-value stats-value-orange">{{ mitraStats.masuk }}</p>
-                                <p class="stats-card-subtitle stats-subtitle-orange">{{ mitraStats.this_week }} minggu ini</p>
-                            </div>
-                            <div class="stats-card-icon stats-icon-orange">
-                                <MessageSquare class="stats-icon-size" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <!-- Follow Ups -->
-                <Card class="stats-card stats-card-purple">
-                    <CardContent class="stats-card-content">
-                        <div class="stats-card-layout">
-                            <div class="stats-card-text">
-                                <p class="stats-card-label stats-label-purple">Follow Up</p>
-                                <p class="stats-card-value stats-value-purple">{{ mitraStats.followup }}</p>
-                                <p class="stats-card-subtitle stats-subtitle-purple">{{ mitraStats.this_month }} bulan ini</p>
-                            </div>
-                            <div class="stats-card-icon stats-icon-purple">
-                                <Phone class="stats-icon-size" />
-                            </div>
-                        </div>
                     </CardContent>
                 </Card>
             </div>

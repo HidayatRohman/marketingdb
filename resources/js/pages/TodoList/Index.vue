@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { DatePicker } from '@/components/ui/datepicker';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import {
@@ -1221,18 +1222,12 @@ const getStatusIcon = (status: string) => {
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-6">
                             <!-- Date Filter -->
                             <div>
-                                <Label for="dateFilter">Tanggal</Label>
-                                <div class="relative">
-                                    <Input
-                                        id="dateFilter"
-                                        type="date"
-                                        class="cursor-pointer w-full pr-10"
-                                        placeholder="Pilih tanggal"
-                                        :value="selectedDate.toISOString().split('T')[0]"
-                                        @change="(e: Event) => selectDate(new Date((e.target as HTMLInputElement).value))"
-                                    />
-                                    <Calendar class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                                </div>
+                                <Label>Tanggal</Label>
+                                <DatePicker
+                                    :model-value="selectedDate.toISOString().split('T')[0]"
+                                    @update:model-value="(value: string) => selectDate(new Date(value))"
+                                    placeholder="Pilih tanggal"
+                                />
                             </div>
 
                             <!-- Status Filter -->
@@ -1512,33 +1507,22 @@ const getStatusIcon = (status: string) => {
                             </div>
 
                             <div>
-                                <Label for="start_date">Tanggal Mulai</Label>
-                                <div class="relative">
-                                    <Input 
-                                        id="start_date" 
-                                        v-model="form.start_date" 
-                                        type="date" 
-                                        class="cursor-pointer w-full pr-10"
-                                        placeholder="Pilih tanggal mulai"
-                                    />
-                                    <Calendar class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                                </div>
+                                <Label>Tanggal Mulai</Label>
+                                <DatePicker
+                                    v-model="form.start_date"
+                                    placeholder="Pilih tanggal mulai"
+                                    :max-date="form.due_date || undefined"
+                                />
                                 <span v-if="form.errors.start_date" class="text-sm text-red-600">{{ form.errors.start_date }}</span>
                             </div>
 
                             <div>
-                                <Label for="due_date">Tanggal Deadline *</Label>
-                                <div class="relative">
-                                    <Input 
-                                        id="due_date" 
-                                        v-model="form.due_date" 
-                                        type="date" 
-                                        class="cursor-pointer w-full pr-10"
-                                        placeholder="Pilih tanggal deadline"
-                                        required 
-                                    />
-                                    <Calendar class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                                </div>
+                                <Label>Tanggal Deadline *</Label>
+                                <DatePicker
+                                    v-model="form.due_date"
+                                    placeholder="Pilih tanggal deadline"
+                                    :min-date="form.start_date || undefined"
+                                />
                                 <span v-if="form.errors.due_date" class="text-sm text-red-600">{{ form.errors.due_date }}</span>
                             </div>
 
