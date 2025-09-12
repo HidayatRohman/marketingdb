@@ -38,7 +38,7 @@ interface Mitra {
     label?: Label | null;
     user_id: number | null;
     user?: User | null;
-    chat: 'masuk' | 'followup';
+    chat: 'masuk' | 'followup' | 'followup_2' | 'followup_3';
     kota: string;
     provinsi: string;
     komentar: string | null;
@@ -114,7 +114,7 @@ const form = useForm({
     brand_id: null as number | null,
     label_id: null as number | null,
     user_id: null as number | null,
-    chat: 'masuk' as 'masuk' | 'followup',
+    chat: 'masuk' as 'masuk' | 'followup' | 'followup_2' | 'followup_3',
     kota: 'Unknown',
     provinsi: 'Unknown',
     komentar: '',
@@ -250,6 +250,8 @@ const submit = () => {
 const chatLabels = {
     masuk: 'Masuk',
     followup: 'Follow Up',
+    followup_2: 'Follow Up 2',
+    followup_3: 'Follow Up 3',
 };
 </script>
 
@@ -436,6 +438,8 @@ const chatLabels = {
                             <option value="" class="bg-background text-foreground">Pilih status chat</option>
                             <option value="masuk" class="bg-background text-foreground">Masuk</option>
                             <option value="followup" class="bg-background text-foreground">Follow Up</option>
+                            <option value="followup_2" class="bg-background text-foreground">Follow Up 2</option>
+                            <option value="followup_3" class="bg-background text-foreground">Follow Up 3</option>
                         </select>
                         <p v-if="form.errors.chat" class="text-sm text-destructive">
                             {{ form.errors.chat }}

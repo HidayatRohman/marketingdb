@@ -25,7 +25,7 @@ interface Mitra {
     brand?: Brand;
     label_id: number | null;
     label?: Label | null;
-    chat: 'masuk' | 'followup';
+    chat: 'masuk' | 'followup' | 'followup_2' | 'followup_3';
     kota: string;
     provinsi: string;
     komentar: string | null;
