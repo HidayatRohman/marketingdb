@@ -14,35 +14,27 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         // Admin utama
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@marketingdb.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-            'email_verified_at' => now(),
-        ]);
-
-        // Super Admin
-        User::create([
-            'name' => 'Super Admin',
-            'email' => 'superadmin@marketingdb.com',
-            'password' => Hash::make('password'),
-            'role' => 'superAdmin',
-            'email_verified_at' => now(),
-        ]);
-
-        // Tambahkan 3 admin untuk testing
-        User::factory()
-            ->count(3)
-            ->create([
+        User::firstOrCreate(
+            ['email' => 'admin@marketingdb.com'],
+            [
+                'name' => 'Admin User',
+                'password' => Hash::make('password'),
                 'role' => 'admin',
-            ]);
+                'email_verified_at' => now(),
+            ]
+        );
 
-        // Tambahkan 5 marketing untuk testing
-        User::factory()
-            ->count(5)
-            ->create([
-                'role' => 'marketing',
-            ]);
+        // Tambahkan admin untuk testing jika belum ada
+        $existingAdmins = User::where('role', 'admin')->count();
+        if ($existingAdmins < 4) { // 1 admin utama + 3 testing
+            $needToCreate = 4 - $existingAdmins;
+            User::factory()
+                ->count($needToCreate)
+                ->create([
+                    'role' => 'admin',
+                ]);
+        }
+
+        $this->command->info('Admin seeder completed successfully!');
     }
 }

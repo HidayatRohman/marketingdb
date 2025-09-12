@@ -13,19 +13,27 @@ class SuperAdminSeeder extends Seeder
      */
     public function run(): void
     {
-        User::create([
-            'name' => 'Super Admin',
-            'email' => 'superadmin@marketingdb.com',
-            'password' => Hash::make('password'),
-            'role' => 'super_admin',
-            'email_verified_at' => now(),
-        ]);
-
-        // Buat additional super admin untuk testing
-        User::factory()
-            ->count(2)
-            ->create([
+        User::firstOrCreate(
+            ['email' => 'superadmin@marketingdb.com'],
+            [
+                'name' => 'Super Admin',
+                'password' => Hash::make('password'),
                 'role' => 'super_admin',
-            ]);
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Buat additional super admin untuk testing jika belum ada
+        $existingSuperAdmins = User::where('role', 'super_admin')->count();
+        if ($existingSuperAdmins < 3) {
+            $needToCreate = 3 - $existingSuperAdmins;
+            User::factory()
+                ->count($needToCreate)
+                ->create([
+                    'role' => 'super_admin',
+                ]);
+        }
+
+        $this->command->info('Super Admin seeder completed successfully!');
     }
 }
