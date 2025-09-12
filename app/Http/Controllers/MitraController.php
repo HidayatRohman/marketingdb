@@ -441,7 +441,7 @@ class MitraController extends Controller
 
         // Get data with hour extraction from mitras.created_at
         $results = $query->selectRaw('
-                HOUR(mitras.created_at) as hour,
+                strftime(\'%H\', mitras.created_at) as hour,
                 brands.nama as brand_name,
                 COUNT(*) as lead_count
             ')
@@ -470,7 +470,7 @@ class MitraController extends Controller
 
         // Fill with actual data
         foreach ($results as $result) {
-            $hour = $result->hour;
+            $hour = (int) $result->hour; // Convert string to integer for array key
             $brandName = $result->brand_name;
             $count = $result->lead_count;
 
