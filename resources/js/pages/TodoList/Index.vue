@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { DatePicker } from '@/components/ui/datepicker';
+import { TimePicker } from '@/components/ui/timepicker';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import {
@@ -1527,8 +1528,12 @@ const getStatusIcon = (status: string) => {
                             </div>
 
                             <div>
-                                <Label for="due_time">Waktu Deadline</Label>
-                                <Input id="due_time" v-model="form.due_time" type="time" />
+                                <Label>Waktu Deadline</Label>
+                                <TimePicker
+                                    v-model="form.due_time"
+                                    placeholder="Pilih waktu deadline"
+                                    :minute-step="15"
+                                />
                                 <span v-if="form.errors.due_time" class="text-sm text-red-600">{{ form.errors.due_time }}</span>
                             </div>
 

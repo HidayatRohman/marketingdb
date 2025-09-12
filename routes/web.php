@@ -48,6 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role.access:view')->group(function () {
         Route::get('mitras/export', [MitraController::class, 'export'])->name('mitras.export');
         Route::get('mitras/template', [MitraController::class, 'downloadTemplate'])->name('mitras.template');
+        Route::get('mitras/hourly-analysis', [MitraController::class, 'getHourlyAnalysisData'])->name('mitras.hourly-analysis');
         Route::post('mitras/import', [MitraController::class, 'import'])->name('mitras.import');
     });
     

@@ -2,6 +2,7 @@
 import MitraDeleteModal from '@/components/MitraDeleteModal.vue';
 import MitraImportExportActions from '@/components/MitraImportExportActions.vue';
 import MitraModal from '@/components/MitraModal.vue';
+import HourlyLeadsChart from '@/components/HourlyLeadsChart.vue';
 import Badge from '@/components/ui/badge/Badge.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,6 +56,12 @@ interface Mitra {
     updated_at: string;
 }
 
+interface HourlyAnalysisData {
+    hour: number;
+    brands: Record<string, number>;
+    total: number;
+}
+
 interface Props {
     mitras: {
         data: Mitra[];
@@ -68,6 +75,7 @@ interface Props {
     brands: Brand[];
     labels: Label[];
     users: User[];
+    hourlyAnalysis: HourlyAnalysisData[];
     currentUser: {
         id: number;
         name: string;
@@ -105,6 +113,10 @@ const datePresets = [
 ];
 
 const selectedPreset = ref('today');
+
+// Chart data management
+const chartData = ref<HourlyAnalysisData[]>(props.hourlyAnalysis || []);
+const chartLoading = ref(false);
 
 // Set date range based on preset
 const setDatePreset = (preset: string) => {
@@ -353,6 +365,51 @@ const getFilterParams = () => {
         per_page: perPage.value || 30,
     };
 };
+
+// Refresh chart data function
+const refreshChartData = async () => {
+    try {
+        chartLoading.value = true;
+        
+        const params = new URLSearchParams();
+        if (search.value) params.append('search', search.value);
+        if (chat.value) params.append('chat', chat.value);
+        if (label.value) params.append('label', label.value);
+        if (user.value) params.append('user', user.value);
+        if (periodeStart.value) params.append('periode_start', periodeStart.value);
+        if (periodeEnd.value) params.append('periode_end', periodeEnd.value);
+
+        const response = await fetch(`/mitras/hourly-analysis?${params}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch chart data');
+        }
+
+        const result = await response.json();
+        if (result.success) {
+            chartData.value = result.data;
+        }
+    } catch (error) {
+        console.error('Error refreshing chart data:', error);
+    } finally {
+        chartLoading.value = false;
+    }
+};
+
+// Watch for filter changes and update chart
+watch([search, chat, label, user, periodeStart, periodeEnd], () => {
+    // Debounce chart refresh to avoid too many requests
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+        refreshChartData();
+    }, 300);
+}, { deep: true });
 </script>
 
 <template>
@@ -493,6 +550,15 @@ const getFilterParams = () => {
                     </CardContent>
                 </Card>
             </div>
+
+            <!-- Hourly Leads Analysis Chart -->
+            <HourlyLeadsChart
+                :data="chartData"
+                :loading="chartLoading"
+                :selected-date="periodeStart === periodeEnd ? periodeStart : undefined"
+                :empty-message="hasActiveFilters ? 'Tidak ada data lead untuk filter yang dipilih.' : 'Belum ada data lead yang tersedia.'"
+                @refresh="refreshChartData"
+            />
 
             <!-- Search and Filter Bar -->
             <Card class="border-0 shadow-md">

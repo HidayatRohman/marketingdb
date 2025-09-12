@@ -12,6 +12,8 @@ use App\Services\MitraImportService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class MitraController extends Controller
 {
@@ -90,11 +92,15 @@ class MitraController extends Controller
             $marketingUsers = collect([['id' => $user->id, 'name' => $user->name]]);
         }
         
+        // Get hourly analysis data
+        $hourlyAnalysis = $this->getHourlyAnalysis($request, $user);
+        
         return Inertia::render('Mitra/Index', [
             'mitras' => $mitras,
             'brands' => $brands,
             'labels' => $labels,
             'users' => $marketingUsers,
+            'hourlyAnalysis' => $hourlyAnalysis,
             'currentUser' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -400,5 +406,92 @@ class MitraController extends Controller
 
         return redirect()->route('mitras.index')
             ->with('success', 'Mitra berhasil dihapus.');
+    }
+
+    /**
+     * Get hourly lead analysis data grouped by brands
+     */
+    private function getHourlyAnalysis(Request $request, $user)
+    {
+        $query = Mitra::with('brand');
+
+        // Apply role-based filtering
+        $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply the same filters as main index
+        if ($request->has('periode_start') && $request->periode_start) {
+            $query->whereDate('tanggal_lead', '>=', $request->periode_start);
+        }
+
+        if ($request->has('periode_end') && $request->periode_end) {
+            $query->whereDate('tanggal_lead', '<=', $request->periode_end);
+        }
+
+        if ($request->has('chat') && $request->chat) {
+            $query->where('chat', $request->chat);
+        }
+
+        if ($request->has('label') && $request->label) {
+            $query->where('label_id', $request->label);
+        }
+
+        if ($request->has('user') && $request->user && $user->hasFullAccess()) {
+            $query->where('user_id', $request->user);
+        }
+
+        // Get data with hour extraction from mitras.created_at
+        $results = $query->selectRaw('
+                HOUR(mitras.created_at) as hour,
+                brands.nama as brand_name,
+                COUNT(*) as lead_count
+            ')
+            ->join('brands', 'mitras.brand_id', '=', 'brands.id')
+            ->groupBy('hour', 'brands.nama')
+            ->orderBy('hour')
+            ->get();
+
+        // Initialize 24-hour structure
+        $hourlyData = [];
+        for ($hour = 0; $hour < 24; $hour++) {
+            $hourlyData[$hour] = [
+                'hour' => $hour,
+                'brands' => [],
+                'total' => 0
+            ];
+        }
+
+        // Get all brands to ensure consistent structure
+        $brands = Brand::pluck('nama')->toArray();
+        foreach ($brands as $brandName) {
+            for ($hour = 0; $hour < 24; $hour++) {
+                $hourlyData[$hour]['brands'][$brandName] = 0;
+            }
+        }
+
+        // Fill with actual data
+        foreach ($results as $result) {
+            $hour = $result->hour;
+            $brandName = $result->brand_name;
+            $count = $result->lead_count;
+
+            $hourlyData[$hour]['brands'][$brandName] = $count;
+            $hourlyData[$hour]['total'] += $count;
+        }
+
+        return array_values($hourlyData);
+    }
+
+    /**
+     * API endpoint to get hourly analysis data (for refresh functionality)
+     */
+    public function getHourlyAnalysisData(Request $request)
+    {
+        $user = auth()->user();
+        $data = $this->getHourlyAnalysis($request, $user);
+        
+        return response()->json([
+            'success' => true,
+            'data' => $data
+        ]);
     }
 }
