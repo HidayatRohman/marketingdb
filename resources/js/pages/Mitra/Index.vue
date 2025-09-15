@@ -6,6 +6,7 @@ import HourlyLeadsChart from '@/components/HourlyLeadsChart.vue';
 import Badge from '@/components/ui/badge/Badge.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import DatePicker from '@/components/ui/datepicker/DatePicker.vue';
 import { Input } from '@/components/ui/input';
 import Table from '@/components/ui/table/Table.vue';
 import TableBody from '@/components/ui/table/TableBody.vue';
@@ -16,7 +17,7 @@ import TableRow from '@/components/ui/table/TableRow.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { Building2, Calendar, ChevronDown, ChevronUp, Clock, Edit, Eye, Filter, Plus, Search, Trash2, User, X } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { ref, computed, watch, onMounted, nextTick } from 'vue';
 
 interface Brand {
     id: number;
@@ -98,9 +99,36 @@ const search = ref(props.filters.search || '');
 const chat = ref(props.filters.chat || '');
 const label = ref(props.filters.label || '');
 const user = ref(props.filters.user || '');
-const periodeStart = ref(props.filters.periode_start || new Date().toISOString().split('T')[0]);
-const periodeEnd = ref(props.filters.periode_end || new Date().toISOString().split('T')[0]);
+const periodeStart = ref(props.filters.periode_start || '');
+const periodeEnd = ref(props.filters.periode_end || '');
 const perPage = ref(props.filters.per_page || 30);
+
+// Computed property untuk memastikan data mitras reactive
+const mitrasData = computed(() => props.mitras);
+
+// Debug: Log props changes
+watch(() => props.mitras, (newMitras) => {
+    console.log('Props mitras updated:', {
+        total: newMitras.total,
+        count: newMitras.data.length,
+        first_item: newMitras.data[0],
+        filters: props.filters
+    });
+}, { deep: true });
+
+// Force reactivity on mount
+onMounted(() => {
+    console.log('Component mounted with data:', {
+        total: props.mitras.total,
+        count: props.mitras.data.length,
+        filters: props.filters
+    });
+    
+    // Force reactivity update
+    nextTick(() => {
+        console.log('NextTick - ensuring reactivity');
+    });
+});
 
 // Date filter presets
 const datePresets = [
@@ -112,11 +140,10 @@ const datePresets = [
     { key: 'custom', label: 'Custom', value: 'custom', days: null },
 ];
 
-const selectedPreset = ref('today');
+const selectedPreset = ref('');
 
 // Chart data management
 const chartData = ref<HourlyAnalysisData[]>(props.hourlyAnalysis || []);
-const chartLoading = ref(false);
 
 // Set date range based on preset
 const setDatePreset = (preset: string) => {
@@ -144,11 +171,17 @@ const setDatePreset = (preset: string) => {
 // Filter panel state
 const showFilters = ref(false);
 const hasActiveFilters = computed(() => {
-    return search.value || chat.value || label.value || user.value || periodeStart.value || periodeEnd.value || selectedPreset.value !== 'today';
+    return search.value || chat.value || label.value || user.value || periodeStart.value || periodeEnd.value;
 });
 
 // Watch for manual date changes to update preset to custom
 watch([periodeStart, periodeEnd], () => {
+    // Only update preset if both dates are set
+    if (!periodeStart.value && !periodeEnd.value) {
+        selectedPreset.value = '';
+        return;
+    }
+
     const today = new Date().toISOString().split('T')[0];
 
     // Check if current dates match any preset
@@ -211,6 +244,16 @@ let debounceTimer: number;
 watch([search, chat, label, user, periodeStart, periodeEnd, perPage], () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
+        console.log('Frontend Filter Debug:', {
+            search: search.value,
+            chat: chat.value,
+            label: label.value,
+            user: user.value,
+            periode_start: periodeStart.value,
+            periode_end: periodeEnd.value,
+            per_page: perPage.value || 30,
+        });
+        
         router.get(
             '/mitras',
             {
@@ -225,6 +268,24 @@ watch([search, chat, label, user, periodeStart, periodeEnd, perPage], () => {
             {
                 preserveState: true,
                 replace: true,
+                onStart: () => {
+                    console.log('Request started with filters:', {
+                        periode_start: periodeStart.value,
+                        periode_end: periodeEnd.value
+                    });
+                },
+                onSuccess: (page) => {
+                    console.log('Frontend Response Debug:', {
+                        mitras_total: page.props.mitras?.total,
+                        mitras_count: page.props.mitras?.data?.length,
+                        filters_received: page.props.filters,
+                        first_mitra: page.props.mitras?.data?.[0],
+                        all_props: page.props
+                    });
+                },
+                onError: (errors) => {
+                    console.error('Request failed:', errors);
+                }
             },
         );
     }, 300);
@@ -294,13 +355,7 @@ const formatDate = (dateString: string) => {
     });
 };
 
-// Function to open date picker
-const openDatePicker = (inputId: string) => {
-    const inputElement = document.getElementById(inputId) as HTMLInputElement;
-    if (inputElement && inputElement.showPicker) {
-        inputElement.showPicker();
-    }
-};
+
 
 // Function to format phone number for WhatsApp
 const formatWhatsAppNumber = (phoneNumber: string) => {
@@ -343,9 +398,9 @@ const clearFilters = () => {
     chat.value = '';
     label.value = '';
     user.value = '';
-    periodeStart.value = new Date().toISOString().split('T')[0];
-    periodeEnd.value = new Date().toISOString().split('T')[0];
-    selectedPreset.value = 'today';
+    periodeStart.value = '';
+    periodeEnd.value = '';
+    selectedPreset.value = '';
     perPage.value = 30;
     showFilters.value = false;
 };
@@ -366,50 +421,28 @@ const getFilterParams = () => {
     };
 };
 
-// Refresh chart data function
-const refreshChartData = async () => {
-    try {
-        chartLoading.value = true;
-        
-        const params = new URLSearchParams();
-        if (search.value) params.append('search', search.value);
-        if (chat.value) params.append('chat', chat.value);
-        if (label.value) params.append('label', label.value);
-        if (user.value) params.append('user', user.value);
-        if (periodeStart.value) params.append('periode_start', periodeStart.value);
-        if (periodeEnd.value) params.append('periode_end', periodeEnd.value);
-
-        const response = await fetch(`/mitras/hourly-analysis?${params}`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch chart data');
-        }
-
-        const result = await response.json();
-        if (result.success) {
-            chartData.value = result.data;
-        }
-    } catch (error) {
-        console.error('Error refreshing chart data:', error);
-    } finally {
-        chartLoading.value = false;
-    }
-};
-
-// Watch for filter changes and update chart
-watch([search, chat, label, user, periodeStart, periodeEnd], () => {
-    // Debounce chart refresh to avoid too many requests
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-        refreshChartData();
-    }, 300);
+// Update chart data when props change
+watch(() => props.hourlyAnalysis, (newHourlyAnalysis) => {
+    chartData.value = newHourlyAnalysis || [];
 }, { deep: true });
+
+// Debug initial data on component mount
+onMounted(() => {
+    console.log('Component Mounted - Initial Data Debug:', {
+        mitras_total: props.mitras.total,
+        mitras_count: props.mitras.data?.length,
+        mitras_data: props.mitras.data,
+        current_filters: {
+            search: search.value,
+            chat: chat.value,
+            label: label.value,
+            user: user.value,
+            periode_start: periodeStart.value,
+            periode_end: periodeEnd.value,
+            per_page: perPage.value
+        }
+    });
+});
 </script>
 
 <template>
@@ -463,7 +496,7 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="mb-1 text-sm font-medium text-emerald-700 dark:text-emerald-300">Total Mitra</p>
-                                <p class="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{{ mitras.total }}</p>
+                                <p class="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{{ mitrasData.total }}</p>
                             </div>
                             <div class="rounded-lg bg-emerald-500 p-2">
                                 <Building2 class="h-5 w-5 text-white" />
@@ -477,7 +510,7 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="mb-1 text-sm font-medium text-teal-700 dark:text-teal-300">Halaman Ini</p>
-                                <p class="text-2xl font-bold text-teal-900 dark:text-teal-100">{{ mitras.data.length }}</p>
+                                <p class="text-2xl font-bold text-teal-900 dark:text-teal-100">{{ props.mitras.data.length }}</p>
                             </div>
                             <div class="rounded-lg bg-teal-500 p-2">
                                 <Eye class="h-5 w-5 text-white" />
@@ -492,7 +525,7 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                             <div>
                                 <p class="mb-1 text-sm font-medium text-green-700 dark:text-green-300">Chat Masuk</p>
                                 <p class="text-2xl font-bold text-green-900 dark:text-green-100">
-                                    {{ mitras.data.filter((m) => m.chat === 'masuk').length }}
+                                    {{ props.mitras.data.filter((m) => m.chat === 'masuk').length }}
                                 </p>
                             </div>
                             <div class="rounded-lg bg-green-500 p-2">
@@ -508,7 +541,7 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                             <div>
                                 <p class="mb-1 text-sm font-medium text-blue-700 dark:text-blue-300">Follow Up</p>
                                 <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                                    {{ mitras.data.filter((m) => m.chat === 'followup').length }}
+                                    {{ props.mitras.data.filter((m) => m.chat === 'followup').length }}
                                 </p>
                             </div>
                             <div class="rounded-lg bg-blue-500 p-2">
@@ -524,7 +557,7 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                             <div>
                                 <p class="mb-1 text-sm font-medium text-yellow-700 dark:text-yellow-300">Follow Up 2</p>
                                 <p class="text-2xl font-bold text-yellow-900 dark:text-yellow-100">
-                                    {{ mitras.data.filter((m) => m.chat === 'followup_2').length }}
+                                    {{ props.mitras.data.filter((m) => m.chat === 'followup_2').length }}
                                 </p>
                             </div>
                             <div class="rounded-lg bg-yellow-500 p-2">
@@ -540,7 +573,7 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                             <div>
                                 <p class="mb-1 text-sm font-medium text-purple-700 dark:text-purple-300">Follow Up 3</p>
                                 <p class="text-2xl font-bold text-purple-900 dark:text-purple-100">
-                                    {{ mitras.data.filter((m) => m.chat === 'followup_3').length }}
+                                    {{ props.mitras.data.filter((m) => m.chat === 'followup_3').length }}
                                 </p>
                             </div>
                             <div class="rounded-lg bg-purple-500 p-2">
@@ -554,10 +587,9 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
             <!-- Hourly Leads Analysis Chart -->
             <HourlyLeadsChart
                 :data="chartData"
-                :loading="chartLoading"
+                :loading="false"
                 :selected-date="periodeStart === periodeEnd ? periodeStart : undefined"
                 :empty-message="hasActiveFilters ? 'Tidak ada data lead untuk filter yang dipilih.' : 'Belum ada data lead yang tersedia.'"
-                @refresh="refreshChartData"
             />
 
             <!-- Search and Filter Bar -->
@@ -647,19 +679,11 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                                     <Calendar class="h-4 w-4" />
                                     Dari Tanggal
                                 </label>
-                                <div class="relative">
-                                    <Input 
-                                        id="periode-start-input"
-                                        type="date" 
-                                        v-model="periodeStart" 
-                                        class="h-9 cursor-pointer w-full pr-10" 
-                                        placeholder="Pilih tanggal mulai"
-                                    />
-                                    <Calendar 
-                                        class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground cursor-pointer hover:text-foreground" 
-                                        @click="openDatePicker('periode-start-input')"
-                                    />
-                                </div>
+                                <DatePicker
+                                    v-model="periodeStart"
+                                    placeholder="Pilih tanggal mulai"
+                                    :max-date="periodeEnd || undefined"
+                                />
                             </div>
 
                             <!-- Periode End -->
@@ -668,19 +692,10 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                                     <Calendar class="h-4 w-4" />
                                     Sampai Tanggal
                                 </label>
-                                <div class="relative">
-                                    <Input 
-                                        id="periode-end-input"
-                                        type="date" 
-                                        v-model="periodeEnd" 
-                                        class="h-9 cursor-pointer w-full pr-10" 
-                                        placeholder="Pilih tanggal akhir"
-                                    />
-                                    <Calendar 
-                                        class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground cursor-pointer hover:text-foreground" 
-                                        @click="openDatePicker('periode-end-input')"
-                                    />
-                                </div>
+                                <DatePicker
+                                    v-model="periodeEnd"
+                                    placeholder="Pilih tanggal akhir"
+                                />
                             </div>
 
                             <!-- Marketing Filter -->
@@ -801,7 +816,7 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                                 </TableHeader>
                                 <TableBody>
                                     <!-- Empty State -->
-                                    <TableRow v-if="mitras.data.length === 0" class="hover:bg-transparent">
+                                    <TableRow v-if="mitrasData.data.length === 0" class="hover:bg-transparent">
                                         <TableCell colspan="9" class="py-8 text-center">
                                             <div class="flex justify-center">
                                                 <div class="mx-auto max-w-md">
@@ -840,7 +855,7 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                                     </TableRow>
 
                                     <!-- Data Rows -->
-                                    <TableRow v-for="mitra in mitras.data" :key="mitra.id" class="transition-colors hover:bg-muted/30">
+                                    <TableRow v-for="mitra in mitrasData.data" :key="mitra.id" class="transition-colors hover:bg-muted/30">
                                         <TableCell class="py-3 font-medium">
                                             <div class="flex items-center gap-3">
                                                 <div
@@ -955,18 +970,18 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                         <!-- Enhanced Pagination -->
                         <div class="mt-4 flex flex-col items-center justify-between gap-3 rounded-lg bg-muted/20 p-3 sm:flex-row">
                             <div class="text-sm text-foreground/80 dark:text-foreground/90">
-                                Menampilkan <span class="font-medium text-foreground">{{ mitras.data.length }}</span> dari
-                                <span class="font-medium text-foreground">{{ mitras.total }}</span> mitra
-                                <span v-if="mitras.total > 0" class="text-foreground/70 dark:text-foreground/80">
-                                    ({{ (mitras.current_page - 1) * mitras.per_page + 1 }} -
-                                    {{ Math.min(mitras.current_page * mitras.per_page, mitras.total) }})
+                                Menampilkan <span class="font-medium text-foreground">{{ mitrasData.data.length }}</span> dari
+                <span class="font-medium text-foreground">{{ mitrasData.total }}</span> mitra
+                        <span v-if="mitrasData.total > 0" class="text-foreground/70 dark:text-foreground/80">
+                            ({{ (mitrasData.current_page - 1) * mitrasData.per_page + 1 }} -
+                            {{ Math.min(mitrasData.current_page * mitrasData.per_page, mitrasData.total) }})
                                 </span>
                             </div>
 
                             <div class="flex items-center gap-2">
                                 <!-- First Page -->
                                 <Button
-                                    v-if="mitras.current_page > 2"
+                                    v-if="mitrasData.current_page > 2"
                                     variant="outline"
                                     size="sm"
                                     @click="router.get('/mitras', { ...getFilterParams(), page: 1 })"
@@ -976,14 +991,14 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                                 </Button>
 
                                 <!-- Dots if there's a gap -->
-                                <span v-if="mitras.current_page > 3" class="px-2 text-foreground/60">...</span>
+                                <span v-if="mitrasData.current_page > 3" class="px-2 text-foreground/60">...</span>
 
                                 <!-- Previous Page -->
                                 <Button
-                                    v-if="mitras.prev_page_url"
+                                    v-if="mitrasData.prev_page_url"
                                     variant="outline"
                                     size="sm"
-                                    @click="router.get(mitras.prev_page_url)"
+                                    @click="router.get(mitrasData.prev_page_url)"
                                     class="h-9 border-gray-300 bg-gradient-to-r from-gray-100 to-gray-200 px-3 text-gray-800 transition-all duration-200 hover:from-gray-200 hover:to-gray-300 dark:border-gray-600 dark:from-gray-700 dark:to-gray-800 dark:text-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-700"
                                 >
                                     ← Prev
@@ -996,32 +1011,32 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                                     class="h-9 w-9 border-blue-500 bg-gradient-to-r from-blue-500 to-blue-600 p-0 text-white shadow-md"
                                     disabled
                                 >
-                                    {{ mitras.current_page }}
+                                    {{ mitrasData.current_page }}
                                 </Button>
 
                                 <!-- Next Page -->
                                 <Button
-                                    v-if="mitras.next_page_url"
+                                    v-if="mitrasData.next_page_url"
                                     variant="outline"
                                     size="sm"
-                                    @click="router.get(mitras.next_page_url)"
+                                    @click="router.get(mitrasData.next_page_url)"
                                     class="h-9 border-gray-300 bg-gradient-to-r from-gray-100 to-gray-200 px-3 text-gray-800 transition-all duration-200 hover:from-gray-200 hover:to-gray-300 dark:border-gray-600 dark:from-gray-700 dark:to-gray-800 dark:text-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-700"
                                 >
                                     Next →
                                 </Button>
 
                                 <!-- Dots if there's a gap -->
-                                <span v-if="mitras.current_page < mitras.last_page - 2" class="px-2 text-foreground/60">...</span>
+                                <span v-if="mitrasData.current_page < mitrasData.last_page - 2" class="px-2 text-foreground/60">...</span>
 
                                 <!-- Last Page -->
                                 <Button
-                                    v-if="mitras.current_page < mitras.last_page - 1"
+                                    v-if="mitrasData.current_page < mitrasData.last_page - 1"
                                     variant="outline"
                                     size="sm"
-                                    @click="router.get('/mitras', { ...getFilterParams(), page: mitras.last_page })"
+                                    @click="router.get('/mitras', { ...getFilterParams(), page: mitrasData.last_page })"
                                     class="h-9 w-9 border-gray-300 bg-gradient-to-r from-gray-100 to-gray-200 p-0 text-gray-800 transition-all duration-200 hover:from-gray-200 hover:to-gray-300 dark:border-gray-600 dark:from-gray-700 dark:to-gray-800 dark:text-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-700"
                                 >
-                                    {{ mitras.last_page }}
+                                    {{ mitrasData.last_page }}
                                 </Button>
                             </div>
                         </div>

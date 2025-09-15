@@ -97,6 +97,23 @@ class MitraController extends Controller
         $perPage = in_array($perPage, [10, 20, 30, 50, 100]) ? $perPage : 30;
 
         $mitras = $query->paginate($perPage)->withQueryString();
+
+        // Log the final results for debugging
+        \Log::info('Mitra Controller Results:', [
+            'total_records' => $mitras->total(),
+            'current_page_count' => $mitras->count(),
+            'filters_applied' => [
+                'search' => $request->search,
+                'periode_start' => $request->periode_start,
+                'periode_end' => $request->periode_end,
+                'chat' => $request->chat,
+                'label' => $request->label,
+                'user' => $request->user,
+            ],
+            'user_role' => $user->role,
+            'user_id' => $user->id
+        ]);
+
         $brands = Brand::all();
         $labels = Label::all();
         
@@ -510,17 +527,5 @@ class MitraController extends Controller
         return array_values($hourlyData);
     }
 
-    /**
-     * API endpoint to get hourly analysis data (for refresh functionality)
-     */
-    public function getHourlyAnalysisData(Request $request)
-    {
-        $user = auth()->user();
-        $data = $this->getHourlyAnalysis($request, $user);
-        
-        return response()->json([
-            'success' => true,
-            'data' => $data
-        ]);
-    }
+
 }

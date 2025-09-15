@@ -48,7 +48,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role.access:view')->group(function () {
         Route::get('mitras/export', [MitraController::class, 'export'])->name('mitras.export');
         Route::get('mitras/template', [MitraController::class, 'downloadTemplate'])->name('mitras.template');
-        Route::get('mitras/hourly-analysis', [MitraController::class, 'getHourlyAnalysisData'])->name('mitras.hourly-analysis');
         Route::post('mitras/import', [MitraController::class, 'import'])->name('mitras.import');
     });
     
@@ -60,6 +59,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Mitras Management - Role-based access with data filtering
     Route::middleware('role.access:view')->group(function () {
         Route::get('mitras', [MitraController::class, 'index'])->name('mitras.index');
+    });
+    
+    // Dynamic routes MUST be at the end to prevent conflicts
+    Route::middleware('role.access:view')->group(function () {
         Route::get('mitras/{mitra}', [MitraController::class, 'show'])->name('mitras.show');
     });
     
