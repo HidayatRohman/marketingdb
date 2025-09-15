@@ -133,6 +133,7 @@ onMounted(() => {
 // Date filter presets
 const datePresets = [
     { key: 'today', label: 'Hari Ini', value: 'today', days: 0 },
+    { key: 'yesterday', label: 'Kemarin', value: 'yesterday', days: -1 },
     { key: '3days', label: '3 Hari', value: '3days', days: 3 },
     { key: '7days', label: '7 Hari', value: '7days', days: 7 },
     { key: '2weeks', label: '2 Minggu', value: '2weeks', days: 14 },
@@ -154,6 +155,12 @@ const setDatePreset = (preset: string) => {
     if (preset === 'today') {
         periodeStart.value = endDate;
         periodeEnd.value = endDate;
+    } else if (preset === 'yesterday') {
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+        const yesterdayDate = yesterday.toISOString().split('T')[0];
+        periodeStart.value = yesterdayDate;
+        periodeEnd.value = yesterdayDate;
     } else if (preset === 'custom') {
         // Don't change dates, let user set manually
         return;

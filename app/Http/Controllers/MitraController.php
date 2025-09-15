@@ -85,7 +85,7 @@ class MitraController extends Controller
         }
 
         // Apply user (marketing) filter - only for Super Admin and Admin
-        if ($request->has('user') && $request->user && $user->hasFullAccess()) {
+        if ($request->has('user') && $request->user && ($user->hasFullAccess() || $user->hasReadOnlyAccess())) {
             $query->where('user_id', $request->user);
         }
 
@@ -469,7 +469,7 @@ class MitraController extends Controller
             $query->where('label_id', $request->label);
         }
 
-        if ($request->has('user') && $request->user && $user->hasFullAccess()) {
+        if ($request->has('user') && $request->user && ($user->hasFullAccess() || $user->hasReadOnlyAccess())) {
             $query->where('user_id', $request->user);
         }
 

@@ -113,7 +113,7 @@ class MitraExportService
             $query->where('label_id', $request->label);
         }
 
-        if ($request->filled('user') && $user->hasFullAccess()) {
+        if ($request->filled('user') && ($user->hasFullAccess() || $user->hasReadOnlyAccess())) {
             $query->where('user_id', $request->user);
         }
 
