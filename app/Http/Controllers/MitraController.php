@@ -50,11 +50,28 @@ class MitraController extends Controller
 
         // Apply periode filter
         if ($request->has('periode_start') && $request->periode_start) {
+            \Log::info('Date filter start:', [
+                'periode_start' => $request->periode_start,
+                'original_request' => $request->all()
+            ]);
             $query->whereDate('tanggal_lead', '>=', $request->periode_start);
         }
 
         if ($request->has('periode_end') && $request->periode_end) {
+            \Log::info('Date filter end:', [
+                'periode_end' => $request->periode_end,
+                'original_request' => $request->all()
+            ]);
             $query->whereDate('tanggal_lead', '<=', $request->periode_end);
+        }
+
+        // Debug: Log the actual SQL query being executed
+        if (($request->has('periode_start') && $request->periode_start) || 
+            ($request->has('periode_end') && $request->periode_end)) {
+            \Log::info('SQL Query with date filters:', [
+                'sql' => $query->toSql(),
+                'bindings' => $query->getBindings()
+            ]);
         }
 
         // Apply chat filter

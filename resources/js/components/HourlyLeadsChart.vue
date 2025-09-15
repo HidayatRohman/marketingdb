@@ -1,23 +1,27 @@
 <template>
   <Card class="border-0 shadow-md">
-    <CardHeader class="pb-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 p-2 shadow-lg">
-            <TrendingUp class="h-5 w-5 text-white" />
+    <CardHeader class="pb-3 sm:pb-4">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <div class="rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 p-1.5 shadow-lg sm:p-2">
+            <TrendingUp class="h-4 w-4 text-white sm:h-5 sm:w-5" />
           </div>
-          <div>
-            <CardTitle class="text-lg font-semibold text-gray-900 dark:text-white">
-              Analisa Lead per Jam - {{ selectedDate ? formatDate(selectedDate) : 'Semua Tanggal' }}
+          <div class="min-w-0 flex-1">
+            <CardTitle class="text-base font-semibold text-gray-900 dark:text-white sm:text-lg">
+              <span class="hidden sm:inline">Analisa Lead per Jam</span>
+              <span class="sm:hidden">Lead per Jam</span>
+              <span class="block text-xs font-normal text-gray-600 dark:text-gray-400 sm:hidden">
+                {{ selectedDate ? formatDate(selectedDate) : 'Semua Tanggal' }}
+              </span>
             </CardTitle>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Distribusi lead berdasarkan jam dan brand untuk mengoptimalkan strategi marketing
+            <p class="hidden text-sm text-gray-600 dark:text-gray-400 mt-1 sm:block">
+              {{ selectedDate ? formatDate(selectedDate) : 'Semua Tanggal' }} - Distribusi lead berdasarkan jam dan brand
             </p>
           </div>
         </div>
         
-        <!-- Chart Controls -->
-        <div class="flex items-center gap-2">
+        <!-- Chart Controls - Mobile Responsive -->
+        <div class="flex flex-wrap items-center gap-2">
           <!-- View Toggle -->
           <div class="flex rounded-lg border border-gray-200 dark:border-gray-700 p-1">
             <Button
@@ -25,28 +29,28 @@
               size="sm"
               @click="viewMode = 'line'"
               :class="[
-                'h-8 px-3 text-xs',
+                'h-7 px-2 text-xs sm:h-8 sm:px-3',
                 viewMode === 'line' 
                   ? 'bg-indigo-500 text-white shadow-sm' 
                   : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
               ]"
             >
               <TrendingUp class="h-3 w-3 mr-1" />
-              Line
+              <span class="hidden sm:inline">Line</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
               @click="viewMode = 'bar'"
               :class="[
-                'h-8 px-3 text-xs',
+                'h-7 px-2 text-xs sm:h-8 sm:px-3',
                 viewMode === 'bar' 
                   ? 'bg-indigo-500 text-white shadow-sm' 
                   : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
               ]"
             >
               <BarChart3 class="h-3 w-3 mr-1" />
-              Bar
+              <span class="hidden sm:inline">Bar</span>
             </Button>
           </div>
           
@@ -56,22 +60,22 @@
               variant="outline"
               size="sm"
               @click="showBrandFilter = !showBrandFilter"
-              class="h-8 px-3 text-xs border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800 min-w-[100px] justify-between"
+              class="h-7 px-2 text-xs border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800 min-w-[80px] justify-between sm:h-8 sm:px-3 sm:min-w-[100px]"
             >
-              <span>
-                {{ selectedBrands.length === 0 ? 'Semua Brand' : 
-                   selectedBrands.length === 1 ? selectedBrands[0] : 
+              <span class="truncate">
+                {{ selectedBrands.length === 0 ? 'Semua' : 
+                   selectedBrands.length === 1 ? (selectedBrands[0].length > 8 ? selectedBrands[0].substring(0, 8) + '...' : selectedBrands[0]) : 
                    `${selectedBrands.length} Brand` }}
               </span>
-              <ChevronDown class="h-3 w-3 ml-2" />
+              <ChevronDown class="h-3 w-3 ml-1 flex-shrink-0" />
             </Button>
             
             <!-- Dropdown Menu -->
             <div 
               v-if="showBrandFilter"
-              class="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+              class="absolute right-0 mt-1 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 sm:w-48"
             >
-              <div class="p-2 max-h-48 overflow-y-auto">
+              <div class="p-2 max-h-40 overflow-y-auto sm:max-h-48">
                 <div class="mb-2">
                   <label class="flex items-center space-x-2 cursor-pointer p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded">
                     <input 
@@ -92,7 +96,7 @@
                       v-model="selectedBrands"
                       class="rounded border-gray-300 dark:border-gray-600"
                     />
-                    <span class="text-xs text-gray-700 dark:text-gray-300">{{ brand }}</span>
+                    <span class="text-xs text-gray-700 dark:text-gray-300 truncate">{{ brand }}</span>
                   </label>
                 </div>
               </div>
@@ -104,9 +108,11 @@
             variant="outline"
             size="sm"
             @click="$emit('refresh')"
-            class="h-8 px-3 text-xs border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800"
+            class="h-7 px-2 text-xs border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800 sm:h-8 sm:px-3"
+            title="Refresh Data"
           >
             <RefreshCw class="h-3 w-3" />
+            <span class="ml-1 hidden sm:inline">Refresh</span>
           </Button>
         </div>
       </div>
@@ -123,32 +129,32 @@
 
       <!-- Chart Container -->
       <div v-else-if="chartData && chartData.datasets.length > 0" class="relative">
-        <div class="h-80 w-full">
+        <div class="h-64 w-full sm:h-80">
           <canvas :key="canvasKey" ref="chartCanvas" :id="canvasId"></canvas>
         </div>
         
         <!-- Legend & Stats -->
-        <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div class="mt-3 grid grid-cols-1 gap-3 sm:mt-4 sm:gap-4 lg:grid-cols-2">
           <!-- Brand Legend -->
           <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
             <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
               <Palette class="h-4 w-4" />
               Brand Legend
             </h4>
-            <div class="flex flex-wrap gap-2">
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1">
               <div 
                 v-for="(dataset, index) in chartData.datasets" 
                 :key="index"
                 class="flex items-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-800 px-2 py-1"
               >
                 <div 
-                  class="w-3 h-3 rounded-full" 
+                  class="w-3 h-3 rounded-full flex-shrink-0" 
                   :style="{ backgroundColor: dataset.borderColor }"
                 ></div>
-                <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate flex-1">
                   {{ dataset.label }}
                 </span>
-                <Badge variant="secondary" class="text-xs">
+                <Badge variant="secondary" class="text-xs flex-shrink-0">
                   {{ getTotalLeadsForBrand(dataset.label) }}
                 </Badge>
               </div>
@@ -161,7 +167,7 @@
               <Clock class="h-4 w-4" />
               Jam Puncak
             </h4>
-            <div class="space-y-2">
+            <div class="space-y-1.5 sm:space-y-2">
               <div 
                 v-for="peak in peakHours" 
                 :key="peak.hour"
@@ -183,14 +189,14 @@
       </div>
 
       <!-- Empty State -->
-      <div v-else class="flex flex-col items-center justify-center py-12">
-        <div class="rounded-full bg-gray-100 dark:bg-gray-800 p-4 mb-4">
-          <TrendingUp class="h-8 w-8 text-gray-400" />
+      <div v-else class="flex flex-col items-center justify-center py-8 sm:py-12">
+        <div class="rounded-full bg-gray-100 dark:bg-gray-800 p-3 mb-3 sm:p-4 sm:mb-4">
+          <TrendingUp class="h-6 w-6 text-gray-400 sm:h-8 sm:w-8" />
         </div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+        <h3 class="text-base font-medium text-gray-900 dark:text-white mb-2 sm:text-lg">
           Belum Ada Data Lead
         </h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-md">
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm px-4 sm:max-w-md sm:px-0">
           {{ emptyMessage || 'Tidak ada data lead untuk periode yang dipilih. Pilih tanggal atau filter yang berbeda.' }}
         </p>
       </div>
@@ -486,12 +492,12 @@ const createChart = async () => {
       x: {
         display: true,
         title: {
-          display: true,
+          display: window.innerWidth >= 640, // Hide title on mobile
           text: 'Jam (24 Format)',
           color: '#6b7280',
           font: {
             family: 'Inter',
-            size: 12,
+            size: window.innerWidth >= 640 ? 12 : 10,
             weight: '500',
           }
         },
@@ -502,20 +508,23 @@ const createChart = async () => {
           color: '#6b7280',
           font: {
             family: 'Inter',
-            size: 11,
-          }
+            size: window.innerWidth >= 640 ? 11 : 9,
+          },
+          maxRotation: 0, // Keep labels horizontal
+          minRotation: 0,
+          maxTicksLimit: window.innerWidth >= 640 ? 24 : 12, // Reduce ticks on mobile
         }
       },
       y: {
         display: true,
         beginAtZero: true,
         title: {
-          display: true,
+          display: window.innerWidth >= 640, // Hide title on mobile
           text: 'Jumlah Lead',
           color: '#6b7280',
           font: {
             family: 'Inter',
-            size: 12,
+            size: window.innerWidth >= 640 ? 12 : 10,
             weight: '500',
           }
         },
@@ -526,9 +535,10 @@ const createChart = async () => {
           color: '#6b7280',
           font: {
             family: 'Inter',
-            size: 11,
+            size: window.innerWidth >= 640 ? 11 : 9,
           },
           stepSize: 1,
+          maxTicksLimit: window.innerWidth >= 640 ? 10 : 6, // Reduce ticks on mobile
         }
       },
     },
@@ -562,6 +572,14 @@ const handleClickOutside = (event: Event) => {
   }
 };
 
+// Resize handler for responsive chart
+const handleResize = async () => {
+  if (chartInstance.value) {
+    await nextTick();
+    createChart(); // Recreate chart with new responsive settings
+  }
+};
+
 // Initialize chart on mount
 onMounted(async () => {
   await nextTick();
@@ -569,11 +587,20 @@ onMounted(async () => {
   
   // Add click outside listener
   document.addEventListener('click', handleClickOutside);
+  
+  // Add resize listener for responsive updates
+  window.addEventListener('resize', handleResize);
 });
 
 // Cleanup on unmount
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
+  window.removeEventListener('resize', handleResize);
+  
+  if (chartInstance.value) {
+    chartInstance.value.destroy();
+    chartInstance.value = null;
+  }
 });
 </script>
 

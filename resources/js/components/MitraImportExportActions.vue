@@ -324,26 +324,58 @@ const handleImport = async (file: File) => {
         const formData = new FormData();
         formData.append('file', file);
 
+        // Try multiple ways to get CSRF token
+        let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+        // Fallback to window Laravel object if meta tag fails
+        if (!csrfToken && (window as any).Laravel && (window as any).Laravel.csrfToken) {
+            csrfToken = (window as any).Laravel.csrfToken;
+        }
+        
+        // Another fallback using _token from form
+        if (!csrfToken) {
+            const tokenInput = document.querySelector('input[name="_token"]') as HTMLInputElement;
+            if (tokenInput) {
+                csrfToken = tokenInput.value;
+            }
+        }
+        
+        if (!csrfToken) {
+            throw new Error('CSRF token tidak ditemukan. Silakan refresh halaman dan coba lagi.');
+        }
+
+        console.log('Using CSRF token:', csrfToken?.substring(0, 10) + '...');
+
         const response = await fetch('/mitras/import', {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'X-CSRF-TOKEN': csrfToken,
                 'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
             },
         });
+
+        console.log('Response status:', response.status, response.statusText);
 
         if (!response.ok) {
             // Try to get JSON error response, fallback to text
             let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
             try {
                 const errorData = await response.json();
+                console.log('Error response:', errorData);
                 errorMessage = errorData.message || errorMessage;
             } catch (e) {
                 // If JSON parsing fails, get text response
                 const textResponse = await response.text();
                 console.error('Non-JSON response received:', textResponse);
-                throw new Error(`Server returned HTML instead of JSON: ${errorMessage}`);
+                
+                // Check if it's a CSRF token mismatch specifically
+                if (textResponse.includes('CSRF token mismatch') || textResponse.includes('419')) {
+                    throw new Error('CSRF token tidak valid. Silakan refresh halaman dan coba lagi.');
+                }
+                
+                throw new Error(`Server error: ${errorMessage}`);
             }
             throw new Error(errorMessage);
         }

@@ -562,14 +562,18 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
 
             <!-- Search and Filter Bar -->
             <Card class="border-0 shadow-md">
-                <CardContent class="p-4">
+                <CardContent class="p-3 sm:p-4">
                     <!-- Top row with search and filter toggle -->
-                    <div class="mb-3 flex items-center gap-4">
+                    <div class="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                         <!-- Search Input -->
                         <div class="flex-1">
                             <div class="relative">
                                 <Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
-                                <Input v-model="search" placeholder="Cari berdasarkan nama, telepon, brand, atau lokasi..." class="h-10 pl-10" />
+                                <Input 
+                                    v-model="search" 
+                                    placeholder="Cari nama, telepon, brand, lokasi..." 
+                                    class="h-9 pl-10 text-sm sm:h-10" 
+                                />
                             </div>
                         </div>
 
@@ -578,7 +582,7 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                             <Button
                                 variant="outline"
                                 @click="toggleFilters"
-                                class="relative h-10 px-4 font-medium transition-all duration-200"
+                                class="relative h-9 flex-1 px-3 font-medium transition-all duration-200 sm:h-10 sm:flex-none sm:px-4"
                                 :class="{
                                     'border-emerald-500 bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md hover:from-emerald-600 hover:to-teal-700':
                                         hasActiveFilters,
@@ -587,7 +591,8 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                                 }"
                             >
                                 <Filter class="mr-2 h-4 w-4" />
-                                Filter
+                                <span class="hidden sm:inline">Filter</span>
+                                <span class="sm:hidden">Filter Data</span>
                                 <ChevronDown v-if="!showFilters" class="ml-2 h-4 w-4" />
                                 <ChevronUp v-else class="ml-2 h-4 w-4" />
                                 <span v-if="hasActiveFilters" class="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500"></span>
@@ -598,9 +603,11 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                                 variant="ghost"
                                 size="sm"
                                 @click="clearFilters"
-                                class="h-10 border border-red-300 bg-gradient-to-r from-red-100 to-red-200 text-red-700 transition-all duration-200 hover:from-red-200 hover:to-red-300 dark:border-red-700 dark:from-red-900/50 dark:to-red-800/50 dark:text-red-300 dark:hover:from-red-800/60 dark:hover:to-red-700/60"
+                                class="h-9 w-9 border border-red-300 bg-gradient-to-r from-red-100 to-red-200 p-0 text-red-700 transition-all duration-200 hover:from-red-200 hover:to-red-300 dark:border-red-700 dark:from-red-900/50 dark:to-red-800/50 dark:text-red-300 dark:hover:from-red-800/60 dark:hover:to-red-700/60 sm:h-10 sm:w-auto sm:px-3"
+                                title="Hapus Semua Filter"
                             >
                                 <X class="h-4 w-4" />
+                                <span class="ml-1 hidden sm:inline">Clear</span>
                             </Button>
                         </div>
                     </div>
@@ -613,7 +620,7 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                                 <Clock class="h-4 w-4" />
                                 Filter Periode Cepat
                             </label>
-                            <div class="flex flex-wrap gap-2">
+                            <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                                 <Button
                                     v-for="preset in datePresets"
                                     :key="preset.key"
@@ -626,14 +633,14 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                                         'border-gray-300 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 hover:from-gray-200 hover:to-gray-300 dark:border-gray-600 dark:from-gray-700 dark:to-gray-800 dark:text-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-700':
                                             selectedPreset !== preset.key,
                                     }"
-                                    class="h-8 px-3 py-1 text-xs font-medium transition-all duration-200"
+                                    class="h-8 px-2 py-1 text-xs font-medium transition-all duration-200 sm:px-3"
                                 >
-                                    {{ preset.label }}
+                                    <span class="truncate">{{ preset.label }}</span>
                                 </Button>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-5">
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
                             <!-- Periode Start -->
                             <div class="space-y-1">
                                 <label class="flex items-center gap-2 text-sm font-medium text-foreground/90 dark:text-foreground">
@@ -734,7 +741,7 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                         </div>
 
                         <!-- Per Page and Active Filters -->
-                        <div class="flex items-center justify-between border-t pt-3">
+                        <div class="flex flex-col items-start gap-3 border-t pt-3 sm:flex-row sm:items-center sm:justify-between">
                             <div class="flex items-center gap-2">
                                 <label class="text-sm font-medium text-foreground/80 dark:text-foreground/90">Tampilkan:</label>
                                 <select
@@ -751,9 +758,9 @@ watch([search, chat, label, user, periodeStart, periodeEnd], () => {
                             </div>
 
                             <!-- Active Filters Display -->
-                            <div v-if="hasActiveFilters" class="flex items-center gap-2 text-sm text-foreground/80 dark:text-foreground/90">
-                                <span>Filter aktif:</span>
-                                <div class="flex gap-1">
+                            <div v-if="hasActiveFilters" class="flex flex-col items-start gap-2 text-sm text-foreground/80 dark:text-foreground/90 sm:flex-row sm:items-center">
+                                <span class="font-medium">Filter aktif:</span>
+                                <div class="flex flex-wrap gap-1">
                                     <span v-if="search" class="rounded bg-primary/10 px-2 py-1 text-xs text-primary">Search</span>
                                     <span v-if="chat" class="rounded bg-primary/10 px-2 py-1 text-xs text-primary">{{
                                         chatLabels[chat as keyof typeof chatLabels]

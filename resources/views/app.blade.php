@@ -33,6 +33,13 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title inertia>{{ $siteTitle ?? config('app.name', 'Laravel') }}</title>
 
+        {{-- Make CSRF token available globally for JavaScript --}}
+        <script>
+            window.Laravel = {
+                csrfToken: '{{ csrf_token() }}'
+            };
+        </script>
+
         @if($siteFavicon)
             <link rel="icon" href="{{ $siteFavicon }}" type="image/png">
         @else

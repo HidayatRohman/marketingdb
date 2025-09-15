@@ -327,7 +327,14 @@ const toggleCalendar = () => {
 const selectDate = (date: CalendarDate) => {
   if (date.disabled) return;
   const selectedDate = new Date(date.year, date.month, date.day);
-  emit('update:modelValue', selectedDate.toISOString().split('T')[0]);
+  
+  // Use timezone-safe date formatting instead of toISOString()
+  const year = selectedDate.getFullYear();
+  const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+  const day = String(selectedDate.getDate()).padStart(2, '0');
+  const dateString = `${year}-${month}-${day}`;
+  
+  emit('update:modelValue', dateString);
   isOpen.value = false;
 };
 
@@ -361,7 +368,14 @@ const nextMonth = () => {
 
 const selectToday = () => {
   const today = new Date();
-  emit('update:modelValue', today.toISOString().split('T')[0]);
+  
+  // Use timezone-safe date formatting instead of toISOString()
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const dateString = `${year}-${month}-${day}`;
+  
+  emit('update:modelValue', dateString);
   isOpen.value = false;
 };
 
