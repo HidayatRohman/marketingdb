@@ -43,7 +43,7 @@ import {
     X,
     Zap,
 } from 'lucide-vue-next';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, Teleport } from 'vue';
 
 interface UserStats {
     total: number;
@@ -228,6 +228,11 @@ const refreshing = ref(false);
 const showMarketingDropdown = ref(false);
 const showBrandDropdown = ref(false);
 const isFilterExpanded = ref(false);
+const hoveredLabel = ref<LabelDistribution | null>(null);
+const tooltipPosition = ref({ x: 0, y: 0 });
+const showTooltip = ref(false);
+const hoveredProgressLabel = ref<LabelDistribution | null>(null);
+const showProgressTooltip = ref(false);
 
 // Computed values
 const totalConversionRate = computed(() => {
@@ -403,6 +408,49 @@ const getArcPath = (label: LabelDistribution, index: number) => {
     }
 
     return `M ${centerX},${centerY} L ${startX},${startY} A ${radius},${radius} 0 ${largeArcFlag},1 ${endX},${endY} Z`;
+};
+
+// Tooltip functions
+const handleMouseEnter = (label: LabelDistribution, event: MouseEvent) => {
+    hoveredLabel.value = label;
+    showTooltip.value = true;
+    updateTooltipPosition(event);
+};
+
+const handleMouseLeave = () => {
+    hoveredLabel.value = null;
+    showTooltip.value = false;
+};
+
+const handleMouseMove = (event: MouseEvent) => {
+    if (showTooltip.value) {
+        updateTooltipPosition(event);
+    }
+};
+
+const updateTooltipPosition = (event: MouseEvent) => {
+    tooltipPosition.value = {
+        x: event.clientX + 10,
+        y: event.clientY - 10
+    };
+};
+
+// Progress bar tooltip functions
+const handleProgressMouseEnter = (label: LabelDistribution, event: MouseEvent) => {
+    hoveredProgressLabel.value = label;
+    showProgressTooltip.value = true;
+    updateTooltipPosition(event);
+};
+
+const handleProgressMouseLeave = () => {
+    hoveredProgressLabel.value = null;
+    showProgressTooltip.value = false;
+};
+
+const handleProgressMouseMove = (event: MouseEvent) => {
+    if (showProgressTooltip.value) {
+        updateTooltipPosition(event);
+    }
 };
 
 
@@ -1244,8 +1292,10 @@ onMounted(() => {
                                                     :fill="label.warna"
                                                     :stroke="label.warna"
                                                     stroke-width="2"
-                                                    class="cursor-pointer drop-shadow-sm transition-all duration-200 hover:brightness-110"
-                                                    :title="`${label.nama}: ${label.count} (${label.percentage}%)`"
+                                                    class="cursor-pointer drop-shadow-sm transition-all duration-200 hover:brightness-110 hover:scale-105"
+                                                    @mouseenter="handleMouseEnter(label, $event)"
+                                                    @mouseleave="handleMouseLeave"
+                                                    @mousemove="handleMouseMove($event)"
                                                 />
                                             </template>
                                         </svg>
@@ -1256,6 +1306,49 @@ onMounted(() => {
                                                 <p class="text-sm text-muted-foreground">Total Labels</p>
                                             </div>
                                         </div>
+                                        
+                                        <!-- Custom Tooltip -->
+                                        <Teleport to="body">
+                                            <div
+                                                v-if="showTooltip && hoveredLabel"
+                                                class="pointer-events-none fixed z-50 rounded-lg bg-gray-900 px-3 py-2 text-sm text-white shadow-lg dark:bg-gray-100 dark:text-gray-900"
+                                                :style="{
+                                                    left: tooltipPosition.x + 'px',
+                                                    top: tooltipPosition.y + 'px'
+                                                }"
+                                            >
+                                                <div class="font-semibold">{{ hoveredLabel.nama }}</div>
+                                                <div class="text-xs opacity-90">
+                                                    Jumlah: <span class="font-medium">{{ hoveredLabel.count }}</span>
+                                                </div>
+                                                <div class="text-xs opacity-90">
+                                                    Persentase: <span class="font-medium">{{ hoveredLabel.percentage }}%</span>
+                                                </div>
+                                            </div>
+                                        </Teleport>
+                                        
+                                        <!-- Progress Bar Tooltip -->
+                                        <Teleport to="body">
+                                            <div
+                                                v-if="showProgressTooltip && hoveredProgressLabel"
+                                                class="pointer-events-none fixed z-50 rounded-lg bg-gray-900 px-3 py-2 text-sm text-white shadow-lg dark:bg-gray-100 dark:text-gray-900"
+                                                :style="{
+                                                    left: tooltipPosition.x + 'px',
+                                                    top: tooltipPosition.y + 'px'
+                                                }"
+                                            >
+                                                <div class="font-semibold">{{ hoveredProgressLabel.nama }}</div>
+                                                <div class="text-xs opacity-90">
+                                                    Total Leads: <span class="font-medium">{{ hoveredProgressLabel.count }}</span>
+                                                </div>
+                                                <div class="text-xs opacity-90">
+                                                    Persentase: <span class="font-medium">{{ hoveredProgressLabel.percentage }}%</span>
+                                                </div>
+                                                <div class="text-xs opacity-90">
+                                                    Dari Total: <span class="font-medium">{{ labelDistribution.reduce((sum, item) => sum + item.count, 0) }}</span>
+                                                </div>
+                                            </div>
+                                        </Teleport>
                                     </div>
 
                                     <!-- Legend -->
@@ -1297,7 +1390,14 @@ onMounted(() => {
                                             </div>
                                             <span class="text-sm font-bold">{{ label.count }} leads</span>
                                         </div>
-                                        <Progress :value="label.percentage" class="h-2" />
+                                        <div 
+                                            class="cursor-pointer"
+                                            @mouseenter="handleProgressMouseEnter(label, $event)"
+                                            @mouseleave="handleProgressMouseLeave"
+                                            @mousemove="handleProgressMouseMove($event)"
+                                        >
+                                            <Progress :value="label.percentage" class="h-2 transition-all duration-200 hover:h-3" />
+                                        </div>
                                         <p class="mt-1 text-xs text-muted-foreground">{{ label.percentage }}% dari total leads</p>
                                     </div>
                                 </div>
