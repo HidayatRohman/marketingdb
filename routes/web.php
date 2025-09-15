@@ -6,6 +6,7 @@ use App\Http\Controllers\LabelController;
 use App\Http\Controllers\MitraController;
 use App\Http\Controllers\TaskManagementController;
 use App\Http\Controllers\TodoListController;
+use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -113,6 +114,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::middleware('role.access:destroy')->group(function () {
         Route::delete('labels/{label}', [LabelController::class, 'destroy'])->name('labels.destroy');
+    });
+
+    // Transaksi Management - Role-based access with data filtering
+    Route::middleware('role.access:view')->group(function () {
+        Route::get('transaksis', [TransaksiController::class, 'index'])->name('transaksis.index');
+        Route::get('transaksis/{transaksi}', [TransaksiController::class, 'show'])->name('transaksis.show');
+    });
+    
+    Route::middleware('role.access:create')->group(function () {
+        Route::post('transaksis', [TransaksiController::class, 'store'])->name('transaksis.store');
+    });
+    
+    Route::middleware('role.access:edit')->group(function () {
+        Route::put('transaksis/{transaksi}', [TransaksiController::class, 'update'])->name('transaksis.update');
+    });
+    
+    Route::middleware('role.access:destroy')->group(function () {
+        Route::delete('transaksis/{transaksi}', [TransaksiController::class, 'destroy'])->name('transaksis.destroy');
     });
 
     // Todo Lists - All authenticated users can access

@@ -6,7 +6,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Calendar, Handshake, Kanban, LayoutGrid, Tag, Users, Zap } from 'lucide-vue-next';
+import { Calendar, CreditCard, Handshake, Kanban, LayoutGrid, Tag, Users, Zap } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
@@ -32,6 +32,15 @@ const mainNavItems = computed<NavItem[]>(() => {
             title: 'Mitra',
             href: '/mitras',
             icon: Handshake,
+        });
+    }
+
+    // Transaksi - accessible by all roles but with different permissions
+    if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess || permissions.value.hasLimitedAccess) {
+        items.push({
+            title: 'Transaksi',
+            href: '/transaksis',
+            icon: CreditCard,
         });
     }
 
