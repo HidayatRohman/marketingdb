@@ -35,6 +35,50 @@ class AdminSeeder extends Seeder
                 ]);
         }
 
-        $this->command->info('Admin seeder completed successfully!');
+        // Super Admin utama
+        User::firstOrCreate(
+            ['email' => 'superadmin@marketingdb.com'],
+            [
+                'name' => 'Super Admin User',
+                'password' => Hash::make('password'),
+                'role' => 'super_admin',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Tambahkan super admin untuk testing jika belum ada
+        $existingSuperAdmins = User::where('role', 'super_admin')->count();
+        if ($existingSuperAdmins < 3) { // 1 super admin utama + 2 testing
+            $needToCreate = 3 - $existingSuperAdmins;
+            User::factory()
+                ->count($needToCreate)
+                ->create([
+                    'role' => 'super_admin',
+                ]);
+        }
+
+        // Marketing utama
+        User::firstOrCreate(
+            ['email' => 'marketing@marketingdb.com'],
+            [
+                'name' => 'Marketing User',
+                'password' => Hash::make('password'),
+                'role' => 'marketing',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Tambahkan marketing untuk testing jika belum ada
+        $existingMarketing = User::where('role', 'marketing')->count();
+        if ($existingMarketing < 5) { // 1 marketing utama + 4 testing
+            $needToCreate = 5 - $existingMarketing;
+            User::factory()
+                ->count($needToCreate)
+                ->create([
+                    'role' => 'marketing',
+                ]);
+        }
+
+        $this->command->info('Admin, Super Admin, and Marketing seeder completed successfully!');
     }
 }

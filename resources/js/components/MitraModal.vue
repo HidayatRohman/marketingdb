@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import DatePicker from '@/components/ui/datepicker/DatePicker.vue';
 import { useForm } from '@inertiajs/vue3';
 import { Building2, Calendar, FileText, Loader2, MapPin, MessageSquare, Package, Phone, Tag, User } from 'lucide-vue-next';
 import { watch } from 'vue';
@@ -344,18 +345,13 @@ const chatLabels = {
                                     {{ formatDate(form.tanggal_lead) }}
                                 </span>
                             </div>
-                            <div v-else class="relative">
-                                <Input
-                                    id="tanggal_lead"
-                                    v-model="form.tanggal_lead"
-                                    type="date"
-                                    class="cursor-pointer w-full pr-10"
-                                    placeholder="Pilih tanggal lead"
-                                    :class="{ 'border-destructive': form.errors.tanggal_lead }"
-                                />
-                                <Calendar class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                            </div>
+                            <DatePicker
+                                v-else
+                                v-model="form.tanggal_lead"
+                                placeholder="Pilih tanggal lead"
+                                :disabled="mode === 'view'"
                             />
+                            
                             <p v-if="form.errors.tanggal_lead" class="text-sm text-destructive">
                                 {{ form.errors.tanggal_lead }}
                             </p>
