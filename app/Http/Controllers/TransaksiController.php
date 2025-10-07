@@ -83,6 +83,8 @@ class TransaksiController extends Controller
                 'canOnlyViewOwn' => $user->canOnlyViewOwn(),
             ],
         ]);
+        
+
     }
 
     /**
@@ -108,9 +110,7 @@ class TransaksiController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors()
-            ], 422);
+            return back()->withErrors($validator)->withInput();
         }
 
         $validated = $validator->validated();
@@ -189,9 +189,7 @@ class TransaksiController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors()
-            ], 422);
+            return back()->withErrors($validator)->withInput();
         }
 
         $validated = $validator->validated();

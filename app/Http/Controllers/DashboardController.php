@@ -378,7 +378,11 @@ class DashboardController extends Controller
         }
         
         $totalLeads = $mitraQuery->count();
-        $closedLeads = (clone $mitraQuery)->where('chat', 'followup')->count();
+        
+        // Get closing label ID
+        $closingLabel = \App\Models\Label::where('nama', 'Closing')->first();
+        $closedLeads = $closingLabel ? (clone $mitraQuery)->where('label_id', $closingLabel->id)->count() : 0;
+        
         $openLeads = (clone $mitraQuery)->where('chat', 'masuk')->count();
 
         $marketingQuery = User::where('role', 'marketing');
@@ -404,7 +408,13 @@ class DashboardController extends Controller
                         }
                     },
                     'mitras as closed' => function ($query) use ($startDate, $endDate, $selectedBrand) {
-                        $query->where('chat', 'followup');
+                        // Get closing label ID
+                        $closingLabel = \App\Models\Label::where('nama', 'Closing')->first();
+                        if ($closingLabel) {
+                            $query->where('label_id', $closingLabel->id);
+                        } else {
+                            $query->whereRaw('1 = 0'); // No results if closing label doesn't exist
+                        }
                         if ($startDate && $endDate) {
                             $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
                         }
@@ -508,7 +518,13 @@ class DashboardController extends Controller
                     }
                 },
                 'mitras as closed_leads' => function ($query) use ($startDate, $endDate, $selectedBrand) {
-                    $query->where('chat', 'followup');
+                    // Get closing label ID
+                    $closingLabel = \App\Models\Label::where('nama', 'Closing')->first();
+                    if ($closingLabel) {
+                        $query->where('label_id', $closingLabel->id);
+                    } else {
+                        $query->whereRaw('1 = 0'); // No results if closing label doesn't exist
+                    }
                     if ($startDate && $endDate) {
                         $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
                     }
@@ -570,7 +586,13 @@ class DashboardController extends Controller
                     }
                 },
                 'mitras as closed_leads' => function ($query) use ($currentUser, $startDate, $endDate, $selectedMarketing) {
-                    $query->where('chat', 'followup');
+                    // Get closing label ID
+                    $closingLabel = \App\Models\Label::where('nama', 'Closing')->first();
+                    if ($closingLabel) {
+                        $query->where('label_id', $closingLabel->id);
+                    } else {
+                        $query->whereRaw('1 = 0'); // No results if closing label doesn't exist
+                    }
                     if ($currentUser->hasLimitedAccess()) {
                         $query->where('user_id', $currentUser->id);
                     }

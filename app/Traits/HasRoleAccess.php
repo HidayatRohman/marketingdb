@@ -6,10 +6,11 @@ trait HasRoleAccess
 {
     /**
      * Check if user can perform CRUD operations
+     * All roles except admin can perform CRUD operations
      */
     public function canCrud(): bool
     {
-        return $this->isSuperAdmin() || $this->isMarketing();
+        return !$this->isAdmin();
     }
 
     /**

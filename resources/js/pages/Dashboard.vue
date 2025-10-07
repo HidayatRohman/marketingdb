@@ -1284,7 +1284,7 @@ onMounted(() => {
                             <CardContent>
                                 <div class="space-y-4">
                                     <!-- Simple Pie Chart Visualization -->
-                                    <div class="relative mx-auto h-64 w-64">
+                                    <div v-if="labelDistribution.length > 0" class="relative mx-auto h-64 w-64">
                                         <svg viewBox="0 0 200 200" class="h-full w-full -rotate-90 transform">
                                             <template v-for="(label, index) in labelDistribution" :key="label.id">
                                                 <path
@@ -1350,9 +1350,16 @@ onMounted(() => {
                                             </div>
                                         </Teleport>
                                     </div>
+                                    
+                                    <!-- No Data Message -->
+                                    <div v-else class="flex h-64 flex-col items-center justify-center text-muted-foreground">
+                                        <PieChart class="mb-4 h-16 w-16 opacity-50" />
+                                        <p class="text-lg font-medium">Tidak ada data label</p>
+                                        <p class="text-sm">Data distribusi label akan muncul di sini</p>
+                                    </div>
 
                                     <!-- Legend -->
-                                    <div class="space-y-2">
+                                    <div v-if="labelDistribution.length > 0" class="space-y-2">
                                         <div
                                             v-for="label in labelDistribution"
                                             :key="label.id"
@@ -1381,7 +1388,7 @@ onMounted(() => {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent class="space-y-4">
-                                <div class="grid gap-4">
+                                <div v-if="labelDistribution.length > 0" class="grid gap-4">
                                     <div v-for="label in labelDistribution.slice(0, 5)" :key="label.id" class="rounded-lg border p-4">
                                         <div class="mb-2 flex items-center justify-between">
                                             <div class="flex items-center gap-2">
@@ -1401,8 +1408,14 @@ onMounted(() => {
                                         <p class="mt-1 text-xs text-muted-foreground">{{ label.percentage }}% dari total leads</p>
                                     </div>
                                 </div>
+                                
+                                <!-- No Data Message for Label Statistics -->
+                                <div v-else class="flex h-32 flex-col items-center justify-center text-muted-foreground">
+                                    <Tag class="mb-2 h-8 w-8 opacity-50" />
+                                    <p class="text-sm">Tidak ada data statistik label</p>
+                                </div>
 
-                                <div class="mt-4 rounded-lg bg-muted/50 p-4">
+                                <div v-if="labelDistribution.length > 0" class="mt-4 rounded-lg bg-muted/50 p-4">
                                     <h4 class="mb-2 font-medium">Summary</h4>
                                     <div class="grid grid-cols-2 gap-4 text-sm">
                                         <div>

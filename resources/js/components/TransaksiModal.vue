@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DatePicker from '@/components/ui/datepicker/DatePicker.vue';
 import { useForm } from '@inertiajs/vue3';
-import { computed, watch, ref, onMounted } from 'vue';
+import { computed, watch, onMounted } from 'vue';
 import { Calendar, User, CreditCard, MapPin, Phone, DollarSign } from 'lucide-vue-next';
 
 interface Brand {
@@ -107,7 +107,7 @@ const bulanOptions = [
     { value: 'Desember', label: 'Desember' },
 ];
 
-const usiaOptions = Array.from({ length: 64 }, (_, i) => ({
+const usiaOptions = Array.from({ length: 69 }, (_, i) => ({
     value: i + 17,
     label: (i + 17).toString(),
 }));
@@ -179,6 +179,11 @@ watch(() => props.open, (isOpen) => {
             populateForm(props.transaksi);
         }
     }
+});
+
+// Ensure data is available on mount
+onMounted(() => {
+    // Component mounted successfully
 });
 
 const resetForm = () => {
@@ -255,6 +260,9 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                     <CreditCard class="h-5 w-5" />
                     {{ modalTitle }}
                 </DialogTitle>
+                <DialogDescription>
+                    {{ isCreateMode ? 'Tambah data transaksi baru' : isEditMode ? 'Edit data transaksi' : 'Lihat detail transaksi' }}
+                </DialogDescription>
             </DialogHeader>
 
             <form @submit.prevent="handleSubmit" class="space-y-6">
@@ -286,12 +294,12 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                     <div class="grid gap-4 md:grid-cols-2">
                         <div class="space-y-2">
                             <Label for="mitra_id">Nama Mitra *</Label>
-                            <Select v-model="form.mitra_id" :disabled="isViewMode">
+                            <Select :value="form.mitra_id?.toString()" @update:model-value="(value) => form.mitra_id = value ? parseInt(value) : null" :disabled="isViewMode">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih mitra" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem v-for="mitra in mitras" :key="mitra.id" :value="mitra.id">
+                                    <SelectItem v-for="mitra in mitras" :key="mitra.id" :value="mitra.id.toString()">
                                         {{ mitra.nama }}
                                     </SelectItem>
                                 </SelectContent>
@@ -349,7 +357,7 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
 
                         <div class="space-y-2">
                             <Label for="periode_lead">Periode Lead *</Label>
-                            <Select v-model="form.periode_lead" :disabled="isViewMode">
+                            <Select :value="form.periode_lead" @update:model-value="(value) => form.periode_lead = value" :disabled="isViewMode">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih bulan" />
                                 </SelectTrigger>
@@ -375,12 +383,12 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                     <div class="grid gap-4 md:grid-cols-2">
                         <div class="space-y-2">
                             <Label for="usia">Usia *</Label>
-                            <Select v-model="form.usia" :disabled="isViewMode">
+                            <Select :value="form.usia?.toString()" @update:model-value="(value) => form.usia = value ? parseInt(value) : null" :disabled="isViewMode">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih usia" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem v-for="usia in usiaOptions" :key="usia.value" :value="usia.value">
+                                    <SelectItem v-for="usia in usiaOptions" :key="usia.value" :value="usia.value.toString()">
                                         {{ usia.label }} tahun
                                     </SelectItem>
                                 </SelectContent>
@@ -392,7 +400,7 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
 
                         <div class="space-y-2">
                             <Label for="sumber">Sumber *</Label>
-                            <Select v-model="form.sumber" :disabled="isViewMode">
+                            <Select :value="form.sumber" @update:model-value="(value) => form.sumber = value" :disabled="isViewMode">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih sumber" />
                                 </SelectTrigger>
@@ -431,7 +439,7 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
 
                         <div class="space-y-2">
                             <Label for="provinsi">Provinsi *</Label>
-                            <Select v-model="form.provinsi" :disabled="isViewMode">
+                            <Select :value="form.provinsi" @update:model-value="(value) => form.provinsi = value" :disabled="isViewMode">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih provinsi" />
                                 </SelectTrigger>
@@ -457,12 +465,12 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                     <div class="grid gap-4 md:grid-cols-2">
                         <div class="space-y-2">
                             <Label for="paket_brand_id">Paket Brand *</Label>
-                            <Select v-model="form.paket_brand_id" :disabled="isViewMode">
+                            <Select :value="form.paket_brand_id?.toString()" @update:model-value="(value) => form.paket_brand_id = value ? parseInt(value) : null" :disabled="isViewMode">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih paket brand" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem v-for="brand in brands" :key="brand.id" :value="brand.id">
+                                    <SelectItem v-for="brand in brands" :key="brand.id" :value="brand.id.toString()">
                                         {{ brand.nama }}
                                     </SelectItem>
                                 </SelectContent>
@@ -474,12 +482,12 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
 
                         <div class="space-y-2">
                             <Label for="lead_awal_brand_id">Lead Awal Brand *</Label>
-                            <Select v-model="form.lead_awal_brand_id" :disabled="isViewMode">
+                            <Select :value="form.lead_awal_brand_id?.toString()" @update:model-value="(value) => form.lead_awal_brand_id = value ? parseInt(value) : null" :disabled="isViewMode">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih lead awal brand" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem v-for="brand in brands" :key="brand.id" :value="brand.id">
+                                    <SelectItem v-for="brand in brands" :key="brand.id" :value="brand.id.toString()">
                                         {{ brand.nama }}
                                     </SelectItem>
                                 </SelectContent>
@@ -513,7 +521,7 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                     <div class="grid gap-4 md:grid-cols-3">
                         <div class="space-y-2">
                             <Label for="status_pembayaran">Status Pembayaran *</Label>
-                            <Select v-model="form.status_pembayaran" :disabled="isViewMode">
+                            <Select :value="form.status_pembayaran" @update:model-value="(value) => form.status_pembayaran = value" :disabled="isViewMode">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih status" />
                                 </SelectTrigger>
