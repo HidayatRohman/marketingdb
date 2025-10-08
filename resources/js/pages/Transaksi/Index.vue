@@ -15,7 +15,7 @@ import TableHeader from '@/components/ui/table/TableHeader.vue';
 import TableRow from '@/components/ui/table/TableRow.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { CreditCard, Calendar, ChevronDown, ChevronUp, Edit, Eye, Filter, Plus, Search, Trash2, User, X, DollarSign } from 'lucide-vue-next';
+import { CreditCard, Calendar, ChevronDown, ChevronUp, Edit, Eye, Filter, Plus, Search, Trash2, User, X, DollarSign, Phone } from 'lucide-vue-next';
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { debounce } from 'lodash';
 
@@ -478,6 +478,7 @@ const perPageOptions = [
                                     <TableHead class="w-[100px]">No</TableHead>
                                     <TableHead>Marketing</TableHead>
                                     <TableHead>Mitra</TableHead>
+                                    <TableHead>No. WhatsApp</TableHead>
                                     <TableHead>Tanggal TF</TableHead>
                                     <TableHead>Paket</TableHead>
                                     <TableHead>Status</TableHead>
@@ -488,7 +489,7 @@ const perPageOptions = [
                             </TableHeader>
                             <TableBody>
                                 <TableRow v-if="transaksiData.data.length === 0">
-                                    <TableCell colspan="9" class="text-center py-8">
+                                    <TableCell colspan="10" class="text-center py-8">
                                         <div class="flex flex-col items-center gap-2">
                                             <CreditCard class="h-12 w-12 text-muted-foreground" />
                                             <p class="text-muted-foreground">Tidak ada transaksi ditemukan</p>
@@ -506,9 +507,12 @@ const perPageOptions = [
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <div>
-                                            <p class="font-medium">{{ transaksi.mitra.nama }}</p>
-                                            <p class="text-sm text-muted-foreground">{{ transaksi.no_wa }}</p>
+                                        <p class="font-medium">{{ transaksi.mitra.nama_mitra }}</p>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div class="flex items-center gap-2">
+                                            <Phone class="h-4 w-4 text-muted-foreground" />
+                                            <span class="text-sm">{{ transaksi.no_wa || '-' }}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell>
@@ -517,7 +521,7 @@ const perPageOptions = [
                                     <TableCell>
                                         <div>
                                             <p class="font-medium">{{ transaksi.nama_paket }}</p>
-                                            <p class="text-sm text-muted-foreground">{{ transaksi.paketBrand.nama }}</p>
+                                            <p class="text-sm text-muted-foreground">{{ transaksi.paketBrand?.nama || '-' }}</p>
                                         </div>
                                     </TableCell>
                                     <TableCell>
@@ -648,7 +652,6 @@ const perPageOptions = [
             :open="transaksiModal.open"
             :mode="transaksiModal.mode"
             :transaksi="transaksiModal.transaksi"
-            :mitras="mitras"
             :brands="brands"
             :sumbers="sumbers"
             :current-user="currentUser"

@@ -96,7 +96,7 @@ class TransaksiController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'mitra_id' => 'required|exists:mitras,id',
+            'nama_mitra' => 'required|string|max:255',
             'tanggal_tf' => 'required|date',
             'tanggal_lead_masuk' => 'required|date',
             'periode_lead' => 'required|in:Januari,Februari,Maret,April,Mei,Juni,Juli,Agustus,September,Oktober,November,Desember',
@@ -104,17 +104,18 @@ class TransaksiController extends Controller
             'paket_brand_id' => 'required|exists:brands,id',
             'lead_awal_brand_id' => 'required|exists:brands,id',
             'sumber_id' => 'nullable|exists:sumbers,id',
-            'sumber' => 'required|in:Tidak Tahu,Organik,Web,Instagram,Facebook,Whatsapp,Google,Tiktok,Event,Webinar,Teman,Flyer,Lainnya',
+            'sumber' => 'required|in:Unknown,IG,FB,WA,Tiktok,Web,Google,Organik,Teman',
             'kabupaten' => 'required|string|max:255',
             'provinsi' => 'required|string|max:255',
-            'status_pembayaran' => 'required|in:Tanda jadi,DP,Tambahan Dp,Pelunasan',
+            'status_pembayaran' => 'required|in:Dp / TJ,Tambahan Dp,Pelunasan',
             'nominal_masuk' => 'required|numeric|min:0',
             'harga_paket' => 'required|numeric|min:0',
             'nama_paket' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()->withErrors($validator)->withInput()
+                ->with('error', 'Terjadi kesalahan validasi. Silakan periksa kembali data yang dimasukkan.');
         }
 
         $validated = $validator->validated();
@@ -127,18 +128,42 @@ class TransaksiController extends Controller
             $validated['user_id'] = $user->id;
         }
 
-        // Get mitra data to auto-fill no_wa
-        $mitra = Mitra::find($validated['mitra_id']);
-        $validated['no_wa'] = $mitra->no_telp;
+        try {
+            // Find or create mitra based on nama_mitra
+            $mitra = Mitra::where('nama_mitra', $validated['nama_mitra'])->first();
+            if (!$mitra) {
+                // Create new mitra if not found
+                $mitra = Mitra::create([
+                    'nama_mitra' => $validated['nama_mitra'],
+                    'no_telp' => '', // Will be filled later if needed
+                ]);
+            }
+            
+            // Set mitra_id and no_wa for the transaction
+            $validated['mitra_id'] = $mitra->id;
+            $validated['no_wa'] = $mitra->no_telp ?: '';
+            
+            // Remove nama_mitra from validated data as it's not a field in transaksis table
+            unset($validated['nama_mitra']);
 
-        Transaksi::create($validated);
+            Transaksi::create($validated);
 
-        if ($request->expectsJson()) {
-            return response()->json(['message' => 'Transaksi berhasil ditambahkan.']);
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Transaksi berhasil ditambahkan.']);
+            }
+
+            return redirect()->route('transaksis.index')
+                ->with('success', 'Transaksi berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            \Log::error('Error creating transaksi: ' . $e->getMessage());
+            
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Terjadi kesalahan saat menyimpan data.'], 500);
+            }
+            
+            return back()->withInput()
+                ->with('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
         }
-
-        return redirect()->route('transaksis.index')
-            ->with('success', 'Transaksi berhasil ditambahkan.');
     }
 
     /**
@@ -176,7 +201,7 @@ class TransaksiController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'mitra_id' => 'required|exists:mitras,id',
+            'nama_mitra' => 'required|string|max:255',
             'tanggal_tf' => 'required|date',
             'tanggal_lead_masuk' => 'required|date',
             'periode_lead' => 'required|in:Januari,Februari,Maret,April,Mei,Juni,Juli,Agustus,September,Oktober,November,Desember',
@@ -184,17 +209,18 @@ class TransaksiController extends Controller
             'paket_brand_id' => 'required|exists:brands,id',
             'lead_awal_brand_id' => 'required|exists:brands,id',
             'sumber_id' => 'nullable|exists:sumbers,id',
-            'sumber' => 'required|in:Tidak Tahu,Organik,Web,Instagram,Facebook,Whatsapp,Google,Tiktok,Event,Webinar,Teman,Flyer,Lainnya',
+            'sumber' => 'required|in:Unknown,IG,FB,WA,Tiktok,Web,Google,Organik,Teman',
             'kabupaten' => 'required|string|max:255',
             'provinsi' => 'required|string|max:255',
-            'status_pembayaran' => 'required|in:Tanda jadi,DP,Tambahan Dp,Pelunasan',
+            'status_pembayaran' => 'required|in:Dp / TJ,Tambahan Dp,Pelunasan',
             'nominal_masuk' => 'required|numeric|min:0',
             'harga_paket' => 'required|numeric|min:0',
             'nama_paket' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()->withErrors($validator)->withInput()
+                ->with('error', 'Terjadi kesalahan validasi. Silakan periksa kembali data yang dimasukkan.');
         }
 
         $validated = $validator->validated();
@@ -204,18 +230,42 @@ class TransaksiController extends Controller
             $validated['user_id'] = $user->id;
         }
 
-        // Get mitra data to auto-fill no_wa
-        $mitra = Mitra::find($validated['mitra_id']);
-        $validated['no_wa'] = $mitra->no_telp;
+        try {
+            // Find or create mitra based on nama_mitra
+            $mitra = Mitra::where('nama_mitra', $validated['nama_mitra'])->first();
+            if (!$mitra) {
+                // Create new mitra if not found
+                $mitra = Mitra::create([
+                    'nama_mitra' => $validated['nama_mitra'],
+                    'no_telp' => '', // Will be filled later if needed
+                ]);
+            }
+            
+            // Set mitra_id and no_wa for the transaction
+            $validated['mitra_id'] = $mitra->id;
+            $validated['no_wa'] = $mitra->no_telp ?: '';
+            
+            // Remove nama_mitra from validated data as it's not a field in transaksis table
+            unset($validated['nama_mitra']);
 
-        $transaksi->update($validated);
+            $transaksi->update($validated);
 
-        if ($request->expectsJson()) {
-            return response()->json(['message' => 'Transaksi berhasil diperbarui.']);
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Transaksi berhasil diperbarui.']);
+            }
+
+            return redirect()->route('transaksis.index')
+                ->with('success', 'Transaksi berhasil diperbarui.');
+        } catch (\Exception $e) {
+            \Log::error('Error updating transaksi: ' . $e->getMessage());
+            
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Terjadi kesalahan saat memperbarui data.'], 500);
+            }
+            
+            return back()->withInput()
+                ->with('error', 'Terjadi kesalahan saat memperbarui data. Silakan coba lagi.');
         }
-
-        return redirect()->route('transaksis.index')
-            ->with('success', 'Transaksi berhasil diperbarui.');
     }
 
     /**

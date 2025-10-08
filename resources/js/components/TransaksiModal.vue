@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DatePicker from '@/components/ui/datepicker/DatePicker.vue';
-import { useForm } from '@inertiajs/vue3';
-import { computed, watch, onMounted } from 'vue';
+import { useForm, usePage } from '@inertiajs/vue3';
+import { computed, watch, onMounted, nextTick } from 'vue';
 import { Calendar, User, CreditCard, MapPin, Phone, DollarSign } from 'lucide-vue-next';
 
 interface Brand {
@@ -18,7 +18,7 @@ interface Brand {
 
 interface Mitra {
     id: number;
-    nama: string;
+    nama_mitra: string;
     no_telp: string;
 }
 
@@ -38,7 +38,7 @@ interface Transaksi {
     id: number;
     user_id: number;
     nama_marketing: string;
-    nama_mitra: string;
+
     tanggal_tf: string;
     tanggal_lead_masuk: string;
     periode_lead: string;
@@ -77,6 +77,7 @@ interface Emits {
 
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
+const page = usePage();
 
 // Form data
 const form = useForm({
@@ -84,19 +85,19 @@ const form = useForm({
     nama_marketing: props.currentUser.name,
     nama_mitra: '',
     tanggal_tf: new Date().toISOString().split('T')[0],
-    tanggal_lead_masuk: '',
-    periode_lead: '',
+    tanggal_lead_masuk: new Date().toISOString().split('T')[0],
+    periode_lead: 'Januari',
     no_wa: '',
-    usia: null as number | null,
-    paket_brand_id: null as number | null,
-    lead_awal_brand_id: null as number | null,
-    sumber_id: null as string | null,
-    sumber: '',
+    usia: 18,
+    paket_brand_id: props.brands.length > 0 ? props.brands[0].id : null,
+    lead_awal_brand_id: props.brands.length > 0 ? props.brands[0].id : null,
+    sumber_id: props.sumbers.length > 0 ? props.sumbers[0].id.toString() : null,
+    sumber: 'Unknown',
     kabupaten: '',
-    provinsi: '',
-    status_pembayaran: '',
-    nominal_masuk: null as number | null,
-    harga_paket: null as number | null,
+    provinsi: 'DKI Jakarta',
+    status_pembayaran: 'Dp / TJ',
+    nominal_masuk: 0,
+    harga_paket: 0,
     nama_paket: '',
 });
 
@@ -107,19 +108,15 @@ const usiaOptions = Array.from({ length: 63 }, (_, i) => ({
 }));
 
 const sumberOptions = [
-    { value: 'Tidak Tahu', label: 'Tidak Tahu' },
+    { value: 'Unknown', label: 'Tidak Tahu' },
     { value: 'Organik', label: 'Organik' },
     { value: 'Web', label: 'Web' },
-    { value: 'Instagram', label: 'Instagram' },
-    { value: 'Facebook', label: 'Facebook' },
-    { value: 'Whatsapp', label: 'Whatsapp' },
+    { value: 'IG', label: 'Instagram' },
+    { value: 'FB', label: 'Facebook' },
+    { value: 'WA', label: 'Whatsapp' },
     { value: 'Google', label: 'Google' },
     { value: 'Tiktok', label: 'Tiktok' },
-    { value: 'Event', label: 'Event' },
-    { value: 'Webinar', label: 'Webinar' },
     { value: 'Teman', label: 'Teman' },
-    { value: 'Flyer', label: 'Flyer' },
-    { value: 'Lainnya', label: 'Lainnya' },
 ];
 
 const periodeLeadOptions = [
@@ -138,9 +135,8 @@ const periodeLeadOptions = [
 ];
 
 const statusPembayaranOptions = [
-    { value: 'Tanda jadi', label: 'Tanda jadi' },
-    { value: 'DP', label: 'DP' },
-    { value: 'Tambahan Dp', label: 'Tambahan Dp' },
+    { value: 'Dp / TJ', label: 'DP / Tanda Jadi' },
+    { value: 'Tambahan Dp', label: 'Tambahan DP' },
     { value: 'Pelunasan', label: 'Pelunasan' },
 ];
 
@@ -195,14 +191,25 @@ const resetForm = () => {
     form.user_id = props.currentUser.id;
     form.nama_marketing = props.currentUser.name;
     form.tanggal_tf = new Date().toISOString().split('T')[0];
-    form.sumber_id = null;
+    form.tanggal_lead_masuk = new Date().toISOString().split('T')[0];
+    form.periode_lead = 'Januari';
+    form.usia = 18;
+    form.paket_brand_id = props.brands.length > 0 ? props.brands[0].id : null;
+    form.lead_awal_brand_id = props.brands.length > 0 ? props.brands[0].id : null;
+    form.sumber_id = props.sumbers.length > 0 ? props.sumbers[0].id.toString() : null;
+    form.sumber = 'Unknown';
+    form.kabupaten = 'Jakarta Selatan';
+    form.provinsi = 'DKI Jakarta';
+    form.status_pembayaran = 'Dp / TJ';
+    form.nominal_masuk = 0;
+    form.harga_paket = 0;
     form.clearErrors();
 };
 
 const populateForm = (transaksi: Transaksi) => {
     form.user_id = transaksi.user_id;
     form.nama_marketing = transaksi.nama_marketing || props.currentUser.name;
-    form.nama_mitra = transaksi.nama_mitra || '';
+    form.nama_mitra = transaksi.mitra?.nama_mitra || '';
     form.tanggal_tf = transaksi.tanggal_tf;
     form.tanggal_lead_masuk = transaksi.tanggal_lead_masuk;
     form.periode_lead = transaksi.periode_lead;
@@ -215,8 +222,8 @@ const populateForm = (transaksi: Transaksi) => {
     form.kabupaten = transaksi.kabupaten;
     form.provinsi = transaksi.provinsi;
     form.status_pembayaran = transaksi.status_pembayaran;
-    form.nominal_masuk = transaksi.nominal_masuk;
-    form.harga_paket = transaksi.harga_paket;
+    form.nominal_masuk = transaksi.nominal_masuk || null;
+    form.harga_paket = transaksi.harga_paket || null;
     form.nama_paket = transaksi.nama_paket;
 };
 
@@ -232,14 +239,51 @@ const handleSubmit = () => {
         sumber_id: form.sumber_id ? parseInt(form.sumber_id) : null
     };
 
+    console.log('Submitting form data:', formData);
+    
     form.transform(() => formData)[method](url, {
-        onSuccess: () => {
+        onSuccess: (response) => {
+            console.log('Form submitted successfully:', response);
+            
+            // Tampilkan notifikasi sukses eksplisit
+            nextTick(() => {
+                // Set flash message secara manual jika backend tidak mengirim
+                if (!page.props.flash?.success) {
+                    page.props.flash = page.props.flash || {};
+                    page.props.flash.success = isEditMode.value 
+                        ? 'Transaksi berhasil diperbarui!' 
+                        : 'Transaksi berhasil ditambahkan!';
+                }
+            });
+            
             emit('success');
             emit('close');
         },
         onError: (errors) => {
-            console.error('Form errors:', errors);
+            console.error('Form submission failed with errors:', errors);
+            console.error('Form processing state:', form.processing);
+            console.error('Form hasErrors:', form.hasErrors);
+            
+            // Tampilkan notifikasi error eksplisit
+            nextTick(() => {
+                if (!page.props.flash?.error) {
+                    page.props.flash = page.props.flash || {};
+                    
+                    // Buat pesan error yang informatif
+                    const errorMessages = Object.values(errors).flat();
+                    if (errorMessages.length > 0) {
+                        page.props.flash.error = `Gagal menyimpan transaksi: ${errorMessages[0]}`;
+                    } else {
+                        page.props.flash.error = 'Terjadi kesalahan saat menyimpan transaksi. Silakan coba lagi.';
+                    }
+                }
+            });
+            
+            console.error('Validation errors:', Object.values(errors).flat());
         },
+        onFinish: () => {
+            console.log('Form submission finished');
+        }
     });
 };
 
@@ -247,21 +291,32 @@ const handleClose = () => {
     emit('close');
 };
 
-const formatCurrency = (value: string) => {
-    // Remove non-numeric characters except dots and commas
-    const numericValue = value.replace(/[^0-9]/g, '');
+const formatCurrency = (value: string | number) => {
+    // Convert to string and remove non-numeric characters
+    const stringValue = value.toString();
+    const numericValue = stringValue.replace(/[^0-9]/g, '');
     
-    // Format with thousand separators
-    return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    // Return empty string if no numeric value
+    if (!numericValue) return '';
+    
+    // Format with thousand separators using Indonesian locale
+    const number = parseInt(numericValue);
+    return new Intl.NumberFormat('id-ID').format(number);
 };
 
 const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Event) => {
     const target = event.target as HTMLInputElement;
-    const formatted = formatCurrency(target.value);
+    const inputValue = target.value;
+    
+    // Remove non-numeric characters
+    const numericOnly = inputValue.replace(/[^0-9]/g, '');
+    
+    // Format the display value
+    const formatted = formatCurrency(numericOnly);
     target.value = formatted;
     
     // Convert back to number for form data
-    const numericValue = parseInt(formatted.replace(/\./g, '')) || 0;
+    const numericValue = numericOnly ? parseInt(numericOnly) : null;
     form[field] = numericValue;
 };
 </script>
@@ -314,9 +369,9 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                     </h3>
                     <div class="grid gap-6 grid-cols-1">
                         <div class="space-y-3">
-                            <Label for="nama_mitra" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Nama Mitra *</Label>
+                            <Label for="nama_mitra" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Nama Mitra</Label>
                             <Input
-                                id="mitra"
+                                id="nama_mitra"
                                 v-model="form.nama_mitra"
                                 :disabled="isViewMode"
                                 placeholder="Masukkan nama mitra"
@@ -390,7 +445,6 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                                 :disabled="isViewMode"
                                 class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             >
-                                <option value="" disabled>Pilih periode lead</option>
                                 <option v-for="periode in periodeLeadOptions" :key="periode.value" :value="periode.value">
                                     {{ periode.label }}
                                 </option>
@@ -419,7 +473,6 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                                 :disabled="isViewMode"
                                 class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             >
-                                <option value="" disabled>Pilih usia</option>
                                 <option v-for="usia in usiaOptions" :key="usia.value" :value="usia.value">
                                     {{ usia.label }} tahun
                                 </option>
@@ -455,7 +508,6 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                                 :disabled="isViewMode"
                                 class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             >
-                                <option value="" disabled>Pilih sumber</option>
                                 <option v-for="sumber in sumberOptions" :key="sumber.value" :value="sumber.value">
                                     {{ sumber.label }}
                                 </option>
@@ -498,7 +550,6 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                                 :disabled="isViewMode"
                                 class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             >
-                                <option value="" disabled>Pilih provinsi</option>
                                 <option v-for="provinsi in provinsiOptions" :key="provinsi.value" :value="provinsi.value">
                                     {{ provinsi.label }}
                                 </option>
@@ -527,7 +578,6 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                                 :disabled="isViewMode"
                                 class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             >
-                                <option value="" disabled>Pilih paket brand</option>
                                 <option v-for="brand in brands" :key="brand.id" :value="brand.id">
                                     {{ brand.nama }}
                                 </option>
@@ -545,7 +595,6 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                                 :disabled="isViewMode"
                                 class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             >
-                                <option value="" disabled>Pilih lead awal brand</option>
                                 <option v-for="brand in brands" :key="brand.id" :value="brand.id">
                                     {{ brand.nama }}
                                 </option>
@@ -588,7 +637,6 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                                 :disabled="isViewMode"
                                 class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             >
-                                <option value="" disabled>Pilih status pembayaran</option>
                                 <option v-for="status in statusPembayaranOptions" :key="status.value" :value="status.value">
                                     {{ status.label }}
                                 </option>
@@ -602,13 +650,14 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                             <Label for="nominal_masuk" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Nominal Masuk *</Label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400 font-medium">Rp</span>
-                                <Input
+                                <input
                                     id="nominal_masuk"
+                                    type="text"
                                     :value="form.nominal_masuk ? formatCurrency(form.nominal_masuk.toString()) : ''"
                                     @input="handleCurrencyInput('nominal_masuk', $event)"
                                     :disabled="isViewMode"
                                     placeholder="0"
-                                    class="h-12 rounded-lg border border-gray-300 bg-gray-50 pl-10 pr-4 text-base transition-all duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                    class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 pl-10 pr-4 text-base transition-all duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none"
                                 />
                             </div>
                             <div v-if="form.errors.nominal_masuk" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
@@ -620,13 +669,14 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                             <Label for="harga_paket" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Harga Paket *</Label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400 font-medium">Rp</span>
-                                <Input
+                                <input
                                     id="harga_paket"
+                                    type="text"
                                     :value="form.harga_paket ? formatCurrency(form.harga_paket.toString()) : ''"
                                     @input="handleCurrencyInput('harga_paket', $event)"
                                     :disabled="isViewMode"
                                     placeholder="0"
-                                    class="h-12 rounded-lg border border-gray-300 bg-gray-50 pl-10 pr-4 text-base transition-all duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                    class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 pl-10 pr-4 text-base transition-all duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none"
                                 />
                             </div>
                             <div v-if="form.errors.harga_paket" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
