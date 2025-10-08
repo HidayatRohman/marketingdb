@@ -90,7 +90,7 @@ const form = useForm({
     usia: null as number | null,
     paket_brand_id: null as number | null,
     lead_awal_brand_id: null as number | null,
-    sumber_id: null as number | null,
+    sumber_id: null as string | null,
     sumber: '',
     kabupaten: '',
     provinsi: '',
@@ -210,7 +210,7 @@ const populateForm = (transaksi: Transaksi) => {
     form.usia = transaksi.usia;
     form.paket_brand_id = transaksi.paket_brand_id;
     form.lead_awal_brand_id = transaksi.lead_awal_brand_id;
-    form.sumber_id = (transaksi as any).sumber_id || null;
+    form.sumber_id = (transaksi as any).sumber_id ? (transaksi as any).sumber_id.toString() : null;
     form.sumber = transaksi.sumber;
     form.kabupaten = transaksi.kabupaten;
     form.provinsi = transaksi.provinsi;
@@ -226,7 +226,13 @@ const handleSubmit = () => {
     const url = isEditMode.value ? `/transaksis/${props.transaksi?.id}` : '/transaksis';
     const method = isEditMode.value ? 'put' : 'post';
 
-    form[method](url, {
+    // Convert sumber_id back to number for backend
+    const formData = {
+        ...form.data(),
+        sumber_id: form.sumber_id ? parseInt(form.sumber_id) : null
+    };
+
+    form.transform(() => formData)[method](url, {
         onSuccess: () => {
             emit('success');
             emit('close');
@@ -378,16 +384,17 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
 
                         <div class="space-y-3">
                             <Label for="periode_lead" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Periode Lead *</Label>
-                            <Select v-model="form.periode_lead" :disabled="isViewMode">
-                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    <SelectValue :placeholder="form.periode_lead || 'Pilih periode lead'" class="text-gray-700 dark:text-gray-300" />
-                                </SelectTrigger>
-                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
-                                    <SelectItem v-for="periode in periodeLeadOptions" :key="periode.value" :value="periode.value" class="hover:bg-purple-50 focus:bg-purple-100 dark:hover:bg-gray-700">
-                                        {{ periode.label }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <select 
+                                id="periode_lead"
+                                v-model="form.periode_lead" 
+                                :disabled="isViewMode"
+                                class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                                <option value="" disabled>Pilih periode lead</option>
+                                <option v-for="periode in periodeLeadOptions" :key="periode.value" :value="periode.value">
+                                    {{ periode.label }}
+                                </option>
+                            </select>
                             <div v-if="form.errors.periode_lead" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.periode_lead }}
                             </div>
@@ -406,16 +413,17 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                     <div class="grid gap-6 grid-cols-1">
                         <div class="space-y-3">
                             <Label for="usia" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Usia *</Label>
-                            <Select v-model="form.usia" :disabled="isViewMode">
-                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    <SelectValue :placeholder="form.usia ? `${form.usia} tahun` : 'Pilih usia'" class="text-gray-700 dark:text-gray-300" />
-                                </SelectTrigger>
-                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
-                                    <SelectItem v-for="usia in usiaOptions" :key="usia.value" :value="usia.value" class="hover:bg-orange-50 focus:bg-orange-100 dark:hover:bg-gray-700">
-                                        {{ usia.label }} tahun
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <select 
+                                id="usia"
+                                v-model="form.usia" 
+                                :disabled="isViewMode"
+                                class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                                <option value="" disabled>Pilih usia</option>
+                                <option v-for="usia in usiaOptions" :key="usia.value" :value="usia.value">
+                                    {{ usia.label }} tahun
+                                </option>
+                            </select>
                             <div v-if="form.errors.usia" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.usia }}
                             </div>
@@ -423,19 +431,17 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
 
                         <div class="space-y-3">
                             <Label for="sumber_id" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Kategori Sumber</Label>
-                            <Select v-model="form.sumber_id" :disabled="isViewMode">
-                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    <SelectValue :placeholder="sumbers.find(s => s.id === form.sumber_id)?.nama || 'Pilih kategori sumber'" class="text-gray-700 dark:text-gray-300" />
-                                </SelectTrigger>
-                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
-                                    <SelectItem v-for="sumber in sumbers" :key="sumber.id" :value="sumber.id" class="hover:bg-orange-50 focus:bg-orange-100 dark:hover:bg-gray-700">
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: sumber.warna }"></div>
-                                            {{ sumber.nama }}
-                                        </div>
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <select 
+                                id="sumber_id"
+                                v-model="form.sumber_id" 
+                                :disabled="isViewMode"
+                                class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                                <option value="" disabled>Pilih kategori sumber</option>
+                                <option v-for="sumber in sumbers" :key="sumber.id" :value="sumber.id">
+                                    {{ sumber.nama }}
+                                </option>
+                            </select>
                             <div v-if="form.errors.sumber_id" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.sumber_id }}
                             </div>
@@ -443,16 +449,17 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
 
                         <div class="space-y-3">
                             <Label for="sumber" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Sumber *</Label>
-                            <Select v-model="form.sumber" :disabled="isViewMode">
-                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    <SelectValue :placeholder="form.sumber || 'Pilih sumber'" class="text-gray-700 dark:text-gray-300" />
-                                </SelectTrigger>
-                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
-                                    <SelectItem v-for="sumber in sumberOptions" :key="sumber.value" :value="sumber.value" class="hover:bg-orange-50 focus:bg-orange-100 dark:hover:bg-gray-700">
-                                        {{ sumber.label }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <select 
+                                id="sumber"
+                                v-model="form.sumber" 
+                                :disabled="isViewMode"
+                                class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                                <option value="" disabled>Pilih sumber</option>
+                                <option v-for="sumber in sumberOptions" :key="sumber.value" :value="sumber.value">
+                                    {{ sumber.label }}
+                                </option>
+                            </select>
                             <div v-if="form.errors.sumber" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.sumber }}
                             </div>
@@ -485,16 +492,17 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
 
                         <div class="space-y-3">
                             <Label for="provinsi" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Provinsi *</Label>
-                            <Select v-model="form.provinsi" :disabled="isViewMode">
-                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    <SelectValue :placeholder="form.provinsi || 'Pilih provinsi'" class="text-gray-700 dark:text-gray-300" />
-                                </SelectTrigger>
-                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
-                                    <SelectItem v-for="provinsi in provinsiOptions" :key="provinsi.value" :value="provinsi.value" class="hover:bg-teal-50 focus:bg-teal-100 dark:hover:bg-gray-700">
-                                        {{ provinsi.label }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <select 
+                                id="provinsi"
+                                v-model="form.provinsi" 
+                                :disabled="isViewMode"
+                                class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                                <option value="" disabled>Pilih provinsi</option>
+                                <option v-for="provinsi in provinsiOptions" :key="provinsi.value" :value="provinsi.value">
+                                    {{ provinsi.label }}
+                                </option>
+                            </select>
                             <div v-if="form.errors.provinsi" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.provinsi }}
                             </div>
@@ -513,16 +521,17 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                     <div class="grid gap-6 grid-cols-1">
                         <div class="space-y-3">
                             <Label for="paket_brand_id" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Paket Brand *</Label>
-                            <Select v-model="form.paket_brand_id" :disabled="isViewMode">
-                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    <SelectValue :placeholder="brands.find(b => b.id === form.paket_brand_id)?.nama || 'Pilih paket brand'" class="text-gray-700 dark:text-gray-300" />
-                                </SelectTrigger>
-                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
-                                    <SelectItem v-for="brand in brands" :key="brand.id" :value="brand.id" class="hover:bg-indigo-50 focus:bg-indigo-100 dark:hover:bg-gray-700">
-                                        {{ brand.nama }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <select 
+                                id="paket_brand_id"
+                                v-model="form.paket_brand_id" 
+                                :disabled="isViewMode"
+                                class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                                <option value="" disabled>Pilih paket brand</option>
+                                <option v-for="brand in brands" :key="brand.id" :value="brand.id">
+                                    {{ brand.nama }}
+                                </option>
+                            </select>
                             <div v-if="form.errors.paket_brand_id" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.paket_brand_id }}
                             </div>
@@ -530,16 +539,17 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
 
                         <div class="space-y-3">
                             <Label for="lead_awal_brand_id" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Lead Awal Brand *</Label>
-                            <Select v-model="form.lead_awal_brand_id" :disabled="isViewMode">
-                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    <SelectValue :placeholder="brands.find(b => b.id === form.lead_awal_brand_id)?.nama || 'Pilih lead awal brand'" class="text-gray-700 dark:text-gray-300" />
-                                </SelectTrigger>
-                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
-                                    <SelectItem v-for="brand in brands" :key="brand.id" :value="brand.id" class="hover:bg-indigo-50 focus:bg-indigo-100 dark:hover:bg-gray-700">
-                                        {{ brand.nama }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <select 
+                                id="lead_awal_brand_id"
+                                v-model="form.lead_awal_brand_id" 
+                                :disabled="isViewMode"
+                                class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                                <option value="" disabled>Pilih lead awal brand</option>
+                                <option v-for="brand in brands" :key="brand.id" :value="brand.id">
+                                    {{ brand.nama }}
+                                </option>
+                            </select>
                             <div v-if="form.errors.lead_awal_brand_id" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.lead_awal_brand_id }}
                             </div>
@@ -572,16 +582,17 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                     <div class="grid gap-6 grid-cols-1">
                         <div class="space-y-3">
                             <Label for="status_pembayaran" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Status Pembayaran *</Label>
-                            <Select v-model="form.status_pembayaran" :disabled="isViewMode">
-                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    <SelectValue :placeholder="form.status_pembayaran || 'Pilih status pembayaran'" class="text-gray-700 dark:text-gray-300" />
-                                </SelectTrigger>
-                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
-                                    <SelectItem v-for="status in statusPembayaranOptions" :key="status.value" :value="status.value" class="hover:bg-emerald-50 focus:bg-emerald-100 dark:hover:bg-gray-700">
-                                        {{ status.label }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <select 
+                                id="status_pembayaran"
+                                v-model="form.status_pembayaran" 
+                                :disabled="isViewMode"
+                                class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                                <option value="" disabled>Pilih status pembayaran</option>
+                                <option v-for="status in statusPembayaranOptions" :key="status.value" :value="status.value">
+                                    {{ status.label }}
+                                </option>
+                            </select>
                             <div v-if="form.errors.status_pembayaran" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.status_pembayaran }}
                             </div>
