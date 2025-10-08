@@ -86,18 +86,18 @@ const form = useForm({
     nama_mitra: '',
     tanggal_tf: new Date().toISOString().split('T')[0],
     tanggal_lead_masuk: new Date().toISOString().split('T')[0],
-    periode_lead: 'Januari',
+    periode_lead: '',
     no_wa: '',
-    usia: 18,
-    paket_brand_id: props.brands.length > 0 ? props.brands[0].id : null,
-    lead_awal_brand_id: props.brands.length > 0 ? props.brands[0].id : null,
-    sumber_id: props.sumbers.length > 0 ? props.sumbers[0].id.toString() : null,
-    sumber: 'Unknown',
+    usia: null,
+    paket_brand_id: null,
+    lead_awal_brand_id: null,
+    sumber_id: null,
+    sumber: '',
     kabupaten: '',
-    provinsi: 'DKI Jakarta',
-    status_pembayaran: 'Dp / TJ',
-    nominal_masuk: 0,
-    harga_paket: 0,
+    provinsi: '',
+    status_pembayaran: '',
+    nominal_masuk: null,
+    harga_paket: null,
     nama_paket: '',
 });
 
@@ -192,17 +192,19 @@ const resetForm = () => {
     form.nama_marketing = props.currentUser.name;
     form.tanggal_tf = new Date().toISOString().split('T')[0];
     form.tanggal_lead_masuk = new Date().toISOString().split('T')[0];
-    form.periode_lead = 'Januari';
-    form.usia = 18;
-    form.paket_brand_id = props.brands.length > 0 ? props.brands[0].id : null;
-    form.lead_awal_brand_id = props.brands.length > 0 ? props.brands[0].id : null;
-    form.sumber_id = props.sumbers.length > 0 ? props.sumbers[0].id.toString() : null;
-    form.sumber = 'Unknown';
-    form.kabupaten = 'Jakarta Selatan';
-    form.provinsi = 'DKI Jakarta';
-    form.status_pembayaran = 'Dp / TJ';
-    form.nominal_masuk = 0;
-    form.harga_paket = 0;
+    form.periode_lead = '';
+    form.no_wa = '';
+    form.usia = null;
+    form.paket_brand_id = null;
+    form.lead_awal_brand_id = null;
+    form.sumber_id = null;
+    form.sumber = '';
+    form.kabupaten = '';
+    form.provinsi = '';
+    form.status_pembayaran = '';
+    form.nominal_masuk = null;
+    form.harga_paket = null;
+    form.nama_paket = '';
     form.clearErrors();
 };
 
