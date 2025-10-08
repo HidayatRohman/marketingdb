@@ -31,7 +31,8 @@ interface User {
 interface Transaksi {
     id: number;
     user_id: number;
-    mitra_id: number;
+    nama_marketing: string;
+    nama_mitra: string;
     tanggal_tf: string;
     tanggal_lead_masuk: string;
     periode_lead: string;
@@ -47,9 +48,9 @@ interface Transaksi {
     harga_paket: number;
     nama_paket: string;
     user: User;
-    mitra: Mitra;
-    paketBrand: Brand;
-    leadAwalBrand: Brand;
+    mitra?: Mitra;
+    paketBrand?: Brand;
+    leadAwalBrand?: Brand;
     created_at: string;
     updated_at: string;
 }
@@ -58,7 +59,6 @@ interface Props {
     open: boolean;
     mode: 'create' | 'edit' | 'view';
     transaksi?: Transaksi;
-    mitras: Mitra[];
     brands: Brand[];
     currentUser: User;
 }
@@ -74,7 +74,8 @@ const emit = defineEmits<Emits>();
 // Form data
 const form = useForm({
     user_id: props.currentUser.id,
-    mitra_id: null as number | null,
+    nama_marketing: props.currentUser.name,
+    nama_mitra: '',
     tanggal_tf: new Date().toISOString().split('T')[0],
     tanggal_lead_masuk: '',
     periode_lead: '',
@@ -92,40 +93,30 @@ const form = useForm({
 });
 
 // Options
-const bulanOptions = [
-    { value: 'Januari', label: 'Januari' },
-    { value: 'Februari', label: 'Februari' },
-    { value: 'Maret', label: 'Maret' },
-    { value: 'April', label: 'April' },
-    { value: 'Mei', label: 'Mei' },
-    { value: 'Juni', label: 'Juni' },
-    { value: 'Juli', label: 'Juli' },
-    { value: 'Agustus', label: 'Agustus' },
-    { value: 'September', label: 'September' },
-    { value: 'Oktober', label: 'Oktober' },
-    { value: 'November', label: 'November' },
-    { value: 'Desember', label: 'Desember' },
-];
-
-const usiaOptions = Array.from({ length: 69 }, (_, i) => ({
-    value: i + 17,
-    label: (i + 17).toString(),
+const usiaOptions = Array.from({ length: 63 }, (_, i) => ({
+    value: i + 18,
+    label: (i + 18).toString(),
 }));
 
 const sumberOptions = [
-    { value: 'Unknown', label: 'Unknown' },
-    { value: 'IG', label: 'Instagram' },
-    { value: 'FB', label: 'Facebook' },
-    { value: 'WA', label: 'WhatsApp' },
-    { value: 'Tiktok', label: 'TikTok' },
-    { value: 'Web', label: 'Website' },
-    { value: 'Google', label: 'Google' },
+    { value: 'Tidak Tahu', label: 'Tidak Tahu' },
     { value: 'Organik', label: 'Organik' },
+    { value: 'Web', label: 'Web' },
+    { value: 'Instagram', label: 'Instagram' },
+    { value: 'Facebook', label: 'Facebook' },
+    { value: 'Whatsapp', label: 'Whatsapp' },
+    { value: 'Google', label: 'Google' },
+    { value: 'Tiktok', label: 'Tiktok' },
+    { value: 'Event', label: 'Event' },
+    { value: 'Webinar', label: 'Webinar' },
     { value: 'Teman', label: 'Teman' },
+    { value: 'Flyer', label: 'Flyer' },
+    { value: 'Lainnya', label: 'Lainnya' },
 ];
 
 const statusPembayaranOptions = [
-    { value: 'Dp / TJ', label: 'Dp / TJ' },
+    { value: 'Tanda jadi', label: 'Tanda jadi' },
+    { value: 'DP', label: 'DP' },
     { value: 'Tambahan Dp', label: 'Tambahan Dp' },
     { value: 'Pelunasan', label: 'Pelunasan' },
 ];
@@ -159,17 +150,7 @@ const modalTitle = computed(() => {
     }
 });
 
-const selectedMitra = computed(() => {
-    if (!form.mitra_id) return null;
-    return props.mitras.find(mitra => mitra.id === form.mitra_id);
-});
 
-// Watch for mitra selection to auto-fill no_wa
-watch(() => form.mitra_id, (newMitraId) => {
-    if (newMitraId && selectedMitra.value) {
-        form.no_wa = selectedMitra.value.no_telp;
-    }
-});
 
 // Watch for props changes
 watch(() => props.open, (isOpen) => {
@@ -189,13 +170,15 @@ onMounted(() => {
 const resetForm = () => {
     form.reset();
     form.user_id = props.currentUser.id;
+    form.nama_marketing = props.currentUser.name;
     form.tanggal_tf = new Date().toISOString().split('T')[0];
     form.clearErrors();
 };
 
 const populateForm = (transaksi: Transaksi) => {
     form.user_id = transaksi.user_id;
-    form.mitra_id = transaksi.mitra_id;
+    form.nama_marketing = transaksi.nama_marketing || props.currentUser.name;
+    form.nama_mitra = transaksi.nama_mitra || '';
     form.tanggal_tf = transaksi.tanggal_tf;
     form.tanggal_lead_masuk = transaksi.tanggal_lead_masuk;
     form.periode_lead = transaksi.periode_lead;
@@ -277,9 +260,9 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                             <Label for="marketing">Nama Marketing</Label>
                             <Input
                                 id="marketing"
-                                :value="currentUser.name"
-                                disabled
-                                class="bg-muted"
+                                v-model="form.nama_marketing"
+                                :disabled="isViewMode"
+                                placeholder="Masukkan nama marketing"
                             />
                         </div>
                     </div>
@@ -293,19 +276,15 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                     </h3>
                     <div class="grid gap-4 md:grid-cols-2">
                         <div class="space-y-2">
-                            <Label for="mitra_id">Nama Mitra *</Label>
-                            <Select :value="form.mitra_id?.toString()" @update:model-value="(value) => form.mitra_id = value ? parseInt(value) : null" :disabled="isViewMode">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih mitra" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem v-for="mitra in mitras" :key="mitra.id" :value="mitra.id.toString()">
-                                        {{ mitra.nama }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <div v-if="form.errors.mitra_id" class="text-sm text-red-600">
-                                {{ form.errors.mitra_id }}
+                            <Label for="nama_mitra">Nama Mitra *</Label>
+                            <Input
+                                id="nama_mitra"
+                                v-model="form.nama_mitra"
+                                :disabled="isViewMode"
+                                placeholder="Masukkan nama mitra"
+                            />
+                            <div v-if="form.errors.nama_mitra" class="text-sm text-red-600">
+                                {{ form.errors.nama_mitra }}
                             </div>
                         </div>
 
@@ -357,16 +336,11 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
 
                         <div class="space-y-2">
                             <Label for="periode_lead">Periode Lead *</Label>
-                            <Select :value="form.periode_lead" @update:model-value="(value) => form.periode_lead = value" :disabled="isViewMode">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih bulan" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem v-for="bulan in bulanOptions" :key="bulan.value" :value="bulan.value">
-                                        {{ bulan.label }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <DatePicker
+                                v-model="form.periode_lead"
+                                :disabled="isViewMode"
+                                placeholder="Pilih periode lead"
+                            />
                             <div v-if="form.errors.periode_lead" class="text-sm text-red-600">
                                 {{ form.errors.periode_lead }}
                             </div>
@@ -383,12 +357,12 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                     <div class="grid gap-4 md:grid-cols-2">
                         <div class="space-y-2">
                             <Label for="usia">Usia *</Label>
-                            <Select :value="form.usia?.toString()" @update:model-value="(value) => form.usia = value ? parseInt(value) : null" :disabled="isViewMode">
+                            <Select v-model="form.usia" :disabled="isViewMode">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih usia" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem v-for="usia in usiaOptions" :key="usia.value" :value="usia.value.toString()">
+                                    <SelectItem v-for="usia in usiaOptions" :key="usia.value" :value="usia.value">
                                         {{ usia.label }} tahun
                                     </SelectItem>
                                 </SelectContent>
@@ -400,7 +374,7 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
 
                         <div class="space-y-2">
                             <Label for="sumber">Sumber *</Label>
-                            <Select :value="form.sumber" @update:model-value="(value) => form.sumber = value" :disabled="isViewMode">
+                            <Select v-model="form.sumber" :disabled="isViewMode">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih sumber" />
                                 </SelectTrigger>
@@ -439,7 +413,7 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
 
                         <div class="space-y-2">
                             <Label for="provinsi">Provinsi *</Label>
-                            <Select :value="form.provinsi" @update:model-value="(value) => form.provinsi = value" :disabled="isViewMode">
+                            <Select v-model="form.provinsi" :disabled="isViewMode">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih provinsi" />
                                 </SelectTrigger>
@@ -465,12 +439,12 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                     <div class="grid gap-4 md:grid-cols-2">
                         <div class="space-y-2">
                             <Label for="paket_brand_id">Paket Brand *</Label>
-                            <Select :value="form.paket_brand_id?.toString()" @update:model-value="(value) => form.paket_brand_id = value ? parseInt(value) : null" :disabled="isViewMode">
+                            <Select v-model="form.paket_brand_id" :disabled="isViewMode">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih paket brand" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem v-for="brand in brands" :key="brand.id" :value="brand.id.toString()">
+                                    <SelectItem v-for="brand in brands" :key="brand.id" :value="brand.id">
                                         {{ brand.nama }}
                                     </SelectItem>
                                 </SelectContent>
@@ -482,12 +456,12 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
 
                         <div class="space-y-2">
                             <Label for="lead_awal_brand_id">Lead Awal Brand *</Label>
-                            <Select :value="form.lead_awal_brand_id?.toString()" @update:model-value="(value) => form.lead_awal_brand_id = value ? parseInt(value) : null" :disabled="isViewMode">
+                            <Select v-model="form.lead_awal_brand_id" :disabled="isViewMode">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih lead awal brand" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem v-for="brand in brands" :key="brand.id" :value="brand.id.toString()">
+                                    <SelectItem v-for="brand in brands" :key="brand.id" :value="brand.id">
                                         {{ brand.nama }}
                                     </SelectItem>
                                 </SelectContent>
@@ -521,7 +495,7 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                     <div class="grid gap-4 md:grid-cols-3">
                         <div class="space-y-2">
                             <Label for="status_pembayaran">Status Pembayaran *</Label>
-                            <Select :value="form.status_pembayaran" @update:model-value="(value) => form.status_pembayaran = value" :disabled="isViewMode">
+                            <Select v-model="form.status_pembayaran" :disabled="isViewMode">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih status" />
                                 </SelectTrigger>
