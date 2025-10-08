@@ -118,7 +118,10 @@ class IklanBudget extends Model
             SUM(spent_amount * 1.11) as total_spent_plus_tax,
             SUM(closing) as total_closing,
             SUM(omset) as total_omset,
-            AVG(roas) as avg_roas,
+            CASE 
+                WHEN SUM(spent_amount) > 0 THEN SUM(omset) / SUM(spent_amount)
+                ELSE 0 
+            END as avg_roas,
             0 as avg_cost_per_lead,
             ? as total_leads
         ', [$totalLeads]);

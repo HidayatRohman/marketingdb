@@ -135,7 +135,7 @@
                 <Card class="border-0 shadow-md">
                     <CardContent class="p-4 text-center">
                         <div class="text-xs text-muted-foreground uppercase tracking-wide">Avg ROAS</div>
-                        <div class="text-lg font-bold text-blue-600">{{ (totals?.avg_roas || 0).toFixed(2) }}x</div>
+                        <div class="text-lg font-bold text-blue-600">{{ Number(totals?.avg_roas || 0).toFixed(2) }}x</div>
                     </CardContent>
                 </Card>
             </div>
