@@ -237,66 +237,75 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
 
 <template>
     <Dialog :open="open" @update:open="handleClose">
-        <DialogContent class="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-                <DialogTitle class="flex items-center gap-2 text-xl">
-                    <CreditCard class="h-5 w-5" />
+        <DialogContent class="w-[900px] max-w-[95vw] max-h-[95vh] overflow-y-auto bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 shadow-2xl">
+            <DialogHeader class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <DialogTitle class="flex items-center gap-3 text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    <div class="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg">
+                        <CreditCard class="h-6 w-6" />
+                    </div>
                     {{ modalTitle }}
                 </DialogTitle>
-                <DialogDescription>
-                    {{ isCreateMode ? 'Tambah data transaksi baru' : isEditMode ? 'Edit data transaksi' : 'Lihat detail transaksi' }}
+                <DialogDescription class="text-base text-gray-700 dark:text-gray-300 mt-2">
+                    {{ isCreateMode ? 'Tambah data transaksi baru dengan mudah dan cepat' : isEditMode ? 'Edit dan perbarui data transaksi' : 'Lihat detail lengkap transaksi' }}
                 </DialogDescription>
             </DialogHeader>
 
-            <form @submit.prevent="handleSubmit" class="space-y-6">
+            <form @submit.prevent="handleSubmit" class="space-y-8">
                 <!-- Marketing Info -->
-                <div class="rounded-lg border bg-muted/20 p-4">
-                    <h3 class="mb-3 flex items-center gap-2 font-semibold">
-                        <User class="h-4 w-4" />
+                <div class="group rounded-xl border-2 border-blue-200 bg-blue-50 p-6 shadow-sm transition-all duration-300 hover:border-blue-300 hover:shadow-md dark:border-gray-600 dark:bg-gray-800">
+                    <h3 class="mb-4 flex items-center gap-3 text-lg font-bold text-gray-800 dark:text-gray-200">
+                        <div class="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md">
+                            <User class="h-5 w-5" />
+                        </div>
                         Informasi Marketing
                     </h3>
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <div class="space-y-2">
-                            <Label for="marketing">Nama Marketing</Label>
+                    <div class="grid gap-6 grid-cols-1">
+                        <div class="space-y-3">
+                            <Label for="marketing" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Nama Marketing</Label>
                             <Input
                                 id="marketing"
                                 v-model="form.nama_marketing"
                                 :disabled="isViewMode"
                                 placeholder="Masukkan nama marketing"
+                                class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             />
                         </div>
                     </div>
                 </div>
 
                 <!-- Mitra & Contact Info -->
-                <div class="rounded-lg border bg-muted/20 p-4">
-                    <h3 class="mb-3 flex items-center gap-2 font-semibold">
-                        <Phone class="h-4 w-4" />
+                <div class="group rounded-xl border-2 border-green-200 bg-green-50 p-6 shadow-sm transition-all duration-300 hover:border-green-300 hover:shadow-md dark:border-gray-600 dark:bg-gray-800">
+                    <h3 class="mb-4 flex items-center gap-3 text-lg font-bold text-gray-800 dark:text-gray-200">
+                        <div class="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md">
+                            <Phone class="h-5 w-5" />
+                        </div>
                         Informasi Mitra & Kontak
                     </h3>
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <div class="space-y-2">
-                            <Label for="nama_mitra">Nama Mitra *</Label>
+                    <div class="grid gap-6 grid-cols-1">
+                        <div class="space-y-3">
+                            <Label for="nama_mitra" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Nama Mitra *</Label>
                             <Input
-                                id="nama_mitra"
+                                id="mitra"
                                 v-model="form.nama_mitra"
                                 :disabled="isViewMode"
                                 placeholder="Masukkan nama mitra"
+                                class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             />
-                            <div v-if="form.errors.nama_mitra" class="text-sm text-red-600">
+                            <div v-if="form.errors.nama_mitra" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.nama_mitra }}
                             </div>
                         </div>
 
-                        <div class="space-y-2">
-                            <Label for="no_wa">No WhatsApp</Label>
+                        <div class="space-y-3">
+                            <Label for="no_wa" class="text-sm font-semibold text-gray-700 dark:text-gray-300">No WhatsApp</Label>
                             <Input
                                 id="no_wa"
                                 v-model="form.no_wa"
                                 :disabled="isViewMode"
-                                placeholder="Nomor WhatsApp"
+                                placeholder="Masukkan nomor WhatsApp"
+                                class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             />
-                            <div v-if="form.errors.no_wa" class="text-sm text-red-600">
+                            <div v-if="form.errors.no_wa" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.no_wa }}
                             </div>
                         </div>
@@ -304,44 +313,55 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                 </div>
 
                 <!-- Date & Period Info -->
-                <div class="rounded-lg border bg-muted/20 p-4">
-                    <h3 class="mb-3 flex items-center gap-2 font-semibold">
-                        <Calendar class="h-4 w-4" />
+                <div class="group rounded-xl border-2 border-purple-200 bg-purple-50 p-6 shadow-sm transition-all duration-300 hover:border-purple-300 hover:shadow-md dark:border-gray-600 dark:bg-gray-800">
+                    <h3 class="mb-4 flex items-center gap-3 text-lg font-bold text-gray-800 dark:text-gray-200">
+                        <div class="p-2 rounded-lg bg-gradient-to-r from-purple-500 to-violet-600 text-white shadow-md">
+                            <Calendar class="h-5 w-5" />
+                        </div>
                         Informasi Tanggal & Periode
                     </h3>
-                    <div class="grid gap-4 md:grid-cols-3">
-                        <div class="space-y-2">
-                            <Label for="tanggal_tf">Tanggal TF *</Label>
-                            <DatePicker
-                                v-model="form.tanggal_tf"
-                                :disabled="isViewMode"
-                                placeholder="Pilih tanggal TF"
-                            />
-                            <div v-if="form.errors.tanggal_tf" class="text-sm text-red-600">
+                    <div class="grid gap-6 grid-cols-1">
+                        <div class="space-y-3">
+                            <Label for="tanggal_tf" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Tanggal TF *</Label>
+                            <div class="w-full">
+                                <DatePicker
+                                    v-model="form.tanggal_tf"
+                                    :disabled="isViewMode"
+                                    placeholder="Pilih tanggal TF"
+                                    class="!w-full !h-12 !rounded-lg !border !border-gray-300 !bg-gray-50 !px-4 !text-base !transition-all !duration-200 !focus:ring-2 !focus:ring-emerald-100 !focus:border-emerald-400 dark:!bg-gray-700 dark:!border-gray-600 dark:!text-white"
+                                />
+                            </div>
+                            <div v-if="form.errors.tanggal_tf" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.tanggal_tf }}
                             </div>
                         </div>
 
-                        <div class="space-y-2">
-                            <Label for="tanggal_lead_masuk">Tanggal Lead Masuk *</Label>
-                            <DatePicker
-                                v-model="form.tanggal_lead_masuk"
-                                :disabled="isViewMode"
-                                placeholder="Pilih tanggal lead masuk"
-                            />
-                            <div v-if="form.errors.tanggal_lead_masuk" class="text-sm text-red-600">
+                        <div class="space-y-3">
+                            <Label for="tanggal_lead_masuk" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Tanggal Lead Masuk *</Label>
+                            <div class="w-full">
+                                <DatePicker
+                                    v-model="form.tanggal_lead_masuk"
+                                    :disabled="isViewMode"
+                                    placeholder="Pilih tanggal lead masuk"
+                                    class="!w-full !h-12 !rounded-lg !border !border-gray-300 !bg-gray-50 !px-4 !text-base !transition-all !duration-200 !focus:ring-2 !focus:ring-emerald-100 !focus:border-emerald-400 dark:!bg-gray-700 dark:!border-gray-600 dark:!text-white"
+                                />
+                            </div>
+                            <div v-if="form.errors.tanggal_lead_masuk" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.tanggal_lead_masuk }}
                             </div>
                         </div>
 
-                        <div class="space-y-2">
-                            <Label for="periode_lead">Periode Lead *</Label>
-                            <DatePicker
-                                v-model="form.periode_lead"
-                                :disabled="isViewMode"
-                                placeholder="Pilih periode lead"
-                            />
-                            <div v-if="form.errors.periode_lead" class="text-sm text-red-600">
+                        <div class="space-y-3">
+                            <Label for="periode_lead" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Periode Lead *</Label>
+                            <div class="w-full">
+                                <DatePicker
+                                    v-model="form.periode_lead"
+                                    :disabled="isViewMode"
+                                    placeholder="Pilih periode lead"
+                                    class="!w-full !h-12 !rounded-lg !border !border-gray-300 !bg-gray-50 !px-4 !text-base !transition-all !duration-200 !focus:ring-2 !focus:ring-emerald-100 !focus:border-emerald-400 dark:!bg-gray-700 dark:!border-gray-600 dark:!text-white"
+                                />
+                            </div>
+                            <div v-if="form.errors.periode_lead" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.periode_lead }}
                             </div>
                         </div>
@@ -349,42 +369,44 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                 </div>
 
                 <!-- Customer Info -->
-                <div class="rounded-lg border bg-muted/20 p-4">
-                    <h3 class="mb-3 flex items-center gap-2 font-semibold">
-                        <User class="h-4 w-4" />
+                <div class="group rounded-xl border-2 border-orange-200 bg-orange-50 p-6 shadow-sm transition-all duration-300 hover:border-orange-300 hover:shadow-md dark:border-gray-600 dark:bg-gray-800">
+                    <h3 class="mb-4 flex items-center gap-3 text-lg font-bold text-gray-800 dark:text-gray-200">
+                        <div class="p-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-md">
+                            <User class="h-5 w-5" />
+                        </div>
                         Informasi Customer
                     </h3>
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <div class="space-y-2">
-                            <Label for="usia">Usia *</Label>
+                    <div class="grid gap-6 grid-cols-1">
+                        <div class="space-y-3">
+                            <Label for="usia" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Usia *</Label>
                             <Select v-model="form.usia" :disabled="isViewMode">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih usia" />
+                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <SelectValue :placeholder="form.usia ? `${form.usia} tahun` : 'Pilih usia'" class="text-gray-700 dark:text-gray-300" />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem v-for="usia in usiaOptions" :key="usia.value" :value="usia.value">
+                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                                    <SelectItem v-for="usia in usiaOptions" :key="usia.value" :value="usia.value" class="hover:bg-orange-50 focus:bg-orange-100 dark:hover:bg-gray-700">
                                         {{ usia.label }} tahun
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
-                            <div v-if="form.errors.usia" class="text-sm text-red-600">
+                            <div v-if="form.errors.usia" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.usia }}
                             </div>
                         </div>
 
-                        <div class="space-y-2">
-                            <Label for="sumber">Sumber *</Label>
+                        <div class="space-y-3">
+                            <Label for="sumber" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Sumber *</Label>
                             <Select v-model="form.sumber" :disabled="isViewMode">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih sumber" />
+                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <SelectValue :placeholder="form.sumber || 'Pilih sumber'" class="text-gray-700 dark:text-gray-300" />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem v-for="sumber in sumberOptions" :key="sumber.value" :value="sumber.value">
+                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                                    <SelectItem v-for="sumber in sumberOptions" :key="sumber.value" :value="sumber.value" class="hover:bg-orange-50 focus:bg-orange-100 dark:hover:bg-gray-700">
                                         {{ sumber.label }}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
-                            <div v-if="form.errors.sumber" class="text-sm text-red-600">
+                            <div v-if="form.errors.sumber" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.sumber }}
                             </div>
                         </div>
@@ -392,38 +414,41 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                 </div>
 
                 <!-- Location Info -->
-                <div class="rounded-lg border bg-muted/20 p-4">
-                    <h3 class="mb-3 flex items-center gap-2 font-semibold">
-                        <MapPin class="h-4 w-4" />
+                <div class="group rounded-xl border-2 border-teal-200 bg-teal-50 p-6 shadow-sm transition-all duration-300 hover:border-teal-300 hover:shadow-md dark:border-gray-600 dark:bg-gray-800">
+                    <h3 class="mb-4 flex items-center gap-3 text-lg font-bold text-gray-800 dark:text-gray-200">
+                        <div class="p-2 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-600 text-white shadow-md">
+                            <MapPin class="h-5 w-5" />
+                        </div>
                         Informasi Lokasi
                     </h3>
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <div class="space-y-2">
-                            <Label for="kabupaten">Kabupaten *</Label>
+                    <div class="grid gap-6 grid-cols-1">
+                        <div class="space-y-3">
+                            <Label for="kabupaten" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Kabupaten *</Label>
                             <Input
                                 id="kabupaten"
                                 v-model="form.kabupaten"
                                 :disabled="isViewMode"
                                 placeholder="Masukkan kabupaten"
+                                class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             />
-                            <div v-if="form.errors.kabupaten" class="text-sm text-red-600">
+                            <div v-if="form.errors.kabupaten" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.kabupaten }}
                             </div>
                         </div>
 
-                        <div class="space-y-2">
-                            <Label for="provinsi">Provinsi *</Label>
+                        <div class="space-y-3">
+                            <Label for="provinsi" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Provinsi *</Label>
                             <Select v-model="form.provinsi" :disabled="isViewMode">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih provinsi" />
+                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <SelectValue :placeholder="form.provinsi || 'Pilih provinsi'" class="text-gray-700 dark:text-gray-300" />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem v-for="provinsi in provinsiOptions" :key="provinsi.value" :value="provinsi.value">
+                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                                    <SelectItem v-for="provinsi in provinsiOptions" :key="provinsi.value" :value="provinsi.value" class="hover:bg-teal-50 focus:bg-teal-100 dark:hover:bg-gray-700">
                                         {{ provinsi.label }}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
-                            <div v-if="form.errors.provinsi" class="text-sm text-red-600">
+                            <div v-if="form.errors.provinsi" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.provinsi }}
                             </div>
                         </div>
@@ -431,55 +456,58 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                 </div>
 
                 <!-- Package & Brand Info -->
-                <div class="rounded-lg border bg-muted/20 p-4">
-                    <h3 class="mb-3 flex items-center gap-2 font-semibold">
-                        <CreditCard class="h-4 w-4" />
+                <div class="group rounded-xl border-2 border-indigo-200 bg-indigo-50 p-6 shadow-sm transition-all duration-300 hover:border-indigo-300 hover:shadow-md dark:border-gray-600 dark:bg-gray-800">
+                    <h3 class="mb-4 flex items-center gap-3 text-lg font-bold text-gray-800 dark:text-gray-200">
+                        <div class="p-2 rounded-lg bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-md">
+                            <CreditCard class="h-5 w-5" />
+                        </div>
                         Informasi Paket & Brand
                     </h3>
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <div class="space-y-2">
-                            <Label for="paket_brand_id">Paket Brand *</Label>
+                    <div class="grid gap-6 grid-cols-1">
+                        <div class="space-y-3">
+                            <Label for="paket_brand_id" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Paket Brand *</Label>
                             <Select v-model="form.paket_brand_id" :disabled="isViewMode">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih paket brand" />
+                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <SelectValue :placeholder="brands.find(b => b.id === form.paket_brand_id)?.nama || 'Pilih paket brand'" class="text-gray-700 dark:text-gray-300" />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem v-for="brand in brands" :key="brand.id" :value="brand.id">
+                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                                    <SelectItem v-for="brand in brands" :key="brand.id" :value="brand.id" class="hover:bg-indigo-50 focus:bg-indigo-100 dark:hover:bg-gray-700">
                                         {{ brand.nama }}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
-                            <div v-if="form.errors.paket_brand_id" class="text-sm text-red-600">
+                            <div v-if="form.errors.paket_brand_id" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.paket_brand_id }}
                             </div>
                         </div>
 
-                        <div class="space-y-2">
-                            <Label for="lead_awal_brand_id">Lead Awal Brand *</Label>
+                        <div class="space-y-3">
+                            <Label for="lead_awal_brand_id" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Lead Awal Brand *</Label>
                             <Select v-model="form.lead_awal_brand_id" :disabled="isViewMode">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih lead awal brand" />
+                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <SelectValue :placeholder="brands.find(b => b.id === form.lead_awal_brand_id)?.nama || 'Pilih lead awal brand'" class="text-gray-700 dark:text-gray-300" />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem v-for="brand in brands" :key="brand.id" :value="brand.id">
+                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                                    <SelectItem v-for="brand in brands" :key="brand.id" :value="brand.id" class="hover:bg-indigo-50 focus:bg-indigo-100 dark:hover:bg-gray-700">
                                         {{ brand.nama }}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
-                            <div v-if="form.errors.lead_awal_brand_id" class="text-sm text-red-600">
+                            <div v-if="form.errors.lead_awal_brand_id" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.lead_awal_brand_id }}
                             </div>
                         </div>
 
-                        <div class="space-y-2 md:col-span-2">
-                            <Label for="nama_paket">Nama Paket *</Label>
+                        <div class="space-y-3">
+                            <Label for="nama_paket" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Nama Paket *</Label>
                             <Input
                                 id="nama_paket"
                                 v-model="form.nama_paket"
                                 :disabled="isViewMode"
                                 placeholder="Masukkan nama paket"
+                                class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             />
-                            <div v-if="form.errors.nama_paket" class="text-sm text-red-600">
+                            <div v-if="form.errors.nama_paket" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.nama_paket }}
                             </div>
                         </div>
@@ -487,61 +515,63 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                 </div>
 
                 <!-- Payment Info -->
-                <div class="rounded-lg border bg-muted/20 p-4">
-                    <h3 class="mb-3 flex items-center gap-2 font-semibold">
-                        <DollarSign class="h-4 w-4" />
+                <div class="group rounded-xl border-2 border-emerald-200 bg-emerald-50 p-6 shadow-sm transition-all duration-300 hover:border-emerald-300 hover:shadow-md dark:border-gray-600 dark:bg-gray-800">
+                    <h3 class="mb-4 flex items-center gap-3 text-lg font-bold text-gray-800 dark:text-gray-200">
+                        <div class="p-2 rounded-lg bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md">
+                            <DollarSign class="h-5 w-5" />
+                        </div>
                         Informasi Pembayaran
                     </h3>
-                    <div class="grid gap-4 md:grid-cols-3">
-                        <div class="space-y-2">
-                            <Label for="status_pembayaran">Status Pembayaran *</Label>
+                    <div class="grid gap-6 grid-cols-1">
+                        <div class="space-y-3">
+                            <Label for="status_pembayaran" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Status Pembayaran *</Label>
                             <Select v-model="form.status_pembayaran" :disabled="isViewMode">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih status" />
+                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <SelectValue :placeholder="form.status_pembayaran || 'Pilih status pembayaran'" class="text-gray-700 dark:text-gray-300" />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem v-for="status in statusPembayaranOptions" :key="status.value" :value="status.value">
+                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                                    <SelectItem v-for="status in statusPembayaranOptions" :key="status.value" :value="status.value" class="hover:bg-emerald-50 focus:bg-emerald-100 dark:hover:bg-gray-700">
                                         {{ status.label }}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
-                            <div v-if="form.errors.status_pembayaran" class="text-sm text-red-600">
+                            <div v-if="form.errors.status_pembayaran" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.status_pembayaran }}
                             </div>
                         </div>
 
-                        <div class="space-y-2">
-                            <Label for="nominal_masuk">Nominal Masuk *</Label>
+                        <div class="space-y-3">
+                            <Label for="nominal_masuk" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Nominal Masuk *</Label>
                             <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">Rp</span>
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400 font-medium">Rp</span>
                                 <Input
                                     id="nominal_masuk"
                                     :value="form.nominal_masuk ? formatCurrency(form.nominal_masuk.toString()) : ''"
                                     @input="handleCurrencyInput('nominal_masuk', $event)"
                                     :disabled="isViewMode"
                                     placeholder="0"
-                                    class="pl-10"
+                                    class="h-12 rounded-lg border border-gray-300 bg-gray-50 pl-10 pr-4 text-base transition-all duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                 />
                             </div>
-                            <div v-if="form.errors.nominal_masuk" class="text-sm text-red-600">
+                            <div v-if="form.errors.nominal_masuk" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.nominal_masuk }}
                             </div>
                         </div>
 
-                        <div class="space-y-2">
-                            <Label for="harga_paket">Harga Paket *</Label>
+                        <div class="space-y-3">
+                            <Label for="harga_paket" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Harga Paket *</Label>
                             <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">Rp</span>
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400 font-medium">Rp</span>
                                 <Input
                                     id="harga_paket"
                                     :value="form.harga_paket ? formatCurrency(form.harga_paket.toString()) : ''"
                                     @input="handleCurrencyInput('harga_paket', $event)"
                                     :disabled="isViewMode"
                                     placeholder="0"
-                                    class="pl-10"
+                                    class="h-12 rounded-lg border border-gray-300 bg-gray-50 pl-10 pr-4 text-base transition-all duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                 />
                             </div>
-                            <div v-if="form.errors.harga_paket" class="text-sm text-red-600">
+                            <div v-if="form.errors.harga_paket" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.harga_paket }}
                             </div>
                         </div>
@@ -549,15 +579,20 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="flex justify-end gap-3 border-t pt-4">
-                    <Button type="button" variant="outline" @click="handleClose">
+                <div class="flex justify-end gap-4 border-t-2 border-gray-200 pt-6 mt-8 dark:border-gray-700">
+                    <Button 
+                        type="button" 
+                        variant="outline" 
+                        @click="handleClose"
+                        class="h-12 px-8 text-base font-semibold border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                    >
                         {{ isViewMode ? 'Tutup' : 'Batal' }}
                     </Button>
                     <Button
                         v-if="!isViewMode"
                         type="submit"
                         :disabled="form.processing"
-                        class="min-w-[100px]"
+                        class="h-12 px-8 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px]"
                     >
                         <span v-if="form.processing">Menyimpan...</span>
                         <span v-else>{{ isEditMode ? 'Update' : 'Simpan' }}</span>
