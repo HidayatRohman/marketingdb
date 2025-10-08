@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaksi;
-use App\Models\Mitra;
+
 use App\Models\Brand;
 use App\Models\Sumber;
 use Illuminate\Http\Request;
@@ -19,7 +19,7 @@ class TransaksiController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Transaksi::with(['user', 'mitra', 'paketBrand', 'leadAwalBrand']);
+        $query = Transaksi::with(['user', 'paketBrand', 'leadAwalBrand']);
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
@@ -32,9 +32,7 @@ class TransaksiController extends Controller
                   ->orWhere('kabupaten', 'like', "%{$search}%")
                   ->orWhere('provinsi', 'like', "%{$search}%")
                   ->orWhere('no_wa', 'like', "%{$search}%")
-                  ->orWhereHas('mitra', function ($mitraQuery) use ($search) {
-                      $mitraQuery->where('nama', 'like', "%{$search}%");
-                  })
+                  ->orWhere('nama_mitra', 'like', "%{$search}%")
                   ->orWhereHas('user', function ($userQuery) use ($search) {
                       $userQuery->where('name', 'like', "%{$search}%");
                   });
@@ -59,13 +57,11 @@ class TransaksiController extends Controller
         $transaksis = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         // Get data for filters
-        $mitras = Mitra::select('id', 'nama')->get();
         $brands = Brand::select('id', 'nama')->get();
         $sumbers = Sumber::select('id', 'nama', 'warna')->get();
 
         return Inertia::render('Transaksi/Index', [
             'transaksis' => $transaksis,
-            'mitras' => $mitras,
             'brands' => $brands,
             'sumbers' => $sumbers,
             'currentUser' => [
@@ -129,23 +125,6 @@ class TransaksiController extends Controller
         }
 
         try {
-            // Find or create mitra based on nama_mitra
-            $mitra = Mitra::where('nama_mitra', $validated['nama_mitra'])->first();
-            if (!$mitra) {
-                // Create new mitra if not found
-                $mitra = Mitra::create([
-                    'nama_mitra' => $validated['nama_mitra'],
-                    'no_telp' => '', // Will be filled later if needed
-                ]);
-            }
-            
-            // Set mitra_id and no_wa for the transaction
-            $validated['mitra_id'] = $mitra->id;
-            $validated['no_wa'] = $mitra->no_telp ?: '';
-            
-            // Remove nama_mitra from validated data as it's not a field in transaksis table
-            unset($validated['nama_mitra']);
-
             Transaksi::create($validated);
 
             if ($request->expectsJson()) {
@@ -179,7 +158,7 @@ class TransaksiController extends Controller
         }
 
         return Inertia::render('Transaksi/Show', [
-            'transaksi' => $transaksi->load(['user', 'mitra', 'paketBrand', 'leadAwalBrand']),
+            'transaksi' => $transaksi->load(['user', 'paketBrand', 'leadAwalBrand']),
             'permissions' => [
                 'canCrud' => $user->canCrud(),
                 'canOnlyView' => $user->canOnlyView(),
@@ -231,23 +210,6 @@ class TransaksiController extends Controller
         }
 
         try {
-            // Find or create mitra based on nama_mitra
-            $mitra = Mitra::where('nama_mitra', $validated['nama_mitra'])->first();
-            if (!$mitra) {
-                // Create new mitra if not found
-                $mitra = Mitra::create([
-                    'nama_mitra' => $validated['nama_mitra'],
-                    'no_telp' => '', // Will be filled later if needed
-                ]);
-            }
-            
-            // Set mitra_id and no_wa for the transaction
-            $validated['mitra_id'] = $mitra->id;
-            $validated['no_wa'] = $mitra->no_telp ?: '';
-            
-            // Remove nama_mitra from validated data as it's not a field in transaksis table
-            unset($validated['nama_mitra']);
-
             $transaksi->update($validated);
 
             if ($request->expectsJson()) {

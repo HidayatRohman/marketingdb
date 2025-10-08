@@ -211,7 +211,7 @@ const resetForm = () => {
 const populateForm = (transaksi: Transaksi) => {
     form.user_id = transaksi.user_id;
     form.nama_marketing = transaksi.nama_marketing || props.currentUser.name;
-    form.nama_mitra = transaksi.mitra?.nama_mitra || '';
+    form.nama_mitra = transaksi.nama_mitra || '';
     form.tanggal_tf = transaksi.tanggal_tf;
     form.tanggal_lead_masuk = transaksi.tanggal_lead_masuk;
     form.periode_lead = transaksi.periode_lead;

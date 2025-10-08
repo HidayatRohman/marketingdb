@@ -11,7 +11,7 @@ class Transaksi extends Model
 
     protected $fillable = [
         'user_id',
-        'mitra_id',
+        'nama_mitra',
         'tanggal_tf',
         'tanggal_lead_masuk',
         'periode_lead',
@@ -44,13 +44,7 @@ class Transaksi extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the mitra that owns the transaksi.
-     */
-    public function mitra()
-    {
-        return $this->belongsTo(Mitra::class);
-    }
+
 
     /**
      * Get the paket brand that belongs to the transaksi.

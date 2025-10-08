@@ -134,7 +134,7 @@ const handleClose = () => {
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-muted-foreground">Mitra:</span>
-                                    <span class="font-medium">{{ transaksi.mitra.nama }}</span>
+                                    <span class="font-medium">{{ transaksi.nama_mitra }}</span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-muted-foreground">Tanggal TF:</span>

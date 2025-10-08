@@ -507,7 +507,7 @@ const perPageOptions = [
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <p class="font-medium">{{ transaksi.mitra.nama_mitra }}</p>
+                                        <p class="font-medium">{{ transaksi.nama_mitra }}</p>
                                     </TableCell>
                                     <TableCell>
                                         <div class="flex items-center gap-2">
