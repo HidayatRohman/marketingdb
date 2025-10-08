@@ -22,6 +22,12 @@ interface Mitra {
     no_telp: string;
 }
 
+interface Sumber {
+    id: number;
+    nama: string;
+    warna: string;
+}
+
 interface User {
     id: number;
     name: string;
@@ -60,6 +66,7 @@ interface Props {
     mode: 'create' | 'edit' | 'view';
     transaksi?: Transaksi;
     brands: Brand[];
+    sumbers: Sumber[];
     currentUser: User;
 }
 
@@ -83,6 +90,7 @@ const form = useForm({
     usia: null as number | null,
     paket_brand_id: null as number | null,
     lead_awal_brand_id: null as number | null,
+    sumber_id: null as number | null,
     sumber: '',
     kabupaten: '',
     provinsi: '',
@@ -112,6 +120,21 @@ const sumberOptions = [
     { value: 'Teman', label: 'Teman' },
     { value: 'Flyer', label: 'Flyer' },
     { value: 'Lainnya', label: 'Lainnya' },
+];
+
+const periodeLeadOptions = [
+    { value: 'Januari', label: 'Januari' },
+    { value: 'Februari', label: 'Februari' },
+    { value: 'Maret', label: 'Maret' },
+    { value: 'April', label: 'April' },
+    { value: 'Mei', label: 'Mei' },
+    { value: 'Juni', label: 'Juni' },
+    { value: 'Juli', label: 'Juli' },
+    { value: 'Agustus', label: 'Agustus' },
+    { value: 'September', label: 'September' },
+    { value: 'Oktober', label: 'Oktober' },
+    { value: 'November', label: 'November' },
+    { value: 'Desember', label: 'Desember' },
 ];
 
 const statusPembayaranOptions = [
@@ -172,6 +195,7 @@ const resetForm = () => {
     form.user_id = props.currentUser.id;
     form.nama_marketing = props.currentUser.name;
     form.tanggal_tf = new Date().toISOString().split('T')[0];
+    form.sumber_id = null;
     form.clearErrors();
 };
 
@@ -186,6 +210,7 @@ const populateForm = (transaksi: Transaksi) => {
     form.usia = transaksi.usia;
     form.paket_brand_id = transaksi.paket_brand_id;
     form.lead_awal_brand_id = transaksi.lead_awal_brand_id;
+    form.sumber_id = (transaksi as any).sumber_id || null;
     form.sumber = transaksi.sumber;
     form.kabupaten = transaksi.kabupaten;
     form.provinsi = transaksi.provinsi;
@@ -353,14 +378,16 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
 
                         <div class="space-y-3">
                             <Label for="periode_lead" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Periode Lead *</Label>
-                            <div class="w-full">
-                                <DatePicker
-                                    v-model="form.periode_lead"
-                                    :disabled="isViewMode"
-                                    placeholder="Pilih periode lead"
-                                    class="!w-full !h-12 !rounded-lg !border !border-gray-300 !bg-gray-50 !px-4 !text-base !transition-all !duration-200 !focus:ring-2 !focus:ring-emerald-100 !focus:border-emerald-400 dark:!bg-gray-700 dark:!border-gray-600 dark:!text-white"
-                                />
-                            </div>
+                            <Select v-model="form.periode_lead" :disabled="isViewMode">
+                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <SelectValue :placeholder="form.periode_lead || 'Pilih periode lead'" class="text-gray-700 dark:text-gray-300" />
+                                </SelectTrigger>
+                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                                    <SelectItem v-for="periode in periodeLeadOptions" :key="periode.value" :value="periode.value" class="hover:bg-purple-50 focus:bg-purple-100 dark:hover:bg-gray-700">
+                                        {{ periode.label }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
                             <div v-if="form.errors.periode_lead" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.periode_lead }}
                             </div>
@@ -391,6 +418,26 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                             </Select>
                             <div v-if="form.errors.usia" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.usia }}
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <Label for="sumber_id" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Kategori Sumber</Label>
+                            <Select v-model="form.sumber_id" :disabled="isViewMode">
+                                <SelectTrigger class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <SelectValue :placeholder="sumbers.find(s => s.id === form.sumber_id)?.nama || 'Pilih kategori sumber'" class="text-gray-700 dark:text-gray-300" />
+                                </SelectTrigger>
+                                <SelectContent class="rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                                    <SelectItem v-for="sumber in sumbers" :key="sumber.id" :value="sumber.id" class="hover:bg-orange-50 focus:bg-orange-100 dark:hover:bg-gray-700">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: sumber.warna }"></div>
+                                            {{ sumber.nama }}
+                                        </div>
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <div v-if="form.errors.sumber_id" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
+                                {{ form.errors.sumber_id }}
                             </div>
                         </div>
 

@@ -4,6 +4,7 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\MitraController;
+use App\Http\Controllers\SumberController;
 use App\Http\Controllers\TaskManagementController;
 use App\Http\Controllers\TodoListController;
 use App\Http\Controllers\TransaksiController;
@@ -114,6 +115,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::middleware('role.access:destroy')->group(function () {
         Route::delete('labels/{label}', [LabelController::class, 'destroy'])->name('labels.destroy');
+    });
+
+    // Sumber Management - Role-based access
+    Route::middleware('role.access:view')->group(function () {
+        Route::get('sumbers', [SumberController::class, 'index'])->name('sumbers.index');
+        Route::get('sumbers/{sumber}', [SumberController::class, 'show'])->name('sumbers.show');
+    });
+    
+    Route::middleware('role.access:create')->group(function () {
+        Route::get('sumbers/create', [SumberController::class, 'create'])->name('sumbers.create');
+        Route::post('sumbers', [SumberController::class, 'store'])->name('sumbers.store');
+    });
+    
+    Route::middleware('role.access:edit')->group(function () {
+        Route::get('sumbers/{sumber}/edit', [SumberController::class, 'edit'])->name('sumbers.edit');
+        Route::put('sumbers/{sumber}', [SumberController::class, 'update'])->name('sumbers.update');
+    });
+    
+    Route::middleware('role.access:destroy')->group(function () {
+        Route::delete('sumbers/{sumber}', [SumberController::class, 'destroy'])->name('sumbers.destroy');
     });
 
     // Transaksi Management - Role-based access with data filtering

@@ -32,6 +32,12 @@ interface Mitra {
     no_telp: string;
 }
 
+interface Sumber {
+    id: number;
+    nama: string;
+    warna: string;
+}
+
 interface User {
     id: number;
     name: string;
@@ -76,6 +82,7 @@ interface Props {
     };
     mitras: Mitra[];
     brands: Brand[];
+    sumbers: Sumber[];
     currentUser: {
         id: number;
         name: string;
@@ -643,6 +650,7 @@ const perPageOptions = [
             :transaksi="transaksiModal.transaksi"
             :mitras="mitras"
             :brands="brands"
+            :sumbers="sumbers"
             :current-user="currentUser"
             @close="closeTransaksiModal"
             @success="handleModalSuccess"

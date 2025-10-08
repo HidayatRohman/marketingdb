@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Transaksi;
 use App\Models\Mitra;
 use App\Models\Brand;
+use App\Models\Sumber;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
@@ -60,11 +61,13 @@ class TransaksiController extends Controller
         // Get data for filters
         $mitras = Mitra::select('id', 'nama')->get();
         $brands = Brand::select('id', 'nama')->get();
+        $sumbers = Sumber::select('id', 'nama', 'warna')->get();
 
         return Inertia::render('Transaksi/Index', [
             'transaksis' => $transaksis,
             'mitras' => $mitras,
             'brands' => $brands,
+            'sumbers' => $sumbers,
             'currentUser' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -100,10 +103,11 @@ class TransaksiController extends Controller
             'usia' => 'required|integer|min:17|max:80',
             'paket_brand_id' => 'required|exists:brands,id',
             'lead_awal_brand_id' => 'required|exists:brands,id',
-            'sumber' => 'required|in:Unknown,IG,FB,WA,Tiktok,Web,Google,Organik,Teman',
+            'sumber_id' => 'nullable|exists:sumbers,id',
+            'sumber' => 'required|in:Tidak Tahu,Organik,Web,Instagram,Facebook,Whatsapp,Google,Tiktok,Event,Webinar,Teman,Flyer,Lainnya',
             'kabupaten' => 'required|string|max:255',
             'provinsi' => 'required|string|max:255',
-            'status_pembayaran' => 'required|in:Dp / TJ,Tambahan Dp,Pelunasan',
+            'status_pembayaran' => 'required|in:Tanda jadi,DP,Tambahan Dp,Pelunasan',
             'nominal_masuk' => 'required|numeric|min:0',
             'harga_paket' => 'required|numeric|min:0',
             'nama_paket' => 'required|string|max:255',
@@ -179,10 +183,11 @@ class TransaksiController extends Controller
             'usia' => 'required|integer|min:17|max:80',
             'paket_brand_id' => 'required|exists:brands,id',
             'lead_awal_brand_id' => 'required|exists:brands,id',
-            'sumber' => 'required|in:Unknown,IG,FB,WA,Tiktok,Web,Google,Organik,Teman',
+            'sumber_id' => 'nullable|exists:sumbers,id',
+            'sumber' => 'required|in:Tidak Tahu,Organik,Web,Instagram,Facebook,Whatsapp,Google,Tiktok,Event,Webinar,Teman,Flyer,Lainnya',
             'kabupaten' => 'required|string|max:255',
             'provinsi' => 'required|string|max:255',
-            'status_pembayaran' => 'required|in:Dp / TJ,Tambahan Dp,Pelunasan',
+            'status_pembayaran' => 'required|in:Tanda jadi,DP,Tambahan Dp,Pelunasan',
             'nominal_masuk' => 'required|numeric|min:0',
             'harga_paket' => 'required|numeric|min:0',
             'nama_paket' => 'required|string|max:255',

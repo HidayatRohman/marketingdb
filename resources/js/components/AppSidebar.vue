@@ -6,7 +6,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Calendar, CreditCard, Handshake, Kanban, LayoutGrid, Tag, TrendingUp, Users, Zap } from 'lucide-vue-next';
+import { Calendar, CreditCard, Handshake, Kanban, LayoutGrid, Tag, TrendingUp, Users, Zap, Globe } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
@@ -91,6 +91,15 @@ const mainNavItems = computed<NavItem[]>(() => {
             title: 'Label',
             href: '/labels',
             icon: Tag,
+        });
+    }
+
+    // Sumber - only Super Admin and Admin can access
+    if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess) {
+        items.push({
+            title: 'Sumber',
+            href: '/sumbers',
+            icon: Globe,
         });
     }
 
