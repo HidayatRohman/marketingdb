@@ -153,6 +153,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/{todoList}/status', [TaskManagementController::class, 'updateStatus'])->name('updateStatus');
         Route::get('/tasks', [TaskManagementController::class, 'getTasks'])->name('getTasks');
     });
+
+    // Iklan Budget Routes - All authenticated users can access
+    Route::prefix('iklan-budgets')->name('iklan-budgets.')->group(function () {
+        Route::middleware('role.access:view')->group(function () {
+            Route::get('/', [\App\Http\Controllers\IklanBudgetController::class, 'index'])->name('index');
+        });
+        
+        Route::middleware('role.access:create')->group(function () {
+            Route::post('/', [\App\Http\Controllers\IklanBudgetController::class, 'store'])->name('store');
+            Route::post('/generate-monthly', [\App\Http\Controllers\IklanBudgetController::class, 'generateMonthlyBudget'])->name('generate-monthly');
+        });
+        
+        Route::middleware('role.access:edit')->group(function () {
+            Route::put('/{iklanBudget}', [\App\Http\Controllers\IklanBudgetController::class, 'update'])->name('update');
+        });
+        
+        Route::middleware('role.access:destroy')->group(function () {
+            Route::delete('/{iklanBudget}', [\App\Http\Controllers\IklanBudgetController::class, 'destroy'])->name('destroy');
+        });
+    });
 });
 
 require __DIR__.'/settings.php';
