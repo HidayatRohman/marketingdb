@@ -17,16 +17,23 @@ class IklanBudgetController extends Controller
     public function index(Request $request)
     {
         $currentUser = auth()->user();
-        $query = IklanBudget::query();
+        $query = IklanBudget::with('brand');
+        
+        // Set default periode
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
         
         // Filter berdasarkan periode jika ada
         if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->periode($request->start_date, $request->end_date);
+            $query->inPeriod($request->start_date, $request->end_date);
         } else {
             // Default: tampilkan data bulan ini
-            $startOfMonth = Carbon::now()->startOfMonth();
-            $endOfMonth = Carbon::now()->endOfMonth();
-            $query->periode($startOfMonth, $endOfMonth);
+            $query->inPeriod($startOfMonth, $endOfMonth);
+        }
+        
+        // Filter berdasarkan brand jika ada
+        if ($request->filled('brand_id')) {
+            $query->where('brand_id', $request->brand_id);
         }
         
         $iklanBudgets = $query->orderBy('tanggal', 'desc')->paginate(31);
@@ -34,15 +41,28 @@ class IklanBudgetController extends Controller
         // Hitung total untuk periode yang dipilih
         $totalQuery = IklanBudget::query();
         if ($request->filled('start_date') && $request->filled('end_date')) {
-            $totalQuery->periode($request->start_date, $request->end_date);
+            $totalQuery->inPeriod($request->start_date, $request->end_date);
         } else {
-            $totalQuery->periode($startOfMonth, $endOfMonth);
+            $totalQuery->inPeriod($startOfMonth, $endOfMonth);
         }
         
-        $totals = $totalQuery->totalPeriode(
+        // Filter berdasarkan brand untuk total juga
+        if ($request->filled('brand_id')) {
+            $totalQuery->where('brand_id', $request->brand_id);
+        }
+        
+        $totals = $totalQuery->getTotals(
             $request->start_date ?? $startOfMonth,
-            $request->end_date ?? $endOfMonth
+            $request->end_date ?? $endOfMonth,
+            $request->brand_id
         )->first();
+        
+        // Calculate correct AVG CPL: Total Spent / Total Leads
+        if ($totals && $totals->total_leads > 0) {
+            $totals->avg_cost_per_lead = $totals->total_spent / $totals->total_leads;
+        } else {
+            $totals->avg_cost_per_lead = 0;
+        }
         
         // Get brands for select options
         $brands = Brand::select('id', 'nama')->orderBy('nama')->get();
@@ -51,7 +71,7 @@ class IklanBudgetController extends Controller
             'iklanBudgets' => $iklanBudgets,
             'totals' => $totals,
             'brands' => $brands,
-            'filters' => $request->only(['start_date', 'end_date']),
+            'filters' => $request->only(['start_date', 'end_date', 'brand_id']),
             'permissions' => [
                 'canCrud' => $currentUser->canCrud(),
                 'canOnlyView' => $currentUser->canOnlyView(),
@@ -67,28 +87,27 @@ class IklanBudgetController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'tanggal' => 'required|date|unique:iklan_budgets,tanggal',
-            'brand_id' => 'nullable|exists:brands,id',
+            'tanggal' => 'required|date',
+            'brand_id' => 'required|exists:brands,id',
             'spent_amount' => 'required|numeric|min:0',
-            'real_lead' => 'required|integer|min:0',
-            'spent_plus_tax' => 'nullable|numeric|min:0',
-            'cost_per_lead' => 'nullable|numeric|min:0'
         ]);
+
+        // Add custom validation for unique combination of tanggal and brand_id
+        $validator->after(function ($validator) use ($request) {
+            $exists = IklanBudget::where('tanggal', $request->tanggal)
+                ->where('brand_id', $request->brand_id)
+                ->exists();
+            
+            if ($exists) {
+                $validator->errors()->add('tanggal', 'Kombinasi tanggal dan brand sudah ada.');
+            }
+        });
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
-        // Calculate spent_plus_tax and cost_per_lead if not provided
-        $data = $request->all();
-        if (!isset($data['spent_plus_tax']) || $data['spent_plus_tax'] == 0) {
-            $data['spent_plus_tax'] = $data['spent_amount'] * 1.11; // 11% tax
-        }
-        if (!isset($data['cost_per_lead']) || $data['cost_per_lead'] == 0) {
-            $data['cost_per_lead'] = $data['real_lead'] > 0 ? $data['spent_amount'] / $data['real_lead'] : 0;
-        }
-
-        $iklanBudget = IklanBudget::create($data);
+        $iklanBudget = IklanBudget::create($validator->validated());
 
         return redirect()->route('iklan-budgets.index')
             ->with('success', 'Data budget iklan berhasil ditambahkan.');
@@ -100,28 +119,28 @@ class IklanBudgetController extends Controller
     public function update(Request $request, IklanBudget $iklanBudget)
     {
         $validator = Validator::make($request->all(), [
-            'tanggal' => 'required|date|unique:iklan_budgets,tanggal,' . $iklanBudget->id,
-            'brand_id' => 'nullable|exists:brands,id',
+            'tanggal' => 'required|date',
+            'brand_id' => 'required|exists:brands,id',
             'spent_amount' => 'required|numeric|min:0',
-            'real_lead' => 'required|integer|min:0',
-            'spent_plus_tax' => 'nullable|numeric|min:0',
-            'cost_per_lead' => 'nullable|numeric|min:0'
         ]);
+
+        // Add custom validation for unique combination of tanggal and brand_id (excluding current record)
+        $validator->after(function ($validator) use ($request, $iklanBudget) {
+            $exists = IklanBudget::where('tanggal', $request->tanggal)
+                ->where('brand_id', $request->brand_id)
+                ->where('id', '!=', $iklanBudget->id)
+                ->exists();
+            
+            if ($exists) {
+                $validator->errors()->add('tanggal', 'Kombinasi tanggal dan brand sudah ada.');
+            }
+        });
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
-        // Calculate spent_plus_tax and cost_per_lead if not provided
-        $data = $request->all();
-        if (!isset($data['spent_plus_tax']) || $data['spent_plus_tax'] == 0) {
-            $data['spent_plus_tax'] = $data['spent_amount'] * 1.11; // 11% tax
-        }
-        if (!isset($data['cost_per_lead']) || $data['cost_per_lead'] == 0) {
-            $data['cost_per_lead'] = $data['real_lead'] > 0 ? $data['spent_amount'] / $data['real_lead'] : 0;
-        }
-
-        $iklanBudget->update($data);
+        $iklanBudget->update($validator->validated());
 
         return redirect()->route('iklan-budgets.index')
             ->with('success', 'Data budget iklan berhasil diperbarui.');
@@ -171,8 +190,6 @@ class IklanBudgetController extends Controller
                     'tanggal' => $current->format('Y-m-d'),
                     'budget_amount' => $defaultBudget,
                     'spent_amount' => 0,
-                    'spent_plus_tax' => 0,
-                    'real_lead' => 0,
                     'closing' => 0,
                     'omset' => 0
                 ]);

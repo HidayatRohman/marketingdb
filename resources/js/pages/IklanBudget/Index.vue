@@ -61,6 +61,18 @@
                                 class="w-40"
                             />
                         </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm font-medium">Brand:</label>
+                            <select
+                                v-model="filters.brand_id"
+                                class="w-40 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="">Semua Brand</option>
+                                <option v-for="brand in brands" :key="brand.id" :value="brand.id">
+                                    {{ brand.nama }}
+                                </option>
+                            </select>
+                        </div>
                         <div class="flex gap-2">
                             <Button
                                 @click="applyFilter"
@@ -83,7 +95,7 @@
             </Card>
 
             <!-- Summary Cards -->
-            <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
+            <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-7">
                 <Card class="border-0 shadow-md">
                     <CardContent class="p-4 text-center">
                         <div class="text-xs text-muted-foreground uppercase tracking-wide">Total Spent</div>
@@ -93,7 +105,7 @@
                 <Card class="border-0 shadow-md">
                     <CardContent class="p-4 text-center">
                         <div class="text-xs text-muted-foreground uppercase tracking-wide">Spent+Tax</div>
-                        <div class="text-lg font-bold text-red-700">{{ formatCurrency(totals?.total_spent_tax || 0) }}</div>
+                        <div class="text-lg font-bold text-red-700">{{ formatCurrency(totals?.total_spent_plus_tax || 0) }}</div>
                     </CardContent>
                 </Card>
                 <Card class="border-0 shadow-md">
@@ -120,6 +132,12 @@
                         <div class="text-lg font-bold text-green-700">{{ formatCurrency(totals?.total_omset || 0) }}</div>
                     </CardContent>
                 </Card>
+                <Card class="border-0 shadow-md">
+                    <CardContent class="p-4 text-center">
+                        <div class="text-xs text-muted-foreground uppercase tracking-wide">Avg ROAS</div>
+                        <div class="text-lg font-bold text-blue-600">{{ (totals?.avg_roas || 0).toFixed(2) }}x</div>
+                    </CardContent>
+                </Card>
             </div>
 
             <!-- Table Card -->
@@ -134,6 +152,7 @@
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead class="text-center">Tanggal</TableHead>
+                                        <TableHead class="text-center">Brand</TableHead>
                                         <TableHead class="text-center">Spent</TableHead>
                                         <TableHead class="text-center">Spent+Tax</TableHead>
                                         <TableHead class="text-center">Real Lead</TableHead>
@@ -151,16 +170,19 @@
                                             {{ formatDate(budget.tanggal) }}
                                         </TableCell>
                                         <TableCell class="text-center">
+                                            <span class="font-medium text-blue-600">{{ budget.brand?.nama || '-' }}</span>
+                                        </TableCell>
+                                        <TableCell class="text-center">
                                             <span class="font-medium text-red-600">{{ formatCurrency(budget.spent_amount) }}</span>
                                         </TableCell>
                                         <TableCell class="text-center">
-                                            <span class="font-medium text-red-700">{{ formatCurrency(budget.spent_plus_tax) }}</span>
+                                            <span class="font-medium text-red-700">{{ formatCurrency(budget.spent_amount * 1.11) }}</span>
                                         </TableCell>
                                         <TableCell class="text-center">
                                             <span class="font-medium text-green-600">{{ budget.real_lead }}</span>
                                         </TableCell>
                                         <TableCell class="text-center">
-                                            <span v-if="budget.real_lead > 0" class="font-medium text-orange-600">{{ formatCurrency(budget.cost_per_lead) }}</span>
+                                            <span v-if="budget.real_lead > 0" class="font-medium text-orange-600">{{ formatCurrency((budget.spent_amount * 1.11) / budget.real_lead) }}</span>
                                             <span v-else class="text-red-500 font-medium">#DIV/0!</span>
                                         </TableCell>
                                         <TableCell class="text-center">
@@ -170,7 +192,7 @@
                                             <span class="font-medium text-green-700">{{ formatCurrency(budget.omset) }}</span>
                                         </TableCell>
                                         <TableCell class="text-center">
-                                            <span v-if="budget.spent_amount > 0 && budget.roas !== null && budget.roas !== undefined" class="font-medium text-indigo-600">{{ Number(budget.roas).toFixed(2) }}</span>
+                                            <span v-if="budget.spent_amount > 0 && budget.omset > 0" class="font-medium text-indigo-600">{{ (budget.omset / (budget.spent_amount * 1.11)).toFixed(2) }}</span>
                                             <span v-else class="text-red-500 font-medium">0.00</span>
                                         </TableCell>
                                         <TableCell>
@@ -291,6 +313,7 @@ interface IklanBudget {
   id: number
   tanggal: string
   brand_id?: number
+  brand?: { id: number; nama: string }
   budget_amount: number
   spent_amount: number
   spent_plus_tax: number
@@ -316,7 +339,7 @@ interface Props {
     total_budget: number
     total_spent: number
     total_spent_plus_tax: number
-    total_real_lead: number
+    total_leads: number
     avg_cost_per_lead: number
     total_closing: number
     total_omset: number
@@ -325,6 +348,7 @@ interface Props {
   filters: {
     start_date?: string
     end_date?: string
+    brand_id?: number | string
   }
   permissions: {
     canCrud: boolean
@@ -346,7 +370,8 @@ const breadcrumbs = computed(() => [
 // Reactive data
 const filters = reactive({
   start_date: props.filters.start_date || '',
-  end_date: props.filters.end_date || ''
+  end_date: props.filters.end_date || '',
+  brand_id: props.filters.brand_id || ''
 })
 
 const budgetModal = reactive({
@@ -386,8 +411,9 @@ const applyFilter = () => {
 }
 
 const resetFilter = () => {
-  filters.start_date = null
-  filters.end_date = null
+  filters.start_date = ''
+  filters.end_date = ''
+  filters.brand_id = ''
   router.visit(index().url, {
     preserveState: false,
     preserveScroll: false

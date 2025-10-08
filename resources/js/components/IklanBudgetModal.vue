@@ -107,76 +107,9 @@
               </div>
 
               <!-- Real Lead -->
-              <div class="space-y-2">
-                <label for="real_lead" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  <TrendingUp class="inline h-4 w-4 mr-1" />
-                  Real Lead <span class="text-red-500">*</span>
-                </label>
-                <input
-                  id="real_lead"
-                  type="number"
-                  v-model="form.real_lead"
-                  :class="{
-                    'border-red-500 focus:border-red-500 focus:ring-red-500': form.errors.real_lead,
-                    'border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500': !form.errors.real_lead
-                  }"
-                  class="block w-full rounded-lg border px-3 py-2.5 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-800 dark:text-gray-100"
-                  placeholder="0"
-                  min="0"
-                  required
-                />
-                <div v-if="form.errors.real_lead" class="text-sm text-red-600 flex items-center gap-1">
-                  <AlertCircle class="h-4 w-4" />
-                  {{ form.errors.real_lead }}
-                </div>
-              </div>
+              <!-- Field ini dihapus karena real_lead sekarang diambil otomatis dari tabel Mitra -->
 
-              <!-- Spent Plus Tax -->
-              <div class="space-y-2">
-                <label for="spent_plus_tax" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  <Calculator class="inline h-4 w-4 mr-1" />
-                  Spent + Tax (Otomatis)
-                  <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full dark:bg-blue-900 dark:text-blue-200">+11%</span>
-                </label>
-                <div class="relative">
-                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 font-medium">Rp</span>
-                  <input
-                    id="spent_plus_tax"
-                    type="text"
-                    :value="formatRupiah(form.spent_plus_tax)"
-                    readonly
-                    class="block w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-not-allowed text-sm"
-                    placeholder="0"
-                  />
-                </div>
-                <div v-if="form.errors.spent_plus_tax" class="text-sm text-red-600 flex items-center gap-1">
-                  <AlertCircle class="h-4 w-4" />
-                  {{ form.errors.spent_plus_tax }}
-                </div>
-              </div>
 
-              <!-- Cost Per Lead -->
-              <div class="space-y-2">
-                <label for="cost_per_lead" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  <Calculator class="inline h-4 w-4 mr-1" />
-                  Cost Per Lead (Otomatis)
-                </label>
-                <div class="relative">
-                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 font-medium">Rp</span>
-                  <input
-                    id="cost_per_lead"
-                    type="text"
-                    :value="formatRupiah(form.cost_per_lead)"
-                    readonly
-                    class="block w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-not-allowed text-sm"
-                    placeholder="0"
-                  />
-                </div>
-                <div v-if="form.errors.cost_per_lead" class="text-sm text-red-600 flex items-center gap-1">
-                  <AlertCircle class="h-4 w-4" />
-                  {{ form.errors.cost_per_lead }}
-                </div>
-              </div>
             </div>
           </div>
           
@@ -215,15 +148,13 @@
 import { computed, ref, watch } from 'vue'
 import { useForm, router } from '@inertiajs/vue3'
 import { store, update } from '@/routes/iklan-budgets'
-import { X, Calendar, AlertCircle, CreditCard, Calculator, Save, TrendingUp } from 'lucide-vue-next'
+import { X, Calendar, AlertCircle, CreditCard, Save, TrendingUp } from 'lucide-vue-next'
 
 interface IklanBudget {
   id: number
   tanggal: string
+  brand_id: number
   spent_amount: number
-  real_lead: number
-  spent_plus_tax: number
-  cost_per_lead: number
 }
 
 interface Props {
@@ -246,10 +177,7 @@ const isEditMode = computed(() => props.mode === 'edit')
 const form = useForm({
   tanggal: new Date().toISOString().split('T')[0], // Default to today
   brand_id: null,
-  spent_amount: 0,
-  real_lead: 0,
-  spent_plus_tax: 0,
-  cost_per_lead: 0
+  spent_amount: 0
 })
 
 // Reactive variables for formatted amount displays
@@ -279,34 +207,16 @@ watch(() => form.spent_amount, (newValue) => {
   if (newValue !== parseRupiah(spentFormatted.value)) {
     spentFormatted.value = formatRupiah(newValue)
   }
-  // Auto-calculate spent_plus_tax (spent + 11% tax)
-  form.spent_plus_tax = newValue * 1.11
-  // Auto-calculate cost_per_lead
-  if (form.real_lead > 0) {
-    form.cost_per_lead = form.spent_plus_tax / form.real_lead
-  } else {
-    form.cost_per_lead = 0
-  }
-})
-
-// Watch for real_lead changes to update cost_per_lead
-watch(() => form.real_lead, (newValue) => {
-  if (newValue > 0 && form.spent_plus_tax > 0) {
-    form.cost_per_lead = form.spent_plus_tax / newValue
-  } else {
-    form.cost_per_lead = 0
-  }
 })
 
 // Watch for budget changes to populate form
 watch(() => props.budget, (newBudget) => {
   if (newBudget && props.mode === 'edit') {
-    form.tanggal = newBudget.tanggal
+    // Format tanggal untuk input date HTML (YYYY-MM-DD)
+    const date = new Date(newBudget.tanggal)
+    form.tanggal = date.toISOString().split('T')[0]
     form.brand_id = newBudget.brand_id
     form.spent_amount = newBudget.spent_amount
-    form.real_lead = newBudget.real_lead
-    form.spent_plus_tax = newBudget.spent_plus_tax
-    form.cost_per_lead = newBudget.cost_per_lead
     // Update formatted displays
     spentFormatted.value = formatRupiah(newBudget.spent_amount)
   }
@@ -348,11 +258,6 @@ const validateForm = (): boolean => {
   
   if (!form.spent_amount || form.spent_amount < 0) {
     form.setError('spent_amount', 'Spent amount tidak boleh negatif')
-    isValid = false
-  }
-  
-  if (!form.real_lead || form.real_lead < 0) {
-    form.setError('real_lead', 'Real lead tidak boleh negatif')
     isValid = false
   }
   
