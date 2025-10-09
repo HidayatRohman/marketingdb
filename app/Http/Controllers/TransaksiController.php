@@ -47,9 +47,9 @@ class TransaksiController extends Controller
             $query->whereDate('tanggal_tf', '<=', $request->periode_end);
         }
 
-        // Apply status pembayaran filter
-        if ($request->has('status_pembayaran') && $request->status_pembayaran) {
-            $query->where('status_pembayaran', $request->status_pembayaran);
+        // Apply brand filter
+        if ($request->has('brand_id') && $request->brand_id) {
+            $query->where('paket_brand_id', $request->brand_id);
         }
 
         $perPage = $request->get('per_page', 10);
@@ -68,7 +68,7 @@ class TransaksiController extends Controller
             ],
             'filters' => [
                 'search' => $request->search,
-                'status_pembayaran' => $request->status_pembayaran,
+                'brand_id' => $request->brand_id,
                 'periode_start' => $request->periode_start,
                 'periode_end' => $request->periode_end,
                 'per_page' => $perPage,

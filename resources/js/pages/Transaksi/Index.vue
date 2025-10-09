@@ -80,7 +80,7 @@ interface Props {
     };
     filters: {
         search?: string;
-        status_pembayaran?: string;
+        brand_id?: string;
         periode_start?: string;
         periode_end?: string;
         per_page?: number;
@@ -95,7 +95,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const search = ref(props.filters.search || '');
-const statusPembayaran = ref(props.filters.status_pembayaran || '');
+const selectedBrand = ref(props.filters.brand_id || '');
 const periodeStart = ref(props.filters.periode_start || '');
 const periodeEnd = ref(props.filters.periode_end || '');
 const perPage = ref(props.filters.per_page || 10);
@@ -128,7 +128,7 @@ const debouncedSearch = debounce(() => {
         '/transaksis',
         {
             search: search.value || undefined,
-            status_pembayaran: statusPembayaran.value || undefined,
+            brand_id: selectedBrand.value || undefined,
             periode_start: periodeStart.value || undefined,
             periode_end: periodeEnd.value || undefined,
             per_page: perPage.value || 10,
@@ -141,7 +141,7 @@ const debouncedSearch = debounce(() => {
 }, 300);
 
 // Watch for filter changes
-watch([search, statusPembayaran, periodeStart, periodeEnd, perPage], () => {
+watch([search, selectedBrand, periodeStart, periodeEnd, perPage], () => {
     debouncedSearch();
 });
 
@@ -229,7 +229,7 @@ const getStatusBadgeVariant = (status: string) => {
 
 const clearFilters = () => {
     search.value = '';
-    statusPembayaran.value = '';
+    selectedBrand.value = '';
     periodeStart.value = '';
     periodeEnd.value = '';
     perPage.value = 10;
@@ -243,7 +243,7 @@ const toggleFilters = () => {
 const getFilterParams = () => {
     return {
         search: search.value || undefined,
-        status_pembayaran: statusPembayaran.value || undefined,
+        brand_id: selectedBrand.value || undefined,
         periode_start: periodeStart.value || undefined,
         periode_end: periodeEnd.value || undefined,
         per_page: perPage.value || 10,
@@ -264,6 +264,9 @@ const perPageOptions = [
     { value: 50, label: '50' },
     { value: 100, label: '100' },
 ];
+
+// Computed property untuk brands
+const brands = computed(() => props.brands || []);
 </script>
 
 <template>
@@ -420,7 +423,7 @@ const perPageOptions = [
                                     <ChevronUp v-else class="h-4 w-4" />
                                 </Button>
                                 <Button
-                                    v-if="search || statusPembayaran || periodeStart || periodeEnd"
+                                    v-if="search || selectedBrand || periodeStart || periodeEnd"
                                     @click="clearFilters"
                                     variant="outline"
                                     size="sm"
@@ -444,27 +447,24 @@ const perPageOptions = [
                             <div v-if="showFilters" class="overflow-hidden">
                                 <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
                                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        <!-- Status Pembayaran Filter -->
+                                        <!-- Brand Filter -->
                                         <div class="space-y-2">
                                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                Status Pembayaran
+                                                Brand
                                             </label>
-                                            <Select v-model="statusPembayaran">
-                                                <SelectTrigger class="w-full h-10 px-3 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-400 dark:bg-gray-800">
-                                                    <SelectValue placeholder="Pilih status" />
-                                                </SelectTrigger>
-                                                <SelectContent class="rounded-lg border border-gray-200 shadow-lg dark:border-gray-600 dark:bg-gray-800">
-                                                    <SelectItem value="" class="rounded hover:bg-gray-50 dark:hover:bg-gray-700">Semua Status</SelectItem>
-                                                    <SelectItem 
-                                                        v-for="status in statusOptions" 
-                                                        :key="status.value" 
-                                                        :value="status.value"
-                                                        class="rounded hover:bg-gray-50 dark:hover:bg-gray-700"
-                                                    >
-                                                        {{ status.label }}
-                                                    </SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            <select 
+                                                v-model="selectedBrand"
+                                                class="w-full h-10 px-3 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-400 dark:bg-gray-800 dark:text-gray-200"
+                                            >
+                                                <option value="">Semua Brand</option>
+                                                <option 
+                                                    v-for="brand in brands" 
+                                                    :key="brand.id" 
+                                                    :value="String(brand.id)"
+                                                >
+                                                    {{ brand.nama }}
+                                                </option>
+                                            </select>
                                         </div>
 
                                         <!-- Tanggal Mulai Filter -->
@@ -496,21 +496,18 @@ const perPageOptions = [
                                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                                 Per Halaman
                                             </label>
-                                            <Select v-model="perPage">
-                                                <SelectTrigger class="w-full h-10 px-3 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-400 dark:bg-gray-800">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent class="rounded-lg border border-gray-200 shadow-lg dark:border-gray-600 dark:bg-gray-800">
-                                                    <SelectItem 
-                                                        v-for="option in perPageOptions" 
-                                                        :key="option.value" 
-                                                        :value="option.value"
-                                                        class="rounded hover:bg-gray-50 dark:hover:bg-gray-700"
-                                                    >
-                                                        {{ option.label }} item
-                                                    </SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            <select 
+                                                v-model="perPage"
+                                                class="w-full h-10 px-3 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-400 dark:bg-gray-800 dark:text-gray-200"
+                                            >
+                                                <option 
+                                                    v-for="option in perPageOptions" 
+                                                    :key="option.value" 
+                                                    :value="option.value"
+                                                >
+                                                    {{ option.label }} item
+                                                </option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
