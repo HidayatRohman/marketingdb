@@ -110,21 +110,44 @@ class IklanBudget extends Model
         }
         $totalLeads = $totalLeadsQuery->count();
 
+        // Calculate total omset from Transaksi table based on nominal_masuk
+        $totalOmsetQuery = \App\Models\Transaksi::query();
+        if ($startDate && $endDate) {
+            $totalOmsetQuery->whereBetween('tanggal_tf', [$startDate, $endDate]);
+        }
+        if ($brandId) {
+            $totalOmsetQuery->where(function($q) use ($brandId) {
+                $q->where('paket_brand_id', $brandId)
+                  ->orWhere('lead_awal_brand_id', $brandId);
+            });
+        }
+        $totalOmset = $totalOmsetQuery->sum('nominal_masuk');
+
+        // Calculate total closing from Transaksi table based on lead_awal_brand_id
+        $totalClosingQuery = \App\Models\Transaksi::query();
+        if ($startDate && $endDate) {
+            $totalClosingQuery->whereBetween('tanggal_tf', [$startDate, $endDate]);
+        }
+        if ($brandId) {
+            $totalClosingQuery->where('lead_awal_brand_id', $brandId);
+        }
+        $totalClosing = $totalClosingQuery->count();
+
         $avgCostPerLead = $totalLeads > 0 ? 0 : 0; // Will be calculated in controller
         
         $query = $query->selectRaw('
             SUM(budget_amount) as total_budget,
             SUM(spent_amount) as total_spent,
             SUM(spent_amount * 1.11) as total_spent_plus_tax,
-            SUM(closing) as total_closing,
-            SUM(omset) as total_omset,
+            ? as total_closing,
+            ? as total_omset,
             CASE 
-                WHEN SUM(spent_amount) > 0 THEN SUM(omset) / SUM(spent_amount)
+                WHEN SUM(spent_amount) > 0 THEN ? / SUM(spent_amount)
                 ELSE 0 
             END as avg_roas,
             0 as avg_cost_per_lead,
             ? as total_leads
-        ', [$totalLeads]);
+        ', [$totalClosing, $totalOmset, $totalOmset, $totalLeads]);
 
         if ($startDate && $endDate) {
             $query->whereBetween('tanggal', [$startDate, $endDate]);
