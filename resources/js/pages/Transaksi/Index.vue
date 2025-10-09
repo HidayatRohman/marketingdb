@@ -465,21 +465,29 @@ const perPageOptions = [
                         <Table>
                             <TableHeader>
                                 <TableRow class="bg-muted/50">
-                                    <TableHead class="w-[100px]">No</TableHead>
+                                    <TableHead class="w-[60px]">No</TableHead>
                                     <TableHead>Marketing</TableHead>
-                                    <TableHead>No. WhatsApp</TableHead>
-                                    <TableHead>Tanggal TF</TableHead>
                                     <TableHead>Nama Mitra</TableHead>
-                                    <TableHead>Paket</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Nominal</TableHead>
+                                    <TableHead>No Whatsapp</TableHead>
+                                    <TableHead>Tgl Transfer</TableHead>
+                                    <TableHead>Tanggal Masuk Lead</TableHead>
+                                    <TableHead>Periode Lead</TableHead>
+                                    <TableHead>Usia</TableHead>
+                                    <TableHead>Sumber</TableHead>
+                                    <TableHead>Kabupaten</TableHead>
                                     <TableHead>Provinsi</TableHead>
+                                    <TableHead>Paket Brand</TableHead>
+                                    <TableHead>Lead Awal</TableHead>
+                                    <TableHead>Nama Paket</TableHead>
+                                    <TableHead>Status Pembayaran</TableHead>
+                                    <TableHead>Nominal Masuk</TableHead>
+                                    <TableHead>Harga Paket</TableHead>
                                     <TableHead class="text-center">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 <TableRow v-if="transaksiData.data.length === 0">
-                                    <TableCell colspan="11" class="text-center py-8">
+                                    <TableCell colspan="18" class="text-center py-8">
                                         <div class="flex flex-col items-center gap-2">
                                             <CreditCard class="h-12 w-12 text-muted-foreground" />
                                             <p class="text-muted-foreground">Tidak ada transaksi ditemukan</p>
@@ -487,43 +495,81 @@ const perPageOptions = [
                                     </TableCell>
                                 </TableRow>
                                 <TableRow v-for="(transaksi, index) in transaksiData.data" :key="transaksi.id" class="hover:bg-muted/50">
+                                    <!-- No -->
                                     <TableCell class="font-medium">
                                         {{ (transaksiData.current_page - 1) * transaksiData.per_page + index + 1 }}
                                     </TableCell>
+                                    <!-- Marketing -->
                                     <TableCell>
                                         <div class="flex items-center gap-2">
                                             <User class="h-4 w-4 text-muted-foreground" />
                                             <span class="font-medium">{{ transaksi.user.name }}</span>
                                         </div>
                                     </TableCell>
+                                    <!-- Nama Mitra -->
+                                    <TableCell>
+                                        <span class="text-sm">{{ transaksi.nama_mitra || '-' }}</span>
+                                    </TableCell>
+                                    <!-- No Whatsapp -->
                                     <TableCell>
                                         <div class="flex items-center gap-2">
                                             <Phone class="h-4 w-4 text-muted-foreground" />
                                             <span class="text-sm">{{ transaksi.no_wa || '-' }}</span>
                                         </div>
                                     </TableCell>
+                                    <!-- Tgl Transfer -->
                                     <TableCell>
                                         <span class="text-sm">{{ formatDate(transaksi.tanggal_tf) }}</span>
                                     </TableCell>
+                                    <!-- Tanggal Masuk Lead -->
                                     <TableCell>
-                                        <span class="text-sm">{{ transaksi.nama_mitra || '-' }}</span>
+                                        <span class="text-sm">{{ formatDate(transaksi.tanggal_lead_masuk) || '-' }}</span>
                                     </TableCell>
+                                    <!-- Periode Lead -->
                                     <TableCell>
-                                        <div>
-                                            <p class="font-medium">{{ transaksi.nama_paket }}</p>
-                                            <p class="text-sm text-muted-foreground">{{ transaksi.paketBrand?.nama || '-' }}</p>
-                                        </div>
+                                        <span class="text-sm">{{ transaksi.periode_lead || '-' }}</span>
                                     </TableCell>
+                                    <!-- Usia -->
+                                    <TableCell>
+                                        <span class="text-sm">{{ transaksi.usia || '-' }}</span>
+                                    </TableCell>
+                                    <!-- Sumber -->
+                                    <TableCell>
+                                        <span class="text-sm">{{ transaksi.sumber || '-' }}</span>
+                                    </TableCell>
+                                    <!-- Kabupaten -->
+                                    <TableCell>
+                                        <span class="text-sm">{{ transaksi.kabupaten || '-' }}</span>
+                                    </TableCell>
+                                    <!-- Provinsi -->
+                                    <TableCell>
+                                        <span class="text-sm">{{ transaksi.provinsi || '-' }}</span>
+                                    </TableCell>
+                                    <!-- Paket Brand -->
+                                    <TableCell>
+                                        <span class="text-sm">{{ transaksi.paketBrand?.nama || '-' }}</span>
+                                    </TableCell>
+                                    <!-- Lead Awal -->
+                                    <TableCell>
+                                        <span class="text-sm">{{ transaksi.leadAwalBrand?.nama || '-' }}</span>
+                                    </TableCell>
+                                    <!-- Nama Paket -->
+                                    <TableCell>
+                                        <span class="text-sm font-medium">{{ transaksi.nama_paket || '-' }}</span>
+                                    </TableCell>
+                                    <!-- Status Pembayaran -->
                                     <TableCell>
                                         <Badge :variant="getStatusBadgeVariant(transaksi.status_pembayaran)">
                                             {{ transaksi.status_pembayaran }}
                                         </Badge>
                                     </TableCell>
+                                    <!-- Nominal Masuk -->
                                     <TableCell>
                                         <span class="font-medium">{{ formatCurrency(transaksi.nominal_masuk) }}</span>
                                     </TableCell>
+                                    <!-- Harga Paket -->
                                     <TableCell>
-                                        <span class="text-sm">{{ transaksi.provinsi }}</span>
+                                        <span class="font-medium">{{ formatCurrency(transaksi.harga_paket) || '-' }}</span>
                                     </TableCell>
                                     <TableCell>
                                         <div class="flex justify-center gap-2">
