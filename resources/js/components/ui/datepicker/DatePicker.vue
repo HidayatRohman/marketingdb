@@ -245,43 +245,20 @@ const formattedDate = computed(() => {
 });
 
 const dropdownStyle = computed(() => {
-  if (!containerRef.value) return { top: '100%', left: '0px', right: '0px' };
-  
-  const rect = containerRef.value.getBoundingClientRect();
   const viewportHeight = window.innerHeight;
   const viewportWidth = window.innerWidth;
   const dropdownHeight = 400; // Approximate height of calendar dropdown
   const dropdownWidth = 320; // 20rem = 320px
-  const spaceBelow = viewportHeight - rect.bottom;
-  const spaceAbove = rect.top;
   
-  let top: number;
-  let left: number;
-  
-  // Determine vertical position
-  if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
-    // Show above
-    top = rect.top - dropdownHeight - 8;
-  } else {
-    // Show below
-    top = rect.bottom + 8;
-  }
-  
-  // Determine horizontal position
-  left = rect.left;
-  
-  // Ensure dropdown doesn't go off-screen horizontally
-  if (left + dropdownWidth > viewportWidth) {
-    left = viewportWidth - dropdownWidth - 16;
-  }
-  if (left < 16) {
-    left = 16;
-  }
+  // Center the dropdown in the viewport
+  const top = (viewportHeight - dropdownHeight) / 2;
+  const left = (viewportWidth - dropdownWidth) / 2;
   
   return {
     top: `${Math.max(16, top)}px`,
-    left: `${left}px`,
-    width: '320px'
+    left: `${Math.max(16, left)}px`,
+    width: '320px',
+    transform: 'none'
   };
 });
 
