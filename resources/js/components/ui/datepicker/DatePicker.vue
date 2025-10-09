@@ -31,7 +31,7 @@
     >
       <div
         v-if="isOpen"
-        class="absolute z-50 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-4"
+        class="absolute z-50 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-4"
         :class="dropdownPosition"
       >
         <!-- Calendar Header -->
@@ -238,7 +238,21 @@ const formattedDate = computed(() => {
 });
 
 const dropdownPosition = computed(() => {
-  return 'left-0 right-0';
+  if (!containerRef.value) return 'left-0 right-0 top-full';
+  
+  const rect = containerRef.value.getBoundingClientRect();
+  const viewportHeight = window.innerHeight;
+  const dropdownHeight = 400; // Approximate height of calendar dropdown
+  const spaceBelow = viewportHeight - rect.bottom;
+  const spaceAbove = rect.top;
+  
+  // If there's not enough space below but enough space above, show dropdown above
+  if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+    return 'left-0 right-0 bottom-full mb-2';
+  }
+  
+  // Default: show dropdown below
+  return 'left-0 right-0 top-full mt-2';
 });
 
 const yearRange = computed(() => {
@@ -330,6 +344,12 @@ const toggleCalendar = () => {
       currentMonth.value = date.getMonth();
       currentYear.value = date.getFullYear();
     }
+    // Force recalculation of dropdown position
+    setTimeout(() => {
+      if (containerRef.value) {
+        containerRef.value.getBoundingClientRect();
+      }
+    }, 0);
   }
 };
 
@@ -402,12 +422,24 @@ const handleClickOutside = (event: Event) => {
   }
 };
 
+// Handle window resize
+const handleResize = () => {
+  if (isOpen.value && containerRef.value) {
+    // Force recalculation of dropdown position on resize
+    containerRef.value.getBoundingClientRect();
+  }
+};
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
+  window.addEventListener('resize', handleResize);
+  window.addEventListener('scroll', handleResize);
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
+  window.removeEventListener('resize', handleResize);
+  window.removeEventListener('scroll', handleResize);
 });
 
 // Watch for model value changes
