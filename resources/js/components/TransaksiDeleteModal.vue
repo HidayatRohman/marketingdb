@@ -27,7 +27,6 @@ interface User {
 interface Transaksi {
     id: number;
     user_id: number;
-    mitra_id: number;
     tanggal_tf: string;
     tanggal_lead_masuk: string;
     periode_lead: string;
@@ -43,7 +42,6 @@ interface Transaksi {
     harga_paket: number;
     nama_paket: string;
     user: User;
-    mitra: Mitra;
     paketBrand: Brand;
     leadAwalBrand: Brand;
     created_at: string;
@@ -131,10 +129,6 @@ const handleClose = () => {
                                 <div class="flex justify-between">
                                     <span class="text-muted-foreground">Marketing:</span>
                                     <span class="font-medium">{{ transaksi.user.name }}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-muted-foreground">Mitra:</span>
-                                    <span class="font-medium">{{ transaksi.nama_mitra }}</span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-muted-foreground">Tanggal TF:</span>

@@ -47,7 +47,6 @@ interface User {
 interface Transaksi {
     id: number;
     user_id: number;
-    mitra_id: number;
     tanggal_tf: string;
     tanggal_lead_masuk: string;
     periode_lead: string;
@@ -63,7 +62,6 @@ interface Transaksi {
     harga_paket: number;
     nama_paket: string;
     user: User;
-    mitra: Mitra;
     paketBrand: Brand;
     leadAwalBrand: Brand;
     created_at: string;
@@ -80,7 +78,6 @@ interface Props {
         prev_page_url: string | null;
         next_page_url: string | null;
     };
-    mitras: Mitra[];
     brands: Brand[];
     sumbers: Sumber[];
     currentUser: {
@@ -477,9 +474,9 @@ const perPageOptions = [
                                 <TableRow class="bg-muted/50">
                                     <TableHead class="w-[100px]">No</TableHead>
                                     <TableHead>Marketing</TableHead>
-                                    <TableHead>Mitra</TableHead>
                                     <TableHead>No. WhatsApp</TableHead>
                                     <TableHead>Tanggal TF</TableHead>
+                                    <TableHead>Nama Mitra</TableHead>
                                     <TableHead>Paket</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Nominal</TableHead>
@@ -489,7 +486,7 @@ const perPageOptions = [
                             </TableHeader>
                             <TableBody>
                                 <TableRow v-if="transaksiData.data.length === 0">
-                                    <TableCell colspan="10" class="text-center py-8">
+                                    <TableCell colspan="11" class="text-center py-8">
                                         <div class="flex flex-col items-center gap-2">
                                             <CreditCard class="h-12 w-12 text-muted-foreground" />
                                             <p class="text-muted-foreground">Tidak ada transaksi ditemukan</p>
@@ -507,9 +504,6 @@ const perPageOptions = [
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <p class="font-medium">{{ transaksi.nama_mitra }}</p>
-                                    </TableCell>
-                                    <TableCell>
                                         <div class="flex items-center gap-2">
                                             <Phone class="h-4 w-4 text-muted-foreground" />
                                             <span class="text-sm">{{ transaksi.no_wa || '-' }}</span>
@@ -517,6 +511,9 @@ const perPageOptions = [
                                     </TableCell>
                                     <TableCell>
                                         <span class="text-sm">{{ formatDate(transaksi.tanggal_tf) }}</span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span class="text-sm">{{ transaksi.nama_mitra || '-' }}</span>
                                     </TableCell>
                                     <TableCell>
                                         <div>

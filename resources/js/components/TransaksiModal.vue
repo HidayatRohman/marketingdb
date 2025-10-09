@@ -38,12 +38,12 @@ interface Transaksi {
     id: number;
     user_id: number;
     nama_marketing: string;
-
     tanggal_tf: string;
     tanggal_lead_masuk: string;
     periode_lead: string;
     no_wa: string;
     usia: number;
+    nama_mitra?: string;
     paket_brand_id: number;
     lead_awal_brand_id: number;
     sumber: string;
@@ -54,7 +54,6 @@ interface Transaksi {
     harga_paket: number;
     nama_paket: string;
     user: User;
-    mitra?: Mitra;
     paketBrand?: Brand;
     leadAwalBrand?: Brand;
     created_at: string;
@@ -83,12 +82,12 @@ const page = usePage();
 const form = useForm({
     user_id: props.currentUser.id,
     nama_marketing: props.currentUser.name,
-    nama_mitra: '',
     tanggal_tf: new Date().toISOString().split('T')[0],
     tanggal_lead_masuk: new Date().toISOString().split('T')[0],
     periode_lead: '',
     no_wa: '',
     usia: null,
+    nama_mitra: '',
     paket_brand_id: null,
     lead_awal_brand_id: null,
     sumber_id: null,
@@ -195,6 +194,7 @@ const resetForm = () => {
     form.periode_lead = '';
     form.no_wa = '';
     form.usia = null;
+    form.nama_mitra = '';
     form.paket_brand_id = null;
     form.lead_awal_brand_id = null;
     form.sumber_id = null;
@@ -211,12 +211,12 @@ const resetForm = () => {
 const populateForm = (transaksi: Transaksi) => {
     form.user_id = transaksi.user_id;
     form.nama_marketing = transaksi.nama_marketing || props.currentUser.name;
-    form.nama_mitra = transaksi.nama_mitra || '';
     form.tanggal_tf = transaksi.tanggal_tf;
     form.tanggal_lead_masuk = transaksi.tanggal_lead_masuk;
     form.periode_lead = transaksi.periode_lead;
     form.no_wa = transaksi.no_wa;
     form.usia = transaksi.usia;
+    form.nama_mitra = transaksi.nama_mitra || '';
     form.paket_brand_id = transaksi.paket_brand_id;
     form.lead_awal_brand_id = transaksi.lead_awal_brand_id;
     form.sumber_id = (transaksi as any).sumber_id ? (transaksi as any).sumber_id.toString() : null;
@@ -361,28 +361,15 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                     </div>
                 </div>
 
-                <!-- Mitra & Contact Info -->
+                <!-- Contact Info -->
                 <div class="group rounded-xl border-2 border-green-200 bg-green-50 p-6 shadow-sm transition-all duration-300 hover:border-green-300 hover:shadow-md dark:border-gray-600 dark:bg-gray-800">
                     <h3 class="mb-4 flex items-center gap-3 text-lg font-bold text-gray-800 dark:text-gray-200">
                         <div class="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md">
                             <Phone class="h-5 w-5" />
                         </div>
-                        Informasi Mitra & Kontak
+                        Informasi Kontak
                     </h3>
                     <div class="grid gap-6 grid-cols-1">
-                        <div class="space-y-3">
-                            <Label for="nama_mitra" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Nama Mitra</Label>
-                            <Input
-                                id="nama_mitra"
-                                v-model="form.nama_mitra"
-                                :disabled="isViewMode"
-                                placeholder="Masukkan nama mitra"
-                                class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            />
-                            <div v-if="form.errors.nama_mitra" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
-                                {{ form.errors.nama_mitra }}
-                            </div>
-                        </div>
 
                         <div class="space-y-3">
                             <Label for="no_wa" class="text-sm font-semibold text-gray-700 dark:text-gray-300">No WhatsApp</Label>
@@ -481,6 +468,20 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                             </select>
                             <div v-if="form.errors.usia" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.usia }}
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <Label for="nama_mitra" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Nama Mitra</Label>
+                            <Input
+                                id="nama_mitra"
+                                v-model="form.nama_mitra"
+                                :disabled="isViewMode"
+                                placeholder="Masukkan nama mitra"
+                                class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            />
+                            <div v-if="form.errors.nama_mitra" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
+                                {{ form.errors.nama_mitra }}
                             </div>
                         </div>
 

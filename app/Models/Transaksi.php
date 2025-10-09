@@ -11,12 +11,12 @@ class Transaksi extends Model
 
     protected $fillable = [
         'user_id',
-        'nama_mitra',
         'tanggal_tf',
         'tanggal_lead_masuk',
         'periode_lead',
         'no_wa',
         'usia',
+        'nama_mitra',
         'paket_brand_id',
         'lead_awal_brand_id',
         'sumber_id',

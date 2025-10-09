@@ -32,7 +32,6 @@ class TransaksiController extends Controller
                   ->orWhere('kabupaten', 'like', "%{$search}%")
                   ->orWhere('provinsi', 'like', "%{$search}%")
                   ->orWhere('no_wa', 'like', "%{$search}%")
-                  ->orWhere('nama_mitra', 'like', "%{$search}%")
                   ->orWhereHas('user', function ($userQuery) use ($search) {
                       $userQuery->where('name', 'like', "%{$search}%");
                   });
@@ -92,11 +91,11 @@ class TransaksiController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nama_mitra' => 'required|string|max:255',
             'tanggal_tf' => 'required|date',
             'tanggal_lead_masuk' => 'required|date',
             'periode_lead' => 'required|in:Januari,Februari,Maret,April,Mei,Juni,Juli,Agustus,September,Oktober,November,Desember',
             'usia' => 'required|integer|min:17|max:80',
+            'nama_mitra' => 'nullable|string|max:255',
             'paket_brand_id' => 'required|exists:brands,id',
             'lead_awal_brand_id' => 'required|exists:brands,id',
             'sumber_id' => 'nullable|exists:sumbers,id',
@@ -180,11 +179,11 @@ class TransaksiController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'nama_mitra' => 'required|string|max:255',
             'tanggal_tf' => 'required|date',
             'tanggal_lead_masuk' => 'required|date',
             'periode_lead' => 'required|in:Januari,Februari,Maret,April,Mei,Juni,Juli,Agustus,September,Oktober,November,Desember',
             'usia' => 'required|integer|min:17|max:80',
+            'nama_mitra' => 'nullable|string|max:255',
             'paket_brand_id' => 'required|exists:brands,id',
             'lead_awal_brand_id' => 'required|exists:brands,id',
             'sumber_id' => 'nullable|exists:sumbers,id',
