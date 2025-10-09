@@ -47,7 +47,7 @@ const mainNavItems = computed<NavItem[]>(() => {
     // IKLAN - accessible by all roles but with different permissions
     if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess || permissions.value.hasLimitedAccess) {
         items.push({
-            title: 'IKLAN',
+            title: 'Iklan',
             href: '/iklan-budgets',
             icon: TrendingUp,
         });
