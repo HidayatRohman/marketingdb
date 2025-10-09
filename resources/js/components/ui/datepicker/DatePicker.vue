@@ -31,8 +31,8 @@
     >
       <div
         v-if="isOpen"
-        class="absolute z-50 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-4"
-        :class="dropdownPosition"
+        class="fixed z-[9999] w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-4"
+        :style="dropdownStyle"
       >
         <!-- Calendar Header -->
         <div class="flex items-center justify-between mb-4">
@@ -237,22 +237,45 @@ const formattedDate = computed(() => {
   });
 });
 
-const dropdownPosition = computed(() => {
-  if (!containerRef.value) return 'left-0 right-0 top-full';
+const dropdownStyle = computed(() => {
+  if (!containerRef.value) return { top: '100%', left: '0px', right: '0px' };
   
   const rect = containerRef.value.getBoundingClientRect();
   const viewportHeight = window.innerHeight;
+  const viewportWidth = window.innerWidth;
   const dropdownHeight = 400; // Approximate height of calendar dropdown
+  const dropdownWidth = 320; // 20rem = 320px
   const spaceBelow = viewportHeight - rect.bottom;
   const spaceAbove = rect.top;
   
-  // If there's not enough space below but enough space above, show dropdown above
+  let top: number;
+  let left: number;
+  
+  // Determine vertical position
   if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
-    return 'left-0 right-0 bottom-full mb-2';
+    // Show above
+    top = rect.top - dropdownHeight - 8;
+  } else {
+    // Show below
+    top = rect.bottom + 8;
   }
   
-  // Default: show dropdown below
-  return 'left-0 right-0 top-full mt-2';
+  // Determine horizontal position
+  left = rect.left;
+  
+  // Ensure dropdown doesn't go off-screen horizontally
+  if (left + dropdownWidth > viewportWidth) {
+    left = viewportWidth - dropdownWidth - 16;
+  }
+  if (left < 16) {
+    left = 16;
+  }
+  
+  return {
+    top: `${Math.max(16, top)}px`,
+    left: `${left}px`,
+    width: '320px'
+  };
 });
 
 const yearRange = computed(() => {

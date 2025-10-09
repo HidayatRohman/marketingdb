@@ -388,123 +388,130 @@ const perPageOptions = [
             </div>
 
             <!-- Search and Filters -->
-            <Card class="group border-0 bg-white/80 backdrop-blur-sm shadow-xl transition-all duration-300 hover:shadow-2xl dark:bg-gray-900/80 dark:border dark:border-gray-700/50">
-                <CardContent class="p-6">
-                    <div class="space-y-6">
+            <Card class="border-0 shadow-lg dark:bg-gray-900">
+                <CardContent class="p-4 sm:p-6">
+                    <div class="space-y-4">
                         <!-- Search Bar -->
-                        <div class="flex flex-col space-y-4 sm:flex-row sm:space-x-6 sm:space-y-0">
-                            <div class="flex-1 relative group">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-all duration-200 group-focus-within:text-blue-500">
-                                    <Search class="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors duration-200" />
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <div class="flex-1 relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Search class="h-4 w-4 text-gray-400" />
                                 </div>
                                 <Input
                                     v-model="search"
-                                    placeholder="Cari berdasarkan nama mitra, marketing, atau nomor WhatsApp..."
-                                    class="w-full pl-12 pr-4 py-3 text-base border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 hover:shadow-lg focus:shadow-xl transform focus:scale-[1.02] dark:border-gray-600 dark:focus:border-blue-400 dark:bg-gray-800/50"
+                                    placeholder="Cari nama mitra, marketing, atau nomor WhatsApp..."
+                                    class="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-400 dark:bg-gray-800"
                                 />
-                                <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 transition-opacity duration-300 group-focus-within:opacity-100 pointer-events-none"></div>
                             </div>
-                            <div class="flex space-x-3">
+                            <div class="flex gap-2 sm:gap-3">
                                 <Button
                                     @click="toggleFilters"
-                                    :class="[
-                                        'group relative overflow-hidden flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 border-2 transform hover:scale-105',
-                                        showFilters 
-                                            ? 'bg-blue-500 text-white border-blue-500 shadow-lg hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700' 
-                                            : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700'
-                                    ]"
+                                    variant="outline"
+                                    size="sm"
+                                    class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium transition-colors"
+                                    :class="{
+                                        'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:border-blue-700 dark:text-blue-300': showFilters,
+                                        'hover:bg-gray-50 dark:hover:bg-gray-800': !showFilters
+                                    }"
                                 >
-                                    <div class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-                                    <Filter class="h-5 w-5 transition-transform duration-200 group-hover:rotate-12" />
-                                    <span>{{ showFilters ? 'Sembunyikan Filter' : 'Tampilkan Filter' }}</span>
-                                    <ChevronDown v-if="!showFilters" class="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
-                                    <ChevronUp v-else class="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
+                                    <Filter class="h-4 w-4" />
+                                    <span class="hidden sm:inline">{{ showFilters ? 'Sembunyikan' : 'Filter' }}</span>
+                                    <ChevronDown v-if="!showFilters" class="h-4 w-4" />
+                                    <ChevronUp v-else class="h-4 w-4" />
                                 </Button>
                                 <Button
                                     v-if="search || statusPembayaran || periodeStart || periodeEnd"
                                     @click="clearFilters"
-                                    class="group relative overflow-hidden flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold bg-white text-red-600 border-2 border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-300 transform hover:scale-105 dark:bg-gray-800 dark:text-red-400 dark:border-red-700/50 dark:hover:bg-red-900/20"
+                                    variant="outline"
+                                    size="sm"
+                                    class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-400 dark:border-red-700 dark:hover:bg-red-900/20"
                                 >
-                                    <div class="absolute inset-0 bg-gradient-to-r from-red-500/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-                                    <X class="h-5 w-5 transition-transform duration-200 group-hover:rotate-90" />
-                                    <span>Bersihkan</span>
+                                    <X class="h-4 w-4" />
+                                    <span class="hidden sm:inline">Bersihkan</span>
                                 </Button>
                             </div>
                         </div>
 
                         <!-- Advanced Filters -->
                         <Transition
-                            enter-active-class="transition-all duration-500 ease-out"
-                            enter-from-class="opacity-0 transform -translate-y-4 scale-95"
-                            enter-to-class="opacity-100 transform translate-y-0 scale-100"
-                            leave-active-class="transition-all duration-300 ease-in"
-                            leave-from-class="opacity-100 transform translate-y-0 scale-100"
-                            leave-to-class="opacity-0 transform -translate-y-4 scale-95"
+                            enter-active-class="transition-all duration-300 ease-out"
+                            enter-from-class="opacity-0 max-h-0"
+                            enter-to-class="opacity-100 max-h-96"
+                            leave-active-class="transition-all duration-200 ease-in"
+                            leave-from-class="opacity-100 max-h-96"
+                            leave-to-class="opacity-0 max-h-0"
                         >
-                            <div v-if="showFilters" class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6 shadow-lg border-t-2 border-blue-200/50 mt-6 dark:from-blue-900/20 dark:via-purple-900/20 dark:to-pink-900/20 dark:border-blue-700/50">
-                                <div class="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 animate-pulse"></div>
-                                <div class="relative grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                                    <!-- Status Pembayaran Filter -->
-                                    <div class="group space-y-3">
-                                        <label class="flex items-center space-x-2 text-sm font-bold text-gray-700 dark:text-gray-300">
-                                            <span class="text-lg">💳</span>
-                                            <span>Status Pembayaran</span>
-                                        </label>
-                                        <Select v-model="statusPembayaran">
-                                            <SelectTrigger class="w-full p-3 border-2 border-blue-200 rounded-xl bg-white/80 backdrop-blur-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-200 transition-all duration-300 hover:shadow-lg dark:border-blue-600 dark:focus:border-blue-400 dark:bg-gray-800/80">
-                                                <SelectValue placeholder="🔍 Pilih status" />
-                                            </SelectTrigger>
-                                            <SelectContent class="rounded-xl border-2 border-blue-200 shadow-xl">
-                                                <SelectItem value="">🔍 Semua Status</SelectItem>
-                                                <SelectItem v-for="status in statusOptions" :key="status.value" :value="status.value">
-                                                    {{ status.label }}
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                            <div v-if="showFilters" class="overflow-hidden">
+                                <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <!-- Status Pembayaran Filter -->
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Status Pembayaran
+                                            </label>
+                                            <Select v-model="statusPembayaran">
+                                                <SelectTrigger class="w-full h-10 px-3 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-400 dark:bg-gray-800">
+                                                    <SelectValue placeholder="Pilih status" />
+                                                </SelectTrigger>
+                                                <SelectContent class="rounded-lg border border-gray-200 shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                                                    <SelectItem value="" class="rounded hover:bg-gray-50 dark:hover:bg-gray-700">Semua Status</SelectItem>
+                                                    <SelectItem 
+                                                        v-for="status in statusOptions" 
+                                                        :key="status.value" 
+                                                        :value="status.value"
+                                                        class="rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                    >
+                                                        {{ status.label }}
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
 
-                                    <!-- Tanggal Mulai Filter -->
-                                    <div class="group space-y-3">
-                                        <label class="flex items-center space-x-2 text-sm font-bold text-gray-700 dark:text-gray-300">
-                                            <span class="text-lg">📅</span>
-                                            <span>Tanggal Mulai</span>
-                                        </label>
-                                        <DatePicker 
-                                            v-model="periodeStart" 
-                                            placeholder="Pilih tanggal mulai"
-                                            class="w-full p-3 border-2 border-purple-200 rounded-xl bg-white/80 backdrop-blur-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-200 transition-all duration-300 hover:shadow-lg dark:border-purple-600 dark:focus:border-purple-400 dark:bg-gray-800/80"
-                                        />
-                                    </div>
+                                        <!-- Tanggal Mulai Filter -->
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Tanggal Mulai
+                                            </label>
+                                            <DatePicker 
+                                                v-model="periodeStart" 
+                                                placeholder="Pilih tanggal mulai"
+                                                class="w-full h-10 px-3 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-400 dark:bg-gray-800"
+                                            />
+                                        </div>
 
-                                    <!-- Tanggal Akhir Filter -->
-                                    <div class="group space-y-3">
-                                        <label class="flex items-center space-x-2 text-sm font-bold text-gray-700 dark:text-gray-300">
-                                            <span class="text-lg">📅</span>
-                                            <span>Tanggal Akhir</span>
-                                        </label>
-                                        <DatePicker 
-                                            v-model="periodeEnd" 
-                                            placeholder="Pilih tanggal akhir"
-                                            class="w-full p-3 border-2 border-purple-200 rounded-xl bg-white/80 backdrop-blur-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-200 transition-all duration-300 hover:shadow-lg dark:border-purple-600 dark:focus:border-purple-400 dark:bg-gray-800/80"
-                                        />
-                                    </div>
+                                        <!-- Tanggal Akhir Filter -->
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Tanggal Akhir
+                                            </label>
+                                            <DatePicker 
+                                                v-model="periodeEnd" 
+                                                placeholder="Pilih tanggal akhir"
+                                                class="w-full h-10 px-3 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-400 dark:bg-gray-800"
+                                            />
+                                        </div>
 
-                                    <!-- Per Page Filter -->
-                                    <div class="group space-y-3">
-                                        <label class="flex items-center space-x-2 text-sm font-bold text-gray-700 dark:text-gray-300">
-                                            <span class="text-lg">📄</span>
-                                            <span>Per Halaman</span>
-                                        </label>
-                                        <Select v-model="perPage">
-                                            <SelectTrigger class="w-full p-3 border-2 border-pink-200 rounded-xl bg-white/80 backdrop-blur-sm focus:border-pink-500 focus:ring-4 focus:ring-pink-200 transition-all duration-300 hover:shadow-lg dark:border-pink-600 dark:focus:border-pink-400 dark:bg-gray-800/80">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent class="rounded-xl border-2 border-pink-200 shadow-xl">
-                                                <SelectItem v-for="option in perPageOptions" :key="option.value" :value="option.value">
-                                                    {{ option.label }} item
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        <!-- Per Page Filter -->
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Per Halaman
+                                            </label>
+                                            <Select v-model="perPage">
+                                                <SelectTrigger class="w-full h-10 px-3 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-400 dark:bg-gray-800">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent class="rounded-lg border border-gray-200 shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                                                    <SelectItem 
+                                                        v-for="option in perPageOptions" 
+                                                        :key="option.value" 
+                                                        :value="option.value"
+                                                        class="rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                    >
+                                                        {{ option.label }} item
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
