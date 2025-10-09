@@ -543,6 +543,7 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                                 :disabled="isViewMode"
                                 class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             >
+                                <option value="" disabled>Pilih Paket Brand</option>
                                 <option v-for="brand in brands" :key="brand.id" :value="brand.id">
                                     {{ brand.nama }}
                                 </option>
@@ -560,6 +561,7 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                                 :disabled="isViewMode"
                                 class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             >
+                                <option value="" disabled>Pilih Lead Awal Brand</option>
                                 <option v-for="brand in brands" :key="brand.id" :value="brand.id">
                                     {{ brand.nama }}
                                 </option>
