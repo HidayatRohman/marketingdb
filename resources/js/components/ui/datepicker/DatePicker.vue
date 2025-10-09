@@ -3,21 +3,25 @@
     <!-- Date Input Trigger -->
     <div
       @click="toggleCalendar"
-      class="flex items-center justify-between w-full px-3 py-2.5 text-sm bg-white border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:border-gray-500"
-      :class="{ 'border-indigo-500 ring-2 ring-indigo-500': isOpen }"
+      class="group relative flex items-center justify-between cursor-pointer focus:outline-none transition-all duration-300 h-full"
+      :class="{ 'ring-2 ring-blue-500/20': isOpen }"
     >
       <div class="flex items-center gap-2">
-        <Calendar class="h-4 w-4 text-gray-500 dark:text-gray-400" />
-        <span :class="modelValue ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'">
+        <div class="p-1 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm group-hover:shadow-md transition-all duration-300">
+          <Calendar class="h-3.5 w-3.5 text-white" />
+        </div>
+        <span :class="modelValue ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-500 dark:text-gray-400'">
           {{ formattedDate || placeholder }}
         </span>
       </div>
-      <ChevronDown 
-        :class="[
-          'h-4 w-4 text-gray-500 dark:text-gray-400 transition-transform duration-200',
-          isOpen ? 'rotate-180' : ''
-        ]" 
-      />
+      <div class="p-0.5 rounded-sm bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 transition-all duration-300">
+        <ChevronDown 
+          :class="[
+            'h-3.5 w-3.5 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all duration-300',
+            isOpen ? 'rotate-180' : ''
+          ]" 
+        />
+      </div>
     </div>
 
     <!-- Calendar Dropdown -->
@@ -31,27 +35,27 @@
     >
       <div
         v-if="isOpen"
-        class="fixed z-[9999] w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-4"
+        class="fixed z-[9999] w-80 bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-800 dark:via-gray-750 dark:to-gray-800 border border-gray-200/50 dark:border-gray-600/50 rounded-2xl shadow-2xl backdrop-blur-sm p-6"
         :style="dropdownStyle"
       >
         <!-- Calendar Header -->
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-between mb-6">
           <Button
             type="button"
             variant="ghost"
             size="sm"
             @click="previousMonth"
-            class="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+            class="h-10 w-10 p-0 hover:bg-gradient-to-br hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/30 dark:hover:to-blue-800/30 rounded-xl transition-all duration-300 hover:shadow-md"
           >
-            <ChevronLeft class="h-4 w-4 text-gray-600 dark:text-gray-300" />
+            <ChevronLeft class="h-5 w-5 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300" />
           </Button>
           
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-3">
             <Button
               type="button"
               variant="ghost"
               @click="showMonthPicker = !showMonthPicker"
-              class="text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-1 rounded-md"
+              class="text-sm font-bold text-gray-900 dark:text-white hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/30 dark:hover:to-blue-800/30 px-4 py-2 rounded-xl transition-all duration-300 hover:shadow-sm"
             >
               {{ monthNames[currentMonth] }}
             </Button>
@@ -59,7 +63,7 @@
               type="button"
               variant="ghost"
               @click="showYearPicker = !showYearPicker"
-              class="text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-1 rounded-md"
+              class="text-sm font-bold text-gray-900 dark:text-white hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/30 dark:hover:to-blue-800/30 px-4 py-2 rounded-xl transition-all duration-300 hover:shadow-sm"
             >
               {{ currentYear }}
             </Button>
@@ -70,14 +74,14 @@
             variant="ghost"
             size="sm"
             @click="nextMonth"
-            class="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+            class="h-10 w-10 p-0 hover:bg-gradient-to-br hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/30 dark:hover:to-blue-800/30 rounded-xl transition-all duration-300 hover:shadow-md"
           >
-            <ChevronRight class="h-4 w-4 text-gray-600 dark:text-gray-300" />
+            <ChevronRight class="h-5 w-5 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300" />
           </Button>
         </div>
 
         <!-- Month Picker -->
-        <div v-if="showMonthPicker" class="grid grid-cols-3 gap-2 mb-4">
+        <div v-if="showMonthPicker" class="grid grid-cols-3 gap-3 mb-6">
           <Button
             v-for="(month, index) in monthNames"
             :key="month"
@@ -86,8 +90,10 @@
             size="sm"
             @click="selectMonth(index)"
             :class="[
-              'text-xs py-2 px-2',
-              index === currentMonth ? 'bg-indigo-500 text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              'text-sm py-3 px-3 rounded-xl font-medium transition-all duration-300',
+              index === currentMonth 
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105' 
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/30 dark:hover:to-blue-800/30 hover:shadow-md'
             ]"
           >
             {{ month.slice(0, 3) }}
@@ -95,7 +101,7 @@
         </div>
 
         <!-- Year Picker -->
-        <div v-if="showYearPicker" class="grid grid-cols-4 gap-2 mb-4 max-h-32 overflow-y-auto">
+        <div v-if="showYearPicker" class="grid grid-cols-4 gap-3 mb-6 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-gray-100 dark:scrollbar-thumb-blue-600 dark:scrollbar-track-gray-700">
           <Button
             v-for="year in yearRange"
             :key="year"
@@ -104,8 +110,10 @@
             size="sm"
             @click="selectYear(year)"
             :class="[
-              'text-xs py-2 px-2',
-              year === currentYear ? 'bg-indigo-500 text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              'text-sm py-3 px-3 rounded-xl font-medium transition-all duration-300',
+              year === currentYear 
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105' 
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/30 dark:hover:to-blue-800/30 hover:shadow-md'
             ]"
           >
             {{ year }}
@@ -115,18 +123,18 @@
         <!-- Calendar Grid -->
         <div v-if="!showMonthPicker && !showYearPicker">
           <!-- Day Headers -->
-          <div class="grid grid-cols-7 mb-2">
+          <div class="grid grid-cols-7 mb-4">
             <div
               v-for="day in dayNames"
               :key="day"
-              class="text-xs font-medium text-gray-500 dark:text-gray-400 text-center py-2"
+              class="text-sm font-bold text-gray-600 dark:text-gray-300 text-center py-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg mx-0.5 flex items-center justify-center"
             >
               {{ day }}
             </div>
           </div>
 
           <!-- Calendar Days -->
-          <div class="grid grid-cols-7 gap-1">
+          <div class="grid grid-cols-7 gap-2">
             <Button
               v-for="date in calendarDays"
               :key="`${date.year}-${date.month}-${date.day}`"
@@ -136,13 +144,12 @@
               @click="selectDate(date)"
               :disabled="date.disabled"
               :class="[
-                'h-8 w-8 p-0 text-xs font-normal rounded-md',
+                'h-10 w-10 p-0 text-sm font-medium rounded-xl transition-all duration-300 text-center flex items-center justify-center',
                 {
-                  'text-gray-400 dark:text-gray-500': !date.isCurrentMonth,
-                  'text-gray-900 dark:text-white': date.isCurrentMonth && !date.isSelected && !date.isToday,
-                  'bg-indigo-500 text-white hover:bg-indigo-600': date.isSelected,
-                  'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white': date.isToday && !date.isSelected,
-                  'hover:bg-gray-100 dark:hover:bg-gray-700': !date.isSelected && date.isCurrentMonth,
+                  'text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/50': !date.isCurrentMonth,
+                  'text-gray-900 dark:text-white hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/30 dark:hover:to-blue-800/30 hover:shadow-md': date.isCurrentMonth && !date.isSelected && !date.isToday,
+                  'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transform hover:scale-110': date.isSelected,
+                  'bg-gradient-to-r from-orange-400 to-orange-500 text-white shadow-md ring-2 ring-orange-200 dark:ring-orange-700': date.isToday && !date.isSelected,
                   'cursor-not-allowed opacity-50': date.disabled
                 }
               ]"
@@ -153,13 +160,13 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+        <div class="flex items-center justify-between mt-6 pt-4 border-t border-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600">
           <Button
             type="button"
             variant="ghost"
             size="sm"
             @click="selectToday"
-            class="text-xs text-indigo-600 dark:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md"
+            class="text-sm font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 px-4 py-2 rounded-xl"
           >
             Hari Ini
           </Button>
@@ -168,7 +175,7 @@
             variant="ghost"
             size="sm"
             @click="clearDate"
-            class="text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md"
+            class="text-sm font-medium bg-gradient-to-r from-gray-400 to-gray-500 text-white hover:from-gray-500 hover:to-gray-600 shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 px-4 py-2 rounded-xl"
           >
             Clear
           </Button>
