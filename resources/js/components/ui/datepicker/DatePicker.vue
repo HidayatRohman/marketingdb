@@ -37,6 +37,7 @@
         <!-- Calendar Header -->
         <div class="flex items-center justify-between mb-4">
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             @click="previousMonth"
@@ -47,6 +48,7 @@
           
           <div class="flex items-center gap-2">
             <Button
+              type="button"
               variant="ghost"
               @click="showMonthPicker = !showMonthPicker"
               class="text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-1 rounded-md"
@@ -54,6 +56,7 @@
               {{ monthNames[currentMonth] }}
             </Button>
             <Button
+              type="button"
               variant="ghost"
               @click="showYearPicker = !showYearPicker"
               class="text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-1 rounded-md"
@@ -63,6 +66,7 @@
           </div>
           
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             @click="nextMonth"
@@ -77,6 +81,7 @@
           <Button
             v-for="(month, index) in monthNames"
             :key="month"
+            type="button"
             variant="ghost"
             size="sm"
             @click="selectMonth(index)"
@@ -94,6 +99,7 @@
           <Button
             v-for="year in yearRange"
             :key="year"
+            type="button"
             variant="ghost"
             size="sm"
             @click="selectYear(year)"
@@ -124,6 +130,7 @@
             <Button
               v-for="date in calendarDays"
               :key="`${date.year}-${date.month}-${date.day}`"
+              type="button"
               variant="ghost"
               size="sm"
               @click="selectDate(date)"
@@ -148,6 +155,7 @@
         <!-- Quick Actions -->
         <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             @click="selectToday"
@@ -156,6 +164,7 @@
             Hari Ini
           </Button>
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             @click="clearDate"
