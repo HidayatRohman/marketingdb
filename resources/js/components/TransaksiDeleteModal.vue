@@ -42,8 +42,8 @@ interface Transaksi {
     harga_paket: number;
     nama_paket: string;
     user: User;
-    paketBrand: Brand;
-    leadAwalBrand: Brand;
+    paket_brand?: Brand;
+    lead_awal_brand?: Brand;
     created_at: string;
     updated_at: string;
 }
@@ -140,7 +140,7 @@ const handleClose = () => {
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-muted-foreground">Brand:</span>
-                                    <span class="font-medium">{{ transaksi.paketBrand.nama }}</span>
+                                    <span class="font-medium">{{ transaksi.paket_brand?.nama || '-' }}</span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-muted-foreground">Status:</span>

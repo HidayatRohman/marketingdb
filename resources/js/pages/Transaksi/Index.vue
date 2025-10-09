@@ -56,8 +56,8 @@ interface Transaksi {
     harga_paket: number;
     nama_paket: string;
     user: User;
-    paketBrand: Brand;
-    leadAwalBrand: Brand;
+    paket_brand?: Brand;
+    lead_awal_brand?: Brand;
     created_at: string;
     updated_at: string;
 }
@@ -547,11 +547,11 @@ const perPageOptions = [
                                     </TableCell>
                                     <!-- Paket Brand -->
                                     <TableCell>
-                                        <span class="text-sm">{{ transaksi.paketBrand?.nama || '-' }}</span>
+                                        <span class="text-sm">{{ transaksi.paket_brand?.nama || '-' }}</span>
                                     </TableCell>
                                     <!-- Lead Awal -->
                                     <TableCell>
-                                        <span class="text-sm">{{ transaksi.leadAwalBrand?.nama || '-' }}</span>
+                                        <span class="text-sm">{{ transaksi.lead_awal_brand?.nama || '-' }}</span>
                                     </TableCell>
                                     <!-- Nama Paket -->
                                     <TableCell>

@@ -54,8 +54,8 @@ interface Transaksi {
     harga_paket: number;
     nama_paket: string;
     user: User;
-    paketBrand?: Brand;
-    leadAwalBrand?: Brand;
+    paket_brand?: Brand;
+    lead_awal_brand?: Brand;
     created_at: string;
     updated_at: string;
 }

@@ -93,7 +93,8 @@ class TransaksiController extends Controller
             'tanggal_lead_masuk' => 'required|date',
             'periode_lead' => 'required|in:Januari,Februari,Maret,April,Mei,Juni,Juli,Agustus,September,Oktober,November,Desember',
             'usia' => 'required|integer|min:17|max:80',
-            'nama_mitra' => 'nullable|string|max:255',
+            'no_wa' => 'required|string|max:20',
+            'nama_mitra' => 'required|string|max:255',
             'paket_brand_id' => 'required|exists:brands,id',
             'lead_awal_brand_id' => 'required|exists:brands,id',
             'sumber' => 'required|in:Unknown,IG,FB,WA,Tiktok,Web,Google,Organik,Teman',
@@ -121,7 +122,12 @@ class TransaksiController extends Controller
         }
 
         try {
-            Transaksi::create($validated);
+            // Debug logging
+            \Log::info('Creating transaksi with data:', $validated);
+            
+            $transaksi = Transaksi::create($validated);
+            
+            \Log::info('Transaksi created successfully with ID: ' . $transaksi->id);
 
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Transaksi berhasil ditambahkan.']);
@@ -131,13 +137,15 @@ class TransaksiController extends Controller
                 ->with('success', 'Transaksi berhasil ditambahkan.');
         } catch (\Exception $e) {
             \Log::error('Error creating transaksi: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            \Log::error('Validated data: ', $validated);
             
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'Terjadi kesalahan saat menyimpan data.'], 500);
+                return response()->json(['message' => 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage()], 500);
             }
             
             return back()->withInput()
-                ->with('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+                ->with('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage());
         }
     }
 
