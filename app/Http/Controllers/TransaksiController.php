@@ -57,12 +57,10 @@ class TransaksiController extends Controller
 
         // Get data for filters
         $brands = Brand::select('id', 'nama')->get();
-        $sumbers = Sumber::select('id', 'nama', 'warna')->get();
 
         return Inertia::render('Transaksi/Index', [
             'transaksis' => $transaksis,
             'brands' => $brands,
-            'sumbers' => $sumbers,
             'currentUser' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -98,7 +96,6 @@ class TransaksiController extends Controller
             'nama_mitra' => 'nullable|string|max:255',
             'paket_brand_id' => 'required|exists:brands,id',
             'lead_awal_brand_id' => 'required|exists:brands,id',
-            'sumber_id' => 'nullable|exists:sumbers,id',
             'sumber' => 'required|in:Unknown,IG,FB,WA,Tiktok,Web,Google,Organik,Teman',
             'kabupaten' => 'required|string|max:255',
             'provinsi' => 'required|string|max:255',
@@ -186,7 +183,6 @@ class TransaksiController extends Controller
             'nama_mitra' => 'nullable|string|max:255',
             'paket_brand_id' => 'required|exists:brands,id',
             'lead_awal_brand_id' => 'required|exists:brands,id',
-            'sumber_id' => 'nullable|exists:sumbers,id',
             'sumber' => 'required|in:Unknown,IG,FB,WA,Tiktok,Web,Google,Organik,Teman',
             'kabupaten' => 'required|string|max:255',
             'provinsi' => 'required|string|max:255',

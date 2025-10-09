@@ -19,7 +19,6 @@ class Transaksi extends Model
         'nama_mitra',
         'paket_brand_id',
         'lead_awal_brand_id',
-        'sumber_id',
         'sumber',
         'kabupaten',
         'provinsi',
@@ -62,11 +61,4 @@ class Transaksi extends Model
         return $this->belongsTo(Brand::class, 'lead_awal_brand_id');
     }
 
-    /**
-     * Get the sumber that belongs to the transaksi.
-     */
-    public function sumber()
-    {
-        return $this->belongsTo(Sumber::class);
-    }
 }
