@@ -284,7 +284,12 @@ const handleClose = () => {
 };
 
 const formatCurrency = (value: string | number) => {
-    // Convert to string and remove non-numeric characters
+    // Handle numeric values directly
+    if (typeof value === 'number') {
+        return new Intl.NumberFormat('id-ID').format(value);
+    }
+    
+    // Convert to string and remove non-numeric characters for string input
     const stringValue = value.toString();
     const numericValue = stringValue.replace(/[^0-9]/g, '');
     
@@ -294,6 +299,17 @@ const formatCurrency = (value: string | number) => {
     // Format with thousand separators using Indonesian locale
     const number = parseInt(numericValue);
     return new Intl.NumberFormat('id-ID').format(number);
+};
+
+// Format currency for display (with Rp symbol)
+const formatCurrencyDisplay = (amount: number) => {
+    if (!amount) return 'Rp 0';
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(amount);
 };
 
 const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Event) => {
@@ -620,7 +636,7 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                                 <input
                                     id="nominal_masuk"
                                     type="text"
-                                    :value="form.nominal_masuk ? formatCurrency(form.nominal_masuk.toString()) : ''"
+                                    :value="form.nominal_masuk ? formatCurrency(form.nominal_masuk) : ''"
                                     @input="handleCurrencyInput('nominal_masuk', $event)"
                                     :disabled="isViewMode"
                                     placeholder="0"
@@ -639,7 +655,7 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                                 <input
                                     id="harga_paket"
                                     type="text"
-                                    :value="form.harga_paket ? formatCurrency(form.harga_paket.toString()) : ''"
+                                    :value="form.harga_paket ? formatCurrency(form.harga_paket) : ''"
                                     @input="handleCurrencyInput('harga_paket', $event)"
                                     :disabled="isViewMode"
                                     placeholder="0"

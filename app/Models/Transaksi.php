@@ -33,8 +33,8 @@ class Transaksi extends Model
     protected $casts = [
         'tanggal_tf' => 'date:Y-m-d',
         'tanggal_lead_masuk' => 'date:Y-m-d',
-        'nominal_masuk' => 'decimal:2',
-        'harga_paket' => 'decimal:2',
+        'nominal_masuk' => 'integer',
+        'harga_paket' => 'integer',
     ];
 
     /**
