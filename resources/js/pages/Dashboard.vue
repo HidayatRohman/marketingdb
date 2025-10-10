@@ -236,6 +236,7 @@ const endDate = ref(props.filters.end_date || '');
 const selectedMarketing = ref(props.filters.marketing || 'all');
 const selectedBrand = ref(props.filters.brand || 'all');
 const selectedDateRange = ref('this_month');
+const selectedMonth = ref('');
 const refreshing = ref(false);
 const showMarketingDropdown = ref(false);
 const showBrandDropdown = ref(false);
@@ -465,6 +466,32 @@ const handleProgressMouseMove = (event: MouseEvent) => {
     }
 };
 
+// Filter by month function
+const filterByMonth = () => {
+    const params: any = {};
+    
+    if (selectedMonth.value) {
+        const currentYear = new Date().getFullYear();
+        const startOfMonth = `${currentYear}-${selectedMonth.value}-01`;
+        const endOfMonth = new Date(currentYear, parseInt(selectedMonth.value), 0).toISOString().split('T')[0];
+        
+        params.start_date = startOfMonth;
+        params.end_date = endOfMonth;
+    }
+    
+    if (selectedMarketing.value !== 'all') {
+        params.marketing = selectedMarketing.value;
+    }
+    
+    if (selectedBrand.value !== 'all') {
+        params.brand = selectedBrand.value;
+    }
+    
+    router.get('/dashboard', params, {
+        preserveState: true,
+        replace: true,
+    });
+};
 
 onMounted(() => {
     // Set default date range to current month
@@ -1722,6 +1749,36 @@ onMounted(() => {
                 <!-- Summary Report Tab -->
 
             </Tabs>
+
+            <!-- Report Budget Vs Omset -->
+            <div class="mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Report Budget Vs Omset</h2>
+                    <div class="flex items-center gap-2">
+                        <label for="month-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300">Filter Bulan:</label>
+                        <select 
+                            id="month-filter" 
+                            v-model="selectedMonth" 
+                            @change="filterByMonth"
+                            class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="">Semua Bulan</option>
+                            <option value="01">Januari</option>
+                            <option value="02">Februari</option>
+                            <option value="03">Maret</option>
+                            <option value="04">April</option>
+                            <option value="05">Mei</option>
+                            <option value="06">Juni</option>
+                            <option value="07">Juli</option>
+                            <option value="08">Agustus</option>
+                            <option value="09">September</option>
+                            <option value="10">Oktober</option>
+                            <option value="11">November</option>
+                            <option value="12">Desember</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
             <!-- Summary Statistics Cards -->
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
