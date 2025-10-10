@@ -319,7 +319,7 @@ onMounted(() => {
                     <CardContent class="p-6">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-orange-700 dark:text-orange-300">Chat Masuk</p>
+                                <p class="text-sm font-medium text-orange-700 dark:text-orange-300">Chat Baru</p>
                                 <p class="text-3xl font-bold text-orange-900 dark:text-orange-100">{{ mitraStats.masuk }}</p>
                                 <p class="mt-1 text-xs text-orange-600 dark:text-orange-400">{{ mitraStats.this_week }} minggu ini</p>
                             </div>

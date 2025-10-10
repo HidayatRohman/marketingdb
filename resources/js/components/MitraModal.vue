@@ -249,7 +249,7 @@ const submit = () => {
 };
 
 const chatLabels = {
-    masuk: 'Masuk',
+    masuk: 'Baru',
     followup: 'Follow Up',
     followup_2: 'Follow Up 2',
     followup_3: 'Follow Up 3',
@@ -437,7 +437,7 @@ const chatLabels = {
                             ]"
                         >
                             <option value="" class="bg-background text-foreground">Pilih status chat</option>
-                            <option value="masuk" class="bg-background text-foreground">Masuk</option>
+                            <option value="masuk" class="bg-background text-foreground">Baru</option>
                             <option value="followup" class="bg-background text-foreground">Follow Up</option>
                             <option value="followup_2" class="bg-background text-foreground">Follow Up 2</option>
                             <option value="followup_3" class="bg-background text-foreground">Follow Up 3</option>

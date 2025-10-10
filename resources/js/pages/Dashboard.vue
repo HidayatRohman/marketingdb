@@ -769,7 +769,7 @@ onMounted(() => {
                     <CardContent class="stats-card-content">
                         <div class="stats-card-layout">
                             <div class="stats-card-text">
-                                <p class="stats-card-label stats-label-orange">Chat Masuk</p>
+                                <p class="stats-card-label stats-label-orange">Chat Baru</p>
                                 <p class="stats-card-value stats-value-orange">{{ mitraStats.masuk }}</p>
                                 <p class="stats-card-subtitle stats-subtitle-orange">{{ mitraStats.this_week }} minggu ini</p>
                             </div>

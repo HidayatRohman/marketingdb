@@ -239,7 +239,7 @@ const chatColors = {
 };
 
 const chatLabels = {
-    masuk: 'Masuk',
+    masuk: 'Baru',
     followup: 'Follow Up',
     followup_2: 'Follow Up 2',
     followup_3: 'Follow Up 3',
@@ -530,7 +530,7 @@ onMounted(() => {
                     <CardContent class="p-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="mb-1 text-sm font-medium text-green-700 dark:text-green-300">Chat Masuk</p>
+                                <p class="mb-1 text-sm font-medium text-green-700 dark:text-green-300">Chat Baru</p>
                                 <p class="text-2xl font-bold text-green-900 dark:text-green-100">
                                     {{ props.mitras.data.filter((m) => m.chat === 'masuk').length }}
                                 </p>
@@ -735,7 +735,7 @@ onMounted(() => {
                                     class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
                                 >
                                     <option value="" class="bg-background text-foreground">Semua Chat</option>
-                                    <option value="masuk" class="bg-background text-foreground">Masuk</option>
+                                    <option value="masuk" class="bg-background text-foreground">Baru</option>
                                     <option value="followup" class="bg-background text-foreground">Follow Up</option>
                                     <option value="followup_2" class="bg-background text-foreground">Follow Up 2</option>
                                     <option value="followup_3" class="bg-background text-foreground">Follow Up 3</option>
