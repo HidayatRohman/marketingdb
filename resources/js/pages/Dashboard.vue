@@ -553,6 +553,154 @@ onMounted(() => {
                 <div class="absolute bottom-0 left-0 -mb-16 -ml-16 h-32 w-32 rounded-full bg-white/5 sm:-mb-24 sm:-ml-24 sm:h-48 sm:w-48"></div>
             </div>
 
+            <!-- Report Budget Vs Omset -->
+            <div class="mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Report Budget Vs Omset</h2>
+                    <div class="flex items-center gap-2">
+                        <label for="month-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300">Filter Bulan:</label>
+                        <select 
+                            id="month-filter" 
+                            v-model="selectedMonth" 
+                            @change="filterByMonth"
+                            class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="">Semua Bulan</option>
+                            <option value="01">Januari</option>
+                            <option value="02">Februari</option>
+                            <option value="03">Maret</option>
+                            <option value="04">April</option>
+                            <option value="05">Mei</option>
+                            <option value="06">Juni</option>
+                            <option value="07">Juli</option>
+                            <option value="08">Agustus</option>
+                            <option value="09">September</option>
+                            <option value="10">Oktober</option>
+                            <option value="11">November</option>
+                            <option value="12">Desember</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Statistics Cards -->
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Card class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+                    <CardContent class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-blue-700 dark:text-blue-300">Total Spent</p>
+                                <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                                    Rp {{ summaryReport.reduce((sum, item) => sum + item.spent, 0).toLocaleString('id-ID') }}
+                                </p>
+                            </div>
+                            <div class="rounded-lg bg-blue-500 p-2">
+                                <Target class="h-5 w-5 text-white" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+                    <CardContent class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-green-700 dark:text-green-300">Total Omset</p>
+                                <p class="text-2xl font-bold text-green-900 dark:text-green-100">
+                                    Rp {{ summaryReport.reduce((sum, item) => sum + item.omset, 0).toLocaleString('id-ID') }}
+                                </p>
+                            </div>
+                            <div class="rounded-lg bg-green-500 p-2">
+                                <TrendingUp class="h-5 w-5 text-white" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
+                    <CardContent class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-purple-700 dark:text-purple-300">Total Leads</p>
+                                <p class="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                                    {{ summaryReport.reduce((sum, item) => sum + item.real_lead, 0).toLocaleString('id-ID') }}
+                                </p>
+                            </div>
+                            <div class="rounded-lg bg-purple-500 p-2">
+                                <Users class="h-5 w-5 text-white" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
+                    <CardContent class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-orange-700 dark:text-orange-300">Total Closing</p>
+                                <p class="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                                    {{ summaryReport.reduce((sum, item) => sum + item.closing, 0).toLocaleString('id-ID') }}
+                                </p>
+                            </div>
+                            <div class="rounded-lg bg-orange-500 p-2">
+                                <Award class="h-5 w-5 text-white" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <!-- Report Budget vs Omset - Standalone Card -->
+            <Card class="border-0 shadow-lg">
+                <CardHeader>
+                    <CardTitle class="flex items-center gap-2">
+                        <BarChart3 class="h-6 w-6" />
+                        Report Budget vs Omset
+                    </CardTitle>
+                    <p class="text-sm text-muted-foreground">Ringkasan performa budget marketing vs omset per brand</p>
+                </CardHeader>
+                <CardContent>
+                    <div v-if="summaryReport.length > 0" class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left p-3 font-semibold">Brand</th>
+                                    <th class="text-right p-3 font-semibold">Spent</th>
+                                    <th class="text-right p-3 font-semibold">Spent+Tax</th>
+                                    <th class="text-right p-3 font-semibold">Real Lead</th>
+                                    <th class="text-right p-3 font-semibold">Cost/Lead</th>
+                                    <th class="text-right p-3 font-semibold">Closing</th>
+                                    <th class="text-right p-3 font-semibold">Omset</th>
+                                    <th class="text-right p-3 font-semibold">ROAS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item in summaryReport" :key="item.brand" class="border-b hover:bg-muted/50">
+                                    <td class="p-3 font-medium text-blue-600">{{ item.brand }}</td>
+                                    <td class="p-3 text-right text-red-600">Rp {{ item.spent.toLocaleString('id-ID') }}</td>
+                                    <td class="p-3 text-right text-red-600">Rp {{ item.spent_with_tax.toLocaleString('id-ID') }}</td>
+                                    <td class="p-3 text-right">{{ item.real_lead }}</td>
+                                    <td class="p-3 text-right text-orange-600">
+                                        <span v-if="item.real_lead > 0">Rp {{ item.cost_per_lead.toLocaleString('id-ID') }}</span>
+                                        <span v-else class="text-red-500">#DIV/0!</span>
+                                    </td>
+                                    <td class="p-3 text-right text-purple-600">{{ item.closing }}</td>
+                                    <td class="p-3 text-right text-green-600">Rp {{ item.omset.toLocaleString('id-ID') }}</td>
+                                    <td class="p-3 text-right" :class="item.roas >= 1 ? 'text-green-600 font-semibold' : 'text-red-500'">
+                                        {{ item.roas.toFixed(2) }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div v-else class="flex h-32 flex-col items-center justify-center text-muted-foreground">
+                        <BarChart3 class="mb-4 h-12 w-12 opacity-50" />
+                        <p class="text-lg font-medium">Tidak ada data summary report</p>
+                        <p class="text-sm">Data akan muncul setelah ada aktivitas marketing</p>
+                    </div>
+                </CardContent>
+            </Card>
+
             <!-- Main KPI Cards -->
             <div class="stats-grid">
                 <!-- Total Leads -->
