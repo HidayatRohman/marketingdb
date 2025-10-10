@@ -564,10 +564,17 @@ onMounted(() => {
             </div>
 
             <!-- Report Budget Vs Omset -->
-            <div class="mb-6 p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
-                <div class="flex flex-col gap-4">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Report Budget Vs Omset</h2>
-                    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <Card class="mb-6 border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:from-gray-800/30 dark:to-gray-700/30 shadow-lg">
+                <CardHeader>
+                    <CardTitle class="flex items-center gap-2">
+                        <BarChart3 class="h-6 w-6" />
+                        Report Budget Vs Omset
+                    </CardTitle>
+                    <p class="text-sm text-muted-foreground">Ringkasan performa budget marketing vs omset per brand</p>
+                </CardHeader>
+                <CardContent class="p-6">
+                    <!-- Filter Section -->
+                    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
                         <div class="flex flex-col sm:flex-row sm:items-center gap-2">
                             <label for="month-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Bulan:</label>
                             <select 
@@ -607,86 +614,75 @@ onMounted(() => {
                             </select>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Summary Statistics Cards -->
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
-                    <CardContent class="p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-blue-700 dark:text-blue-300">Total Spent</p>
-                                <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                                    Rp {{ summaryReport.reduce((sum, item) => sum + item.spent, 0).toLocaleString('id-ID') }}
-                                </p>
-                            </div>
-                            <div class="rounded-lg bg-blue-500 p-2">
-                                <Target class="h-5 w-5 text-white" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                    <!-- Summary Statistics Cards -->
+                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+                        <Card class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+                            <CardContent class="p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-blue-700 dark:text-blue-300">Total Spent</p>
+                                        <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                                            Rp {{ summaryReport.reduce((sum, item) => sum + item.spent, 0).toLocaleString('id-ID') }}
+                                        </p>
+                                    </div>
+                                    <div class="rounded-lg bg-blue-500 p-2">
+                                        <Target class="h-5 w-5 text-white" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
 
-                <Card class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
-                    <CardContent class="p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-green-700 dark:text-green-300">Total Omset</p>
-                                <p class="text-2xl font-bold text-green-900 dark:text-green-100">
-                                    Rp {{ summaryReport.reduce((sum, item) => sum + item.omset, 0).toLocaleString('id-ID') }}
-                                </p>
-                            </div>
-                            <div class="rounded-lg bg-green-500 p-2">
-                                <TrendingUp class="h-5 w-5 text-white" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        <Card class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+                            <CardContent class="p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-green-700 dark:text-green-300">Total Omset</p>
+                                        <p class="text-2xl font-bold text-green-900 dark:text-green-100">
+                                            Rp {{ summaryReport.reduce((sum, item) => sum + item.omset, 0).toLocaleString('id-ID') }}
+                                        </p>
+                                    </div>
+                                    <div class="rounded-lg bg-green-500 p-2">
+                                        <TrendingUp class="h-5 w-5 text-white" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
 
-                <Card class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
-                    <CardContent class="p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-purple-700 dark:text-purple-300">Total Leads</p>
-                                <p class="text-2xl font-bold text-purple-900 dark:text-purple-100">
-                                    {{ summaryReport.reduce((sum, item) => sum + item.real_lead, 0).toLocaleString('id-ID') }}
-                                </p>
-                            </div>
-                            <div class="rounded-lg bg-purple-500 p-2">
-                                <Users class="h-5 w-5 text-white" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        <Card class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
+                            <CardContent class="p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-purple-700 dark:text-purple-300">Total Leads</p>
+                                        <p class="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                                            {{ summaryReport.reduce((sum, item) => sum + item.real_lead, 0).toLocaleString('id-ID') }}
+                                        </p>
+                                    </div>
+                                    <div class="rounded-lg bg-purple-500 p-2">
+                                        <Users class="h-5 w-5 text-white" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
 
-                <Card class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
-                    <CardContent class="p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-orange-700 dark:text-orange-300">Total Closing</p>
-                                <p class="text-2xl font-bold text-orange-900 dark:text-orange-100">
-                                    {{ summaryReport.reduce((sum, item) => sum + item.closing, 0).toLocaleString('id-ID') }}
-                                </p>
-                            </div>
-                            <div class="rounded-lg bg-orange-500 p-2">
-                                <Award class="h-5 w-5 text-white" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                        <Card class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
+                            <CardContent class="p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-orange-700 dark:text-orange-300">Total Closing</p>
+                                        <p class="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                                            {{ summaryReport.reduce((sum, item) => sum + item.closing, 0).toLocaleString('id-ID') }}
+                                        </p>
+                                    </div>
+                                    <div class="rounded-lg bg-orange-500 p-2">
+                                        <Award class="h-5 w-5 text-white" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-            <!-- Report Budget vs Omset - Standalone Card -->
-            <Card class="border-0 shadow-lg">
-                <CardHeader>
-                    <CardTitle class="flex items-center gap-2">
-                        <BarChart3 class="h-6 w-6" />
-                        Report Budget vs Omset
-                    </CardTitle>
-                    <p class="text-sm text-muted-foreground">Ringkasan performa budget marketing vs omset per brand</p>
-                </CardHeader>
-                <CardContent>
+                    <!-- Summary Report Table -->
                     <div v-if="summaryReport.length > 0" class="overflow-x-auto">
                         <table class="w-full border-collapse">
                             <thead>
