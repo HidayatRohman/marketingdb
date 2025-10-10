@@ -564,17 +564,17 @@ onMounted(() => {
             </div>
 
             <!-- Report Budget Vs Omset -->
-            <div class="mb-6">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Report Budget Vs Omset</h2>
-                    <div class="flex items-center gap-4">
-                        <div class="flex items-center gap-2">
-                            <label for="month-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300">Bulan:</label>
+            <div class="mb-6 p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+                <div class="flex flex-col gap-4">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Report Budget Vs Omset</h2>
+                    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <label for="month-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Bulan:</label>
                             <select 
                                 id="month-filter" 
                                 v-model="selectedMonth" 
                                 @change="filterByMonthYear"
-                                class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                class="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             >
                                 <option value="">Semua Bulan</option>
                                 <option value="01">Januari</option>
@@ -591,13 +591,13 @@ onMounted(() => {
                                 <option value="12">Desember</option>
                             </select>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <label for="year-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300">Tahun:</label>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <label for="year-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Tahun:</label>
                             <select 
                                 id="year-filter" 
                                 v-model="selectedYear" 
                                 @change="filterByMonthYear"
-                                class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                class="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             >
                                 <option value="">Semua Tahun</option>
                                 <option value="2023">2023</option>
