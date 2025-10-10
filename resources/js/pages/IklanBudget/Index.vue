@@ -140,6 +140,189 @@
                 </Card>
             </div>
 
+            <!-- Report Budget Vs Omset -->
+            <Card class="mb-6 border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:from-gray-800/30 dark:to-gray-700/30 shadow-lg">
+                <CardHeader>
+                    <CardTitle class="flex items-center gap-2">
+                        <BarChart3 class="h-6 w-6" />
+                        Report Budget Vs Omset
+                    </CardTitle>
+                    <p class="text-sm text-muted-foreground">Ringkasan performa budget marketing vs omset per brand</p>
+                </CardHeader>
+                <CardContent class="p-6">
+                    <!-- Filter Section -->
+                    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <label for="month-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Bulan:</label>
+                            <select 
+                                id="month-filter" 
+                                v-model="selectedMonth" 
+                                @change="filterByMonthYear"
+                                class="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="">Semua Bulan</option>
+                                <option value="01">Januari</option>
+                                <option value="02">Februari</option>
+                                <option value="03">Maret</option>
+                                <option value="04">April</option>
+                                <option value="05">Mei</option>
+                                <option value="06">Juni</option>
+                                <option value="07">Juli</option>
+                                <option value="08">Agustus</option>
+                                <option value="09">September</option>
+                                <option value="10">Oktober</option>
+                                <option value="11">November</option>
+                                <option value="12">Desember</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <label for="year-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Tahun:</label>
+                            <select 
+                                id="year-filter" 
+                                v-model="selectedYear" 
+                                @change="filterByMonthYear"
+                                class="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="">Semua Tahun</option>
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Summary Statistics Cards -->
+                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 mb-6">
+                        <Card class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+                            <CardContent class="p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-blue-700 dark:text-blue-300">Total Spent</p>
+                                        <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                                            {{ formatCurrency(summaryReport.reduce((sum, item) => sum + item.spent, 0)) }}
+                                        </p>
+                                    </div>
+                                    <div class="rounded-lg bg-blue-500 p-2">
+                                        <Target class="h-5 w-5 text-white" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+                            <CardContent class="p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-green-700 dark:text-green-300">Total Omset</p>
+                                        <p class="text-2xl font-bold text-green-900 dark:text-green-100">
+                                            {{ formatCurrency(summaryReport.reduce((sum, item) => sum + item.omset, 0)) }}
+                                        </p>
+                                    </div>
+                                    <div class="rounded-lg bg-green-500 p-2">
+                                        <TrendingUp class="h-5 w-5 text-white" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
+                            <CardContent class="p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-purple-700 dark:text-purple-300">Total Leads</p>
+                                        <p class="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                                            {{ summaryReport.reduce((sum, item) => sum + item.real_lead, 0).toLocaleString('id-ID') }}
+                                        </p>
+                                    </div>
+                                    <div class="rounded-lg bg-purple-500 p-2">
+                                        <Users class="h-5 w-5 text-white" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
+                            <CardContent class="p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-orange-700 dark:text-orange-300">Total Closing</p>
+                                        <p class="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                                            {{ summaryReport.reduce((sum, item) => sum + item.closing, 0).toLocaleString('id-ID') }}
+                                        </p>
+                                    </div>
+                                    <div class="rounded-lg bg-orange-500 p-2">
+                                        <Award class="h-5 w-5 text-white" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card class="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900">
+                            <CardContent class="p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-indigo-700 dark:text-indigo-300">Cost Per Acquisition</p>
+                                        <p class="text-2xl font-bold text-indigo-900 dark:text-indigo-100">
+                                            {{ 
+                                                (() => {
+                                                    const totalSpent = summaryReport.reduce((sum, item) => sum + item.spent, 0)
+                                                    const totalClosing = summaryReport.reduce((sum, item) => sum + item.closing, 0)
+                                                    return totalClosing > 0 ? formatCurrency(totalSpent / totalClosing) : 'Rp0'
+                                                })()
+                                            }}
+                                        </p>
+                                    </div>
+                                    <div class="rounded-lg bg-indigo-500 p-2">
+                                        <DollarSign class="h-5 w-5 text-white" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <!-- Summary Report Table -->
+                    <div v-if="summaryReport.length > 0" class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left p-3 font-semibold">Brand</th>
+                                    <th class="text-right p-3 font-semibold">Spent</th>
+                                    <th class="text-right p-3 font-semibold">Spent+Tax</th>
+                                    <th class="text-right p-3 font-semibold">Real Lead</th>
+                                    <th class="text-right p-3 font-semibold">Cost/Lead</th>
+                                    <th class="text-right p-3 font-semibold">Closing</th>
+                                    <th class="text-right p-3 font-semibold">Omset</th>
+                                    <th class="text-right p-3 font-semibold">ROAS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item in summaryReport" :key="item.brand" class="border-b hover:bg-muted/50">
+                                    <td class="p-3 font-medium text-blue-600">{{ item.brand }}</td>
+                                    <td class="p-3 text-right text-red-600">{{ formatCurrency(item.spent) }}</td>
+                                    <td class="p-3 text-right text-red-600">{{ formatCurrency(item.spent_with_tax) }}</td>
+                                    <td class="p-3 text-right">{{ item.real_lead }}</td>
+                                    <td class="p-3 text-right text-orange-600">
+                                        <span v-if="item.real_lead > 0">{{ formatCurrency(item.cost_per_lead) }}</span>
+                                        <span v-else class="text-red-500">#DIV/0!</span>
+                                    </td>
+                                    <td class="p-3 text-right text-purple-600">{{ item.closing }}</td>
+                                    <td class="p-3 text-right text-green-600">{{ formatCurrency(item.omset) }}</td>
+                                    <td class="p-3 text-right" :class="item.roas >= 1 ? 'text-green-600 font-semibold' : 'text-red-500'">
+                                        {{ item.roas.toFixed(2) }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div v-else class="flex h-32 flex-col items-center justify-center text-muted-foreground">
+                        <BarChart3 class="mb-4 h-12 w-12 opacity-50" />
+                        <p class="text-lg font-medium">Tidak ada data summary report</p>
+                        <p class="text-sm">Data akan muncul setelah ada aktivitas marketing</p>
+                    </div>
+                </CardContent>
+            </Card>
+
             <!-- Table Card -->
             <Card class="border-0 shadow-md">
                 <CardHeader class="pb-2">
@@ -307,7 +490,7 @@ import TableCell from '@/components/ui/table/TableCell.vue'
 import TableHead from '@/components/ui/table/TableHead.vue'
 import TableHeader from '@/components/ui/table/TableHeader.vue'
 import TableRow from '@/components/ui/table/TableRow.vue'
-import { TrendingUp, Plus, Filter, Search, Edit, Trash2, RotateCcw } from 'lucide-vue-next'
+import { TrendingUp, Plus, Filter, Search, Edit, Trash2, RotateCcw, BarChart3, Target, Users, Award, DollarSign } from 'lucide-vue-next'
 
 interface IklanBudget {
   id: number
@@ -387,12 +570,18 @@ const deleteModal = reactive({
 
 // Methods
 const formatCurrency = (amount: number): string => {
+  // Handle NaN, null, undefined values
+  const validAmount = Number(amount) || 0
+  if (isNaN(validAmount)) {
+    return 'Rp0'
+  }
+  
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
-  }).format(amount)
+  }).format(validAmount)
 }
 
 const formatDate = (date: string): string => {
@@ -461,6 +650,67 @@ const handleDeleteSuccess = () => {
     preserveState: false,
     preserveScroll: false
   })
+}
+
+// Report Budget Vs Omset variables
+const selectedMonth = ref('')
+const selectedYear = ref('')
+
+// Summary Report computed property
+const summaryReport = computed(() => {
+  let filteredData = props.iklanBudgets.data
+
+  // Filter by month and year if selected
+  if (selectedMonth.value || selectedYear.value) {
+    filteredData = filteredData.filter(budget => {
+      const budgetDate = new Date(budget.tanggal)
+      const budgetMonth = String(budgetDate.getMonth() + 1).padStart(2, '0')
+      const budgetYear = String(budgetDate.getFullYear())
+
+      const monthMatch = !selectedMonth.value || budgetMonth === selectedMonth.value
+      const yearMatch = !selectedYear.value || budgetYear === selectedYear.value
+
+      return monthMatch && yearMatch
+    })
+  }
+
+  // Group by brand
+  const brandGroups = filteredData.reduce((acc, budget) => {
+    const brandName = budget.brand?.nama || 'Unknown'
+    if (!acc[brandName]) {
+      acc[brandName] = {
+        brand: brandName,
+        spent: 0,
+        spent_with_tax: 0,
+        real_lead: 0,
+        closing: 0,
+        omset: 0,
+        cost_per_lead: 0,
+        roas: 0
+      }
+    }
+
+    acc[brandName].spent += Number(budget.spent_amount) || 0
+    acc[brandName].spent_with_tax += (Number(budget.spent_amount) || 0) * 1.11
+    acc[brandName].real_lead += Number(budget.real_lead) || 0
+    acc[brandName].closing += Number(budget.closing) || 0
+    acc[brandName].omset += Number(budget.omset) || 0
+
+    return acc
+  }, {} as Record<string, any>)
+
+  // Calculate derived metrics for each brand
+  return Object.values(brandGroups).map((group: any) => {
+    group.cost_per_lead = group.real_lead > 0 ? group.spent_with_tax / group.real_lead : 0
+    group.roas = group.spent_with_tax > 0 ? group.omset / group.spent_with_tax : 0
+    return group
+  })
+})
+
+// Filter function for month and year
+const filterByMonthYear = () => {
+  // This function is called when month or year filter changes
+  // The computed property will automatically recalculate
 }
 
 </script>
