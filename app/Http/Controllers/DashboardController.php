@@ -7,6 +7,7 @@ use App\Models\Mitra;
 use App\Models\Brand;
 use App\Models\Label;
 use App\Models\TodoList;
+use App\Models\IklanBudget;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -26,11 +27,17 @@ class DashboardController extends Controller
             'brand' => 'nullable|exists:brands,id',
         ]);
 
-        // Get filter parameters
+        // Get filter parameters with default to current month
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
         $selectedMarketing = $request->get('marketing');
         $selectedBrand = $request->get('brand');
+        
+        // Set default to current month if no dates provided
+        if (!$startDate && !$endDate) {
+            $startDate = now()->startOfMonth()->format('Y-m-d');
+            $endDate = now()->endOfMonth()->format('Y-m-d');
+        }
 
         // Basic Statistics - role-based
         $userStats = [];
@@ -142,6 +149,9 @@ class DashboardController extends Controller
         // Task Management Statistics
         $taskStats = $this->getTaskStatistics($currentUser);
 
+        // Summary Report
+        $summaryReport = $this->getSummaryReport($currentUser, $request);
+
         // Get data for filter dropdowns
         $marketingUsers = [];
         $brands = [];
@@ -178,6 +188,7 @@ class DashboardController extends Controller
             'brandPerformance' => $brandPerformance,
             'recentActivities' => $recentActivities,
             'taskStats' => $taskStats,
+            'summaryReport' => $summaryReport,
             'marketingUsers' => $marketingUsers,
             'brands' => $brands,
             'filters' => [
@@ -716,5 +727,83 @@ class DashboardController extends Controller
             'overall' => $overallStats,
             'by_marketing' => $marketingStats,
         ];
+    }
+
+    private function getSummaryReport($currentUser, $request = null)
+    {
+        // Get dates from request or use current month as default
+        $startDate = $request && $request->get('start_date') ? $request->get('start_date') : Carbon::now()->startOfMonth()->format('Y-m-d');
+        $endDate = $request && $request->get('end_date') ? $request->get('end_date') : Carbon::now()->endOfMonth()->format('Y-m-d');
+        $selectedMarketing = $request ? $request->get('marketing') : null;
+        $selectedBrand = $request ? $request->get('brand') : null;
+        
+        // Ensure dates are not empty
+        if (empty($startDate)) {
+            $startDate = Carbon::now()->startOfMonth()->format('Y-m-d');
+        }
+        if (empty($endDate)) {
+            $endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
+        }
+
+        // Build marketing filter condition for subqueries
+        $marketingFilter = $selectedMarketing ? ' AND user_id = ' . $selectedMarketing : '';
+        $userAccessFilter = $currentUser->hasLimitedAccess() ? ' AND user_id = ' . $currentUser->id : '';
+        
+        $query = Brand::select([
+            'brands.id as brand_id',
+            'brands.nama as brand_name',
+            DB::raw('COALESCE(SUM(CASE WHEN iklan_budgets.tanggal BETWEEN "' . $startDate . '" AND "' . $endDate . '" THEN iklan_budgets.spent_amount END), 0) as spent'),
+            DB::raw('COALESCE(SUM(CASE WHEN iklan_budgets.tanggal BETWEEN "' . $startDate . '" AND "' . $endDate . '" THEN iklan_budgets.spent_amount * 1.11 END), 0) as spent_with_tax'),
+            DB::raw('(
+                SELECT COUNT(*) 
+                FROM mitras 
+                WHERE mitras.brand_id = brands.id 
+                AND mitras.tanggal_lead BETWEEN "' . $startDate . '" AND "' . $endDate . '"
+                ' . $marketingFilter . '
+                ' . $userAccessFilter . '
+            ) as real_lead'),
+            DB::raw('(
+                SELECT COUNT(*) 
+                FROM transaksis 
+                WHERE transaksis.lead_awal_brand_id = brands.id 
+                AND transaksis.tanggal_tf BETWEEN "' . $startDate . '" AND "' . $endDate . '"
+                ' . $marketingFilter . '
+                ' . $userAccessFilter . '
+            ) as closing'),
+            DB::raw('(
+                SELECT COALESCE(SUM(transaksis.nominal_masuk), 0) 
+                FROM transaksis 
+                WHERE transaksis.lead_awal_brand_id = brands.id 
+                AND transaksis.tanggal_tf BETWEEN "' . $startDate . '" AND "' . $endDate . '"
+                ' . $marketingFilter . '
+                ' . $userAccessFilter . '
+            ) as omset')
+        ])
+        ->leftJoin('iklan_budgets', 'brands.id', '=', 'iklan_budgets.brand_id');
+
+        // Apply brand filter
+        if ($selectedBrand) {
+            $query->where('brands.id', $selectedBrand);
+        }
+
+        $results = $query->groupBy('brands.id', 'brands.nama')
+            ->havingRaw('spent > 0 OR real_lead > 0 OR closing > 0')
+            ->get();
+
+        return $results->map(function ($item) {
+            $costPerLead = $item->real_lead > 0 ? $item->spent / $item->real_lead : 0;
+            $roas = $item->spent > 0 ? $item->omset / $item->spent : 0;
+            
+            return [
+                'brand' => $item->brand_name,
+                'spent' => (float) $item->spent,
+                'spent_with_tax' => (float) $item->spent_with_tax,
+                'real_lead' => (int) $item->real_lead,
+                'cost_per_lead' => (float) $costPerLead,
+                'closing' => (int) $item->closing,
+                'omset' => (float) $item->omset,
+                'roas' => round($roas, 2),
+            ];
+        });
     }
 }
