@@ -164,4 +164,60 @@ class IklanBudget extends Model
     {
         return $this->belongsTo(Brand::class);
     }
+
+    /**
+     * Calculate closing count for a specific date and brand
+     * Based on transactions with matching lead_awal_brand_id and tanggal_tf
+     */
+    public static function calculateClosingForDate($date, $brandId = null)
+    {
+        $query = \App\Models\Transaksi::where('tanggal_tf', $date);
+        
+        if ($brandId) {
+            $query->where('lead_awal_brand_id', $brandId);
+        }
+        
+        return $query->count();
+    }
+
+    /**
+     * Calculate omset for a specific date and brand
+     * Based on nominal_masuk from transactions with matching lead_awal_brand_id and tanggal_tf
+     */
+    public static function calculateOmsetForDate($date, $brandId = null)
+    {
+        $query = \App\Models\Transaksi::where('tanggal_tf', $date);
+        
+        if ($brandId) {
+            $query->where('lead_awal_brand_id', $brandId);
+        }
+        
+        return $query->sum('nominal_masuk') ?? 0;
+    }
+
+    /**
+     * Update closing and omset values for all records in a date range
+     */
+    public static function updateClosingAndOmsetForPeriod($startDate, $endDate, $brandId = null)
+    {
+        $query = self::whereBetween('tanggal', [$startDate, $endDate]);
+        
+        if ($brandId) {
+            $query->where('brand_id', $brandId);
+        }
+        
+        $budgets = $query->get();
+        
+        foreach ($budgets as $budget) {
+            $closing = self::calculateClosingForDate($budget->tanggal, $budget->brand_id);
+            $omset = self::calculateOmsetForDate($budget->tanggal, $budget->brand_id);
+            
+            $budget->update([
+                'closing' => $closing,
+                'omset' => $omset
+            ]);
+        }
+        
+        return $budgets->count();
+    }
 }

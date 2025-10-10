@@ -38,6 +38,19 @@ class IklanBudgetController extends Controller
         
         $iklanBudgets = $query->orderBy('tanggal', 'desc')->paginate(31);
         
+        // Update closing and omset values for the current page data
+        foreach ($iklanBudgets->items() as $budget) {
+            $closing = IklanBudget::calculateClosingForDate($budget->tanggal, $budget->brand_id);
+            $omset = IklanBudget::calculateOmsetForDate($budget->tanggal, $budget->brand_id);
+            
+            // Update the model instance for display (without saving to database yet)
+            $budget->closing = $closing;
+            $budget->omset = $omset;
+            
+            // Optionally save to database to persist the calculated values
+            $budget->save();
+        }
+        
         // Hitung total untuk periode yang dipilih
         $totalQuery = IklanBudget::query();
         if ($request->filled('start_date') && $request->filled('end_date')) {
