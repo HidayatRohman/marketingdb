@@ -32,6 +32,7 @@ class StoreMitraRequest extends FormRequest
             'kota' => 'nullable|string|max:255',
             'provinsi' => 'nullable|string|max:255',
             'komentar' => 'nullable|string',
+            'webinar' => 'required|in:Tidak,Ikut',
         ];
     }
 
@@ -70,6 +71,9 @@ class StoreMitraRequest extends FormRequest
             'provinsi.max' => 'Provinsi maksimal 255 karakter.',
             
             'komentar.string' => 'Komentar harus berupa teks.',
+            
+            'webinar.required' => 'Status webinar wajib dipilih.',
+            'webinar.in' => 'Status webinar harus berupa "Tidak" atau "Ikut".',
         ];
     }
 }

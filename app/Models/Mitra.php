@@ -20,6 +20,7 @@ class Mitra extends Model
         'kota',
         'provinsi',
         'komentar',
+        'webinar',
     ];
 
     protected $casts = [

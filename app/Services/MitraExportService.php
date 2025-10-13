@@ -28,9 +28,10 @@ class MitraExportService
         'H1' => 'Kota',
         'I1' => 'Provinsi',
         'J1' => 'Marketing',
-        'K1' => 'Komentar',
-        'L1' => 'Created At',
-        'M1' => 'Updated At'
+        'K1' => 'Webinar',
+        'L1' => 'Komentar',
+        'M1' => 'Created At',
+        'N1' => 'Updated At'
     ];
 
     private const COLUMN_WIDTHS = [
@@ -44,9 +45,10 @@ class MitraExportService
         'H' => 15,  // Kota
         'I' => 15,  // Provinsi
         'J' => 15,  // Marketing
-        'K' => 30,  // Komentar
-        'L' => 18,  // Created At
-        'M' => 18,  // Updated At
+        'K' => 10,  // Webinar
+        'L' => 30,  // Komentar
+        'M' => 18,  // Created At
+        'N' => 18,  // Updated At
     ];
 
     public function export(Request $request): array
@@ -230,9 +232,10 @@ class MitraExportService
             $sheet->setCellValue('H' . $row, $mitra->kota ?? '');
             $sheet->setCellValue('I' . $row, $mitra->provinsi ?? '');
             $sheet->setCellValue('J' . $row, $mitra->user->name ?? '');
-            $sheet->setCellValue('K' . $row, $mitra->komentar ?? '');
-            $sheet->setCellValue('L' . $row, $mitra->created_at->format('Y-m-d H:i:s'));
-            $sheet->setCellValue('M' . $row, $mitra->updated_at->format('Y-m-d H:i:s'));
+            $sheet->setCellValue('K' . $row, $mitra->webinar ?? 'Tidak');
+            $sheet->setCellValue('L' . $row, $mitra->komentar ?? '');
+            $sheet->setCellValue('M' . $row, $mitra->created_at->format('Y-m-d H:i:s'));
+            $sheet->setCellValue('N' . $row, $mitra->updated_at->format('Y-m-d H:i:s'));
             
             $row++;
         }

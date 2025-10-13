@@ -245,7 +245,8 @@ class MitraImportService
             'chat_status' => trim($row[6] ?? ''),
             'kota' => trim($row[7] ?? ''),
             'provinsi' => trim($row[8] ?? ''),
-            'komentar' => trim($row[10] ?? ''),
+            'webinar' => trim($row[10] ?? ''),
+            'komentar' => trim($row[11] ?? ''),
         ];
     }
     
@@ -349,6 +350,15 @@ class MitraImportService
     {
         $cleanPhone = preg_replace('/[^0-9+]/', '', $data['no_telp']);
         
+        // Validate webinar value
+        $webinar = 'Tidak'; // default value
+        if (!empty($data['webinar'])) {
+            $webinarValue = strtolower(trim($data['webinar']));
+            if (in_array($webinarValue, ['ikut', 'ya', 'yes', '1'])) {
+                $webinar = 'Ikut';
+            }
+        }
+        
         return [
             'nama' => $data['nama'],
             'no_telp' => $cleanPhone,
@@ -358,6 +368,7 @@ class MitraImportService
             'chat' => $processed['data']['chat'],
             'kota' => $data['kota'] ?: null,
             'provinsi' => $data['provinsi'] ?: null,
+            'webinar' => $webinar,
             'komentar' => $data['komentar'] ?: null,
             'user_id' => auth()->id(),
             'created_at' => now(),
@@ -411,7 +422,7 @@ class MitraImportService
             'G1' => 'Status Chat',
             'H1' => 'Kota',
             'I1' => 'Provinsi',
-            'J1' => 'Marketing (Auto)',
+            'J1' => 'Webinar',
             'K1' => 'Komentar',
             'L1' => 'Created (Auto)',
             'M1' => 'Updated (Auto)'
@@ -479,7 +490,7 @@ class MitraImportService
             'G2' => '(Opsional)',
             'H2' => '(Opsional)',
             'I2' => '(Opsional)',
-            'J2' => '(Otomatis)',
+            'J2' => '(Opsional)',
             'K2' => '(Opsional)',
             'L2' => '(Otomatis)',
             'M2' => '(Otomatis)'
@@ -506,9 +517,9 @@ class MitraImportService
     private function addSampleData(Worksheet $sheet): void
     {
         $sampleData = [
-            ['', 'John Doe', '081234567890', '2024-01-15', 'Brand A', 'Hot Lead', 'Masuk', 'Jakarta', 'DKI Jakarta', '', 'Tertarik dengan produk premium', '', ''],
-            ['', 'Jane Smith', '087654321098', '2024-01-16', 'Brand B', 'Warm Lead', 'Follow Up', 'Surabaya', 'Jawa Timur', '', 'Perlu follow up dalam 3 hari', '', ''],
-            ['', 'Ahmad Rahman', '082111222333', '2024-01-17', 'Brand C', 'Cold Lead', 'Masuk', 'Bandung', 'Jawa Barat', '', 'Inquiry produk via WhatsApp', '', '']
+            ['', 'John Doe', '081234567890', '2024-01-15', 'Brand A', 'Hot Lead', 'Masuk', 'Jakarta', 'DKI Jakarta', 'Ikut', 'Tertarik dengan produk premium', '', ''],
+            ['', 'Jane Smith', '087654321098', '2024-01-16', 'Brand B', 'Warm Lead', 'Follow Up', 'Surabaya', 'Jawa Timur', 'Tidak', 'Perlu follow up dalam 3 hari', '', ''],
+            ['', 'Ahmad Rahman', '082111222333', '2024-01-17', 'Brand C', 'Cold Lead', 'Masuk', 'Bandung', 'Jawa Barat', 'Ikut', 'Inquiry produk via WhatsApp', '', '']
         ];
 
         $row = 3;
@@ -536,7 +547,7 @@ class MitraImportService
         $widths = [
             'A' => 8,   'B' => 18,  'C' => 15,  'D' => 14,
             'E' => 12,  'F' => 12,  'G' => 12,  'H' => 12,
-            'I' => 15,  'J' => 15,  'K' => 25,  'L' => 15,
+            'I' => 15,  'J' => 10,  'K' => 25,  'L' => 15,
             'M' => 15
         ];
 

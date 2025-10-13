@@ -43,6 +43,7 @@ interface Mitra {
     kota: string;
     provinsi: string;
     komentar: string | null;
+    webinar: 'Tidak' | 'Ikut';
 }
 
 interface Props {
@@ -119,6 +120,7 @@ const form = useForm({
     kota: 'Unknown',
     provinsi: 'Unknown',
     komentar: '',
+    webinar: 'Tidak' as 'Tidak' | 'Ikut',
 });
 
 // Watch for mitra prop changes
@@ -152,6 +154,7 @@ watch(
             form.kota = newMitra.kota || 'Unknown';
             form.provinsi = newMitra.provinsi || 'Unknown';
             form.komentar = newMitra.komentar || '';
+            form.webinar = newMitra.webinar || 'Tidak';
         } else {
             form.reset();
             form.tanggal_lead = new Date().toISOString().split('T')[0]; // Reset to today's date
@@ -545,6 +548,26 @@ const chatLabels = {
                         />
                         <p v-if="form.errors.komentar" class="text-sm text-destructive">
                             {{ form.errors.komentar }}
+                        </p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label for="webinar" class="flex items-center gap-2">
+                            <FileText class="h-3 w-3" />
+                            Webinar
+                        </Label>
+                        <select
+                            id="webinar"
+                            v-model="form.webinar"
+                            :disabled="mode === 'view'"
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
+                            :class="{ 'border-destructive': form.errors.webinar }"
+                        >
+                            <option value="Tidak" class="bg-background text-foreground">Tidak</option>
+                            <option value="Ikut" class="bg-background text-foreground">Ikut</option>
+                        </select>
+                        <p v-if="form.errors.webinar" class="text-sm text-destructive">
+                            {{ form.errors.webinar }}
                         </p>
                     </div>
                 </div>
