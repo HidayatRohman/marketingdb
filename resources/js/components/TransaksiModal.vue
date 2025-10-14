@@ -478,7 +478,7 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                                     :disabled="isViewMode"
                                     @click="openNativePicker"
                                     @focus="openNativePicker"
-                                    class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                    class="h-12 w-full rounded-lg border border-gray-300 bg-white px-4 text-base text-gray-800 placeholder-gray-500 shadow-sm transition-all duration-200 hover:border-emerald-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                 />
                             </div>
                             <div v-if="form.errors.tanggal_tf" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
@@ -496,7 +496,7 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                                     :disabled="isViewMode"
                                     @click="openNativePicker"
                                     @focus="openNativePicker"
-                                    class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                    class="h-12 w-full rounded-lg border border-gray-300 bg-white px-4 text-base text-gray-800 placeholder-gray-500 shadow-sm transition-all duration-200 hover:border-emerald-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                 />
                             </div>
                             <div v-if="form.errors.tanggal_lead_masuk" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">

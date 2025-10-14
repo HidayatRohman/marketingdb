@@ -7,8 +7,8 @@
       @keydown.enter.prevent="toggleCalendar"
       @keydown.space.prevent="toggleCalendar"
       tabindex="0"
-      class="group relative flex items-center justify-between cursor-pointer focus:outline-none transition-all duration-300 h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base dark:bg-gray-700 dark:border-gray-600"
-      :class="{ 'ring-2 ring-emerald-100 focus:border-emerald-400': isOpen }"
+      class="group relative flex items-center justify-between cursor-pointer focus:outline-none transition-all duration-300 h-12 w-full rounded-lg border border-gray-300 bg-white px-4 text-base text-gray-800 shadow-sm hover:border-emerald-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+      :class="{ 'ring-2 ring-emerald-200 focus:border-emerald-500': isOpen }"
     >
       <div class="flex items-center gap-2">
         <div class="p-1 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm group-hover:shadow-md transition-all duration-300">
@@ -41,7 +41,7 @@
         <div
           v-if="isOpen"
           ref="dropdownRef"
-          class="fixed z-[9999] bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-800 dark:via-gray-750 dark:to-gray-800 border border-gray-200/50 dark:border-gray-600/50 rounded-2xl shadow-2xl backdrop-blur-sm p-6 w-[min(560px,95vw)] max-w-[95vw] max-h-[80vh] overflow-y-auto"
+          class="fixed z-[9999] bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-800 dark:via-gray-750 dark:to-gray-800 border border-gray-200/60 dark:border-gray-600/60 rounded-2xl shadow-2xl backdrop-blur-sm p-6 w-[min(640px,95vw)] max-w-[95vw] max-h-[80vh] overflow-y-auto"
           :style="dropdownStyle"
         >
         <!-- Calendar Header -->
