@@ -19,6 +19,7 @@ import { CreditCard, Calendar, ChevronDown, ChevronUp, Edit, Eye, Filter, Plus, 
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { debounce } from 'lodash';
 import PaymentStatusChart from '@/Components/PaymentStatusChart.vue';
+import SourceAnalyticsChart from '@/components/SourceAnalyticsChart.vue';
 
 interface Brand {
     id: number;
@@ -119,6 +120,8 @@ const deleteModal = ref({
 // Chart states
 const chartData = ref([]);
 const chartLoading = ref(false);
+const sourceChartData = ref([]);
+const sourceChartLoading = ref(false);
 
 // Chart data interface
 interface PaymentStatusData {
@@ -185,9 +188,34 @@ const refreshChart = () => {
     fetchChartData();
 };
 
+// Source analytics chart functions
+const fetchSourceChartData = async () => {
+    sourceChartLoading.value = true;
+    try {
+        const response = await fetch('/transaksis/analytics/sumber?' + new URLSearchParams({
+            start_date: periodeStart.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
+            end_date: periodeEnd.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+        }));
+
+        if (response.ok) {
+            const result = await response.json();
+            sourceChartData.value = result.data;
+        }
+    } catch (error) {
+        console.error('Error fetching source analytics data:', error);
+    } finally {
+        sourceChartLoading.value = false;
+    }
+};
+
+const refreshSourceChart = () => {
+    fetchSourceChartData();
+};
+
 // Watch for date changes to refresh chart
 watch([periodeStart, periodeEnd], () => {
     fetchChartData();
+    fetchSourceChartData();
 }, { deep: true });
 
 // Modal functions
@@ -317,6 +345,7 @@ const sumbers = computed(() => props.sumbers || []);
 // Lifecycle
 onMounted(() => {
     fetchChartData();
+    fetchSourceChartData();
 });
 </script>
 
@@ -446,6 +475,13 @@ onMounted(() => {
                 :data="chartData"
                 :loading="chartLoading"
                 @refresh="refreshChart"
+            />
+
+            <!-- Source Analytics Chart -->
+            <SourceAnalyticsChart
+                :data="sourceChartData"
+                :loading="sourceChartLoading"
+                @refresh="refreshSourceChart"
             />
 
             <!-- Search and Filters -->

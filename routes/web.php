@@ -141,6 +141,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role.access:view')->group(function () {
         Route::get('transaksis', [TransaksiController::class, 'index'])->name('transaksis.index');
         Route::get('transaksis/analytics/payment-status', [TransaksiController::class, 'getPaymentStatusAnalytics'])->name('transaksis.analytics.payment-status');
+        Route::get('transaksis/analytics/sumber', [TransaksiController::class, 'getSourceAnalytics'])->name('transaksis.analytics.sumber');
         Route::get('transaksis/{transaksi}', [TransaksiController::class, 'show'])->name('transaksis.show');
     });
     

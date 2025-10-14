@@ -164,6 +164,42 @@ class TransaksiController extends Controller
     }
 
     /**
+     * Get source analytics data for chart
+     */
+    public function getSourceAnalytics(Request $request)
+    {
+        $user = auth()->user();
+        $query = Transaksi::query();
+
+        // Apply role-based filtering
+        $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply date range filter (default to current year)
+        $startDate = $request->get('start_date', now()->startOfYear()->format('Y-m-d'));
+        $endDate = $request->get('end_date', now()->endOfYear()->format('Y-m-d'));
+        
+        $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+
+        // Group by sumber string and aggregate counts and total nominal
+        $data = $query->selectRaw('
+                COALESCE(NULLIF(TRIM(sumber), ""), "Unknown") as sumber,
+                COUNT(*) as count,
+                COALESCE(SUM(nominal_masuk), 0) as total_nominal
+            ')
+            ->groupBy('sumber')
+            ->orderByDesc('count')
+            ->get();
+
+        return response()->json([
+            'data' => $data,
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
