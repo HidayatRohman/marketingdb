@@ -417,7 +417,7 @@ onMounted(() => {
     <Head title="Transaksi" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="mx-6 mt-6 space-y-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
             <!-- Header Section -->
             <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-6 text-white shadow-2xl sm:p-8">
                 <div class="relative z-10">
@@ -458,7 +458,7 @@ onMounted(() => {
             </div>
 
             <!-- Statistics Bar -->
-            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
                 <Card class="group relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 dark:from-blue-900/20 dark:to-blue-800/20 dark:border dark:border-blue-700/30">
                     <CardContent class="p-6">
                         <div class="flex items-center justify-between">
@@ -679,7 +679,7 @@ onMounted(() => {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent class="p-0">
+                <CardContent class="p-4 sm:p-6">
                     <div class="overflow-x-auto">
                         <Table>
                             <TableHeader>
@@ -869,7 +869,7 @@ onMounted(() => {
                     </div>
 
                     <!-- Enhanced Pagination -->
-                    <div class="mt-6 flex flex-col items-center justify-between gap-6 rounded-2xl bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 p-6 shadow-lg dark:from-blue-900/20 dark:via-purple-900/20 dark:to-pink-900/20 sm:flex-row">
+                    <div class="mt-4 flex flex-col items-center justify-between gap-6 rounded-2xl bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 p-6 shadow-lg dark:from-blue-900/20 dark:via-purple-900/20 dark:to-pink-900/20 sm:flex-row">
                         <div class="flex items-center space-x-4">
                             <div class="rounded-xl bg-gradient-to-r from-blue-100 to-purple-100 px-4 py-2 dark:from-blue-900/30 dark:to-purple-900/30">
                                 <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
