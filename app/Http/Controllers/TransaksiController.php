@@ -19,7 +19,7 @@ class TransaksiController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Transaksi::with(['user', 'paketBrand', 'leadAwalBrand']);
+        $query = Transaksi::with(['user', 'paketBrand', 'leadAwalBrand', 'sumberRef']);
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
@@ -209,6 +209,7 @@ class TransaksiController extends Controller
             if (isset($validated['sumber_id'])) {
                 $sumber = Sumber::find($validated['sumber_id']);
                 if ($sumber) {
+                    // Store sumber name directly to allow flexible labels
                     $validated['sumber'] = $sumber->nama;
                 }
             }
@@ -250,7 +251,7 @@ class TransaksiController extends Controller
         }
 
         return Inertia::render('Transaksi/Show', [
-            'transaksi' => $transaksi->load(['user', 'paketBrand', 'leadAwalBrand']),
+            'transaksi' => $transaksi->load(['user', 'paketBrand', 'leadAwalBrand', 'sumberRef']),
             'permissions' => [
                 'canCrud' => $user->canCrud(),
                 'canOnlyView' => $user->canOnlyView(),
@@ -305,6 +306,7 @@ class TransaksiController extends Controller
             if (isset($validated['sumber_id'])) {
                 $sumber = Sumber::find($validated['sumber_id']);
                 if ($sumber) {
+                    // Store sumber name directly to allow flexible labels
                     $validated['sumber'] = $sumber->nama;
                 }
             }
@@ -327,6 +329,58 @@ class TransaksiController extends Controller
             return back()->withInput()
                 ->with('error', 'Terjadi kesalahan saat memperbarui data. Silakan coba lagi.');
         }
+    }
+
+    /**
+     * Map sumber nama from Sumbers table to enum-compatible value
+     * Allowed enums: Unknown, IG, FB, WA, Tiktok, Web, Google, Organik, Teman
+     */
+    private function mapSumberEnum(string $nama): string
+    {
+        $n = mb_strtolower(trim($nama));
+
+        // Tiktok mapping
+        if (str_contains($n, 'tiktok')) {
+            return 'Tiktok';
+        }
+
+        // Instagram mapping
+        if (str_contains($n, 'instagram') || $n === 'ig' || str_contains($n, 'ig ')) {
+            return 'IG';
+        }
+
+        // Facebook mapping
+        if (str_contains($n, 'facebook') || $n === 'fb' || str_contains($n, 'fb ')) {
+            return 'FB';
+        }
+
+        // WhatsApp mapping
+        if (str_contains($n, 'whatsapp') || str_contains($n, 'wa')) {
+            return 'WA';
+        }
+
+        // Web/Website mapping
+        if (str_contains($n, 'web')) {
+            return 'Web';
+        }
+
+        // Google mapping
+        if (str_contains($n, 'google')) {
+            return 'Google';
+        }
+
+        // Organik mapping
+        if (str_contains($n, 'organik')) {
+            return 'Organik';
+        }
+
+        // Teman mapping
+        if (str_contains($n, 'teman')) {
+            return 'Teman';
+        }
+
+        // Fallback
+        return 'Unknown';
     }
 
     /**

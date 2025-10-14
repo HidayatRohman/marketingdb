@@ -50,6 +50,7 @@ interface Transaksi {
     paket_brand_id: number;
     lead_awal_brand_id: number;
     sumber: string;
+    sumber_ref?: { id: number; nama: string; warna?: string };
     kabupaten: string;
     provinsi: string;
     status_pembayaran: string;
@@ -680,7 +681,7 @@ onMounted(() => {
                                     </TableCell>
                                     <!-- Sumber -->
                                     <TableCell class="font-medium text-gray-700 dark:text-gray-300 py-4 px-3">
-                                        <span class="text-sm">{{ transaksi.sumber || '-' }}</span>
+                                        <span class="text-sm">{{ (transaksi.sumber_ref?.nama || transaksi.sumber) || '-' }}</span>
                                     </TableCell>
                                     <!-- Kabupaten -->
                                     <TableCell class="font-medium text-gray-700 dark:text-gray-300 py-4 px-3">

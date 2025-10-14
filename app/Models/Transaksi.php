@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Sumber;
 
 class Transaksi extends Model
 {
@@ -61,6 +62,14 @@ class Transaksi extends Model
     public function leadAwalBrand()
     {
         return $this->belongsTo(Brand::class, 'lead_awal_brand_id');
+    }
+
+    /**
+     * Get the sumber reference (from sumbers table).
+     */
+    public function sumberRef()
+    {
+        return $this->belongsTo(Sumber::class, 'sumber_id');
     }
 
 }
