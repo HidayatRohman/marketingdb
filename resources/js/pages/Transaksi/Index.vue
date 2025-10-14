@@ -21,6 +21,7 @@ import { debounce } from 'lodash';
 import PaymentStatusChart from '@/Components/PaymentStatusChart.vue';
 import SourceAnalyticsChart from '@/components/SourceAnalyticsChart.vue';
 import AgeAnalyticsChart from '@/components/AgeAnalyticsChart.vue';
+import LeadAwalAnalyticsChart from '@/components/LeadAwalAnalyticsChart.vue';
 
 interface Brand {
     id: number;
@@ -125,6 +126,8 @@ const sourceChartData = ref([]);
 const sourceChartLoading = ref(false);
 const ageChartData = ref([]);
 const ageChartLoading = ref(false);
+const leadAwalChartData = ref([]);
+const leadAwalChartLoading = ref(false);
 
 // Chart data interface
 interface PaymentStatusData {
@@ -133,6 +136,12 @@ interface PaymentStatusData {
     tambahan_dp: number;
     pelunasan: number;
     total: number;
+}
+
+interface LeadAwalAnalyticsData {
+    lead_awal: string;
+    count: number;
+    total_nominal: number;
 }
 
 // Breadcrumbs
@@ -239,11 +248,36 @@ const refreshAgeChart = () => {
     fetchAgeChartData();
 };
 
+// Lead Awal analytics chart functions
+const fetchLeadAwalChartData = async () => {
+    leadAwalChartLoading.value = true;
+    try {
+        const response = await fetch('/transaksis/analytics/lead-awal?' + new URLSearchParams({
+            start_date: periodeStart.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
+            end_date: periodeEnd.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+        }));
+
+        if (response.ok) {
+            const result = await response.json();
+            leadAwalChartData.value = result.data as LeadAwalAnalyticsData[];
+        }
+    } catch (error) {
+        console.error('Error fetching lead awal analytics data:', error);
+    } finally {
+        leadAwalChartLoading.value = false;
+    }
+};
+
+const refreshLeadAwalChart = () => {
+    fetchLeadAwalChartData();
+};
+
 // Watch for date changes to refresh chart
 watch([periodeStart, periodeEnd], () => {
     fetchChartData();
     fetchSourceChartData();
     fetchAgeChartData();
+    fetchLeadAwalChartData();
 }, { deep: true });
 
 // Modal functions
@@ -375,6 +409,7 @@ onMounted(() => {
     fetchChartData();
     fetchSourceChartData();
     fetchAgeChartData();
+    fetchLeadAwalChartData();
 });
 </script>
 
@@ -919,6 +954,13 @@ onMounted(() => {
                 :data="ageChartData"
                 :loading="ageChartLoading"
                 @refresh="refreshAgeChart"
+            />
+
+            <!-- Lead Awal Analytics Chart -->
+            <LeadAwalAnalyticsChart
+                :data="leadAwalChartData"
+                :loading="leadAwalChartLoading"
+                @refresh="refreshLeadAwalChart"
             />
         </div>
 

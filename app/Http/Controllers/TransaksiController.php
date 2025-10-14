@@ -243,6 +243,43 @@ class TransaksiController extends Controller
     }
 
     /**
+     * Get lead awal (brand) analytics data for chart
+     */
+    public function getLeadAwalAnalytics(Request $request)
+    {
+        $user = auth()->user();
+        $query = Transaksi::query();
+
+        // Apply role-based filtering
+        $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply date range filter (default to current year)
+        $startDate = $request->get('start_date', now()->startOfYear()->format('Y-m-d'));
+        $endDate = $request->get('end_date', now()->endOfYear()->format('Y-m-d'));
+
+        $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+
+        // Join brands table to get lead awal brand name and aggregate counts & totals
+        $data = $query->leftJoin('brands', 'transaksis.lead_awal_brand_id', '=', 'brands.id')
+            ->selectRaw('
+                COALESCE(brands.nama, "Unknown") as lead_awal,
+                COUNT(*) as count,
+                COALESCE(SUM(transaksis.nominal_masuk), 0) as total_nominal
+            ')
+            ->groupBy('lead_awal')
+            ->orderByDesc('count')
+            ->get();
+
+        return response()->json([
+            'data' => $data,
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
