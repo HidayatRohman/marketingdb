@@ -140,6 +140,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Transaksi Management - Role-based access with data filtering
     Route::middleware('role.access:view')->group(function () {
         Route::get('transaksis', [TransaksiController::class, 'index'])->name('transaksis.index');
+        Route::get('transaksis/analytics/payment-status', [TransaksiController::class, 'getPaymentStatusAnalytics'])->name('transaksis.analytics.payment-status');
         Route::get('transaksis/{transaksi}', [TransaksiController::class, 'show'])->name('transaksis.show');
     });
     

@@ -78,9 +78,87 @@ class TransaksiController extends Controller
                 'canOnlyView' => $user->canOnlyView(),
                 'canOnlyViewOwn' => $user->canOnlyViewOwn(),
             ],
-        ]);
-        
+        ]);        
 
+    }
+
+    /**
+     * Get payment status analytics data for chart
+     */
+    public function getPaymentStatusAnalytics(Request $request)
+    {
+        $user = auth()->user();
+        $query = Transaksi::query();
+
+        // Apply role-based filtering
+        $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply date range filter (default to current year)
+        $startDate = $request->get('start_date', now()->startOfYear()->format('Y-m-d'));
+        $endDate = $request->get('end_date', now()->endOfYear()->format('Y-m-d'));
+        
+        $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+
+        // Group by month and status_pembayaran
+        $data = $query->selectRaw('
+                YEAR(tanggal_tf) as year,
+                MONTH(tanggal_tf) as month,
+                status_pembayaran,
+                COUNT(*) as count
+            ')
+            ->groupBy('year', 'month', 'status_pembayaran')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
+
+        // Format data for chart
+        $chartData = [];
+        $months = [];
+        
+        // Generate all months in the date range
+        $start = Carbon::parse($startDate)->startOfMonth();
+        $end = Carbon::parse($endDate)->endOfMonth();
+        
+        while ($start <= $end) {
+            $monthKey = $start->format('Y-m');
+            $monthLabel = $start->format('M Y');
+            $months[] = $monthLabel;
+            
+            $chartData[$monthKey] = [
+                'month' => $monthLabel,
+                'dp' => 0,
+                'tambahan_dp' => 0,
+                'pelunasan' => 0,
+                'total' => 0
+            ];
+            
+            $start->addMonth();
+        }
+
+        // Fill data from database
+        foreach ($data as $item) {
+            $monthKey = $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
+            
+            if (isset($chartData[$monthKey])) {
+                switch ($item->status_pembayaran) {
+                    case 'Dp / TJ':
+                        $chartData[$monthKey]['dp'] = $item->count;
+                        break;
+                    case 'Tambahan Dp':
+                        $chartData[$monthKey]['tambahan_dp'] = $item->count;
+                        break;
+                    case 'Pelunasan':
+                        $chartData[$monthKey]['pelunasan'] = $item->count;
+                        break;
+                }
+                $chartData[$monthKey]['total'] += $item->count;
+            }
+        }
+
+        return response()->json([
+            'data' => array_values($chartData),
+            'months' => $months
+        ]);
     }
 
     /**

@@ -18,6 +18,7 @@ import { Head, router } from '@inertiajs/vue3';
 import { CreditCard, Calendar, ChevronDown, ChevronUp, Edit, Eye, Filter, Plus, Search, Trash2, User, X, DollarSign, Phone } from 'lucide-vue-next';
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { debounce } from 'lodash';
+import PaymentStatusChart from '@/Components/PaymentStatusChart.vue';
 
 interface Brand {
     id: number;
@@ -113,6 +114,19 @@ const deleteModal = ref({
     transaksi: undefined as Transaksi | undefined,
 });
 
+// Chart states
+const chartData = ref([]);
+const chartLoading = ref(false);
+
+// Chart data interface
+interface PaymentStatusData {
+    month: string;
+    dp: number;
+    tambahan_dp: number;
+    pelunasan: number;
+    total: number;
+}
+
 // Breadcrumbs
 const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
@@ -144,6 +158,35 @@ const debouncedSearch = debounce(() => {
 watch([search, selectedBrand, periodeStart, periodeEnd, perPage], () => {
     debouncedSearch();
 });
+
+// Chart functions
+const fetchChartData = async () => {
+    chartLoading.value = true;
+    try {
+        const response = await fetch('/transaksis/analytics/payment-status?' + new URLSearchParams({
+            start_date: periodeStart.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
+            end_date: periodeEnd.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+        }));
+        
+        if (response.ok) {
+            const result = await response.json();
+            chartData.value = result.data;
+        }
+    } catch (error) {
+        console.error('Error fetching chart data:', error);
+    } finally {
+        chartLoading.value = false;
+    }
+};
+
+const refreshChart = () => {
+    fetchChartData();
+};
+
+// Watch for date changes to refresh chart
+watch([periodeStart, periodeEnd], () => {
+    fetchChartData();
+}, { deep: true });
 
 // Modal functions
 const openCreateModal = () => {
@@ -267,6 +310,11 @@ const perPageOptions = [
 
 // Computed property untuk brands
 const brands = computed(() => props.brands || []);
+
+// Lifecycle
+onMounted(() => {
+    fetchChartData();
+});
 </script>
 
 <template>
@@ -389,6 +437,13 @@ const brands = computed(() => props.brands || []);
                     </CardContent>
                 </Card>
             </div>
+
+            <!-- Payment Status Chart -->
+            <PaymentStatusChart 
+                :data="chartData"
+                :loading="chartLoading"
+                @refresh="refreshChart"
+            />
 
             <!-- Search and Filters -->
             <Card class="border-0 shadow-lg dark:bg-gray-900">
