@@ -142,6 +142,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('transaksis', [TransaksiController::class, 'index'])->name('transaksis.index');
         Route::get('transaksis/analytics/payment-status', [TransaksiController::class, 'getPaymentStatusAnalytics'])->name('transaksis.analytics.payment-status');
         Route::get('transaksis/analytics/sumber', [TransaksiController::class, 'getSourceAnalytics'])->name('transaksis.analytics.sumber');
+        Route::get('transaksis/analytics/usia', [TransaksiController::class, 'getAgeAnalytics'])->name('transaksis.analytics.usia');
         Route::get('transaksis/{transaksi}', [TransaksiController::class, 'show'])->name('transaksis.show');
     });
     

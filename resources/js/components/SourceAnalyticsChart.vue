@@ -206,7 +206,7 @@ const emit = defineEmits<{
 // Component state
 const chartCanvas = ref<HTMLCanvasElement>();
 const chartInstance = ref<ChartJS | null>(null);
-const viewMode = ref<'bar' | 'doughnut'>('bar');
+const viewMode = ref<'bar' | 'doughnut'>('doughnut');
 
 // Canvas management to avoid reuse issues
 const canvasKey = ref(0);

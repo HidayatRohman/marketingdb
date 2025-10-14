@@ -20,6 +20,7 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { debounce } from 'lodash';
 import PaymentStatusChart from '@/Components/PaymentStatusChart.vue';
 import SourceAnalyticsChart from '@/components/SourceAnalyticsChart.vue';
+import AgeAnalyticsChart from '@/components/AgeAnalyticsChart.vue';
 
 interface Brand {
     id: number;
@@ -122,6 +123,8 @@ const chartData = ref([]);
 const chartLoading = ref(false);
 const sourceChartData = ref([]);
 const sourceChartLoading = ref(false);
+const ageChartData = ref([]);
+const ageChartLoading = ref(false);
 
 // Chart data interface
 interface PaymentStatusData {
@@ -212,10 +215,35 @@ const refreshSourceChart = () => {
     fetchSourceChartData();
 };
 
+// Age analytics chart functions
+const fetchAgeChartData = async () => {
+    ageChartLoading.value = true;
+    try {
+        const response = await fetch('/transaksis/analytics/usia?' + new URLSearchParams({
+            start_date: periodeStart.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
+            end_date: periodeEnd.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+        }));
+
+        if (response.ok) {
+            const result = await response.json();
+            ageChartData.value = result.data;
+        }
+    } catch (error) {
+        console.error('Error fetching age analytics data:', error);
+    } finally {
+        ageChartLoading.value = false;
+    }
+};
+
+const refreshAgeChart = () => {
+    fetchAgeChartData();
+};
+
 // Watch for date changes to refresh chart
 watch([periodeStart, periodeEnd], () => {
     fetchChartData();
     fetchSourceChartData();
+    fetchAgeChartData();
 }, { deep: true });
 
 // Modal functions
@@ -346,6 +374,7 @@ const sumbers = computed(() => props.sumbers || []);
 onMounted(() => {
     fetchChartData();
     fetchSourceChartData();
+    fetchAgeChartData();
 });
 </script>
 
@@ -482,6 +511,13 @@ onMounted(() => {
                 :data="sourceChartData"
                 :loading="sourceChartLoading"
                 @refresh="refreshSourceChart"
+            />
+
+            <!-- Age Analytics Chart -->
+            <AgeAnalyticsChart
+                :data="ageChartData"
+                :loading="ageChartLoading"
+                @refresh="refreshAgeChart"
             />
 
             <!-- Search and Filters -->

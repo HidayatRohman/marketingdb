@@ -200,6 +200,49 @@ class TransaksiController extends Controller
     }
 
     /**
+     * Get age analytics data for chart
+     */
+    public function getAgeAnalytics(Request $request)
+    {
+        $user = auth()->user();
+        $query = Transaksi::query();
+
+        // Apply role-based filtering
+        $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply date range filter (default to current year)
+        $startDate = $request->get('start_date', now()->startOfYear()->format('Y-m-d'));
+        $endDate = $request->get('end_date', now()->endOfYear()->format('Y-m-d'));
+
+        $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+
+        // Group by age buckets and aggregate counts and total nominal
+        $data = $query->selectRaw('
+                CASE
+                    WHEN usia IS NULL OR usia <= 0 THEN "Unknown"
+                    WHEN usia BETWEEN 17 AND 24 THEN "17-24"
+                    WHEN usia BETWEEN 25 AND 34 THEN "25-34"
+                    WHEN usia BETWEEN 35 AND 44 THEN "35-44"
+                    WHEN usia BETWEEN 45 AND 54 THEN "45-54"
+                    ELSE "55+"
+                END AS usia_bucket,
+                COUNT(*) AS count,
+                COALESCE(SUM(nominal_masuk), 0) AS total_nominal
+            ')
+            ->groupBy('usia_bucket')
+            ->orderByRaw("FIELD(usia_bucket, 'Unknown','17-24','25-34','35-44','45-54','55+')")
+            ->get();
+
+        return response()->json([
+            'data' => $data,
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
