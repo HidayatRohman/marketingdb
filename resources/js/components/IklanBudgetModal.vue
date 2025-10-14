@@ -39,6 +39,8 @@
                   id="tanggal"
                   type="date"
                   v-model="form.tanggal"
+                  @click="openNativePicker"
+                  @focus="openNativePicker"
                   :class="{
                     'border-red-500 focus:border-red-500 focus:ring-red-500': form.errors.tanggal,
                     'border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500': !form.errors.tanggal
@@ -235,6 +237,14 @@ watch(() => props.open, (isOpen) => {
     spentFormatted.value = '0'
   }
 })
+
+// Ensure native date input opens calendar on click/focus
+const openNativePicker = (e: Event) => {
+  const target = e.target as HTMLInputElement | null
+  if (target && typeof (target as any).showPicker === 'function') {
+    (target as any).showPicker()
+  }
+}
 
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('id-ID', {

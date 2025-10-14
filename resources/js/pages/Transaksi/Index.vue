@@ -74,6 +74,7 @@ interface Props {
         next_page_url: string | null;
     };
     brands: Brand[];
+    sumbers: { id: number; nama: string; warna?: string }[];
     currentUser: {
         id: number;
         name: string;
@@ -310,6 +311,7 @@ const perPageOptions = [
 
 // Computed property untuk brands
 const brands = computed(() => props.brands || []);
+const sumbers = computed(() => props.sumbers || []);
 
 // Lifecycle
 onMounted(() => {
@@ -852,6 +854,7 @@ onMounted(() => {
             :mode="transaksiModal.mode"
             :transaksi="transaksiModal.transaksi"
             :brands="brands"
+            :sumbers="sumbers"
             :current-user="currentUser"
             @close="closeTransaksiModal"
             @success="handleModalSuccess"

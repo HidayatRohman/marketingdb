@@ -1,23 +1,27 @@
 <template>
-  <div class="relative" ref="containerRef">
+  <div class="relative w-full" ref="containerRef">
     <!-- Date Input Trigger -->
     <div
       @click="toggleCalendar"
-      class="group relative flex items-center justify-between cursor-pointer focus:outline-none transition-all duration-300 h-full"
-      :class="{ 'ring-2 ring-blue-500/20': isOpen }"
+      @focus="toggleCalendar"
+      @keydown.enter.prevent="toggleCalendar"
+      @keydown.space.prevent="toggleCalendar"
+      tabindex="0"
+      class="group relative flex items-center justify-between cursor-pointer focus:outline-none transition-all duration-300 h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base dark:bg-gray-700 dark:border-gray-600"
+      :class="{ 'ring-2 ring-emerald-100 focus:border-emerald-400': isOpen }"
     >
       <div class="flex items-center gap-2">
         <div class="p-1 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm group-hover:shadow-md transition-all duration-300">
-          <Calendar class="h-3.5 w-3.5 text-white" />
+          <Calendar class="h-4 w-4 text-white" />
         </div>
         <span :class="modelValue ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-500 dark:text-gray-400'">
           {{ formattedDate || placeholder }}
         </span>
       </div>
-      <div class="p-0.5 rounded-sm bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 transition-all duration-300">
+      <div class="p-1 rounded-md bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 transition-all duration-300">
         <ChevronDown 
           :class="[
-            'h-3.5 w-3.5 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all duration-300',
+            'h-4 w-4 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all duration-300',
             isOpen ? 'rotate-180' : ''
           ]" 
         />
@@ -33,11 +37,13 @@
       leave-from-class="opacity-100 scale-100 translate-y-0"
       leave-to-class="opacity-0 scale-95 translate-y-1"
     >
-      <div
-        v-if="isOpen"
-        class="fixed z-[9999] w-80 bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-800 dark:via-gray-750 dark:to-gray-800 border border-gray-200/50 dark:border-gray-600/50 rounded-2xl shadow-2xl backdrop-blur-sm p-6"
-        :style="dropdownStyle"
-      >
+      <teleport to="body">
+        <div
+          v-if="isOpen"
+          ref="dropdownRef"
+          class="fixed z-[9999] bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-800 dark:via-gray-750 dark:to-gray-800 border border-gray-200/50 dark:border-gray-600/50 rounded-2xl shadow-2xl backdrop-blur-sm p-6 w-[min(560px,95vw)] max-w-[95vw] max-h-[80vh] overflow-y-auto"
+          :style="dropdownStyle"
+        >
         <!-- Calendar Header -->
         <div class="flex items-center justify-between mb-6">
           <Button
@@ -180,7 +186,8 @@
             Clear
           </Button>
         </div>
-      </div>
+        </div>
+      </teleport>
     </Transition>
   </div>
 </template>
@@ -213,12 +220,13 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false,
 });
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string | null];
-}>();
+// Support v-model naturally
+const model = defineModel<string | null>();
+const emit = defineEmits<{ 'update:modelValue': [value: string | null] }>();
 
 // Refs
 const containerRef = ref<HTMLElement>();
+const dropdownRef = ref<HTMLElement>();
 const isOpen = ref(false);
 const showMonthPicker = ref(false);
 const showYearPicker = ref(false);
@@ -235,8 +243,8 @@ const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 
 // Computed
 const formattedDate = computed(() => {
-  if (!props.modelValue) return '';
-  const date = new Date(props.modelValue);
+  if (!model.value) return '';
+  const date = new Date(model.value);
   return date.toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
@@ -245,20 +253,14 @@ const formattedDate = computed(() => {
 });
 
 const dropdownStyle = computed(() => {
-  const viewportHeight = window.innerHeight;
-  const viewportWidth = window.innerWidth;
-  const dropdownHeight = 400; // Approximate height of calendar dropdown
-  const dropdownWidth = 320; // 20rem = 320px
-  
-  // Center the dropdown in the viewport
-  const top = (viewportHeight - dropdownHeight) / 2;
-  const left = (viewportWidth - dropdownWidth) / 2;
-  
+  // Center of viewport; responsive width and safe max height
   return {
-    top: `${Math.max(16, top)}px`,
-    left: `${Math.max(16, left)}px`,
-    width: '320px',
-    transform: 'none'
+    top: '50%',
+    left: '50%',
+    width: 'min(90vw, 22rem)',
+    maxHeight: '80vh',
+    overflow: 'hidden',
+    transform: 'translate(-50%, -50%)'
   };
 });
 
@@ -346,8 +348,8 @@ const toggleCalendar = () => {
     showMonthPicker.value = false;
     showYearPicker.value = false;
     // Set current month/year to selected date if exists
-    if (props.modelValue) {
-      const date = new Date(props.modelValue);
+    if (model.value) {
+      const date = new Date(model.value);
       currentMonth.value = date.getMonth();
       currentYear.value = date.getFullYear();
     }
@@ -369,7 +371,9 @@ const selectDate = (date: CalendarDate) => {
   const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
   const day = String(selectedDate.getDate()).padStart(2, '0');
   const dateString = `${year}-${month}-${day}`;
-  
+  // Update v-model
+  model.value = dateString;
+  // Also emit for compatibility
   emit('update:modelValue', dateString);
   isOpen.value = false;
 };
@@ -410,7 +414,7 @@ const selectToday = () => {
   const month = String(today.getMonth() + 1).padStart(2, '0');
   const day = String(today.getDate()).padStart(2, '0');
   const dateString = `${year}-${month}-${day}`;
-  
+  model.value = dateString;
   emit('update:modelValue', dateString);
   isOpen.value = false;
 };
@@ -422,7 +426,10 @@ const clearDate = () => {
 
 // Handle click outside
 const handleClickOutside = (event: Event) => {
-  if (containerRef.value && !containerRef.value.contains(event.target as Node)) {
+  const targetNode = event.target as Node;
+  const insideTrigger = !!(containerRef.value && containerRef.value.contains(targetNode));
+  const insideDropdown = !!(dropdownRef.value && dropdownRef.value.contains(targetNode));
+  if (!insideTrigger && !insideDropdown) {
     isOpen.value = false;
     showMonthPicker.value = false;
     showYearPicker.value = false;
@@ -450,7 +457,7 @@ onUnmounted(() => {
 });
 
 // Watch for model value changes
-watch(() => props.modelValue, (newValue) => {
+watch(() => model.value, (newValue) => {
   if (newValue) {
     const date = new Date(newValue);
     currentMonth.value = date.getMonth();

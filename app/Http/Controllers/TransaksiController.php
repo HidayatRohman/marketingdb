@@ -57,10 +57,12 @@ class TransaksiController extends Controller
 
         // Get data for filters
         $brands = Brand::select('id', 'nama')->get();
+        $sumbers = Sumber::select('id', 'nama', 'warna')->orderBy('nama')->get();
 
         return Inertia::render('Transaksi/Index', [
             'transaksis' => $transaksis,
             'brands' => $brands,
+            'sumbers' => $sumbers,
             'currentUser' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -175,7 +177,7 @@ class TransaksiController extends Controller
             'nama_mitra' => 'required|string|max:255',
             'paket_brand_id' => 'required|exists:brands,id',
             'lead_awal_brand_id' => 'required|exists:brands,id',
-            'sumber' => 'required|in:Unknown,IG,FB,WA,Tiktok,Web,Google,Organik,Teman',
+            'sumber_id' => 'required|exists:sumbers,id',
             'kabupaten' => 'required|string|max:255',
             'provinsi' => 'required|string|max:255',
             'status_pembayaran' => 'required|in:Dp / TJ,Tambahan Dp,Pelunasan',
@@ -203,6 +205,14 @@ class TransaksiController extends Controller
             // Debug logging
             \Log::info('Creating transaksi with data:', $validated);
             
+            // Set sumber name string based on sumber_id for backward compatibility
+            if (isset($validated['sumber_id'])) {
+                $sumber = Sumber::find($validated['sumber_id']);
+                if ($sumber) {
+                    $validated['sumber'] = $sumber->nama;
+                }
+            }
+
             $transaksi = Transaksi::create($validated);
             
             \Log::info('Transaksi created successfully with ID: ' . $transaksi->id);
@@ -269,7 +279,7 @@ class TransaksiController extends Controller
             'nama_mitra' => 'nullable|string|max:255',
             'paket_brand_id' => 'required|exists:brands,id',
             'lead_awal_brand_id' => 'required|exists:brands,id',
-            'sumber' => 'required|in:Unknown,IG,FB,WA,Tiktok,Web,Google,Organik,Teman',
+            'sumber_id' => 'required|exists:sumbers,id',
             'kabupaten' => 'required|string|max:255',
             'provinsi' => 'required|string|max:255',
             'status_pembayaran' => 'required|in:Dp / TJ,Tambahan Dp,Pelunasan',
@@ -291,6 +301,14 @@ class TransaksiController extends Controller
         }
 
         try {
+            // Set sumber string from sumber_id for backward compatibility
+            if (isset($validated['sumber_id'])) {
+                $sumber = Sumber::find($validated['sumber_id']);
+                if ($sumber) {
+                    $validated['sumber'] = $sumber->nama;
+                }
+            }
+
             $transaksi->update($validated);
 
             if ($request->expectsJson()) {

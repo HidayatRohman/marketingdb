@@ -47,6 +47,7 @@ interface Transaksi {
     paket_brand_id: number;
     lead_awal_brand_id: number;
     sumber: string;
+    sumber_id?: number;
     kabupaten: string;
     provinsi: string;
     status_pembayaran: string;
@@ -65,6 +66,7 @@ interface Props {
     mode: 'create' | 'edit' | 'view';
     transaksi?: Transaksi;
     brands: Brand[];
+    sumbers: Sumber[];
     currentUser: User;
 }
 
@@ -90,6 +92,7 @@ const form = useForm({
     paket_brand_id: null,
     lead_awal_brand_id: null,
     sumber: '',
+    sumber_id: null,
     kabupaten: '',
     provinsi: '',
     status_pembayaran: '',
@@ -104,17 +107,7 @@ const usiaOptions = Array.from({ length: 63 }, (_, i) => ({
     label: (i + 18).toString(),
 }));
 
-const sumberOptions = [
-    { value: 'Unknown', label: 'Tidak Tahu' },
-    { value: 'Organik', label: 'Organik' },
-    { value: 'Web', label: 'Web' },
-    { value: 'IG', label: 'Instagram' },
-    { value: 'FB', label: 'Facebook' },
-    { value: 'WA', label: 'Whatsapp' },
-    { value: 'Google', label: 'Google' },
-    { value: 'Tiktok', label: 'Tiktok' },
-    { value: 'Teman', label: 'Teman' },
-];
+// Sumber options now come from props.sumbers
 
 const periodeLeadOptions = [
     { value: 'Januari', label: 'Januari' },
@@ -196,6 +189,7 @@ const resetForm = () => {
     form.paket_brand_id = null;
     form.lead_awal_brand_id = null;
     form.sumber = '';
+    form.sumber_id = null;
     form.kabupaten = '';
     form.provinsi = '';
     form.status_pembayaran = '';
@@ -217,6 +211,13 @@ const populateForm = (transaksi: Transaksi) => {
     form.paket_brand_id = transaksi.paket_brand_id;
     form.lead_awal_brand_id = transaksi.lead_awal_brand_id;
     form.sumber = transaksi.sumber;
+    form.sumber_id = transaksi.sumber_id || null;
+    if (!form.sumber_id && form.sumber) {
+        const match = props.sumbers.find(s => s.nama.toLowerCase() === (form.sumber || '').toLowerCase());
+        if (match) {
+            form.sumber_id = match.id;
+        }
+    }
     form.kabupaten = transaksi.kabupaten;
     form.provinsi = transaksi.provinsi;
     form.status_pembayaran = transaksi.status_pembayaran;
@@ -230,6 +231,14 @@ const handleSubmit = () => {
 
     const url = isEditMode.value ? `/transaksis/${props.transaksi?.id}` : '/transaksis';
     const method = isEditMode.value ? 'put' : 'post';
+
+    // Ensure sumber string matches selected sumber_id
+    if (form.sumber_id) {
+        const selected = props.sumbers.find(s => s.id === Number(form.sumber_id));
+        if (selected) {
+            form.sumber = selected.nama;
+        }
+    }
 
     console.log('Submitting form data:', form.data());
     
@@ -281,6 +290,14 @@ const handleSubmit = () => {
 
 const handleClose = () => {
     emit('close');
+};
+
+// Ensure native date input opens picker on click/focus
+const openNativePicker = (e: Event) => {
+    const target = e.target as HTMLInputElement | null;
+    if (target && typeof (target as any).showPicker === 'function') {
+        (target as any).showPicker();
+    }
 };
 
 const formatCurrency = (value: string | number) => {
@@ -423,19 +440,20 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                         </div>
 
                         <div class="space-y-3">
-                            <Label for="sumber" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Sumber *</Label>
+                            <Label for="sumber_id" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Sumber *</Label>
                             <select 
-                                id="sumber"
-                                v-model="form.sumber" 
+                                id="sumber_id"
+                                v-model="form.sumber_id" 
                                 :disabled="isViewMode"
                                 class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             >
-                                <option v-for="sumber in sumberOptions" :key="sumber.value" :value="sumber.value">
-                                    {{ sumber.label }}
+                                <option value="" disabled>Pilih Sumber</option>
+                                <option v-for="s in props.sumbers" :key="s.id" :value="s.id">
+                                    {{ s.nama }}
                                 </option>
                             </select>
-                            <div v-if="form.errors.sumber" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
-                                {{ form.errors.sumber }}
+                            <div v-if="form.errors.sumber_id" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
+                                {{ form.errors.sumber_id }}
                             </div>
                         </div>
                     </div>
@@ -453,11 +471,14 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                         <div class="space-y-3">
                             <Label for="tanggal_tf" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Tanggal TF *</Label>
                             <div class="w-full">
-                                <DatePicker
+                                <input
+                                    id="tanggal_tf"
+                                    type="date"
                                     v-model="form.tanggal_tf"
                                     :disabled="isViewMode"
-                                    placeholder="Pilih tanggal TF"
-                                    class="!w-full !h-12 !rounded-lg !border !border-gray-300 !bg-gray-50 !px-4 !text-base !transition-all !duration-200 !focus:ring-2 !focus:ring-emerald-100 !focus:border-emerald-400 dark:!bg-gray-700 dark:!border-gray-600 dark:!text-white"
+                                    @click="openNativePicker"
+                                    @focus="openNativePicker"
+                                    class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                 />
                             </div>
                             <div v-if="form.errors.tanggal_tf" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
@@ -468,11 +489,14 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                         <div class="space-y-3">
                             <Label for="tanggal_lead_masuk" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Tanggal Lead Masuk *</Label>
                             <div class="w-full">
-                                <DatePicker
+                                <input
+                                    id="tanggal_lead_masuk"
+                                    type="date"
                                     v-model="form.tanggal_lead_masuk"
                                     :disabled="isViewMode"
-                                    placeholder="Pilih tanggal lead masuk"
-                                    class="!w-full !h-12 !rounded-lg !border !border-gray-300 !bg-gray-50 !px-4 !text-base !transition-all !duration-200 !focus:ring-2 !focus:ring-emerald-100 !focus:border-emerald-400 dark:!bg-gray-700 dark:!border-gray-600 dark:!text-white"
+                                    @click="openNativePicker"
+                                    @focus="openNativePicker"
+                                    class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                 />
                             </div>
                             <div v-if="form.errors.tanggal_lead_masuk" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
