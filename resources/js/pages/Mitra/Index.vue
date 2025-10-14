@@ -944,7 +944,12 @@ onMounted(() => {
                                             <span v-else class="text-sm text-muted-foreground">-</span>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge :variant="mitra.webinar === 'Ikut' ? 'default' : 'secondary'">
+                                            <Badge 
+                                                :class="mitra.webinar === 'Ikut' 
+                                                    ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700' 
+                                                    : 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700'"
+                                                variant="outline"
+                                            >
                                                 {{ mitra.webinar }}
                                             </Badge>
                                         </TableCell>
