@@ -499,27 +499,7 @@ onMounted(() => {
                 </Card>
             </div>
 
-            <!-- Payment Status Chart -->
-            <PaymentStatusChart 
-                :data="chartData"
-                :loading="chartLoading"
-                @refresh="refreshChart"
-            />
-
-            <!-- Source Analytics Chart -->
-            <SourceAnalyticsChart
-                :data="sourceChartData"
-                :loading="sourceChartLoading"
-                @refresh="refreshSourceChart"
-            />
-
-            <!-- Age Analytics Chart -->
-            <AgeAnalyticsChart
-                :data="ageChartData"
-                :loading="ageChartLoading"
-                @refresh="refreshAgeChart"
-            />
-
+            
             <!-- Search and Filters -->
             <Card class="border-0 shadow-lg dark:bg-gray-900">
                 <CardContent class="p-4 sm:p-6">
@@ -919,6 +899,27 @@ onMounted(() => {
                     </div>
                 </CardContent>
             </Card>
+
+            <!-- Payment Status Chart -->
+            <PaymentStatusChart 
+                :data="chartData"
+                :loading="chartLoading"
+                @refresh="refreshChart"
+            />
+
+            <!-- Source Analytics Chart -->
+            <SourceAnalyticsChart
+                :data="sourceChartData"
+                :loading="sourceChartLoading"
+                @refresh="refreshSourceChart"
+            />
+
+            <!-- Age Analytics Chart -->
+            <AgeAnalyticsChart
+                :data="ageChartData"
+                :loading="ageChartLoading"
+                @refresh="refreshAgeChart"
+            />
         </div>
 
         <!-- Modals -->
