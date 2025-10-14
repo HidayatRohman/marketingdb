@@ -23,7 +23,13 @@ class StoreMitraRequest extends FormRequest
     {
         return [
             'nama' => 'required|string|max:255',
-            'no_telp' => 'required|string|max:20|unique:mitras,no_telp',
+            'no_telp' => [
+                'required',
+                'string',
+                // Hanya angka, tanpa minimal, maksimal 15 digit
+                'regex:/^\d{1,15}$/',
+                'unique:mitras,no_telp',
+            ],
             'tanggal_lead' => 'required|date',
             'user_id' => 'nullable|exists:users,id',
             'brand_id' => 'required|exists:brands,id',
@@ -50,7 +56,7 @@ class StoreMitraRequest extends FormRequest
             
             'no_telp.required' => 'Nomor telepon wajib diisi.',
             'no_telp.string' => 'Nomor telepon harus berupa teks.',
-            'no_telp.max' => 'Nomor telepon maksimal 20 karakter.',
+            'no_telp.regex' => 'Nomor telepon hanya boleh berisi angka, maksimal 15 digit.',
             'no_telp.unique' => 'Nomor telepon sudah terdaftar untuk mitra lain. Silakan gunakan nomor telepon yang berbeda.',
             
             'tanggal_lead.required' => 'Tanggal lead wajib diisi.',

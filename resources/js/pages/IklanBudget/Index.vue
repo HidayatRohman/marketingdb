@@ -365,7 +365,7 @@
                                             <span class="font-medium text-green-600">{{ budget.real_lead }}</span>
                                         </TableCell>
                                         <TableCell class="text-center">
-                                            <span v-if="budget.real_lead > 0" class="font-medium text-orange-600">{{ formatCurrency((budget.spent_amount * 1.11) / budget.real_lead) }}</span>
+                                            <span v-if="budget.real_lead > 0" class="font-medium text-orange-600">{{ formatCurrency(budget.cost_per_lead) }}</span>
                                             <span v-else class="text-red-500 font-medium">#DIV/0!</span>
                                         </TableCell>
                                         <TableCell class="text-center">
@@ -375,7 +375,7 @@
                                             <span class="font-medium text-green-700">{{ formatCurrency(budget.omset) }}</span>
                                         </TableCell>
                                         <TableCell class="text-center">
-                                            <span v-if="budget.spent_amount > 0 && budget.omset > 0" class="font-medium text-indigo-600">{{ (budget.omset / (budget.spent_amount * 1.11)).toFixed(2) }}</span>
+                                            <span v-if="budget.spent_amount > 0 && budget.omset > 0" class="font-medium text-indigo-600">{{ (budget.omset / budget.spent_amount).toFixed(2) }}</span>
                                             <span v-else class="text-red-500 font-medium">0.00</span>
                                         </TableCell>
                                         <TableCell>

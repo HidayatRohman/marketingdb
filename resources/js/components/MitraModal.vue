@@ -328,6 +328,10 @@ const chatLabels = {
                                 id="no_telp"
                                 v-model="form.no_telp"
                                 placeholder="Contoh: 08123456789"
+                                :maxlength="15"
+                                inputmode="numeric"
+                                pattern="\\d*"
+                                @input="(e) => { const v = (e.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 15); form.no_telp = v; }"
                                 :class="{ 'border-destructive': form.errors.no_telp }"
                             />
                             <p v-if="form.errors.no_telp" class="text-sm text-destructive">
