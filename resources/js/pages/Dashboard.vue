@@ -617,8 +617,11 @@ onMounted(() => {
 
                     <!-- Summary Statistics Cards -->
                     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-                        <Card class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+                        <Card class="relative bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
                             <CardContent class="p-6">
+                                <div class="absolute top-3 right-3 text-blue-500/60">
+                                    <Target class="h-4 w-4" />
+                                </div>
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-sm font-medium text-blue-700 dark:text-blue-300">Total Spent</p>
@@ -626,15 +629,15 @@ onMounted(() => {
                                             Rp {{ summaryReport.reduce((sum, item) => sum + item.spent, 0).toLocaleString('id-ID') }}
                                         </p>
                                     </div>
-                                    <div class="rounded-lg bg-blue-500 p-2">
-                                        <Target class="h-5 w-5 text-white" />
-                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+                        <Card class="relative bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
                             <CardContent class="p-6">
+                                <div class="absolute top-3 right-3 text-green-500/60">
+                                    <TrendingUp class="h-4 w-4" />
+                                </div>
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-sm font-medium text-green-700 dark:text-green-300">Total Omset</p>
@@ -642,15 +645,15 @@ onMounted(() => {
                                             Rp {{ summaryReport.reduce((sum, item) => sum + item.omset, 0).toLocaleString('id-ID') }}
                                         </p>
                                     </div>
-                                    <div class="rounded-lg bg-green-500 p-2">
-                                        <TrendingUp class="h-5 w-5 text-white" />
-                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
+                        <Card class="relative bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
                             <CardContent class="p-6">
+                                <div class="absolute top-3 right-3 text-purple-500/60">
+                                    <Users class="h-4 w-4" />
+                                </div>
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-sm font-medium text-purple-700 dark:text-purple-300">Total Leads</p>
@@ -658,24 +661,21 @@ onMounted(() => {
                                             {{ summaryReport.reduce((sum, item) => sum + item.real_lead, 0).toLocaleString('id-ID') }}
                                         </p>
                                     </div>
-                                    <div class="rounded-lg bg-purple-500 p-2">
-                                        <Users class="h-5 w-5 text-white" />
-                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
+                        <Card class="relative bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
                             <CardContent class="p-6">
+                                <div class="absolute top-3 right-3 text-orange-500/60">
+                                    <Award class="h-4 w-4" />
+                                </div>
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-sm font-medium text-orange-700 dark:text-orange-300">Total Closing</p>
                                         <p class="text-2xl font-bold text-orange-900 dark:text-orange-100">
                                             {{ summaryReport.reduce((sum, item) => sum + item.closing, 0).toLocaleString('id-ID') }}
                                         </p>
-                                    </div>
-                                    <div class="rounded-lg bg-orange-500 p-2">
-                                        <Award class="h-5 w-5 text-white" />
                                     </div>
                                 </div>
                             </CardContent>
@@ -1928,10 +1928,10 @@ onMounted(() => {
                 <Card class="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium text-blue-700 dark:text-blue-300">Total Users</CardTitle>
-                        <div class="rounded-lg bg-blue-500 p-2">
-                            <Users class="h-5 w-5 text-white" />
-                        </div>
                     </CardHeader>
+                    <div class="absolute top-3 right-3 text-blue-500/60">
+                        <Users class="h-4 w-4" />
+                    </div>
                     <CardContent>
                         <div class="text-3xl font-bold text-blue-900 dark:text-blue-100">{{ userStats.total }}</div>
                         <p class="mt-1 flex items-center text-xs text-blue-600 dark:text-blue-400">
@@ -1945,10 +1945,10 @@ onMounted(() => {
                 <Card class="relative overflow-hidden border-0 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium text-red-700 dark:text-red-300">Super Admin</CardTitle>
-                        <div class="rounded-lg bg-red-500 p-2">
-                            <Shield class="h-5 w-5 text-white" />
-                        </div>
                     </CardHeader>
+                    <div class="absolute top-3 right-3 text-red-500/60">
+                        <Shield class="h-4 w-4" />
+                    </div>
                     <CardContent>
                         <div class="text-3xl font-bold text-red-900 dark:text-red-100">{{ userStats.super_admin }}</div>
                         <p class="mt-1 flex items-center text-xs text-red-600 dark:text-red-400">
@@ -1962,10 +1962,10 @@ onMounted(() => {
                 <Card class="relative overflow-hidden border-0 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium text-amber-700 dark:text-amber-300">Admin</CardTitle>
-                        <div class="rounded-lg bg-amber-500 p-2">
-                            <UserCheck class="h-5 w-5 text-white" />
-                        </div>
                     </CardHeader>
+                    <div class="absolute top-3 right-3 text-amber-500/60">
+                        <UserCheck class="h-4 w-4" />
+                    </div>
                     <CardContent>
                         <div class="text-3xl font-bold text-amber-900 dark:text-amber-100">{{ userStats.admin }}</div>
                         <p class="mt-1 flex items-center text-xs text-amber-600 dark:text-amber-400">
@@ -1979,10 +1979,10 @@ onMounted(() => {
                 <Card class="relative overflow-hidden border-0 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium text-green-700 dark:text-green-300">Marketing</CardTitle>
-                        <div class="rounded-lg bg-green-500 p-2">
-                            <Briefcase class="h-5 w-5 text-white" />
-                        </div>
                     </CardHeader>
+                    <div class="absolute top-3 right-3 text-green-500/60">
+                        <Briefcase class="h-4 w-4" />
+                    </div>
                     <CardContent>
                         <div class="text-3xl font-bold text-green-900 dark:text-green-100">{{ userStats.marketing }}</div>
                         <p class="mt-1 flex items-center text-xs text-green-600 dark:text-green-400">
