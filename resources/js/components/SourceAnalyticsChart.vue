@@ -158,6 +158,7 @@ import {
   LinearScale,
   BarElement,
   BarController,
+  DoughnutController,
   Title,
   Tooltip,
   Legend,
@@ -173,6 +174,7 @@ ChartJS.register(
   LinearScale,
   BarElement,
   BarController,
+  DoughnutController,
   Title,
   Tooltip,
   Legend,
@@ -337,7 +339,7 @@ const chartOptions = computed<ChartOptions<'bar' | 'doughnut'>>(() => ({
       grid: { display: false },
       ticks: { color: '#6b7280', font: { size: 11 } },
     },
-  } : {},
+  } : undefined,
 }));
 
 // Chart management
