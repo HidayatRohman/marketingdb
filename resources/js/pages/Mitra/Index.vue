@@ -53,6 +53,7 @@ interface Mitra {
     kota: string;
     provinsi: string;
     komentar: string | null;
+    webinar: 'Tidak' | 'Ikut';
     created_at: string;
     updated_at: string;
 }
@@ -818,13 +819,14 @@ onMounted(() => {
                                         <TableHead class="py-3 font-semibold text-foreground">Chat</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Lokasi</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Label</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Webinar</TableHead>
                                         <TableHead class="w-[120px] py-3 text-center font-semibold text-foreground">Aksi</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     <!-- Empty State -->
                                     <TableRow v-if="mitrasData.data.length === 0" class="hover:bg-transparent">
-                                        <TableCell colspan="9" class="py-8 text-center">
+                                        <TableCell colspan="10" class="py-8 text-center">
                                             <div class="flex justify-center">
                                                 <div class="mx-auto max-w-md">
                                                     <Card
@@ -940,6 +942,11 @@ onMounted(() => {
                                                 {{ mitra.label.nama }}
                                             </div>
                                             <span v-else class="text-sm text-muted-foreground">-</span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge :variant="mitra.webinar === 'Ikut' ? 'default' : 'secondary'">
+                                                {{ mitra.webinar }}
+                                            </Badge>
                                         </TableCell>
                                         <TableCell>
                                             <div class="flex justify-center gap-2">
