@@ -701,8 +701,8 @@ const summaryReport = computed(() => {
 
   // Calculate derived metrics for each brand
   return Object.values(brandGroups).map((group: any) => {
-    group.cost_per_lead = group.real_lead > 0 ? group.spent_with_tax / group.real_lead : 0
-    group.roas = group.spent_with_tax > 0 ? group.omset / group.spent_with_tax : 0
+    group.cost_per_lead = group.real_lead > 0 ? group.spent / group.real_lead : 0
+    group.roas = group.spent > 0 ? group.omset / group.spent : 0
     return group
   })
 })
