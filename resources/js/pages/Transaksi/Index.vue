@@ -681,7 +681,7 @@ onMounted(() => {
                 </CardHeader>
                 <CardContent class="p-4 sm:p-6">
                     <div class="overflow-x-auto responsive-table">
-                        <Table class="w-full table-fixed">
+                        <Table class="w-full table-auto md:table-fixed">
                             <TableHeader>
                                 <TableRow class="border-b border-gray-200 dark:border-gray-700">
                                     <TableHead class="hidden md:table-cell w-16 text-center font-bold text-gray-700 dark:text-gray-300 py-4 px-3">No</TableHead>
@@ -701,7 +701,7 @@ onMounted(() => {
                                     <TableHead class="font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Status Pembayaran</TableHead>
                                     <TableHead class="font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Nominal Masuk</TableHead>
                                     <TableHead class="hidden md:table-cell font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Harga Paket</TableHead>
-                                    <TableHead class="w-32 text-center font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Aksi</TableHead>
+                                    <TableHead class="w-auto md:w-32 text-center font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -833,8 +833,8 @@ onMounted(() => {
                                             </span>
                                         </div>
                                     </TableCell>
-                                    <TableCell class="w-32 text-center py-4 px-3">
-                                        <div class="flex justify-center space-x-2">
+                                    <TableCell class="w-auto md:w-32 text-center py-4 px-3">
+                                        <div class="flex justify-center flex-wrap gap-2 sm:flex-nowrap">
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
