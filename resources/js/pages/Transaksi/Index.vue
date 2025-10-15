@@ -417,7 +417,7 @@ onMounted(() => {
     <Head title="Transaksi" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+        <div class="mx-6 mt-6 space-y-6">
             <!-- Header Section -->
             <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-6 text-white shadow-2xl sm:p-8">
                 <div class="relative z-10">
