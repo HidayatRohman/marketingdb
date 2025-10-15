@@ -38,34 +38,34 @@
             </div>
 
             <!-- Filter Card -->
-            <Card class="border-0 shadow-md">
-                <CardHeader class="pb-2">
+            <Card class="border-0 shadow-md mx-auto max-w-7xl">
+                <CardHeader class="pb-2 px-4 sm:px-6">
                     <CardTitle class="flex items-center gap-2 text-lg font-semibold">
                         <Filter class="h-5 w-5" />
                         Filter Data
                     </CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <div class="flex items-center gap-2">
+                <CardContent class="px-4 sm:px-6">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center w-full sm:w-auto">
                             <label class="text-sm font-medium">Periode:</label>
                             <DatePicker
                                 v-model="filters.start_date"
                                 placeholder="Tanggal Mulai"
-                                class="w-40"
+                                class="w-full sm:w-48"
                             />
-                            <span class="text-sm text-muted-foreground">s/d</span>
+                            <span class="text-sm text-muted-foreground hidden sm:inline">s/d</span>
                             <DatePicker
                                 v-model="filters.end_date"
                                 placeholder="Tanggal Akhir"
-                                class="w-40"
+                                class="w-full sm:w-48"
                             />
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center w-full sm:w-auto">
                             <label class="text-sm font-medium">Brand:</label>
                             <select
                                 v-model="filters.brand_id"
-                                class="w-40 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                class="w-full sm:w-48 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             >
                                 <option value="">Semua Brand</option>
                                 <option v-for="brand in brands" :key="brand.id" :value="brand.id">
@@ -73,7 +73,7 @@
                                 </option>
                             </select>
                         </div>
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 sm:flex-row flex-wrap w-full sm:w-auto">
                             <Button
                                 @click="applyFilter"
                                 class="bg-blue-600 hover:bg-blue-700 text-white"

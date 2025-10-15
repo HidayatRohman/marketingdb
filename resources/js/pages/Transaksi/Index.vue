@@ -551,12 +551,12 @@ onMounted(() => {
                                     class="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-400 dark:bg-gray-800"
                                 />
                             </div>
-                            <div class="flex gap-2 sm:gap-3">
-                                <Button
-                                    @click="toggleFilters"
-                                    variant="outline"
-                                    size="sm"
-                                    class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium transition-colors"
+                        <div class="flex gap-2 sm:gap-3 flex-wrap">
+                            <Button
+                                @click="toggleFilters"
+                                variant="outline"
+                                size="sm"
+                                class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium transition-colors"
                                     :class="{
                                         'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:border-blue-700 dark:text-blue-300': showFilters,
                                         'hover:bg-gray-50 dark:hover:bg-gray-800': !showFilters
@@ -680,8 +680,8 @@ onMounted(() => {
                     </div>
                 </CardHeader>
                 <CardContent class="p-4 sm:p-6">
-                    <div class="overflow-x-auto">
-                        <Table>
+                    <div class="overflow-x-auto -mx-4 sm:mx-0 responsive-table">
+                        <Table class="min-w-[1200px]">
                             <TableHeader>
                                 <TableRow class="border-b border-gray-200 dark:border-gray-700">
                                     <TableHead class="w-16 text-center font-bold text-gray-700 dark:text-gray-300 py-4 px-3">No</TableHead>
@@ -1004,5 +1004,15 @@ onMounted(() => {
         min-height: 44px;
         min-width: 44px;
     }
+    /* Prevent table cell wrapping for better horizontal scroll */
+    .responsive-table :deep(th),
+    .responsive-table :deep(td) {
+        white-space: nowrap;
+    }
+}
+
+/* Smooth horizontal scroll on mobile devices */
+.responsive-table {
+    -webkit-overflow-scrolling: touch;
 }
 </style>
