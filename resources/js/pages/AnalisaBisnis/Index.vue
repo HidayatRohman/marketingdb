@@ -117,6 +117,8 @@ const fetchPaymentStatus = async () => {
       start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
       end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
     });
+    if (selectedMarketing.value) params.append('marketing', String(selectedMarketing.value));
+    if (selectedBrand.value) params.append('brand', String(selectedBrand.value));
     const res = await fetch('/transaksis/analytics/payment-status?' + params.toString());
     if (res.ok) {
       const json = await res.json();
@@ -136,6 +138,8 @@ const fetchSourceAnalytics = async () => {
       start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
       end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
     });
+    if (selectedMarketing.value) params.append('marketing', String(selectedMarketing.value));
+    if (selectedBrand.value) params.append('brand', String(selectedBrand.value));
     const res = await fetch('/transaksis/analytics/sumber?' + params.toString());
     if (res.ok) {
       const json = await res.json();
@@ -155,6 +159,8 @@ const fetchAgeAnalytics = async () => {
       start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
       end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
     });
+    if (selectedMarketing.value) params.append('marketing', String(selectedMarketing.value));
+    if (selectedBrand.value) params.append('brand', String(selectedBrand.value));
     const res = await fetch('/transaksis/analytics/usia?' + params.toString());
     if (res.ok) {
       const json = await res.json();
@@ -174,6 +180,8 @@ const fetchLeadAwalAnalytics = async () => {
       start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
       end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
     });
+    if (selectedMarketing.value) params.append('marketing', String(selectedMarketing.value));
+    if (selectedBrand.value) params.append('brand', String(selectedBrand.value));
     const res = await fetch('/transaksis/analytics/lead-awal?' + params.toString());
     if (res.ok) {
       const json = await res.json();
@@ -193,6 +201,8 @@ const fetchJobAnalytics = async () => {
       start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
       end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
     });
+    if (selectedMarketing.value) params.append('marketing', String(selectedMarketing.value));
+    if (selectedBrand.value) params.append('brand', String(selectedBrand.value));
     const res = await fetch('/transaksis/analytics/pekerjaan?' + params.toString());
     if (res.ok) {
       const json = await res.json();

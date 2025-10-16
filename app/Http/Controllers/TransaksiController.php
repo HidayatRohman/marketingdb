@@ -104,6 +104,18 @@ class TransaksiController extends Controller
         
         $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
 
+        // Apply optional filters for marketing and brand
+        $marketingId = $request->get('marketing');
+        // Support both 'brand_id' and 'brand' param names
+        $brandId = $request->get('brand_id', $request->get('brand'));
+        if ($marketingId) {
+            $query->where('user_id', $marketingId);
+        }
+        if ($brandId) {
+            // Filter by lead awal brand for transaction analytics
+            $query->where('lead_awal_brand_id', $brandId);
+        }
+
         // Group by month and status_pembayaran
         $data = $query->selectRaw('
                 YEAR(tanggal_tf) as year,
@@ -183,6 +195,16 @@ class TransaksiController extends Controller
         
         $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
 
+        // Apply optional filters for marketing and brand
+        $marketingId = $request->get('marketing');
+        $brandId = $request->get('brand_id', $request->get('brand'));
+        if ($marketingId) {
+            $query->where('user_id', $marketingId);
+        }
+        if ($brandId) {
+            $query->where('lead_awal_brand_id', $brandId);
+        }
+
         // Group by sumber string and aggregate counts and total nominal
         $data = $query->selectRaw('
                 COALESCE(NULLIF(TRIM(sumber), ""), "Unknown") as sumber,
@@ -218,6 +240,16 @@ class TransaksiController extends Controller
         $endDate = $request->get('end_date', now()->endOfYear()->format('Y-m-d'));
 
         $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+
+        // Apply optional filters for marketing and brand
+        $marketingId = $request->get('marketing');
+        $brandId = $request->get('brand_id', $request->get('brand'));
+        if ($marketingId) {
+            $query->where('user_id', $marketingId);
+        }
+        if ($brandId) {
+            $query->where('lead_awal_brand_id', $brandId);
+        }
 
         // Join pekerjaan table to get pekerjaan name and aggregate counts & totals
         $data = $query->leftJoin('pekerjaans', 'transaksis.pekerjaan_id', '=', 'pekerjaans.id')
@@ -255,6 +287,16 @@ class TransaksiController extends Controller
         $endDate = $request->get('end_date', now()->endOfYear()->format('Y-m-d'));
 
         $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+
+        // Apply optional filters for marketing and brand
+        $marketingId = $request->get('marketing');
+        $brandId = $request->get('brand_id', $request->get('brand'));
+        if ($marketingId) {
+            $query->where('user_id', $marketingId);
+        }
+        if ($brandId) {
+            $query->where('lead_awal_brand_id', $brandId);
+        }
 
         // Group by age buckets and aggregate counts and total nominal
         $data = $query->selectRaw('
@@ -298,6 +340,16 @@ class TransaksiController extends Controller
         $endDate = $request->get('end_date', now()->endOfYear()->format('Y-m-d'));
 
         $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+
+        // Apply optional filters for marketing and brand
+        $marketingId = $request->get('marketing');
+        $brandId = $request->get('brand_id', $request->get('brand'));
+        if ($marketingId) {
+            $query->where('user_id', $marketingId);
+        }
+        if ($brandId) {
+            $query->where('lead_awal_brand_id', $brandId);
+        }
 
         // Join brands table to get lead awal brand name and aggregate counts & totals
         $data = $query->leftJoin('brands', 'transaksis.lead_awal_brand_id', '=', 'brands.id')
