@@ -680,30 +680,31 @@ onMounted(() => {
                     </div>
                 </CardHeader>
                 <CardContent class="p-4 sm:p-6">
-                    <div class="overflow-x-auto responsive-table">
-                        <Table class="w-full table-auto md:table-fixed">
-                            <TableHeader>
-                                <TableRow class="border-b border-gray-200 dark:border-gray-700">
-                                    <TableHead class="hidden md:table-cell w-16 text-center font-bold text-gray-700 dark:text-gray-300 py-4 px-3">No</TableHead>
-                                    <TableHead class="hidden md:table-cell font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Marketing</TableHead>
-                                    <TableHead class="font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Nama Mitra</TableHead>
-                                    <TableHead class="hidden md:table-cell font-bold text-gray-700 dark:text-gray-300 py-4 px-3">No Whatsapp</TableHead>
-                                    <TableHead class="font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Tgl Transfer</TableHead>
-                                    <TableHead class="hidden md:table-cell font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Tanggal Masuk Lead</TableHead>
-                                    <TableHead class="hidden md:table-cell font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Periode Lead</TableHead>
-                                    <TableHead class="hidden md:table-cell font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Usia</TableHead>
-                                    <TableHead class="hidden md:table-cell font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Sumber</TableHead>
-                                    <TableHead class="hidden md:table-cell font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Kabupaten</TableHead>
-                                    <TableHead class="hidden md:table-cell font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Provinsi</TableHead>
-                                    <TableHead class="hidden md:table-cell font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Paket Brand</TableHead>
-                                    <TableHead class="hidden md:table-cell font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Lead Awal</TableHead>
-                                    <TableHead class="hidden md:table-cell font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Nama Paket</TableHead>
-                                    <TableHead class="font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Status Pembayaran</TableHead>
-                                    <TableHead class="font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Nominal Masuk</TableHead>
-                                    <TableHead class="hidden md:table-cell font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Harga Paket</TableHead>
-                                    <TableHead class="w-auto md:w-32 text-center font-bold text-gray-700 dark:text-gray-300 py-4 px-3">Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
+                    <div class="relative overflow-hidden">
+                        <div class="overflow-x-auto responsive-table">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow class="border-b border-border hover:bg-transparent">
+                                        <TableHead class="w-[80px] py-3 text-center font-semibold text-foreground">No</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Marketing</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Nama Mitra</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">No Whatsapp</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Tgl Transfer</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Tanggal Masuk Lead</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Periode Lead</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Usia</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Sumber</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Kabupaten</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Provinsi</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Paket Brand</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Lead Awal</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Nama Paket</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Status Pembayaran</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Nominal Masuk</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Harga Paket</TableHead>
+                                        <TableHead class="w-[120px] py-3 text-center font-semibold text-foreground">Aksi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
                             <TableBody>
                                 <TableRow v-if="transaksiData.data.length === 0" class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                                     <TableCell colspan="18" class="py-16 text-center">
@@ -721,11 +722,11 @@ onMounted(() => {
                                 <TableRow v-for="(transaksi, index) in transaksiData.data" :key="transaksi.id" class="border-b border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50">
                                     
                                     <!-- No -->
-                                     <TableCell class="hidden md:table-cell w-16 text-center font-medium text-gray-700 dark:text-gray-300 py-4 px-3">
+                                     <TableCell class="w-[80px] text-center py-3 px-3 font-medium text-foreground">
                                          {{ (transaksiData.current_page - 1) * transaksiData.per_page + index + 1 }}
                                      </TableCell>
                                     <!-- Marketing -->
-                                     <TableCell class="hidden md:table-cell relative font-semibold text-gray-800 dark:text-gray-200 py-4 px-3">
+                                     <TableCell class="relative py-3 px-3 font-semibold text-foreground">
                                          <div class="flex items-center space-x-3">
                                              <div class="relative h-10 w-10 rounded-full bg-gradient-to-br from-emerald-400 via-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold shadow-lg transition-all duration-200 group-hover:scale-110 group-hover:shadow-xl group-hover:rotate-12">
                                                  <span class="relative z-10">{{ (transaksi.user?.name || 'U').charAt(0).toUpperCase() }}</span>
@@ -738,11 +739,11 @@ onMounted(() => {
                                          </div>
                                      </TableCell>
                                     <!-- Nama Mitra -->
-                                    <TableCell class="font-medium text-gray-700 dark:text-gray-300 py-4 px-3">
+                                    <TableCell class="py-3 px-3 font-medium text-foreground">
                                         <span class="text-sm">{{ transaksi.nama_mitra || '-' }}</span>
                                     </TableCell>
                                     <!-- No Whatsapp -->
-                                    <TableCell class="hidden md:table-cell font-medium text-gray-700 dark:text-gray-300 py-4 px-3">
+                                    <TableCell class="py-3 px-3 font-medium text-foreground">
                                         <div class="flex items-center gap-2">
                                             <Phone class="h-4 w-4 text-muted-foreground" />
                                             <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
@@ -751,49 +752,49 @@ onMounted(() => {
                                         </div>
                                     </TableCell>
                                     <!-- Tgl Transfer -->
-                                    <TableCell class="font-medium text-gray-700 dark:text-gray-300 py-4 px-3">
+                                    <TableCell class="py-3 px-3 font-medium text-foreground">
                                         <span class="text-sm">{{ formatDate(transaksi.tanggal_tf) }}</span>
                                     </TableCell>
                                     <!-- Tanggal Masuk Lead -->
-                                    <TableCell class="hidden md:table-cell font-medium text-gray-700 dark:text-gray-300 py-4 px-3">
+                                    <TableCell class="py-3 px-3 font-medium text-foreground">
                                         <span class="text-sm">{{ formatDate(transaksi.tanggal_lead_masuk) || '-' }}</span>
                                     </TableCell>
                                     <!-- Periode Lead -->
-                                    <TableCell class="hidden md:table-cell font-medium text-gray-700 dark:text-gray-300 py-4 px-3">
+                                    <TableCell class="py-3 px-3 font-medium text-foreground">
                                         <span class="text-sm">{{ transaksi.periode_lead || '-' }}</span>
                                     </TableCell>
                                     <!-- Usia -->
-                                    <TableCell class="hidden md:table-cell font-medium text-gray-700 dark:text-gray-300 py-4 px-3">
+                                    <TableCell class="py-3 px-3 font-medium text-foreground">
                                         <span class="text-sm">{{ transaksi.usia || '-' }}</span>
                                     </TableCell>
                                     <!-- Sumber -->
-                                    <TableCell class="hidden md:table-cell font-medium text-gray-700 dark:text-gray-300 py-4 px-3">
+                                    <TableCell class="py-3 px-3 font-medium text-foreground">
                                         <span class="text-sm">{{ (transaksi.sumber_ref?.nama || transaksi.sumber) || '-' }}</span>
                                     </TableCell>
                                     <!-- Kabupaten -->
-                                    <TableCell class="hidden md:table-cell font-medium text-gray-700 dark:text-gray-300 py-4 px-3">
+                                    <TableCell class="py-3 px-3 font-medium text-foreground">
                                         <span class="text-sm">{{ transaksi.kabupaten || '-' }}</span>
                                     </TableCell>
                                     <!-- Provinsi -->
-                                    <TableCell class="hidden md:table-cell font-medium text-gray-700 dark:text-gray-300 py-4 px-3">
+                                    <TableCell class="py-3 px-3 font-medium text-foreground">
                                         <span class="text-sm">{{ transaksi.provinsi || '-' }}</span>
                                     </TableCell>
                                     <!-- Paket Brand -->
-                                    <TableCell class="hidden md:table-cell font-medium text-gray-700 dark:text-gray-300 py-4 px-3">
+                                    <TableCell class="py-3 px-3 font-medium text-foreground">
                                         <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                                             {{ transaksi.paket_brand?.nama || '-' }}
                                         </span>
                                     </TableCell>
                                     <!-- Lead Awal -->
-                                    <TableCell class="hidden md:table-cell font-medium text-gray-700 dark:text-gray-300 py-4 px-3">
+                                    <TableCell class="py-3 px-3 font-medium text-foreground">
                                         <span class="text-sm">{{ transaksi.lead_awal_brand?.nama || '-' }}</span>
                                     </TableCell>
                                     <!-- Nama Paket -->
-                                    <TableCell class="hidden md:table-cell font-medium text-gray-700 dark:text-gray-300 py-4 px-3">
+                                    <TableCell class="py-3 px-3 font-medium text-foreground">
                                         <span class="text-sm font-medium">{{ transaksi.nama_paket || '-' }}</span>
                                     </TableCell>
                                     <!-- Status Pembayaran -->
-                                    <TableCell class="py-4 px-3">
+                                    <TableCell class="py-3 px-3">
                                         <Badge
                                             :class="[
                                                 'px-4 py-2 text-xs font-bold rounded-xl shadow-lg transition-all duration-200 hover:scale-105',
@@ -816,7 +817,7 @@ onMounted(() => {
                                         </Badge>
                                     </TableCell>
                                     <!-- Nominal Masuk -->
-                                    <TableCell class="py-4 px-3">
+                                    <TableCell class="py-3 px-3">
                                         <div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-100 via-green-50 to-emerald-100 px-4 py-3 text-right shadow-lg transition-all duration-300 hover:shadow-xl dark:from-emerald-900/30 dark:via-green-900/20 dark:to-emerald-900/30">
                                             <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
                                             <span class="relative text-sm font-bold text-emerald-700 dark:text-emerald-300">
@@ -825,7 +826,7 @@ onMounted(() => {
                                         </div>
                                     </TableCell>
                                     <!-- Harga Paket -->
-                                    <TableCell class="hidden md:table-cell py-4 px-3">
+                                    <TableCell class="py-3 px-3">
                                         <div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-100 via-indigo-50 to-blue-100 px-4 py-3 text-right shadow-lg transition-all duration-300 hover:shadow-xl dark:from-blue-900/30 dark:via-indigo-900/20 dark:to-blue-900/30">
                                             <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
                                             <span class="relative text-sm font-bold text-blue-700 dark:text-blue-300">
@@ -833,7 +834,7 @@ onMounted(() => {
                                             </span>
                                         </div>
                                     </TableCell>
-                                    <TableCell class="w-auto md:w-32 text-center py-4 px-3">
+                                    <TableCell class="w-[120px] text-center py-3 px-3">
                                         <div class="flex justify-center flex-wrap gap-2 sm:flex-nowrap">
                                             <Button
                                                 variant="ghost"
@@ -866,6 +867,7 @@ onMounted(() => {
                                 </TableRow>
                             </TableBody>
                         </Table>
+                        </div>
                     </div>
 
                     <!-- Enhanced Pagination -->
@@ -1003,12 +1005,6 @@ onMounted(() => {
     button {
         min-height: 44px;
         min-width: 44px;
-    }
-    /* Allow wrapping to prevent horizontal overflow on small screens */
-    .responsive-table :deep(th),
-    .responsive-table :deep(td) {
-        white-space: normal;
-        word-break: break-word;
     }
 }
 
