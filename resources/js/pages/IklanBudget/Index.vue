@@ -325,8 +325,8 @@
 
             <!-- Table Card -->
             <Card class="border-0 shadow-md">
-                <CardHeader class="pb-2">
-                    <CardTitle class="text-lg font-semibold">Data Budget Iklan</CardTitle>
+                <CardHeader class="px-4 py-3 pb-2 bg-gradient-to-r from-teal-50 via-cyan-50 to-blue-50 dark:from-teal-900 dark:via-cyan-900 dark:to-blue-900 rounded-t-lg border-b border-teal-100 dark:border-teal-800">
+                    <CardTitle class="text-lg font-semibold text-teal-800 dark:text-teal-100">Data Budget Iklan</CardTitle>
                 </CardHeader>
                 <CardContent class="p-0">
                     <div class="relative overflow-hidden">
