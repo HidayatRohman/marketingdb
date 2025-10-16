@@ -593,12 +593,7 @@ onMounted(() => {
             </div>
 
             <!-- Hourly Leads Analysis Chart -->
-            <HourlyLeadsChart
-                :data="chartData"
-                :loading="false"
-                :selected-date="periodeStart === periodeEnd ? periodeStart : undefined"
-                :empty-message="hasActiveFilters ? 'Tidak ada data lead untuk filter yang dipilih.' : 'Belum ada data lead yang tersedia.'"
-            />
+            
 
             <!-- Search and Filter Bar -->
             <Card class="border-0 shadow-md">
@@ -1062,6 +1057,14 @@ onMounted(() => {
                     </div>
                 </CardContent>
             </Card>
+
+            <!-- Hourly Leads Analysis Chart (dipindah ke bawah Daftar Mitra) -->
+            <HourlyLeadsChart
+                :data="chartData"
+                :loading="false"
+                :selected-date="periodeStart === periodeEnd ? periodeStart : undefined"
+                :empty-message="hasActiveFilters ? 'Tidak ada data lead untuk filter yang dipilih.' : 'Belum ada data lead yang tersedia.'"
+            />
         </div>
 
         <!-- Modals -->
