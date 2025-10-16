@@ -612,28 +612,26 @@ onMounted(() => {
                                             </select>
                                         </div>
 
-                                        <!-- Tanggal Mulai Filter -->
-                                        <div class="space-y-2">
+                                        <!-- Periode Filter (rapikan seperti di Iklan Budgets) -->
+                                        <div class="space-y-2 sm:col-span-2">
                                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                Tanggal Mulai
+                                                Periode
                                             </label>
-                                            <DatePicker 
-                                                v-model="periodeStart" 
-                                                placeholder="Pilih tanggal mulai"
-                                                class="w-full h-10 px-3 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-400 dark:bg-gray-800"
-                                            />
-                                        </div>
-
-                                        <!-- Tanggal Akhir Filter -->
-                                        <div class="space-y-2">
-                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                Tanggal Akhir
-                                            </label>
-                                            <DatePicker 
-                                                v-model="periodeEnd" 
-                                                placeholder="Pilih tanggal akhir"
-                                                class="w-full h-10 px-3 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-400 dark:bg-gray-800"
-                                            />
+                                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                                <DatePicker
+                                                    v-model="periodeStart"
+                                                    placeholder="Tanggal Mulai"
+                                                    class="w-full sm:w-48"
+                                                    :max-date="periodeEnd || undefined"
+                                                />
+                                                <span class="text-sm text-muted-foreground hidden sm:inline">s/d</span>
+                                                <DatePicker
+                                                    v-model="periodeEnd"
+                                                    placeholder="Tanggal Akhir"
+                                                    class="w-full sm:w-48"
+                                                    :min-date="periodeStart || undefined"
+                                                />
+                                            </div>
                                         </div>
 
                                         <!-- Per Page Filter -->
