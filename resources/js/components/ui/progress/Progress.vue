@@ -6,11 +6,19 @@ interface Props {
   value?: number
   max?: number
   class?: string
+  trackClass?: string
+  trackStyle?: Record<string, string | number>
+  barClass?: string
+  barStyle?: Record<string, string | number>
 }
 
 const props = withDefaults(defineProps<Props>(), {
   value: 0,
   max: 100,
+  trackClass: '',
+  trackStyle: undefined,
+  barClass: '',
+  barStyle: undefined,
 })
 
 const percentage = computed(() => {
@@ -20,11 +28,12 @@ const percentage = computed(() => {
 
 <template>
   <div
-    :class="cn('relative h-2 w-full overflow-hidden rounded-full bg-secondary', props.class)"
+    :class="cn('relative h-2 w-full overflow-hidden rounded-full bg-secondary', props.class, props.trackClass)"
+    :style="props.trackStyle"
   >
     <div
-      class="h-full w-full flex-1 bg-primary transition-all duration-300 ease-in-out"
-      :style="{ transform: `translateX(-${100 - percentage}%)` }"
+      :class="cn('h-full w-full flex-1 transition-all duration-300 ease-in-out', props.barClass || 'bg-primary')"
+      :style="Object.assign({ transform: `translateX(-${100 - percentage}%)` }, props.barStyle || {})"
     />
   </div>
 </template>

@@ -7,7 +7,7 @@
             Analisa Berdasarkan Lead Awal Iklan
           </CardTitle>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Distribusi jumlah transaksi per lead awal iklan pada periode terpilih
+            {{ subtitleText }}
           </p>
         </div>
 
@@ -39,7 +39,7 @@
       <div v-else-if="processed.length > 0" class="space-y-4">
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <!-- Grafik Lead Awal (Progress Bars) -->
-          <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+          <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gradient-to-br from-indigo-50 to-pink-50 dark:from-indigo-900/20 dark:to-pink-900/20">
             <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3 flex items-center gap-2">
               <TrendingUp class="h-4 w-4" />
               Grafik Lead Awal
@@ -51,14 +51,24 @@
                 class="space-y-1"
               >
                 <div class="flex items-center justify-between">
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {{ item.lead_awal || 'Unknown' }}
-                  </span>
+                  <div class="flex items-center gap-2">
+                    <span class="inline-flex h-2.5 w-2.5 items-center justify-center rounded-full ring-2 ring-white dark:ring-gray-900"
+                      :style="{ backgroundColor: colorFor(item.lead_awal, idx) }"
+                    ></span>
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {{ item.lead_awal || 'Unknown' }}
+                    </span>
+                  </div>
                   <span class="text-sm text-gray-500 dark:text-gray-400">
                     {{ item.count }} ({{ item.percentage.toFixed(1) }}%)
                   </span>
                 </div>
-                <Progress :value="item.percentage" class="h-2" />
+                <Progress
+                  :value="item.percentage"
+                  class="h-2 rounded-lg transition-all duration-200 hover:h-3"
+                  :trackClass="'bg-gray-100 dark:bg-gray-800'"
+                  :barStyle="{ background: gradientFor(item.lead_awal, idx) }"
+                />
               </div>
             </div>
           </div>
@@ -148,10 +158,14 @@ interface LeadAwalAnalyticsData {
 interface Props {
   data?: LeadAwalAnalyticsData[];
   loading?: boolean;
+  startDate?: string;
+  endDate?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
+  startDate: undefined,
+  endDate: undefined,
 });
 
 defineEmits<{ refresh: [] }>();
@@ -188,4 +202,57 @@ const colorFor = (label: string | undefined, index: number) => {
   const hue = hues[index % hues.length];
   return `hsl(${hue}, 70%, 55%)`;
 };
+
+// Utilities to create pleasing gradients based on a base color
+const hexToRgb = (hex: string) => {
+  const normalized = hex.replace('#', '');
+  const bigint = parseInt(normalized.length === 3 ? normalized.split('').map((c) => c + c).join('') : normalized, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return { r, g, b };
+};
+
+const clamp = (n: number) => Math.max(0, Math.min(255, Math.round(n)));
+
+const lightenHex = (hex: string, amount: number) => {
+  // amount: 0..1, blend with white
+  const { r, g, b } = hexToRgb(hex);
+  const nr = clamp(r + (255 - r) * amount);
+  const ng = clamp(g + (255 - g) * amount);
+  const nb = clamp(b + (255 - b) * amount);
+  return `rgb(${nr}, ${ng}, ${nb})`;
+};
+
+const gradientFor = (label: string | undefined, index: number) => {
+  const base = colorFor(label, index);
+  // If base is hsl(...), CSS can use it directly; for hex, create a lightened start
+  const start = base.startsWith('#') ? lightenHex(base, 0.25) : base;
+  const end = base;
+  return `linear-gradient(90deg, ${start}, ${end})`;
+};
+
+// Format and compute dynamic subtitle based on selected period
+const formatDate = (value?: string) => {
+  if (!value) return undefined;
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return value;
+  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
+const subtitleText = computed(() => {
+  const start = formatDate(props.startDate);
+  const end = formatDate(props.endDate);
+
+  let periodLabel = 'periode terpilih';
+  if (start && end) {
+    periodLabel = start === end ? `tanggal ${start}` : `periode ${start} – ${end}`;
+  } else if (start && !end) {
+    periodLabel = `periode mulai ${start}`;
+  } else if (!start && end) {
+    periodLabel = `periode hingga ${end}`;
+  }
+
+  return `Distribusi jumlah transaksi per lead awal iklan pada ${periodLabel}`;
+});
 </script>

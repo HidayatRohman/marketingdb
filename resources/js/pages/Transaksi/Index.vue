@@ -962,6 +962,8 @@ onMounted(() => {
             <LeadAwalAnalyticsChart
                 :data="leadAwalChartData"
                 :loading="leadAwalChartLoading"
+                :start-date="periodeStart || undefined"
+                :end-date="periodeEnd || undefined"
                 @refresh="refreshLeadAwalChart"
             />
         </div>
