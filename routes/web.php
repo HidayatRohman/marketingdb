@@ -3,6 +3,7 @@
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LabelController;
+use App\Http\Controllers\PekerjaanController;
 use App\Http\Controllers\MitraController;
 use App\Http\Controllers\SumberController;
 use App\Http\Controllers\TaskManagementController;
@@ -135,6 +136,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::middleware('role.access:destroy')->group(function () {
         Route::delete('sumbers/{sumber}', [SumberController::class, 'destroy'])->name('sumbers.destroy');
+    });
+
+    // Pekerjaan Management - Role-based access
+    Route::middleware('role.access:view')->group(function () {
+        Route::get('pekerjaans', [PekerjaanController::class, 'index'])->name('pekerjaans.index');
+        Route::get('pekerjaans/{pekerjaan}', [PekerjaanController::class, 'show'])->name('pekerjaans.show');
+    });
+    
+    Route::middleware('role.access:create')->group(function () {
+        Route::get('pekerjaans/create', [PekerjaanController::class, 'create'])->name('pekerjaans.create');
+        Route::post('pekerjaans', [PekerjaanController::class, 'store'])->name('pekerjaans.store');
+    });
+    
+    Route::middleware('role.access:edit')->group(function () {
+        Route::get('pekerjaans/{pekerjaan}/edit', [PekerjaanController::class, 'edit'])->name('pekerjaans.edit');
+        Route::put('pekerjaans/{pekerjaan}', [PekerjaanController::class, 'update'])->name('pekerjaans.update');
+    });
+    
+    Route::middleware('role.access:destroy')->group(function () {
+        Route::delete('pekerjaans/{pekerjaan}', [PekerjaanController::class, 'destroy'])->name('pekerjaans.destroy');
     });
 
     // Transaksi Management - Role-based access with data filtering

@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             LabelSeeder::class,
             BrandSeeder::class,
+            PekerjaanSeeder::class,
         ]);
 
         // 3. Main business data (depends on users, brands, labels)
@@ -72,6 +73,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('  • Users: ' . \App\Models\User::count() . ' records');
         $this->command->info('  • Brands: ' . \App\Models\Brand::count() . ' records');
         $this->command->info('  • Labels: ' . \App\Models\Label::count() . ' records');
+        $this->command->info('  • Pekerjaans: ' . \App\Models\Pekerjaan::count() . ' records');
         $this->command->info('  • Mitras: ' . \App\Models\Mitra::count() . ' records');
         $this->command->info('  • TodoLists: ' . \App\Models\TodoList::count() . ' records');
         $this->command->line('');
