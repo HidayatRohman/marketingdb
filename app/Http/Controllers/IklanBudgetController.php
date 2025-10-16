@@ -215,4 +215,47 @@ class IklanBudgetController extends Controller
         return redirect()->route('iklan-budgets.index')
             ->with('success', "Berhasil membuat {$created} data budget untuk bulan {$month}/{$year}.");
     }
+
+    /**
+     * Analytics: Get monthly spent totals for a given year and optional brand
+     */
+    public function monthlySpent(Request $request)
+    {
+        $year = (int) ($request->get('year', now()->year));
+        $brandId = $request->get('brand_id');
+
+        $query = IklanBudget::query()->whereYear('tanggal', $year);
+
+        if (!empty($brandId)) {
+            $query->where('brand_id', $brandId);
+        }
+
+        // Aggregate spent per month
+        $rows = $query->selectRaw('MONTH(tanggal) as month, COALESCE(SUM(spent_amount), 0) as total_spent')
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        // Prepare a full 12-month series with zero filling
+        $monthLabels = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
+            7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
+        $data = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $found = $rows->firstWhere('month', $m);
+            $data[] = [
+                'month' => $m,
+                'label' => $monthLabels[$m],
+                'spent' => (float) ($found->total_spent ?? 0),
+            ];
+        }
+
+        return response()->json([
+            'year' => $year,
+            'brand_id' => $brandId,
+            'data' => $data,
+        ]);
+    }
 }

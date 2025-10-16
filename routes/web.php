@@ -183,6 +183,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('iklan-budgets')->name('iklan-budgets.')->group(function () {
         Route::middleware('role.access:view')->group(function () {
             Route::get('/', [\App\Http\Controllers\IklanBudgetController::class, 'index'])->name('index');
+            Route::get('/analytics/monthly-spent', [\App\Http\Controllers\IklanBudgetController::class, 'monthlySpent'])->name('analytics.monthly-spent');
         });
         
         Route::middleware('role.access:create')->group(function () {

@@ -96,43 +96,43 @@
 
             <!-- Summary Cards -->
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-7">
-                <Card class="border-0 shadow-md">
+                <Card class="border-0 shadow-md bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800">
                     <CardContent class="p-4 text-center">
                         <div class="text-xs text-muted-foreground uppercase tracking-wide">Total Spent</div>
                         <div class="text-lg font-bold text-red-600">{{ formatCurrency(totals?.total_spent || 0) }}</div>
                     </CardContent>
                 </Card>
-                <Card class="border-0 shadow-md">
+                <Card class="border-0 shadow-md bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900 dark:to-red-800">
                     <CardContent class="p-4 text-center">
                         <div class="text-xs text-muted-foreground uppercase tracking-wide">Spent+Tax</div>
                         <div class="text-lg font-bold text-red-700">{{ formatCurrency(totals?.total_spent_plus_tax || 0) }}</div>
                     </CardContent>
                 </Card>
-                <Card class="border-0 shadow-md">
+                <Card class="border-0 shadow-md bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800">
                     <CardContent class="p-4 text-center">
                         <div class="text-xs text-muted-foreground uppercase tracking-wide">Total Leads</div>
                         <div class="text-lg font-bold text-green-600">{{ totals?.total_leads || 0 }}</div>
                     </CardContent>
                 </Card>
-                <Card class="border-0 shadow-md">
+                <Card class="border-0 shadow-md bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800">
                     <CardContent class="p-4 text-center">
                         <div class="text-xs text-muted-foreground uppercase tracking-wide">Avg CPL</div>
                         <div class="text-lg font-bold text-orange-600">{{ formatCurrency(totals?.avg_cost_per_lead || 0) }}</div>
                     </CardContent>
                 </Card>
-                <Card class="border-0 shadow-md">
+                <Card class="border-0 shadow-md bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800">
                     <CardContent class="p-4 text-center">
                         <div class="text-xs text-muted-foreground uppercase tracking-wide">Total Closing</div>
                         <div class="text-lg font-bold text-purple-600">{{ totals?.total_closing || 0 }}</div>
                     </CardContent>
                 </Card>
-                <Card class="border-0 shadow-md">
+                <Card class="border-0 shadow-md bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900 dark:to-emerald-800">
                     <CardContent class="p-4 text-center">
                         <div class="text-xs text-muted-foreground uppercase tracking-wide">Total Omset</div>
                         <div class="text-lg font-bold text-green-700">{{ formatCurrency(totals?.total_omset || 0) }}</div>
                     </CardContent>
                 </Card>
-                <Card class="border-0 shadow-md">
+                <Card class="border-0 shadow-md bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800">
                     <CardContent class="p-4 text-center">
                         <div class="text-xs text-muted-foreground uppercase tracking-wide">Avg ROAS</div>
                         <div class="text-lg font-bold text-blue-600">{{ Number(totals?.avg_roas || 0).toFixed(2) }}x</div>
@@ -142,8 +142,8 @@
 
             <!-- Report Budget Vs Omset -->
             <Card class="mb-6 border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:from-gray-800/30 dark:to-gray-700/30 shadow-lg">
-                <CardHeader>
-                    <CardTitle class="flex items-center gap-2">
+                <CardHeader class="px-4 py-3 bg-gradient-to-r from-indigo-50 via-sky-50 to-blue-50 dark:from-indigo-900 dark:via-sky-900 dark:to-blue-900 rounded-t-lg border-b border-indigo-100 dark:border-indigo-800">
+                    <CardTitle class="flex items-center gap-2 text-indigo-800 dark:text-indigo-100">
                         <BarChart3 class="h-6 w-6" />
                         Report Budget Vs Omset
                     </CardTitle>
@@ -323,6 +323,41 @@
                 </CardContent>
             </Card>
 
+            <!-- Grafik Spent Bulanan -->
+            <Card class="border-0 shadow-md">
+                <CardHeader class="px-4 py-3 pb-2 bg-gradient-to-r from-indigo-50 via-sky-50 to-blue-50 dark:from-indigo-900 dark:via-sky-900 dark:to-blue-900 rounded-t-lg border-b border-indigo-100 dark:border-indigo-800">
+                    <CardTitle class="flex items-center gap-2 text-indigo-800 dark:text-indigo-100">
+                        <BarChart3 class="h-6 w-6" />
+                        Grafik Spent Bulanan
+                    </CardTitle>
+                    <div class="mt-2 flex items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <label for="spent-year" class="text-sm font-medium text-gray-700 dark:text-gray-300">Tahun:</label>
+                            <select 
+                                id="spent-year" 
+                                v-model="spentChartYear" 
+                                @change="fetchMonthlySpentData"
+                                class="w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option v-for="yr in [2023, 2024, 2025, 2026]" :key="yr" :value="yr">{{ yr }}</option>
+                            </select>
+                        </div>
+                        <div class="text-sm text-gray-600 dark:text-gray-300">
+                            Brand: <span class="font-semibold">{{ selectedBrandName || 'Semua Brand' }}</span>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent class="p-4">
+                    <MonthlySpentChart 
+                        :data="monthlySpentData" 
+                        :loading="monthlySpentLoading"
+                        :year="spentChartYear"
+                        :brand-name="selectedBrandName"
+                        @refresh="fetchMonthlySpentData"
+                    />
+                </CardContent>
+            </Card>
+
             <!-- Table Card -->
             <Card class="border-0 shadow-md">
                 <CardHeader class="px-4 py-3 pb-2 bg-gradient-to-r from-teal-50 via-cyan-50 to-blue-50 dark:from-teal-900 dark:via-cyan-900 dark:to-blue-900 rounded-t-lg border-b border-teal-100 dark:border-teal-800">
@@ -475,7 +510,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { router, Head } from '@inertiajs/vue3'
 import { index } from '@/routes/iklan-budgets'
 import AppLayout from '@/layouts/AppLayout.vue'
@@ -490,6 +525,7 @@ import TableCell from '@/components/ui/table/TableCell.vue'
 import TableHead from '@/components/ui/table/TableHead.vue'
 import TableHeader from '@/components/ui/table/TableHeader.vue'
 import TableRow from '@/components/ui/table/TableRow.vue'
+import MonthlySpentChart from '@/components/MonthlySpentChart.vue'
 import { TrendingUp, Plus, Filter, Search, Edit, Trash2, RotateCcw, BarChart3, Target, Users, Award, DollarSign } from 'lucide-vue-next'
 
 interface IklanBudget {
@@ -712,5 +748,48 @@ const filterByMonthYear = () => {
   // This function is called when month or year filter changes
   // The computed property will automatically recalculate
 }
+
+// ============================
+// Monthly Spent Chart (Analytics)
+// ============================
+const spentChartYear = ref<number>(new Date().getFullYear())
+const monthlySpentLoading = ref(false)
+const monthlySpentData = ref<Array<{ month: number; label: string; spent: number }>>([])
+
+const selectedBrandName = computed(() => {
+  const id = filters.brand_id
+  if (!id) return ''
+  const b = props.brands.find(br => String(br.id) === String(id))
+  return b ? b.nama : ''
+})
+
+const fetchMonthlySpentData = async () => {
+  monthlySpentLoading.value = true
+  try {
+    const params = new URLSearchParams({
+      year: String(spentChartYear.value),
+    })
+    if (filters.brand_id) {
+      params.append('brand_id', String(filters.brand_id))
+    }
+    const response = await fetch(`/iklan-budgets/analytics/monthly-spent?${params.toString()}`)
+    if (response.ok) {
+      const result = await response.json()
+      monthlySpentData.value = result.data || []
+    }
+  } catch (err) {
+    console.error('Gagal memuat data grafik spent bulanan:', err)
+  } finally {
+    monthlySpentLoading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchMonthlySpentData()
+})
+
+watch([() => filters.brand_id, spentChartYear], () => {
+  fetchMonthlySpentData()
+})
 
 </script>
