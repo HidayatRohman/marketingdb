@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import DatePicker from '@/components/ui/datepicker/DatePicker.vue';
 import { useForm } from '@inertiajs/vue3';
 import { Building2, Calendar, FileText, Loader2, MapPin, MessageSquare, Package, Phone, Tag, User } from 'lucide-vue-next';
-import { watch } from 'vue';
+import { watch, computed } from 'vue';
 
 interface Brand {
     id: number;
@@ -257,28 +257,33 @@ const chatLabels = {
     followup_2: 'Follow Up 2',
     followup_3: 'Follow Up 3',
 };
+
+const selectedBrand = computed(() => {
+    if (!form.brand_id) return null;
+    return props.brands.find((b) => b.id === form.brand_id) || null;
+});
 </script>
 
 <template>
     <Dialog :open="open" @update:open="(value) => !value && $emit('close')">
-        <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
-            <DialogHeader>
-                <DialogTitle class="flex items-center gap-2 text-xl">
+        <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[720px] rounded-xl shadow-xl border-0">
+            <DialogHeader class="px-4 py-3 bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-900 dark:via-teal-900 dark:to-cyan-900 rounded-t-xl border-b border-teal-100 dark:border-teal-800">
+                <DialogTitle class="flex items-center gap-2 text-xl text-teal-800 dark:text-teal-100">
                     <Building2 class="h-5 w-5" />
                     <span v-if="mode === 'create'">Tambah Mitra Baru</span>
                     <span v-else-if="mode === 'edit'">Edit Mitra</span>
                     <span v-else>Detail Mitra</span>
                 </DialogTitle>
-                <DialogDescription>
+                <DialogDescription class="text-teal-700 dark:text-teal-100/80">
                     <span v-if="mode === 'create'">Tambahkan mitra bisnis baru ke dalam sistem.</span>
                     <span v-else-if="mode === 'edit'">Perbarui informasi mitra yang sudah ada.</span>
                     <span v-else>Informasi lengkap mitra bisnis.</span>
                 </DialogDescription>
             </DialogHeader>
 
-            <form @submit.prevent="submit" class="space-y-6">
+            <form @submit.prevent="submit" class="space-y-6 px-4 pb-4 pt-2">
                 <!-- Informasi Dasar -->
-                <div class="space-y-4">
+                <div class="space-y-4 rounded-xl border bg-muted/30 p-4">
                     <h3 class="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                         <Building2 class="h-4 w-4" />
                         Informasi Dasar
@@ -290,13 +295,16 @@ const chatLabels = {
                                 <Building2 class="h-3 w-3" />
                                 Nama Mitra *
                             </Label>
-                            <Input
-                                id="nama"
-                                v-model="form.nama"
-                                :disabled="mode === 'view'"
-                                placeholder="Masukkan nama mitra"
-                                :class="{ 'border-destructive': form.errors.nama }"
-                            />
+                            <div class="relative">
+                                <Building2 class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    id="nama"
+                                    v-model="form.nama"
+                                    :disabled="mode === 'view'"
+                                    placeholder="Masukkan nama mitra"
+                                    :class="[{ 'border-destructive': form.errors.nama }, 'pl-9']"
+                                />
+                            </div>
                             <p v-if="form.errors.nama" class="text-sm text-destructive">
                                 {{ form.errors.nama }}
                             </p>
@@ -323,17 +331,19 @@ const chatLabels = {
                                     {{ form.no_telp }}
                                 </button>
                             </div>
-                            <Input
-                                v-else
-                                id="no_telp"
-                                v-model="form.no_telp"
-                                placeholder="Contoh: 08123456789"
-                                :maxlength="15"
-                                inputmode="numeric"
-                                pattern="\\d*"
-                                @input="(e) => { const v = (e.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 15); form.no_telp = v; }"
-                                :class="{ 'border-destructive': form.errors.no_telp }"
-                            />
+                            <div v-else class="relative">
+                                <Phone class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    id="no_telp"
+                                    v-model="form.no_telp"
+                                    placeholder="Contoh: 08123456789"
+                                    :maxlength="15"
+                                    inputmode="numeric"
+                                    pattern="\\d*"
+                                    @input="(e) => { const v = (e.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 15); form.no_telp = v; }"
+                                    :class="[{ 'border-destructive': form.errors.no_telp }, 'pl-9']"
+                                />
+                            </div>
                             <p v-if="form.errors.no_telp" class="text-sm text-destructive">
                                 {{ form.errors.no_telp }}
                             </p>
@@ -385,6 +395,13 @@ const chatLabels = {
                         <p v-if="form.errors.brand_id" class="text-sm text-destructive">
                             {{ form.errors.brand_id }}
                         </p>
+                        <div v-if="selectedBrand" class="mt-2 flex items-center gap-3 rounded-md border bg-muted/30 p-2">
+                            <img v-if="selectedBrand.logo_url" :src="selectedBrand.logo_url" alt="Logo" class="h-8 w-8 rounded" />
+                            <div class="text-sm">
+                                <p class="font-medium">{{ selectedBrand.nama }}</p>
+                                <p class="text-muted-foreground">Brand terpilih</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="space-y-2">
@@ -456,7 +473,7 @@ const chatLabels = {
                 </div>
 
                 <!-- Lokasi -->
-                <div class="space-y-4">
+                <div class="space-y-4 rounded-xl border bg-muted/30 p-4">
                     <h3 class="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                         <MapPin class="h-4 w-4" />
                         Lokasi
@@ -468,13 +485,16 @@ const chatLabels = {
                                 <MapPin class="h-3 w-3" />
                                 Kota
                             </Label>
-                            <Input
-                                id="kota"
-                                v-model="form.kota"
-                                :disabled="mode === 'view'"
-                                placeholder="Masukkan nama kota (opsional)"
-                                :class="{ 'border-destructive': form.errors.kota }"
-                            />
+                            <div class="relative">
+                                <MapPin class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    id="kota"
+                                    v-model="form.kota"
+                                    :disabled="mode === 'view'"
+                                    placeholder="Masukkan nama kota (opsional)"
+                                    :class="[{ 'border-destructive': form.errors.kota }, 'pl-9']"
+                                />
+                            </div>
                             <p v-if="form.errors.kota" class="text-sm text-destructive">
                                 {{ form.errors.kota }}
                             </p>
@@ -509,7 +529,7 @@ const chatLabels = {
                 </div>
 
                 <!-- Label & Komentar -->
-                <div class="space-y-4">
+                <div class="space-y-4 rounded-xl border bg-muted/30 p-4">
                     <h3 class="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                         <Tag class="h-4 w-4" />
                         Informasi Tambahan
@@ -542,14 +562,17 @@ const chatLabels = {
                             <FileText class="h-3 w-3" />
                             Komentar (Opsional)
                         </Label>
-                        <Textarea
-                            id="komentar"
-                            v-model="form.komentar"
-                            :disabled="mode === 'view'"
-                            placeholder="Tambahkan catatan atau komentar..."
-                            :rows="3"
-                            :class="{ 'border-destructive': form.errors.komentar }"
-                        />
+                        <div class="relative">
+                            <FileText class="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                            <Textarea
+                                id="komentar"
+                                v-model="form.komentar"
+                                :disabled="mode === 'view'"
+                                placeholder="Tambahkan catatan atau komentar..."
+                                :rows="3"
+                                :class="[{ 'border-destructive': form.errors.komentar }, 'pl-9']"
+                            />
+                        </div>
                         <p v-if="form.errors.komentar" class="text-sm text-destructive">
                             {{ form.errors.komentar }}
                         </p>
@@ -577,9 +600,9 @@ const chatLabels = {
                 </div>
             </form>
 
-            <DialogFooter v-if="mode !== 'view'" class="mt-6">
-                <Button type="button" variant="outline" @click="$emit('close')" :disabled="form.processing"> Batal </Button>
-                <Button @click="submit" :disabled="form.processing" class="min-w-[100px]">
+            <DialogFooter v-if="mode !== 'view'" class="mt-6 gap-3">
+                <Button type="button" variant="outline" @click="$emit('close')" :disabled="form.processing" class="px-6"> Batal </Button>
+                <Button @click="submit" :disabled="form.processing" class="min-w-[100px] px-6 bg-gradient-to-r from-emerald-600 to-cyan-600 text-white hover:from-emerald-700 hover:to-cyan-700">
                     <Loader2 v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" />
                     {{ mode === 'create' ? 'Simpan' : 'Perbarui' }}
                 </Button>
