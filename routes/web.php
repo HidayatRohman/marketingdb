@@ -26,6 +26,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role.access:view')
         ->name('dashboard');
 
+    // Analisa Bisnis - All roles can view
+    Route::get('analisa-bisnis', [DashboardController::class, 'businessAnalytics'])
+        ->middleware('role.access:view')
+        ->name('analytics.business');
+
     // Users Management - Only Super Admin can CRUD, others can view
     Route::middleware('role.access:view')->group(function () {
         Route::get('users', [UserController::class, 'index'])->name('users.index');

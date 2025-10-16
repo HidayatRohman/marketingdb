@@ -208,6 +208,78 @@ class DashboardController extends Controller
         ]);
     }
 
+    /**
+     * Business analytics page: brand and marketing performance with filters.
+     */
+    public function businessAnalytics(Request $request)
+    {
+        $currentUser = auth()->user();
+
+        // Validate date inputs and optional filters
+        $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'marketing' => 'nullable|exists:users,id',
+            'brand' => 'nullable|exists:brands,id',
+        ]);
+
+        // Get filter parameters with default to current month
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        $selectedMarketing = $request->get('marketing');
+        $selectedBrand = $request->get('brand');
+
+        if (!$startDate && !$endDate) {
+            $startDate = now()->startOfMonth()->format('Y-m-d');
+            $endDate = now()->endOfMonth()->format('Y-m-d');
+        }
+
+        // Compute analytics using existing helpers
+        $topMarketing = $this->getTopMarketing($currentUser, $request);
+        $brandPerformance = $this->getBrandPerformance($currentUser, $request);
+
+        // Get data for filter dropdowns
+        $marketingUsers = [];
+        $brands = [];
+        if ($currentUser->hasFullAccess() || $currentUser->hasReadOnlyAccess()) {
+            $marketingUsers = User::where('role', 'marketing')
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->get();
+            $brands = Brand::select('id', 'nama')
+                ->orderBy('nama')
+                ->get();
+        } else {
+            $marketingUsers = collect([
+                (object)['id' => $currentUser->id, 'name' => $currentUser->name]
+            ]);
+            $brands = Brand::select('id', 'nama')
+                ->orderBy('nama')
+                ->get();
+        }
+
+        return Inertia::render('AnalisaBisnis/Index', [
+            'topMarketing' => $topMarketing,
+            'brandPerformance' => $brandPerformance,
+            'marketingUsers' => $marketingUsers,
+            'brands' => $brands,
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'marketing' => $selectedMarketing,
+                'brand' => $selectedBrand,
+            ],
+            'permissions' => [
+                'canCrud' => $currentUser->canCrud(),
+                'canOnlyView' => $currentUser->canOnlyView(),
+                'canOnlyViewOwn' => $currentUser->canOnlyViewOwn(),
+                'hasFullAccess' => $currentUser->hasFullAccess(),
+                'hasReadOnlyAccess' => $currentUser->hasReadOnlyAccess(),
+                'hasLimitedAccess' => $currentUser->hasLimitedAccess(),
+            ],
+        ]);
+    }
+
     private function getChatAnalytics($currentUser, $request = null)
     {
         $startDate = $request ? $request->get('start_date') : null;
