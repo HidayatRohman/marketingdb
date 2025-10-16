@@ -54,6 +54,7 @@ interface Transaksi {
     lead_awal_brand_id: number;
     sumber: string;
     sumber_ref?: { id: number; nama: string; warna?: string };
+    pekerjaan?: { id: number; nama: string; warna?: string };
     kabupaten: string;
     provinsi: string;
     status_pembayaran: string;
@@ -693,6 +694,7 @@ onMounted(() => {
                                         <TableHead class="py-3 font-semibold text-foreground">Periode Lead</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Usia</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Sumber</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Pekerjaan</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Kabupaten</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Provinsi</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Paket Brand</TableHead>
@@ -769,6 +771,10 @@ onMounted(() => {
                                     <!-- Sumber -->
                                     <TableCell class="py-3 px-3 font-medium text-foreground">
                                         <span class="text-sm">{{ (transaksi.sumber_ref?.nama || transaksi.sumber) || '-' }}</span>
+                                    </TableCell>
+                                    <!-- Pekerjaan -->
+                                    <TableCell class="py-3 px-3 font-medium text-foreground">
+                                        <span class="text-sm">{{ transaksi.pekerjaan?.nama || '-' }}</span>
                                     </TableCell>
                                     <!-- Kabupaten -->
                                     <TableCell class="py-3 px-3 font-medium text-foreground">
