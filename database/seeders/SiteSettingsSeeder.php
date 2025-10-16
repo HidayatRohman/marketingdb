@@ -21,6 +21,14 @@ class SiteSettingsSeeder extends Seeder
 
         $siteSettings = [
             [
+                'key' => 'ppn_rate',
+                'value' => '11',
+                'type' => 'text',
+                'description' => 'Persentase PPN default dalam persen',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
                 'key' => 'site_name',
                 'value' => 'Marketing Database System',
                 'type' => 'text',

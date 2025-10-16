@@ -734,6 +734,8 @@ class DashboardController extends Controller
 
     private function getSummaryReport($currentUser, $request = null)
     {
+        $ppnRate = (float) \App\Models\SiteSetting::get('ppn_rate', 11);
+        $spentMultiplier = 1 + ($ppnRate / 100.0);
         // Get dates from request or use current month as default
         $startDate = $request && $request->get('start_date') ? $request->get('start_date') : Carbon::now()->startOfMonth()->format('Y-m-d');
         $endDate = $request && $request->get('end_date') ? $request->get('end_date') : Carbon::now()->endOfMonth()->format('Y-m-d');
@@ -756,7 +758,7 @@ class DashboardController extends Controller
             'brands.id as brand_id',
             'brands.nama as brand_name',
             DB::raw('COALESCE(SUM(CASE WHEN iklan_budgets.tanggal BETWEEN "' . $startDate . '" AND "' . $endDate . '" THEN iklan_budgets.spent_amount END), 0) as spent'),
-            DB::raw('COALESCE(SUM(CASE WHEN iklan_budgets.tanggal BETWEEN "' . $startDate . '" AND "' . $endDate . '" THEN iklan_budgets.spent_amount * 1.11 END), 0) as spent_with_tax'),
+            DB::raw('COALESCE(SUM(CASE WHEN iklan_budgets.tanggal BETWEEN "' . $startDate . '" AND "' . $endDate . '" THEN iklan_budgets.spent_amount * ' . $spentMultiplier . ' END), 0) as spent_with_tax'),
             DB::raw('(
                 SELECT COUNT(*) 
                 FROM mitras 

@@ -6,7 +6,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Calendar, CreditCard, Handshake, Kanban, LayoutGrid, Tag, TrendingUp, Users, Zap, Globe, Briefcase } from 'lucide-vue-next';
+import { Calendar, CreditCard, Handshake, Kanban, LayoutGrid, Tag, TrendingUp, Users, Zap, Globe, Briefcase, Settings } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
@@ -109,6 +109,15 @@ const mainNavItems = computed<NavItem[]>(() => {
             title: 'Pekerjaan',
             href: '/pekerjaans',
             icon: Briefcase,
+        });
+    }
+
+    // Pengaturan - hanya untuk Super Admin (akses penuh)
+    if (permissions.value.hasFullAccess) {
+        items.push({
+            title: 'Pengaturan',
+            href: '/settings/site',
+            icon: Settings,
         });
     }
 

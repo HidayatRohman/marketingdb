@@ -22,6 +22,7 @@ class SiteSettingController extends Controller
             'site_favicon' => SiteSetting::where('key', 'site_favicon')->first()?->value,
             'site_logo_url' => SiteSetting::get('site_logo'),
             'site_favicon_url' => SiteSetting::get('site_favicon'),
+            'ppn_rate' => SiteSetting::get('ppn_rate', '11'),
         ];
 
         return Inertia::render('settings/SiteSettings', [
@@ -51,6 +52,7 @@ class SiteSettingController extends Controller
             'site_description' => 'nullable|string|max:1000',
             'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'site_favicon' => 'nullable|image|mimes:ico,png|max:1024',
+            'ppn_rate' => 'nullable|numeric|min:0|max:100',
         ], [
             'site_title.required' => 'Judul situs harus diisi.',
             'site_title.string' => 'Judul situs harus berupa teks.',
@@ -61,6 +63,9 @@ class SiteSettingController extends Controller
             'site_favicon.image' => 'Favicon harus berupa file gambar.',
             'site_favicon.mimes' => 'Favicon harus berformat: ico atau png.',
             'site_favicon.max' => 'Favicon maksimal 1MB.',
+            'ppn_rate.numeric' => 'PPN harus berupa angka.',
+            'ppn_rate.min' => 'PPN minimal 0%.',
+            'ppn_rate.max' => 'PPN maksimal 100%.',
         ]);
 
         if ($validator->fails()) {
@@ -89,6 +94,14 @@ class SiteSettingController extends Controller
                 $request->site_description ?? '',
                 'textarea',
                 'Deskripsi singkat tentang aplikasi'
+            );
+
+            // Update PPN rate (percentage 0-100)
+            SiteSetting::set(
+                'ppn_rate',
+                $request->ppn_rate !== null ? (string) $request->ppn_rate : null,
+                'text',
+                'Persentase PPN (0–100) untuk perhitungan pajak'
             );
 
             // Handle logo upload

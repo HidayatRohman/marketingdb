@@ -35,6 +35,7 @@ class SiteSettingsServiceProvider extends ServiceProvider
                     'site_description' => SiteSetting::get('site_description', 'Marketing Database Management System'),
                     'site_logo' => SiteSetting::get('site_logo'),
                     'site_favicon' => SiteSetting::get('site_favicon'),
+                    'ppn_rate' => SiteSetting::get('ppn_rate', '11'),
                 ];
             }
         ]);

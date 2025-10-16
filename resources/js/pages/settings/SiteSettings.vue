@@ -21,6 +21,7 @@ interface Settings {
     site_favicon: string | null;
     site_logo_url: string | null;
     site_favicon_url: string | null;
+    ppn_rate?: string | null;
 }
 
 interface Props {
@@ -31,7 +32,7 @@ const props = defineProps<Props>();
 
 const breadcrumbItems: BreadcrumbItem[] = [
     {
-        title: 'Site Settings',
+        title: 'Pengaturan',
         href: '/settings/site',
     },
 ];
@@ -41,6 +42,7 @@ const form = useForm({
     site_description: props.settings.site_description || '',
     site_logo: null as File | null,
     site_favicon: null as File | null,
+    ppn_rate: props.settings.ppn_rate ? Number(props.settings.ppn_rate) : null,
 });
 
 // Debug: watch form changes
@@ -172,11 +174,11 @@ const triggerFileInput = (inputId: string) => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbItems">
-        <Head title="Site Settings" />
+        <Head title="Pengaturan" />
 
         <SettingsLayout>
             <div class="space-y-6">
-                <HeadingSmall title="Site Settings" description="Kelola pengaturan umum aplikasi seperti logo, favicon, dan informasi dasar" />
+                <HeadingSmall title="Pengaturan" description="Kelola pengaturan umum aplikasi seperti logo, favicon, informasi dasar, dan pajak (PPN)" />
 
                 <form @submit.prevent="submit" class="space-y-6">
                     <!-- Basic Information -->
@@ -214,6 +216,36 @@ const triggerFileInput = (inputId: string) => {
                                 />
                                 <p v-if="form.errors.site_description" class="text-sm text-red-500">
                                     {{ form.errors.site_description }}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Pajak (PPN) -->
+                    <Card>
+                        <CardHeader>
+                            <CardTitle class="flex items-center gap-2">
+                                <Settings class="h-5 w-5" />
+                                Pajak (PPN)
+                            </CardTitle>
+                            <CardDescription> Tentukan persentase PPN yang digunakan dalam sistem </CardDescription>
+                        </CardHeader>
+                        <CardContent class="space-y-4">
+                            <div class="space-y-2">
+                                <Label for="ppn_rate">PPN (%)</Label>
+                                <Input
+                                    id="ppn_rate"
+                                    v-model.number="form.ppn_rate"
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    placeholder="Masukkan persentase PPN, contoh: 11"
+                                    :class="{ 'border-red-500': form.errors.ppn_rate }"
+                                />
+                                <p class="text-xs text-muted-foreground">Masukkan angka antara 0 sampai 100 (persen).</p>
+                                <p v-if="form.errors.ppn_rate" class="text-sm text-red-500">
+                                    {{ form.errors.ppn_rate }}
                                 </p>
                             </div>
                         </CardContent>

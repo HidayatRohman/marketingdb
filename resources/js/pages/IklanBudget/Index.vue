@@ -104,7 +104,7 @@
                 </Card>
                 <Card class="border-0 shadow-md bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900 dark:to-red-800">
                     <CardContent class="p-4 text-center">
-                        <div class="text-xs text-muted-foreground uppercase tracking-wide">Spent+Tax</div>
+                        <div class="text-xs text-muted-foreground uppercase tracking-wide">Spent+PPN ({{ ppnPercentage }}%)</div>
                         <div class="text-lg font-bold text-red-700">{{ formatCurrency(totals?.total_spent_plus_tax || 0) }}</div>
                     </CardContent>
                 </Card>
@@ -288,7 +288,7 @@
                                 <tr class="border-b">
                                     <th class="text-left p-3 font-semibold">Brand</th>
                                     <th class="text-right p-3 font-semibold">Spent</th>
-                                    <th class="text-right p-3 font-semibold">Spent+Tax</th>
+                                    <th class="text-right p-3 font-semibold">Spent+PPN ({{ ppnPercentage }}%)</th>
                                     <th class="text-right p-3 font-semibold">Real Lead</th>
                                     <th class="text-right p-3 font-semibold">Cost/Lead</th>
                                     <th class="text-right p-3 font-semibold">Closing</th>
@@ -337,7 +337,7 @@
                                         <TableHead class="text-center">Tanggal</TableHead>
                                         <TableHead class="text-center">Brand</TableHead>
                                         <TableHead class="text-center">Spent</TableHead>
-                                        <TableHead class="text-center">Spent+Tax</TableHead>
+                                        <TableHead class="text-center">Spent+PPN ({{ ppnPercentage }}%)</TableHead>
                                         <TableHead class="text-center">Real Lead</TableHead>
                                         <TableHead class="text-center">Cost/Lead</TableHead>
                                         <TableHead class="text-center">Closing</TableHead>
@@ -359,7 +359,7 @@
                                             <span class="font-medium text-red-600">{{ formatCurrency(budget.spent_amount) }}</span>
                                         </TableCell>
                                         <TableCell class="text-center">
-                                            <span class="font-medium text-red-700">{{ formatCurrency(budget.spent_amount * 1.11) }}</span>
+                                            <span class="font-medium text-red-700">{{ formatCurrency((Number(budget.spent_amount) || 0) * ppnMultiplier) }}</span>
                                         </TableCell>
                                         <TableCell class="text-center">
                                             <span class="font-medium text-green-600">{{ budget.real_lead }}</span>
@@ -520,7 +520,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { router, Head } from '@inertiajs/vue3'
+import { router, Head, usePage } from '@inertiajs/vue3'
 import { index } from '@/routes/iklan-budgets'
 import AppLayout from '@/layouts/AppLayout.vue'
 import IklanBudgetModal from '@/components/IklanBudgetModal.vue'
@@ -594,6 +594,22 @@ const breadcrumbs = computed(() => [
   { label: 'Dashboard', href: '/' },
   { label: 'Budget Iklan', href: '/iklan-budgets' }
 ])
+
+// Ambil multiplier PPN dinamis dari Inertia shared props (siteSettings)
+const page = usePage()
+const ppnMultiplier = computed(() => {
+  const raw = (page.props as any)?.siteSettings?.ppn_rate
+  const rate = Number(raw)
+  if (isNaN(rate)) return 1.11 // default 11%
+  return 1 + (rate / 100)
+})
+
+// Persentase PPN untuk label tampilan
+const ppnPercentage = computed(() => {
+  const raw = (page.props as any)?.siteSettings?.ppn_rate
+  const rate = Number(raw)
+  return isNaN(rate) ? 11 : rate
+})
 
 // Reactive data
 const filters = reactive({
@@ -736,7 +752,7 @@ const summaryReport = computed(() => {
     }
 
     acc[brandName].spent += Number(budget.spent_amount) || 0
-    acc[brandName].spent_with_tax += (Number(budget.spent_amount) || 0) * 1.11
+    acc[brandName].spent_with_tax += (Number(budget.spent_amount) || 0) * ppnMultiplier.value
     acc[brandName].real_lead += Number(budget.real_lead) || 0
     acc[brandName].closing += Number(budget.closing) || 0
     acc[brandName].omset += Number(budget.omset) || 0

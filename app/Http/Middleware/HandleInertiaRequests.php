@@ -44,6 +44,13 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
+            // Explicitly share flash messages for global notification component
+            'flash' => [
+                'success' => session('success'),
+                'error' => session('error'),
+                'warning' => session('warning'),
+                'info' => session('info'),
+            ],
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
@@ -58,6 +65,8 @@ class HandleInertiaRequests extends Middleware
                 'site_description' => SiteSetting::get('site_description', 'Marketing Database Management System'),
                 'site_logo' => SiteSetting::get('site_logo'),
                 'site_favicon' => SiteSetting::get('site_favicon'),
+                // Ensure ppn_rate is available in global props and not overridden
+                'ppn_rate' => SiteSetting::get('ppn_rate', '11'),
             ],
         ];
     }

@@ -12,7 +12,7 @@ import { DatePicker } from '@/components/ui/datepicker';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
     Activity,
     AlertCircle,
@@ -718,7 +718,7 @@ onMounted(() => {
                                 <tr class="border-b">
                                     <th class="text-left p-3 font-semibold">Brand</th>
                                     <th class="text-right p-3 font-semibold">Spent</th>
-                                    <th class="text-right p-3 font-semibold">Spent+Tax</th>
+                                    <th class="text-right p-3 font-semibold">Spent+PPN ({{ ppnPercentage }}%)</th>
                                     <th class="text-right p-3 font-semibold">Real Lead</th>
                                     <th class="text-right p-3 font-semibold">Cost/Lead</th>
                                     <th class="text-right p-3 font-semibold">Closing</th>
@@ -2146,3 +2146,10 @@ onMounted(() => {
         </div>
     </AppLayout>
 </template>
+// PPN percentage for labeling Spent+PPN columns consistently
+const page = usePage();
+const ppnPercentage = computed(() => {
+    const raw = (page.props as any)?.siteSettings?.ppn_rate;
+    const rate = Number(raw);
+    return isNaN(rate) ? 11 : rate;
+});

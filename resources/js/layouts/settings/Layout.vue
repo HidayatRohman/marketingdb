@@ -30,7 +30,7 @@ const sidebarNavItems: NavItem[] = [
 // Add Site Settings for Super Admin only
 if (user?.role === 'super_admin') {
     sidebarNavItems.push({
-        title: 'Site Settings',
+        title: 'Pengaturan',
         href: '/settings/site',
     });
 }
@@ -40,7 +40,7 @@ const currentPath = typeof window !== undefined ? window.location.pathname : '';
 
 <template>
     <div class="px-4 py-6">
-        <Heading title="Settings" description="Manage your profile and account settings" />
+        <Heading title="Pengaturan" description="Kelola profil, akun, tampilan, dan pengaturan situs" />
 
         <div class="flex flex-col lg:flex-row lg:space-x-12">
             <aside class="w-full max-w-xl lg:w-48">

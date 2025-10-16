@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Carbon\Carbon;
+use App\Models\SiteSetting;
 
 class IklanBudget extends Model
 {
@@ -100,6 +101,10 @@ class IklanBudget extends Model
 
     public function scopeGetTotals($query, $startDate = null, $endDate = null, $brandId = null)
     {
+        // Get dynamic PPN multiplier from settings
+        $ppnRate = (float) SiteSetting::get('ppn_rate', 11);
+        $spentMultiplier = 1 + ($ppnRate / 100.0);
+
         // Calculate total leads from Mitra table based on date range and brand
         $totalLeadsQuery = \App\Models\Mitra::query();
         if ($startDate && $endDate) {
@@ -138,7 +143,7 @@ class IklanBudget extends Model
         $query = $query->selectRaw('
             SUM(budget_amount) as total_budget,
             SUM(spent_amount) as total_spent,
-            SUM(spent_amount * 1.11) as total_spent_plus_tax,
+            SUM(spent_amount * ?) as total_spent_plus_tax,
             ? as total_closing,
             ? as total_omset,
             CASE 
@@ -147,7 +152,7 @@ class IklanBudget extends Model
             END as avg_roas,
             0 as avg_cost_per_lead,
             ? as total_leads
-        ', [$totalClosing, $totalOmset, $totalOmset, $totalLeads]);
+        ', [$spentMultiplier, $totalClosing, $totalOmset, $totalOmset, $totalLeads]);
 
         if ($startDate && $endDate) {
             $query->whereBetween('tanggal', [$startDate, $endDate]);
