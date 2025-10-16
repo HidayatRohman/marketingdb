@@ -554,6 +554,14 @@ onMounted(() => {
         document.removeEventListener('click', handleClickOutside);
     });
 });
+
+// PPN percentage for labeling Spent+PPN columns consistently
+const page = usePage();
+const ppnPercentage = computed(() => {
+    const raw = (page.props as any)?.siteSettings?.ppn_rate;
+    const rate = Number(raw);
+    return isNaN(rate) ? 11 : rate;
+});
 </script>
 
 <template>
@@ -2146,10 +2154,3 @@ onMounted(() => {
         </div>
     </AppLayout>
 </template>
-// PPN percentage for labeling Spent+PPN columns consistently
-const page = usePage();
-const ppnPercentage = computed(() => {
-    const raw = (page.props as any)?.siteSettings?.ppn_rate;
-    const rate = Number(raw);
-    return isNaN(rate) ? 11 : rate;
-});
