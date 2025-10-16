@@ -948,6 +948,8 @@ onMounted(() => {
             <SourceAnalyticsChart
                 :data="sourceChartData"
                 :loading="sourceChartLoading"
+                :start-date="periodeStart || undefined"
+                :end-date="periodeEnd || undefined"
                 @refresh="refreshSourceChart"
             />
 

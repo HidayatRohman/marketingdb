@@ -1,13 +1,13 @@
 <template>
   <Card class="w-full">
-    <CardHeader class="pb-3">
+  <CardHeader class="pb-3">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <CardTitle class="text-lg font-semibold text-gray-900 dark:text-white">
             Analisa Sumber Transaksi
           </CardTitle>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Distribusi jumlah transaksi per sumber dalam periode terpilih
+            {{ subtitleText }}
           </p>
         </div>
 
@@ -192,6 +192,8 @@ interface Props {
   data?: SourceAnalyticsData[];
   loading?: boolean;
   emptyMessage?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -299,6 +301,30 @@ const topSources = computed(() => {
     .sort((a, b) => b.count - a.count)
     .slice(0, 3)
     .map(item => ({ sumber: item.sumber || 'Unknown', count: item.count }));
+});
+
+// Format and compute dynamic subtitle based on selected period
+const formatDate = (value?: string) => {
+  if (!value) return undefined;
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return value;
+  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
+const subtitleText = computed(() => {
+  const start = formatDate(props.startDate);
+  const end = formatDate(props.endDate);
+
+  let periodLabel = 'periode terpilih';
+  if (start && end) {
+    periodLabel = start === end ? `tanggal ${start}` : `periode ${start} – ${end}`;
+  } else if (start && !end) {
+    periodLabel = `periode mulai ${start}`;
+  } else if (!start && end) {
+    periodLabel = `periode hingga ${end}`;
+  }
+
+  return `Distribusi jumlah transaksi per sumber dalam ${periodLabel}`;
 });
 
 // Chart options
