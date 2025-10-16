@@ -203,6 +203,43 @@ class TransaksiController extends Controller
     }
 
     /**
+     * Get pekerjaan analytics data for chart
+     */
+    public function getPekerjaanAnalytics(Request $request)
+    {
+        $user = auth()->user();
+        $query = Transaksi::query();
+
+        // Apply role-based filtering
+        $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply date range filter (default to current year)
+        $startDate = $request->get('start_date', now()->startOfYear()->format('Y-m-d'));
+        $endDate = $request->get('end_date', now()->endOfYear()->format('Y-m-d'));
+
+        $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+
+        // Join pekerjaan table to get pekerjaan name and aggregate counts & totals
+        $data = $query->leftJoin('pekerjaans', 'transaksis.pekerjaan_id', '=', 'pekerjaans.id')
+            ->selectRaw('
+                COALESCE(pekerjaans.nama, "Unknown") as pekerjaan,
+                COUNT(*) as count,
+                COALESCE(SUM(transaksis.nominal_masuk), 0) as total_nominal
+            ')
+            ->groupBy('pekerjaan')
+            ->orderByDesc('count')
+            ->get();
+
+        return response()->json([
+            'data' => $data,
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
+        ]);
+    }
+
+    /**
      * Get age analytics data for chart
      */
     public function getAgeAnalytics(Request $request)

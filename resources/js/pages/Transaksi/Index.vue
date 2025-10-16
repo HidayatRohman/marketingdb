@@ -22,6 +22,7 @@ import PaymentStatusChart from '@/Components/PaymentStatusChart.vue';
 import SourceAnalyticsChart from '@/components/SourceAnalyticsChart.vue';
 import AgeAnalyticsChart from '@/components/AgeAnalyticsChart.vue';
 import LeadAwalAnalyticsChart from '@/components/LeadAwalAnalyticsChart.vue';
+import PekerjaanAnalyticsChart from '@/components/PekerjaanAnalyticsChart.vue';
 
 interface Brand {
     id: number;
@@ -126,6 +127,8 @@ const chartData = ref([]);
 const chartLoading = ref(false);
 const sourceChartData = ref([]);
 const sourceChartLoading = ref(false);
+const jobChartData = ref([]);
+const jobChartLoading = ref(false);
 const ageChartData = ref([]);
 const ageChartLoading = ref(false);
 const leadAwalChartData = ref([]);
@@ -142,6 +145,12 @@ interface PaymentStatusData {
 
 interface LeadAwalAnalyticsData {
     lead_awal: string;
+    count: number;
+    total_nominal: number;
+}
+
+interface JobAnalyticsData {
+    pekerjaan: string;
     count: number;
     total_nominal: number;
 }
@@ -226,6 +235,30 @@ const refreshSourceChart = () => {
     fetchSourceChartData();
 };
 
+// Job (pekerjaan) analytics derived from current transaksi list
+const recomputeJobChartData = () => {
+    const items = (transaksiData.value?.data || []) as Transaksi[];
+    const map: Record<string, { pekerjaan: string; count: number; total_nominal: number }> = {};
+
+    for (const t of items) {
+        const label = (t.pekerjaan?.nama || 'Unknown').trim();
+        if (!map[label]) {
+            map[label] = { pekerjaan: label, count: 0, total_nominal: 0 };
+        }
+        map[label].count += 1;
+        // nominal_masuk bisa null/undefined; pastikan angka
+        const nominal = typeof t.nominal_masuk === 'number' ? t.nominal_masuk : 0;
+        map[label].total_nominal += nominal;
+    }
+
+    jobChartData.value = Object.values(map).sort((a, b) => b.count - a.count);
+    jobChartLoading.value = false;
+};
+
+const refreshJobChart = () => {
+    recomputeJobChartData();
+};
+
 // Age analytics chart functions
 const fetchAgeChartData = async () => {
     ageChartLoading.value = true;
@@ -280,6 +313,13 @@ watch([periodeStart, periodeEnd], () => {
     fetchSourceChartData();
     fetchAgeChartData();
     fetchLeadAwalChartData();
+    // Recompute job chart based on current list; will update again when transaksis props reload
+    recomputeJobChartData();
+}, { deep: true });
+
+// Update job chart when the transaksi list changes (pagination/filters/search)
+watch(() => transaksiData.value, () => {
+    recomputeJobChartData();
 }, { deep: true });
 
 // Modal functions
@@ -410,6 +450,7 @@ const sumbers = computed(() => props.sumbers || []);
 onMounted(() => {
     fetchChartData();
     fetchSourceChartData();
+    recomputeJobChartData();
     fetchAgeChartData();
     fetchLeadAwalChartData();
 });
@@ -956,6 +997,15 @@ onMounted(() => {
                 :start-date="periodeStart || undefined"
                 :end-date="periodeEnd || undefined"
                 @refresh="refreshSourceChart"
+            />
+
+            <!-- Pekerjaan Analytics Chart -->
+            <PekerjaanAnalyticsChart
+                :data="jobChartData"
+                :loading="jobChartLoading"
+                :start-date="periodeStart || undefined"
+                :end-date="periodeEnd || undefined"
+                @refresh="refreshJobChart"
             />
 
             <!-- Age Analytics Chart -->
