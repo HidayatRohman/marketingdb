@@ -323,41 +323,6 @@
                 </CardContent>
             </Card>
 
-            <!-- Grafik Spent Bulanan -->
-            <Card class="border-0 shadow-md">
-                <CardHeader class="px-4 py-3 pb-2 bg-gradient-to-r from-indigo-50 via-sky-50 to-blue-50 dark:from-indigo-900 dark:via-sky-900 dark:to-blue-900 rounded-t-lg border-b border-indigo-100 dark:border-indigo-800">
-                    <CardTitle class="flex items-center gap-2 text-indigo-800 dark:text-indigo-100">
-                        <BarChart3 class="h-6 w-6" />
-                        Grafik Spent Bulanan
-                    </CardTitle>
-                    <div class="mt-2 flex items-center gap-3">
-                        <div class="flex items-center gap-2">
-                            <label for="spent-year" class="text-sm font-medium text-gray-700 dark:text-gray-300">Tahun:</label>
-                            <select 
-                                id="spent-year" 
-                                v-model="spentChartYear" 
-                                @change="fetchMonthlySpentData"
-                                class="w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            >
-                                <option v-for="yr in [2023, 2024, 2025, 2026]" :key="yr" :value="yr">{{ yr }}</option>
-                            </select>
-                        </div>
-                        <div class="text-sm text-gray-600 dark:text-gray-300">
-                            Brand: <span class="font-semibold">{{ selectedBrandName || 'Semua Brand' }}</span>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent class="p-4">
-                    <MonthlySpentChart 
-                        :data="monthlySpentData" 
-                        :loading="monthlySpentLoading"
-                        :year="spentChartYear"
-                        :brand-name="selectedBrandName"
-                        @refresh="fetchMonthlySpentData"
-                    />
-                </CardContent>
-            </Card>
-
             <!-- Table Card -->
             <Card class="border-0 shadow-md">
                 <CardHeader class="px-4 py-3 pb-2 bg-gradient-to-r from-teal-50 via-cyan-50 to-blue-50 dark:from-teal-900 dark:via-cyan-900 dark:to-blue-900 rounded-t-lg border-b border-teal-100 dark:border-teal-800">
@@ -486,6 +451,50 @@
                             </div>
                         </div>
                     </div>
+                </CardContent>
+            </Card>
+
+            <!-- Grafik Spent Bulanan -->
+            <Card class="border-0 shadow-md">
+                <CardHeader class="px-4 py-3 pb-2 bg-gradient-to-r from-indigo-50 via-sky-50 to-blue-50 dark:from-indigo-900 dark:via-sky-900 dark:to-blue-900 rounded-t-lg border-b border-indigo-100 dark:border-indigo-800">
+                    <CardTitle class="flex items-center gap-2 text-indigo-800 dark:text-indigo-100">
+                        <BarChart3 class="h-6 w-6" />
+                        Grafik Spent Bulanan
+                    </CardTitle>
+                    <div class="mt-2 flex items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <label for="spent-year" class="text-sm font-medium text-gray-700 dark:text-gray-300">Tahun:</label>
+                            <select 
+                                id="spent-year" 
+                                v-model="spentChartYear" 
+                                @change="fetchMonthlySpentData"
+                                class="w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option v-for="yr in [2023, 2024, 2025, 2026]" :key="yr" :value="yr">{{ yr }}</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label for="spent-brand" class="text-sm font-medium text-gray-700 dark:text-gray-300">Brand:</label>
+                            <select 
+                                id="spent-brand"
+                                v-model="chartBrandId"
+                                @change="fetchMonthlySpentData"
+                                class="w-48 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="">Semua Brand</option>
+                                <option v-for="b in props.brands" :key="b.id" :value="String(b.id)">{{ b.nama }}</option>
+                            </select>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent class="p-4">
+                    <MonthlySpentChart 
+                        :data="monthlySpentData" 
+                        :loading="monthlySpentLoading"
+                        :year="spentChartYear"
+                        :brand-name="selectedBrandName"
+                        @refresh="fetchMonthlySpentData"
+                    />
                 </CardContent>
             </Card>
         </div>
@@ -755,9 +764,10 @@ const filterByMonthYear = () => {
 const spentChartYear = ref<number>(new Date().getFullYear())
 const monthlySpentLoading = ref(false)
 const monthlySpentData = ref<Array<{ month: number; label: string; spent: number }>>([])
+const chartBrandId = ref<string>(filters.brand_id ? String(filters.brand_id) : '')
 
 const selectedBrandName = computed(() => {
-  const id = filters.brand_id
+  const id = chartBrandId.value
   if (!id) return ''
   const b = props.brands.find(br => String(br.id) === String(id))
   return b ? b.nama : ''
@@ -769,8 +779,8 @@ const fetchMonthlySpentData = async () => {
     const params = new URLSearchParams({
       year: String(spentChartYear.value),
     })
-    if (filters.brand_id) {
-      params.append('brand_id', String(filters.brand_id))
+    if (chartBrandId.value) {
+      params.append('brand_id', String(chartBrandId.value))
     }
     const response = await fetch(`/iklan-budgets/analytics/monthly-spent?${params.toString()}`)
     if (response.ok) {
@@ -788,7 +798,7 @@ onMounted(() => {
   fetchMonthlySpentData()
 })
 
-watch([() => filters.brand_id, spentChartYear], () => {
+watch([spentChartYear, chartBrandId], () => {
   fetchMonthlySpentData()
 })
 
