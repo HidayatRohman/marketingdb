@@ -201,6 +201,15 @@ interface SummaryReport {
     roas: number;
 }
 
+interface Permissions {
+    canCrud: boolean;
+    canOnlyView: boolean;
+    canOnlyViewOwn: boolean;
+    hasFullAccess: boolean;
+    hasReadOnlyAccess: boolean;
+    hasLimitedAccess: boolean;
+}
+
 interface Props {
     userStats: UserStats;
     mitraStats: MitraStats;
@@ -219,6 +228,7 @@ interface Props {
     brands: Brand[];
     filters: Filters;
     summaryReport: SummaryReport[];
+    permissions: Permissions;
 }
 
 const props = defineProps<Props>();
@@ -249,8 +259,27 @@ const hoveredProgressLabel = ref<LabelDistribution | null>(null);
 const showProgressTooltip = ref(false);
 
 // Computed values
+// Conversion Rate based on Transaksis: Closing / Lead (filtered, grouped by Brand)
+const conversionLeads = computed(() => {
+    try {
+        return (props.summaryReport || []).reduce((sum, item) => sum + (item.real_lead || 0), 0);
+    } catch {
+        return 0;
+    }
+});
+
+const conversionClosings = computed(() => {
+    try {
+        return (props.summaryReport || []).reduce((sum, item) => sum + (item.closing || 0), 0);
+    } catch {
+        return 0;
+    }
+});
+
 const totalConversionRate = computed(() => {
-    return props.mitraStats.total > 0 ? Math.round((props.mitraStats.followup / props.mitraStats.total) * 100) : 0;
+    return conversionLeads.value > 0
+        ? Math.round((conversionClosings.value / conversionLeads.value) * 100)
+        : 0;
 });
 
 const growthIndicators = computed(() => {
@@ -564,7 +593,7 @@ onMounted(() => {
             </div>
 
             <!-- Report Budget Vs Omset -->
-            <Card class="mb-6 border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:from-gray-800/30 dark:to-gray-700/30 shadow-lg">
+            <Card v-if="permissions.hasFullAccess || permissions.hasReadOnlyAccess" class="mb-6 border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:from-gray-800/30 dark:to-gray-700/30 shadow-lg">
                 <CardHeader>
                     <CardTitle class="flex items-center gap-2">
                         <BarChart3 class="h-6 w-6" />
@@ -755,7 +784,7 @@ onMounted(() => {
                                         :class="['stats-growth-icon', getGrowthColor(totalConversionRate)]"
                                     />
                                 </p>
-                                <p class="stats-card-subtitle stats-subtitle-green">{{ mitraStats.followup }} dari {{ mitraStats.total }}</p>
+                                <p class="stats-card-subtitle stats-subtitle-green">{{ conversionClosings }} dari {{ conversionLeads }}</p>
                             </div>
                             <div class="stats-card-icon stats-icon-green">
                                 <Target class="stats-icon-size" />

@@ -44,8 +44,8 @@ const mainNavItems = computed<NavItem[]>(() => {
         });
     }
 
-    // IKLAN - accessible by all roles but with different permissions
-    if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess || permissions.value.hasLimitedAccess) {
+    // IKLAN - hanya untuk Admin & Super Admin (disembunyikan untuk Marketing)
+    if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess) {
         items.push({
             title: 'Iklan',
             href: '/iklan-budgets',

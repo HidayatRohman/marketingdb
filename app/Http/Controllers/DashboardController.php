@@ -201,6 +201,9 @@ class DashboardController extends Controller
                 'canCrud' => $currentUser->canCrud(),
                 'canOnlyView' => $currentUser->canOnlyView(),
                 'canOnlyViewOwn' => $currentUser->canOnlyViewOwn(),
+                'hasFullAccess' => $currentUser->hasFullAccess(),
+                'hasReadOnlyAccess' => $currentUser->hasReadOnlyAccess(),
+                'hasLimitedAccess' => $currentUser->hasLimitedAccess(),
             ],
         ]);
     }
