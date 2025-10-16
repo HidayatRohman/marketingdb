@@ -28,6 +28,12 @@ interface Sumber {
     warna: string;
 }
 
+interface Pekerjaan {
+    id: number;
+    nama: string;
+    warna: string;
+}
+
 interface User {
     id: number;
     name: string;
@@ -44,6 +50,7 @@ interface Transaksi {
     no_wa: string;
     usia: number;
     nama_mitra?: string;
+    pekerjaan_id?: number;
     paket_brand_id: number;
     lead_awal_brand_id: number;
     sumber: string;
@@ -67,6 +74,7 @@ interface Props {
     transaksi?: Transaksi;
     brands: Brand[];
     sumbers: Sumber[];
+    pekerjaans: Pekerjaan[];
     currentUser: User;
 }
 
@@ -89,6 +97,7 @@ const form = useForm({
     no_wa: '',
     usia: null,
     nama_mitra: '',
+    pekerjaan_id: null,
     paket_brand_id: null,
     lead_awal_brand_id: null,
     sumber: '',
@@ -186,6 +195,7 @@ const resetForm = () => {
     form.no_wa = '';
     form.usia = null;
     form.nama_mitra = '';
+    form.pekerjaan_id = null;
     form.paket_brand_id = null;
     form.lead_awal_brand_id = null;
     form.sumber = '';
@@ -208,6 +218,7 @@ const populateForm = (transaksi: Transaksi) => {
     form.no_wa = transaksi.no_wa;
     form.usia = transaksi.usia;
     form.nama_mitra = transaksi.nama_mitra || '';
+    form.pekerjaan_id = transaksi.pekerjaan_id || null;
     form.paket_brand_id = transaksi.paket_brand_id;
     form.lead_awal_brand_id = transaksi.lead_awal_brand_id;
     form.sumber = transaksi.sumber;
@@ -231,6 +242,38 @@ const handleSubmit = () => {
 
     const url = isEditMode.value ? `/transaksis/${props.transaksi?.id}` : '/transaksis';
     const method = isEditMode.value ? 'put' : 'post';
+
+    // Normalize IDs to expected types
+    // Convert empty strings to null, and ensure numbers for exists validations
+    if (form.pekerjaan_id === '' || form.pekerjaan_id === undefined) {
+        form.pekerjaan_id = null;
+    } else if (form.pekerjaan_id !== null) {
+        form.pekerjaan_id = Number(form.pekerjaan_id);
+    }
+
+    if (form.sumber_id === '' || form.sumber_id === undefined) {
+        form.sumber_id = null;
+    } else if (form.sumber_id !== null) {
+        form.sumber_id = Number(form.sumber_id);
+    }
+
+    if (form.paket_brand_id === '' || form.paket_brand_id === undefined) {
+        form.paket_brand_id = null;
+    } else if (form.paket_brand_id !== null) {
+        form.paket_brand_id = Number(form.paket_brand_id);
+    }
+
+    if (form.lead_awal_brand_id === '' || form.lead_awal_brand_id === undefined) {
+        form.lead_awal_brand_id = null;
+    } else if (form.lead_awal_brand_id !== null) {
+        form.lead_awal_brand_id = Number(form.lead_awal_brand_id);
+    }
+
+    if (form.usia === '' || form.usia === undefined) {
+        form.usia = null as any;
+    } else if (form.usia !== null) {
+        form.usia = Number(form.usia) as any;
+    }
 
     // Ensure sumber string matches selected sumber_id
     if (form.sumber_id) {
@@ -454,6 +497,24 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
                             </select>
                             <div v-if="form.errors.sumber_id" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.sumber_id }}
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <Label for="pekerjaan_id" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Pekerjaan</Label>
+                            <select 
+                                id="pekerjaan_id"
+                                v-model="form.pekerjaan_id" 
+                                :disabled="isViewMode"
+                                class="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                                <option value="" disabled>Pilih Pekerjaan</option>
+                                <option v-for="p in props.pekerjaans" :key="p.id" :value="p.id">
+                                    {{ p.nama }}
+                                </option>
+                            </select>
+                            <div v-if="form.errors.pekerjaan_id" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
+                                {{ form.errors.pekerjaan_id }}
                             </div>
                         </div>
                     </div>

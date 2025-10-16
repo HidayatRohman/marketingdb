@@ -79,6 +79,7 @@ interface Props {
     };
     brands: Brand[];
     sumbers: { id: number; nama: string; warna?: string }[];
+    pekerjaans: { id: number; nama: string; warna?: string }[];
     currentUser: {
         id: number;
         name: string;
@@ -975,6 +976,7 @@ onMounted(() => {
             :transaksi="transaksiModal.transaksi"
             :brands="brands"
             :sumbers="sumbers"
+            :pekerjaans="pekerjaans"
             :current-user="currentUser"
             @close="closeTransaksiModal"
             @success="handleModalSuccess"

@@ -6,6 +6,7 @@ use App\Models\Transaksi;
 
 use App\Models\Brand;
 use App\Models\Sumber;
+use App\Models\Pekerjaan;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
@@ -19,7 +20,7 @@ class TransaksiController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Transaksi::with(['user', 'paketBrand', 'leadAwalBrand', 'sumberRef']);
+        $query = Transaksi::with(['user', 'paketBrand', 'leadAwalBrand', 'sumberRef', 'pekerjaan']);
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
@@ -58,11 +59,13 @@ class TransaksiController extends Controller
         // Get data for filters
         $brands = Brand::select('id', 'nama')->get();
         $sumbers = Sumber::select('id', 'nama', 'warna')->orderBy('nama')->get();
+        $pekerjaans = Pekerjaan::select('id', 'nama', 'warna')->orderBy('nama')->get();
 
         return Inertia::render('Transaksi/Index', [
             'transaksis' => $transaksis,
             'brands' => $brands,
             'sumbers' => $sumbers,
+            'pekerjaans' => $pekerjaans,
             'currentUser' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -291,6 +294,7 @@ class TransaksiController extends Controller
             'usia' => 'required|integer|min:17|max:80',
             'no_wa' => 'required|string|max:20',
             'nama_mitra' => 'required|string|max:255',
+            'pekerjaan_id' => 'nullable|exists:pekerjaans,id',
             'paket_brand_id' => 'required|exists:brands,id',
             'lead_awal_brand_id' => 'required|exists:brands,id',
             'sumber_id' => 'required|exists:sumbers,id',
@@ -367,7 +371,7 @@ class TransaksiController extends Controller
         }
 
         return Inertia::render('Transaksi/Show', [
-            'transaksi' => $transaksi->load(['user', 'paketBrand', 'leadAwalBrand', 'sumberRef']),
+            'transaksi' => $transaksi->load(['user', 'paketBrand', 'leadAwalBrand', 'sumberRef', 'pekerjaan']),
             'permissions' => [
                 'canCrud' => $user->canCrud(),
                 'canOnlyView' => $user->canOnlyView(),
@@ -394,6 +398,7 @@ class TransaksiController extends Controller
             'periode_lead' => 'required|in:Januari,Februari,Maret,April,Mei,Juni,Juli,Agustus,September,Oktober,November,Desember',
             'usia' => 'required|integer|min:17|max:80',
             'nama_mitra' => 'nullable|string|max:255',
+            'pekerjaan_id' => 'nullable|exists:pekerjaans,id',
             'paket_brand_id' => 'required|exists:brands,id',
             'lead_awal_brand_id' => 'required|exists:brands,id',
             'sumber_id' => 'required|exists:sumbers,id',

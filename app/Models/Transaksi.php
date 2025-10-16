@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Sumber;
+use App\Models\Pekerjaan;
 
 class Transaksi extends Model
 {
@@ -19,6 +20,7 @@ class Transaksi extends Model
         'no_wa',
         'usia',
         'nama_mitra',
+        'pekerjaan_id',
         'paket_brand_id',
         'lead_awal_brand_id',
         'sumber_id',
@@ -70,6 +72,14 @@ class Transaksi extends Model
     public function sumberRef()
     {
         return $this->belongsTo(Sumber::class, 'sumber_id');
+    }
+
+    /**
+     * Get the pekerjaan reference.
+     */
+    public function pekerjaan()
+    {
+        return $this->belongsTo(Pekerjaan::class, 'pekerjaan_id');
     }
 
 }
