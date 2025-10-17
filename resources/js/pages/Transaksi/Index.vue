@@ -110,6 +110,51 @@ const periodeEnd = ref(props.filters.periode_end || '');
 const perPage = ref(props.filters.per_page || 10);
 const showFilters = ref(false);
 
+// Computed property untuk memastikan data transaksis reactive (dideklarasikan lebih awal)
+const transaksiData = computed(() => props.transaksis);
+
+// Tabs untuk Status Pembayaran
+const selectedPaymentStatus = ref<'dp_tj' | 'tambahan_dp' | 'pelunasan'>('dp_tj');
+
+const countDpTj = computed(() => (transaksiData.value?.data || []).filter(t => t.status_pembayaran === 'Dp / TJ').length);
+const countTambahanDp = computed(() => (transaksiData.value?.data || []).filter(t => t.status_pembayaran === 'Tambahan Dp').length);
+const countPelunasan = computed(() => (transaksiData.value?.data || []).filter(t => t.status_pembayaran === 'Pelunasan').length);
+
+const filteredTransaksiRows = computed(() => {
+    const rows = transaksiData.value?.data || [];
+    switch (selectedPaymentStatus.value) {
+        case 'dp_tj':
+            return rows.filter(t => t.status_pembayaran === 'Dp / TJ');
+        case 'tambahan_dp':
+            return rows.filter(t => t.status_pembayaran === 'Tambahan Dp');
+        case 'pelunasan':
+            return rows.filter(t => t.status_pembayaran === 'Pelunasan');
+        default:
+            return rows;
+    }
+});
+
+const autoSelectStatusTab = () => {
+    // Jika tab saat ini kosong, pindah ke tab pertama yang memiliki data
+    if (filteredTransaksiRows.value.length === 0) {
+        if (countDpTj.value > 0) {
+            selectedPaymentStatus.value = 'dp_tj';
+        } else if (countTambahanDp.value > 0) {
+            selectedPaymentStatus.value = 'tambahan_dp';
+        } else if (countPelunasan.value > 0) {
+            selectedPaymentStatus.value = 'pelunasan';
+        }
+    }
+};
+
+onMounted(() => {
+    autoSelectStatusTab();
+});
+
+watch(transaksiData, () => {
+    autoSelectStatusTab();
+});
+
 // Modal states
 const transaksiModal = ref({
     open: false,
@@ -160,9 +205,6 @@ const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
     { label: 'Transaksi', href: '/transaksis' },
 ];
-
-// Computed property untuk memastikan data transaksis reactive
-const transaksiData = computed(() => props.transaksis);
 
 // Debounced search function
 const debouncedSearch = debounce(() => {
@@ -390,6 +432,24 @@ const formatCurrency = (amount: number) => {
         maximumFractionDigits: 0,
     }).format(amount);
 };
+
+// Daftar Tagihan: filter transaksi dengan status DP/TJ atau Tambahan DP
+const tagihanRows = computed(() => {
+    const rows = transaksiData.value?.data || [];
+    return rows.filter(
+        (t) => t.status_pembayaran === 'Dp / TJ' || t.status_pembayaran === 'Tambahan Dp'
+    );
+});
+
+// Total kurang bayar untuk seluruh tagihan pada halaman ini
+const totalKurangBayar = computed(() => {
+    return tagihanRows.value.reduce((sum, t) => {
+        const harga = Number(t.harga_paket) || 0;
+        const masuk = Number(t.nominal_masuk) || 0;
+        const kurang = Math.max(harga - masuk, 0);
+        return sum + kurang;
+    }, 0);
+});
 
 const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -717,10 +777,74 @@ onMounted(() => {
                             <span class="rounded-full bg-blue-100 px-3 py-1 font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
                                 {{ transaksiData.total }} Total
                             </span>
+                            <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                                {{ tagihanRows.length }} Tagihan DP/TJ
+                            </span>
+                            <span class="rounded-full bg-red-100 px-3 py-1 font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                                Total Kurang: {{ formatCurrency(totalKurangBayar) }}
+                            </span>
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent class="p-4 sm:p-6">
+                    <!-- Status Pembayaran Tabs -->
+                    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="inline-flex items-center gap-1 rounded-lg bg-muted p-1 text-muted-foreground">
+                            <button
+                                type="button"
+                                @click="selectedPaymentStatus = 'dp_tj'"
+                                :class="[
+                                    'flex items-center rounded-md px-3.5 py-1.5 transition-colors text-xs sm:text-sm',
+                                    selectedPaymentStatus === 'dp_tj'
+                                        ? 'bg-white shadow-xs dark:bg-neutral-800 dark:text-neutral-100'
+                                        : 'text-neutral-700 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-300 dark:hover:bg-neutral-700/60',
+                                ]"
+                            >
+                                <span class="mr-2">DP/TJ</span>
+                                <span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                    {{ countDpTj }}
+                                </span>
+                            </button>
+                            <button
+                                type="button"
+                                @click="selectedPaymentStatus = 'tambahan_dp'"
+                                :class="[
+                                    'flex items-center rounded-md px-3.5 py-1.5 transition-colors text-xs sm:text-sm',
+                                    selectedPaymentStatus === 'tambahan_dp'
+                                        ? 'bg-white shadow-xs dark:bg-neutral-800 dark:text-neutral-100'
+                                        : 'text-neutral-700 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-300 dark:hover:bg-neutral-700/60',
+                                ]"
+                            >
+                                <span class="mr-2">Tambahan DP</span>
+                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                                    {{ countTambahanDp }}
+                                </span>
+                            </button>
+                            <button
+                                type="button"
+                                @click="selectedPaymentStatus = 'pelunasan'"
+                                :class="[
+                                    'flex items-center rounded-md px-3.5 py-1.5 transition-colors text-xs sm:text-sm',
+                                    selectedPaymentStatus === 'pelunasan'
+                                        ? 'bg-white shadow-xs dark:bg-neutral-800 dark:text-neutral-100'
+                                        : 'text-neutral-700 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-300 dark:hover:bg-neutral-700/60',
+                                ]"
+                            >
+                                <span class="mr-2">Pelunasan</span>
+                                <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                    {{ countPelunasan }}
+                                </span>
+                            </button>
+                        </div>
+                        <div class="flex items-center space-x-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                            <span class="rounded-full bg-neutral-100 px-3 py-1 font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+                                Status dipilih: {{ selectedPaymentStatus === 'dp_tj' ? 'DP/TJ' : selectedPaymentStatus === 'tambahan_dp' ? 'Tambahan DP' : 'Pelunasan' }}
+                            </span>
+                            <span class="rounded-full bg-blue-100 px-3 py-1 font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                {{ filteredTransaksiRows.length }} ditampilkan
+                            </span>
+                        </div>
+                    </div>
                     <div class="relative overflow-hidden">
                         <div class="overflow-x-auto responsive-table">
                             <Table>
@@ -744,24 +868,25 @@ onMounted(() => {
                                         <TableHead class="py-3 font-semibold text-foreground">Status Pembayaran</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Nominal Masuk</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Harga Paket</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Kurang Bayar</TableHead>
                                         <TableHead class="w-[120px] py-3 text-center font-semibold text-foreground">Aksi</TableHead>
                                     </TableRow>
                                 </TableHeader>
                             <TableBody>
-                                <TableRow v-if="transaksiData.data.length === 0" class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                    <TableCell colspan="18" class="py-16 text-center">
+                                <TableRow v-if="filteredTransaksiRows.length === 0" class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                    <TableCell colspan="20" class="py-16 text-center">
                                         <div class="flex flex-col items-center space-y-4">
                                             <div class="rounded-full bg-gray-100 p-6 dark:bg-gray-800">
                                                 <Search class="h-12 w-12 text-gray-400" />
                                             </div>
                                             <div class="space-y-2">
-                                                <p class="text-lg font-semibold text-gray-600 dark:text-gray-400">Tidak ada transaksi ditemukan</p>
-                                                <p class="text-sm text-gray-500 dark:text-gray-500">Coba ubah filter pencarian atau tambah transaksi baru</p>
+                                                <p class="text-lg font-semibold text-gray-600 dark:text-gray-400">Tidak ada transaksi untuk status ini</p>
+                                                <p class="text-sm text-gray-500 dark:text-gray-500">Coba pilih tab lain atau ubah filter pencarian</p>
                                             </div>
                                         </div>
                                     </TableCell>
                                 </TableRow>
-                                <TableRow v-for="(transaksi, index) in transaksiData.data" :key="transaksi.id" class="border-b border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50">
+                                <TableRow v-for="(transaksi, index) in filteredTransaksiRows" :key="transaksi.id" class="border-b border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50">
                                     
                                     <!-- No -->
                                      <TableCell class="w-[80px] text-center py-3 px-3 font-medium text-foreground">
@@ -880,6 +1005,15 @@ onMounted(() => {
                                             </span>
                                         </div>
                                     </TableCell>
+                                    <!-- Kurang Bayar -->
+                                    <TableCell class="py-3 px-3">
+                                        <div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-red-100 via-rose-50 to-red-100 px-4 py-3 text-right shadow-lg transition-all duration-300 hover:shadow-xl dark:from-red-900/30 dark:via-rose-900/20 dark:to-red-900/30">
+                                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                                            <span class="relative text-sm font-bold text-red-700 dark:text-red-300">
+                                                {{ formatCurrency(Math.max((Number(transaksi.harga_paket) || 0) - (Number(transaksi.nominal_masuk) || 0), 0)) }}
+                                            </span>
+                                        </div>
+                                    </TableCell>
                                     <TableCell class="w-[120px] text-center py-3 px-3">
                                         <div class="flex justify-center flex-wrap gap-2 sm:flex-nowrap">
                                             <Button
@@ -978,6 +1112,193 @@ onMounted(() => {
                             >
                                 {{ transaksiData.last_page }}
                             </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <!-- Daftar Tagihan (disabled) -->
+            <Card v-if="false" class="mt-6 border-0 bg-white/90 backdrop-blur-sm shadow-2xl dark:bg-gray-900/90 dark:border dark:border-gray-700/50">
+                <CardHeader class="border-b-2 border-gradient-to-r from-amber-500 to-red-500 bg-gradient-to-r from-amber-50 to-red-50 dark:from-amber-900/20 dark:to-red-900/20 p-6">
+                    <div class="flex items-center justify-between">
+                        <CardTitle class="flex items-center space-x-3 text-2xl font-bold text-gray-900 dark:text-white">
+                            <div class="rounded-xl bg-gradient-to-br from-amber-500 to-red-600 p-3">
+                                <DollarSign class="h-6 w-6 text-white" />
+                            </div>
+                            <span>Daftar Tagihan</span>
+                        </CardTitle>
+                        <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                            <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                                {{ tagihanRows.length }} Tagihan DP/TJ
+                            </span>
+                            <span class="rounded-full bg-red-100 px-3 py-1 font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                                Total Kurang: {{ formatCurrency(totalKurangBayar) }}
+                            </span>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent class="p-4 sm:p-6">
+                    <div class="relative overflow-hidden">
+                        <div class="overflow-x-auto responsive-table">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow class="border-b border-border hover:bg-transparent">
+                                        <TableHead class="w-[80px] py-3 text-center font-semibold text-foreground">No</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Marketing</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Nama Mitra</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">No Whatsapp</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Tgl Transfer</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Paket Brand</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Nama Paket</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Status Pembayaran</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Nominal Masuk</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Harga Paket</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Kurang Bayar</TableHead>
+                                        <TableHead class="w-[120px] py-3 text-center font-semibold text-foreground">Aksi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    <TableRow v-if="tagihanRows.length === 0" class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                        <TableCell colspan="12" class="py-16 text-center">
+                                            <div class="flex flex-col items-center space-y-4">
+                                                <div class="rounded-full bg-gray-100 p-6 dark:bg-gray-800">
+                                                    <Search class="h-12 w-12 text-gray-400" />
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <p class="text-lg font-semibold text-gray-600 dark:text-gray-400">Tidak ada tagihan ditemukan</p>
+                                                    <p class="text-sm text-gray-500 dark:text-gray-500">Semua transaksi telah dilunasi atau tidak ada DP</p>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow v-for="(transaksi, index) in tagihanRows" :key="transaksi.id" class="border-b border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50">
+                                        <!-- No -->
+                                        <TableCell class="w-[80px] text-center py-3 px-3 font-medium text-foreground">
+                                            {{ (transaksiData.current_page - 1) * transaksiData.per_page + index + 1 }}
+                                        </TableCell>
+                                        <!-- Marketing -->
+                                        <TableCell class="relative py-3 px-3 font-semibold text-foreground">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="relative h-10 w-10 rounded-full bg-gradient-to-br from-emerald-400 via-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold shadow-lg">
+                                                    <span class="relative z-10">{{ (transaksi.user?.name || 'U').charAt(0).toUpperCase() }}</span>
+                                                </div>
+                                                <div class="flex flex-col">
+                                                    <span class="font-bold text-gray-800 dark:text-gray-200">{{ transaksi.user.name }}</span>
+                                                    <span class="text-xs text-gray-500 dark:text-gray-400">Marketing</span>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <!-- Nama Mitra -->
+                                        <TableCell class="py-3 px-3 font-medium text-foreground">
+                                            <span class="text-sm">{{ transaksi.nama_mitra || '-' }}</span>
+                                        </TableCell>
+                                        <!-- No Whatsapp -->
+                                        <TableCell class="py-3 px-3 font-medium text-foreground">
+                                            <div class="flex items-center gap-2">
+                                                <Phone class="h-4 w-4 text-muted-foreground" />
+                                                <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                                    {{ transaksi.no_wa || '-' }}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <!-- Tgl Transfer -->
+                                        <TableCell class="py-3 px-3 font-medium text-foreground">
+                                            <span class="text-sm">{{ formatDate(transaksi.tanggal_tf) }}</span>
+                                        </TableCell>
+                                        <!-- Paket Brand -->
+                                        <TableCell class="py-3 px-3 font-medium text-foreground">
+                                            <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                {{ transaksi.paket_brand?.nama || '-' }}
+                                            </span>
+                                        </TableCell>
+                                        <!-- Nama Paket -->
+                                        <TableCell class="py-3 px-3 font-medium text-foreground">
+                                            <span class="text-sm font-medium">{{ transaksi.nama_paket || '-' }}</span>
+                                        </TableCell>
+                                        <!-- Status Pembayaran -->
+                                        <TableCell class="py-3 px-3">
+                                            <Badge
+                                                :class="[
+                                                    'px-4 py-2 text-xs font-bold rounded-xl shadow-lg transition-all duration-200 hover:scale-105',
+                                                    transaksi.status_pembayaran === 'Pelunasan'
+                                                        ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-emerald-200 dark:shadow-emerald-900/50'
+                                                        : transaksi.status_pembayaran === 'Dp / TJ'
+                                                        ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-blue-200 dark:shadow-blue-900/50'
+                                                        : transaksi.status_pembayaran === 'Tambahan Dp'
+                                                        ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-amber-200 dark:shadow-amber-900/50'
+                                                        : 'bg-gradient-to-r from-gray-500 to-slate-600 text-white shadow-gray-200 dark:shadow-gray-900/50'
+                                                ]"
+                                            >
+                                                <span class="flex items-center space-x-1">
+                                                    <span v-if="transaksi.status_pembayaran === 'Pelunasan'">✅</span>
+                                                    <span v-else-if="transaksi.status_pembayaran === 'Dp / TJ'">⏳</span>
+                                                    <span v-else-if="transaksi.status_pembayaran === 'Tambahan Dp'">💰</span>
+                                                    <span v-else>❓</span>
+                                                    <span>{{ transaksi.status_pembayaran }}</span>
+                                                </span>
+                                            </Badge>
+                                        </TableCell>
+                                        <!-- Nominal Masuk -->
+                                        <TableCell class="py-3 px-3">
+                                            <div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-100 via-green-50 to-emerald-100 px-4 py-3 text-right shadow-lg transition-all duration-300 hover:shadow-xl dark:from-emerald-900/30 dark:via-green-900/20 dark:to-emerald-900/30">
+                                                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                                                <span class="relative text-sm font-bold text-emerald-700 dark:text-emerald-300">
+                                                    {{ formatCurrency(transaksi.nominal_masuk) }}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <!-- Harga Paket -->
+                                        <TableCell class="py-3 px-3">
+                                            <div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-100 via-indigo-50 to-blue-100 px-4 py-3 text-right shadow-lg transition-all duration-300 hover:shadow-xl dark:from-blue-900/30 dark:via-indigo-900/20 dark:to-blue-900/30">
+                                                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                                                <span class="relative text-sm font-bold text-blue-700 dark:text-blue-300">
+                                                    {{ formatCurrency(transaksi.harga_paket) || '-' }}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <!-- Kurang Bayar -->
+                                        <TableCell class="py-3 px-3">
+                                            <div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-red-100 via-rose-50 to-red-100 px-4 py-3 text-right shadow-lg transition-all duration-300 hover:shadow-xl dark:from-red-900/30 dark:via-rose-900/20 dark:to-red-900/30">
+                                                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                                                <span class="relative text-sm font-bold text-red-700 dark:text-red-300">
+                                                    {{ formatCurrency(Math.max((Number(transaksi.harga_paket) || 0) - (Number(transaksi.nominal_masuk) || 0), 0)) }}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <!-- Aksi -->
+                                        <TableCell class="w-[120px] text-center py-3 px-3">
+                                            <div class="flex justify-center flex-wrap gap-2 sm:flex-nowrap">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    @click="openViewModal(transaksi)"
+                                                    class="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 p-0 text-white shadow-lg transition-all duration-200 hover:scale-110 hover:shadow-xl dark:from-blue-600 dark:to-blue-700"
+                                                >
+                                                    <Eye class="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    v-if="permissions.canCrud || (permissions.canOnlyViewOwn && transaksi.user_id === currentUser.id)"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    @click="openEditModal(transaksi)"
+                                                    class="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-0 text-white shadow-lg transition-all duration-200 hover:scale-110 hover:shadow-xl dark:from-emerald-600 dark:to-emerald-700"
+                                                >
+                                                    <Edit class="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    v-if="permissions.canCrud || (permissions.canOnlyViewOwn && transaksi.user_id === currentUser.id)"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    @click="openDeleteModal(transaksi)"
+                                                    class="h-10 w-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 p-0 text-white shadow-lg transition-all duration-200 hover:scale-110 hover:shadow-xl dark:from-red-600 dark:to-red-700"
+                                                >
+                                                    <Trash2 class="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
                         </div>
                     </div>
                 </CardContent>
