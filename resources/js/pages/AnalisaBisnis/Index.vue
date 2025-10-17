@@ -5,8 +5,9 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import DatePicker from '@/components/ui/datepicker/DatePicker.vue';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { ChevronDown, Users, Building2, Filter, RefreshCw, X, Target } from 'lucide-vue-next';
 import BrandPerformanceChart from '@/components/BrandPerformanceChart.vue';
 import MarketingPerformanceChart from '@/components/MarketingPerformanceChart.vue';
 import MonthlySpentChart from '@/components/MonthlySpentChart.vue';
@@ -52,14 +53,17 @@ const props = defineProps<Props>();
 // Filters
 const startDate = ref(props.filters.start_date || '');
 const endDate = ref(props.filters.end_date || '');
-const selectedMarketing = ref(props.filters.marketing || '');
-const selectedBrand = ref(props.filters.brand || '');
+const selectedMarketing = ref(props.filters.marketing || 'all');
+const selectedBrand = ref(props.filters.brand || 'all');
 const selectedYear = ref<number>(new Date().getFullYear());
+const showMarketingDropdown = ref(false);
+const showBrandDropdown = ref(false);
 
 // Derived labels
 const brands = computed(() => props.brands || []);
 const marketingUsers = computed(() => props.marketingUsers || []);
 const selectedBrandName = computed(() => {
+  if (selectedBrand.value === 'all' || !selectedBrand.value) return '';
   const b = brands.value.find(x => String(x.id) === String(selectedBrand.value));
   return b ? b.nama : '';
 });
@@ -96,7 +100,7 @@ const fetchMonthlySpent = async () => {
     const params = new URLSearchParams({
       year: String(selectedYear.value || new Date().getFullYear()),
     });
-    if (selectedBrand.value) params.append('brand_id', String(selectedBrand.value));
+    if (selectedBrand.value && selectedBrand.value !== 'all') params.append('brand_id', String(selectedBrand.value));
 
     const res = await fetch('/iklan-budgets/analytics/monthly-spent?' + params.toString());
     if (res.ok) {
@@ -117,8 +121,8 @@ const fetchPaymentStatus = async () => {
       start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
       end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
     });
-    if (selectedMarketing.value) params.append('marketing', String(selectedMarketing.value));
-    if (selectedBrand.value) params.append('brand', String(selectedBrand.value));
+    if (selectedMarketing.value && selectedMarketing.value !== 'all') params.append('marketing', String(selectedMarketing.value));
+    if (selectedBrand.value && selectedBrand.value !== 'all') params.append('brand', String(selectedBrand.value));
     const res = await fetch('/transaksis/analytics/payment-status?' + params.toString());
     if (res.ok) {
       const json = await res.json();
@@ -138,8 +142,8 @@ const fetchSourceAnalytics = async () => {
       start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
       end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
     });
-    if (selectedMarketing.value) params.append('marketing', String(selectedMarketing.value));
-    if (selectedBrand.value) params.append('brand', String(selectedBrand.value));
+    if (selectedMarketing.value && selectedMarketing.value !== 'all') params.append('marketing', String(selectedMarketing.value));
+    if (selectedBrand.value && selectedBrand.value !== 'all') params.append('brand', String(selectedBrand.value));
     const res = await fetch('/transaksis/analytics/sumber?' + params.toString());
     if (res.ok) {
       const json = await res.json();
@@ -159,8 +163,8 @@ const fetchAgeAnalytics = async () => {
       start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
       end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
     });
-    if (selectedMarketing.value) params.append('marketing', String(selectedMarketing.value));
-    if (selectedBrand.value) params.append('brand', String(selectedBrand.value));
+    if (selectedMarketing.value && selectedMarketing.value !== 'all') params.append('marketing', String(selectedMarketing.value));
+    if (selectedBrand.value && selectedBrand.value !== 'all') params.append('brand', String(selectedBrand.value));
     const res = await fetch('/transaksis/analytics/usia?' + params.toString());
     if (res.ok) {
       const json = await res.json();
@@ -180,8 +184,8 @@ const fetchLeadAwalAnalytics = async () => {
       start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
       end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
     });
-    if (selectedMarketing.value) params.append('marketing', String(selectedMarketing.value));
-    if (selectedBrand.value) params.append('brand', String(selectedBrand.value));
+    if (selectedMarketing.value && selectedMarketing.value !== 'all') params.append('marketing', String(selectedMarketing.value));
+    if (selectedBrand.value && selectedBrand.value !== 'all') params.append('brand', String(selectedBrand.value));
     const res = await fetch('/transaksis/analytics/lead-awal?' + params.toString());
     if (res.ok) {
       const json = await res.json();
@@ -201,8 +205,8 @@ const fetchJobAnalytics = async () => {
       start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
       end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
     });
-    if (selectedMarketing.value) params.append('marketing', String(selectedMarketing.value));
-    if (selectedBrand.value) params.append('brand', String(selectedBrand.value));
+    if (selectedMarketing.value && selectedMarketing.value !== 'all') params.append('marketing', String(selectedMarketing.value));
+    if (selectedBrand.value && selectedBrand.value !== 'all') params.append('brand', String(selectedBrand.value));
     const res = await fetch('/transaksis/analytics/pekerjaan?' + params.toString());
     if (res.ok) {
       const json = await res.json();
@@ -215,23 +219,38 @@ const fetchJobAnalytics = async () => {
   }
 };
 
-// Watch filters to reload the page data (server-rendered) and charts
-watch([startDate, endDate, selectedMarketing, selectedBrand], () => {
-  router.get('/analisa-bisnis', {
-    start_date: startDate.value || undefined,
-    end_date: endDate.value || undefined,
-    marketing: selectedMarketing.value || undefined,
-    brand: selectedBrand.value || undefined,
-  }, { preserveState: true, replace: true });
-
-  // Refresh client-fetched charts
+// Apply/Reset filter helpers (mirroring Dashboard behavior)
+const applyMarketingFilter = (value: string) => {
+  selectedMarketing.value = value;
+};
+const applyBrandFilter = (value: string) => {
+  selectedBrand.value = value;
+};
+const applyFilters = () => {
+  router.get(
+    '/analisa-bisnis',
+    {
+      start_date: startDate.value || undefined,
+      end_date: endDate.value || undefined,
+      marketing: selectedMarketing.value !== 'all' ? selectedMarketing.value : undefined,
+      brand: selectedBrand.value !== 'all' ? selectedBrand.value : undefined,
+    },
+    { preserveState: true, replace: true },
+  );
   fetchMonthlySpent();
   fetchPaymentStatus();
   fetchSourceAnalytics();
   fetchAgeAnalytics();
   fetchLeadAwalAnalytics();
   fetchJobAnalytics();
-});
+};
+const resetFilters = () => {
+  startDate.value = '';
+  endDate.value = '';
+  selectedMarketing.value = 'all';
+  selectedBrand.value = 'all';
+  applyFilters();
+};
 
 // Watch year for monthly spent
 watch(selectedYear, () => {
@@ -291,33 +310,138 @@ const refreshJobAnalytics = () => fetchJobAnalytics();
               <label class="text-sm text-gray-600 dark:text-gray-300">Tanggal Akhir</label>
               <DatePicker v-model="endDate" />
             </div>
-            <div>
-              <label class="text-sm text-gray-600 dark:text-gray-300">Marketing</label>
-              <Select v-model="selectedMarketing">
-                <SelectTrigger>
-                  <SelectValue placeholder="Semua Marketing" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Semua Marketing</SelectItem>
-                  <SelectItem v-for="m in marketingUsers" :key="m.id" :value="String(m.id)">{{ m.name }}</SelectItem>
-                </SelectContent>
-              </Select>
+            <!-- Marketing Dropdown -->
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Marketing</label>
+              <div class="relative">
+                <Button
+                  variant="outline"
+                  class="flex w-full items-center justify-between"
+                  @click="showMarketingDropdown = !showMarketingDropdown"
+                >
+                  <span class="flex items-center gap-2 truncate">
+                    <Users class="h-4 w-4 text-emerald-500" />
+                    <span>
+                      {{
+                        selectedMarketing === 'all'
+                          ? 'Semua Marketing'
+                          : props.topMarketing.find((m) => m.id.toString() === selectedMarketing)?.name ||
+                            marketingUsers.find((m) => m.id.toString() === selectedMarketing)?.name || 'Marketing'
+                      }}
+                    </span>
+                  </span>
+                  <ChevronDown class="h-4 w-4 text-gray-400" />
+                </Button>
+                <div
+                  v-if="showMarketingDropdown"
+                  class="absolute z-50 mt-2 w-full rounded-md border bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                >
+                  <div
+                    class="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    @click="applyMarketingFilter('all'); showMarketingDropdown = false;"
+                  >
+                    <Target class="h-4 w-4 text-emerald-500" />
+                    <span class="font-medium">Semua Marketing</span>
+                  </div>
+                  <div
+                    v-for="marketing in props.topMarketing"
+                    :key="marketing.id"
+                    class="flex cursor-pointer items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    @click="applyMarketingFilter(marketing.id.toString()); showMarketingDropdown = false; applyFilters();"
+                  >
+                    <div class="flex items-center gap-2">
+                      <Users class="h-4 w-4 text-emerald-500" />
+                      <span class="font-medium">{{ marketing.name }}</span>
+                    </div>
+                    <Badge class="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200">{{ marketing.total_leads }} leads</Badge>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <label class="text-sm text-gray-600 dark:text-gray-300">Brand</label>
-              <Select v-model="selectedBrand">
-                <SelectTrigger>
-                  <SelectValue placeholder="Semua Brand" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Semua Brand</SelectItem>
-                  <SelectItem v-for="b in brands" :key="b.id" :value="String(b.id)">{{ b.nama }}</SelectItem>
-                </SelectContent>
-              </Select>
+            <!-- Brand Dropdown -->
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Brand</label>
+              <div class="relative">
+                <Button
+                  variant="outline"
+                  class="flex w-full items-center justify-between"
+                  @click="showBrandDropdown = !showBrandDropdown"
+                >
+                  <span class="flex items-center gap-2 truncate">
+                    <Building2 class="h-4 w-4 text-purple-500" />
+                    <span>
+                      {{
+                        selectedBrand === 'all'
+                          ? 'Semua Brand'
+                          : props.brandPerformance.find((b) => b.id.toString() === selectedBrand)?.nama ||
+                            brands.find((b) => b.id.toString() === selectedBrand)?.nama || 'Brand'
+                      }}
+                    </span>
+                  </span>
+                  <ChevronDown class="h-4 w-4 text-gray-400" />
+                </Button>
+                <div
+                  v-if="showBrandDropdown"
+                  class="absolute z-50 mt-2 w-full rounded-md border bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                >
+                  <div
+                    class="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    @click="applyBrandFilter('all'); showBrandDropdown = false;"
+                  >
+                    <Target class="h-4 w-4 text-purple-500" />
+                    <span class="font-medium">Semua Brand</span>
+                  </div>
+                  <div
+                    v-for="brand in props.brandPerformance"
+                    :key="brand.id"
+                    class="flex cursor-pointer items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    @click="applyBrandFilter(brand.id.toString()); showBrandDropdown = false; applyFilters();"
+                  >
+                    <div class="flex items-center gap-2">
+                      <Building2 class="h-4 w-4 text-purple-500" />
+                      <span class="font-medium">{{ brand.nama }}</span>
+                    </div>
+                    <Badge class="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200">{{ brand.total_leads }} leads</Badge>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 mt-4">
+          <!-- Action Buttons -->
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <div class="flex items-center gap-3">
+              <Button @click="applyFilters" class="bg-indigo-600 text-white hover:bg-indigo-700">
+                <Filter class="mr-2 h-4 w-4" />
+                Terapkan Filter
+              </Button>
+              <Button variant="outline" @click="resetFilters" class="">
+                <RefreshCw class="mr-2 h-4 w-4" />
+                Reset
+              </Button>
+            </div>
+
+            <div v-if="selectedMarketing !== 'all' || selectedBrand !== 'all'" class="ml-auto flex flex-wrap items-center gap-2">
+              <span class="text-xs text-gray-500 dark:text-gray-400">Filter Aktif:</span>
+              <Badge v-if="selectedMarketing !== 'all'" class="flex items-center gap-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200">
+                <Users class="h-3 w-3" />
+                <span>{{ props.topMarketing.find((m) => m.id.toString() === selectedMarketing)?.name }}</span>
+                <Button variant="ghost" size="sm" class="h-6 px-1" @click="applyMarketingFilter('all')">
+                  <X class="h-3 w-3" />
+                </Button>
+              </Badge>
+              <Badge v-if="selectedBrand !== 'all'" class="flex items-center gap-1 bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200">
+                <Building2 class="h-3 w-3" />
+                <span>{{ props.brandPerformance.find((b) => b.id.toString() === selectedBrand)?.nama }}</span>
+                <Button variant="ghost" size="sm" class="h-6 px-1" @click="applyBrandFilter('all')">
+                  <X class="h-3 w-3" />
+                </Button>
+              </Badge>
+            </div>
+          </div>
+
+          <!-- Monthly Spent Year Control -->
+          <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
               <label class="text-sm text-gray-600 dark:text-gray-300">Tahun (Monthly Spent)</label>
               <Input type="number" v-model.number="selectedYear" min="2020" max="2030" />
