@@ -26,14 +26,6 @@ const mainNavItems = computed<NavItem[]>(() => {
         },
     ];
 
-    // Analisa Bisnis - accessible by all roles but with different permissions
-    if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess || permissions.value.hasLimitedAccess) {
-        items.push({
-            title: 'Analisa Bisnis',
-            href: '/analisa-bisnis',
-            icon: BarChart3,
-        });
-    }
 
     // Mitra - accessible by all roles but with different permissions
     if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess || permissions.value.hasLimitedAccess) {
@@ -118,6 +110,15 @@ const mainNavItems = computed<NavItem[]>(() => {
             title: 'Pekerjaan',
             href: '/pekerjaans',
             icon: Briefcase,
+        });
+    }
+
+    // Analisa Bisnis - accessible by all roles but with different permissions
+    if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess || permissions.value.hasLimitedAccess) {
+        items.push({
+            title: 'Analisa Bisnis',
+            href: '/analisa-bisnis',
+            icon: BarChart3,
         });
     }
 
