@@ -777,12 +777,6 @@ onMounted(() => {
                             <span class="rounded-full bg-blue-100 px-3 py-1 font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
                                 {{ transaksiData.total }} Total
                             </span>
-                            <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-                                {{ tagihanRows.length }} Tagihan DP/TJ
-                            </span>
-                            <span class="rounded-full bg-red-100 px-3 py-1 font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300">
-                                Total Kurang: {{ formatCurrency(totalKurangBayar) }}
-                            </span>
                         </div>
                     </div>
                 </CardHeader>
@@ -868,13 +862,12 @@ onMounted(() => {
                                         <TableHead class="py-3 font-semibold text-foreground">Status Pembayaran</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Nominal Masuk</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Harga Paket</TableHead>
-                                        <TableHead class="py-3 font-semibold text-foreground">Kurang Bayar</TableHead>
                                         <TableHead class="w-[120px] py-3 text-center font-semibold text-foreground">Aksi</TableHead>
                                     </TableRow>
                                 </TableHeader>
                             <TableBody>
                                 <TableRow v-if="filteredTransaksiRows.length === 0" class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                    <TableCell colspan="20" class="py-16 text-center">
+                                    <TableCell colspan="19" class="py-16 text-center">
                                         <div class="flex flex-col items-center space-y-4">
                                             <div class="rounded-full bg-gray-100 p-6 dark:bg-gray-800">
                                                 <Search class="h-12 w-12 text-gray-400" />
@@ -1000,17 +993,8 @@ onMounted(() => {
                                     <TableCell class="py-3 px-3">
                                         <div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-100 via-indigo-50 to-blue-100 px-4 py-3 text-right shadow-lg transition-all duration-300 hover:shadow-xl dark:from-blue-900/30 dark:via-indigo-900/20 dark:to-blue-900/30">
                                             <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-                                            <span class="relative text-sm font-bold text-blue-700 dark:text-blue-300">
+                                        <span class="relative text-sm font-bold text-blue-700 dark:text-blue-300">
                                                 {{ formatCurrency(transaksi.harga_paket) || '-' }}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    <!-- Kurang Bayar -->
-                                    <TableCell class="py-3 px-3">
-                                        <div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-red-100 via-rose-50 to-red-100 px-4 py-3 text-right shadow-lg transition-all duration-300 hover:shadow-xl dark:from-red-900/30 dark:via-rose-900/20 dark:to-red-900/30">
-                                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-                                            <span class="relative text-sm font-bold text-red-700 dark:text-red-300">
-                                                {{ formatCurrency(Math.max((Number(transaksi.harga_paket) || 0) - (Number(transaksi.nominal_masuk) || 0), 0)) }}
                                             </span>
                                         </div>
                                     </TableCell>

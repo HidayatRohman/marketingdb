@@ -33,6 +33,9 @@ class TransaksiController extends Controller
                   ->orWhere('kabupaten', 'like', "%{$search}%")
                   ->orWhere('provinsi', 'like', "%{$search}%")
                   ->orWhere('no_wa', 'like', "%{$search}%")
+                  // Support searching by Nama Mitra
+                  ->orWhere('nama_mitra', 'like', "%{$search}%")
+                  // Support searching by Marketing (user name)
                   ->orWhereHas('user', function ($userQuery) use ($search) {
                       $userQuery->where('name', 'like', "%{$search}%");
                   });

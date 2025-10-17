@@ -288,7 +288,7 @@ const refreshJobAnalytics = () => fetchJobAnalytics();
             <TrendingUp class="h-5 w-5" />
             <span class="text-sm font-medium">Analisa Bisnis</span>
           </div>
-          <h1 class="mb-2 text-3xl font-bold tracking-tight sm:text-4xl">Wawasan Kinerja Bisnis</h1>
+          <h1 class="mb-2 text-3xl font-bold tracking-tight sm:text-4xl">Perkembangan Bisnis</h1>
           <p class="text-indigo-100 opacity-90 sm:text-lg">Pantau performa brand, marketing, dan tren transaksi</p>
         </div>
         <div class="absolute top-0 right-0 -mt-32 -mr-32 h-64 w-64 rounded-full bg-gradient-to-br from-white/20 to-white/5 blur-3xl"></div>
