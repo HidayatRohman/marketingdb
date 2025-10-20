@@ -97,9 +97,9 @@ const handleModalSuccess = () => {
     <Head title="Kelola Label" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-8">
+        <div class="mx-6 mt-6 space-y-6">
             <!-- Header Section -->
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-8 text-white">
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-4 sm:p-6 text-white my-2 sm:my-3 shadow-sm">
                 <div class="relative z-10">
                     <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                         <div>
@@ -109,7 +109,7 @@ const handleModalSuccess = () => {
                             </h1>
                             <p class="text-xl text-blue-100">Kelola label untuk kategorisasi mitra bisnis dengan mudah</p>
                         </div>
-                        <Button @click="openCreateModal" size="lg" class="gap-2 bg-white font-semibold text-blue-600 hover:bg-blue-50">
+                        <Button @click="openCreateModal" size="lg" class="gap-2 bg-white font-semibold text-blue-600 hover:bg-blue-50 w-full md:w-auto">
                             <Plus class="h-5 w-5" />
                             Tambah Label
                         </Button>
