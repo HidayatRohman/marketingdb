@@ -102,9 +102,9 @@ const handleModalSuccess = () => {
     <Head title="Kelola Sumber" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-8">
+        <div class="mx-6 mt-6 space-y-6">
             <!-- Header Section -->
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-green-600 via-teal-600 to-cyan-600 p-8 text-white">
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-green-600 via-teal-600 to-cyan-600 p-4 sm:p-6 text-white my-2 sm:my-3 shadow-sm">
                 <div class="relative z-10">
                     <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                         <div>
@@ -118,7 +118,7 @@ const handleModalSuccess = () => {
                             v-if="props.permissions.canCrud"
                             @click="openCreateModal" 
                             size="lg" 
-                            class="gap-2 bg-white font-semibold text-green-600 hover:bg-green-50"
+                            class="gap-2 bg-white font-semibold text-green-600 hover:bg-green-50 w-full md:w-auto"
                         >
                             <Plus class="h-5 w-5" />
                             Tambah Sumber
