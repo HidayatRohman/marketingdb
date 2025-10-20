@@ -38,9 +38,12 @@ class IklanBudget extends Model
                 $model->cost_per_lead = 0;
             }
 
-            // Calculate ROAS if omset and spent_amount exist
+            // Calculate ROAS as OMSET / (Spent + PPN)
+            $ppnRate = (float) SiteSetting::get('ppn_rate', 11);
+            $spentMultiplier = 1 + ($ppnRate / 100.0);
             if ($model->omset && $model->spent_amount > 0) {
-                $model->roas = $model->omset / $model->spent_amount;
+                $spentWithTax = $model->spent_amount * $spentMultiplier;
+                $model->roas = $spentWithTax > 0 ? $model->omset / $spentWithTax : 0;
             } else {
                 $model->roas = 0;
             }
@@ -147,12 +150,12 @@ class IklanBudget extends Model
             ? as total_closing,
             ? as total_omset,
             CASE 
-                WHEN SUM(spent_amount) > 0 THEN ? / SUM(spent_amount)
+                WHEN SUM(spent_amount * ?) > 0 THEN ? / SUM(spent_amount * ?)
                 ELSE 0 
             END as avg_roas,
             0 as avg_cost_per_lead,
             ? as total_leads
-        ', [$spentMultiplier, $totalClosing, $totalOmset, $totalOmset, $totalLeads]);
+        ', [$spentMultiplier, $totalClosing, $totalOmset, $spentMultiplier, $totalOmset, $spentMultiplier, $totalLeads]);
 
         if ($startDate && $endDate) {
             $query->whereBetween('tanggal', [$startDate, $endDate]);

@@ -375,7 +375,7 @@
                                             <span class="font-medium text-green-700">{{ formatCurrency(budget.omset) }}</span>
                                         </TableCell>
                                         <TableCell class="text-center">
-                                            <span v-if="budget.spent_amount > 0 && budget.omset > 0" class="font-medium text-indigo-600">{{ (budget.omset / budget.spent_amount).toFixed(2) }}</span>
+                                            <span v-if="((Number(budget.spent_amount) || 0) * ppnMultiplier) > 0 && budget.omset > 0" class="font-medium text-indigo-600">{{ (budget.omset / ((Number(budget.spent_amount) || 0) * ppnMultiplier)).toFixed(2) }}</span>
                                             <span v-else class="text-red-500 font-medium">0.00</span>
                                         </TableCell>
                                         <TableCell>
@@ -763,7 +763,7 @@ const summaryReport = computed(() => {
   // Calculate derived metrics for each brand
   return Object.values(brandGroups).map((group: any) => {
     group.cost_per_lead = group.real_lead > 0 ? group.spent / group.real_lead : 0
-    group.roas = group.spent > 0 ? group.omset / group.spent : 0
+    group.roas = group.spent_with_tax > 0 ? group.omset / group.spent_with_tax : 0
     return group
   })
 })
