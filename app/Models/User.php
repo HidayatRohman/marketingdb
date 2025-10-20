@@ -81,6 +81,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is advertiser
+     */
+    public function isAdvertiser(): bool
+    {
+        return $this->hasRole('advertiser');
+    }
+
+    /**
      * Get the mitras for the user (marketing).
      */
     public function mitras()
@@ -113,6 +121,7 @@ class User extends Authenticatable
             'super_admin' => 'Super Admin',
             'admin' => 'Admin',
             'marketing' => 'Marketing',
+            'advertiser' => 'Advertiser',
             default => ucfirst($this->role),
         };
     }

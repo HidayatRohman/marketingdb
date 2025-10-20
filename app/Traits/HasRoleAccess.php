@@ -34,7 +34,7 @@ trait HasRoleAccess
      */
     public function hasFullAccess(): bool
     {
-        return $this->isSuperAdmin();
+        return $this->isSuperAdmin() || $this->isAdvertiser();
     }
 
     /**

@@ -22,7 +22,10 @@ class Brand extends Model
     public function getLogoUrlAttribute()
     {
         if ($this->logo) {
-            return asset('storage/' . $this->logo);
+            $path = storage_path('app/public/' . $this->logo);
+            if (file_exists($path)) {
+                return asset('storage/' . $this->logo);
+            }
         }
         return null;
     }

@@ -11,7 +11,7 @@ interface User {
     id?: number;
     name: string;
     email: string;
-    role: 'super_admin' | 'admin' | 'marketing';
+    role: 'super_admin' | 'admin' | 'marketing' | 'advertiser';
     password?: string;
 }
 
@@ -30,7 +30,7 @@ const emit = defineEmits<{
 const form = useForm({
     name: '',
     email: '',
-    role: 'marketing' as 'super_admin' | 'admin' | 'marketing',
+    role: 'marketing' as 'super_admin' | 'admin' | 'marketing' | 'advertiser',
     password: '',
     password_confirmation: '',
 });
@@ -85,12 +85,14 @@ const roleLabels = {
     super_admin: 'Super Admin',
     admin: 'Admin',
     marketing: 'Marketing',
+    advertiser: 'Advertiser',
 };
 
 const roleDescriptions = {
     super_admin: 'Akses penuh ke semua fitur sistem',
     admin: 'Dapat mengelola user dan operasional',
     marketing: 'Akses terbatas untuk tim pemasaran',
+    advertiser: 'Akses penuh ke semua menu dan dapat edit data',
 };
 </script>
 
@@ -162,6 +164,7 @@ const roleDescriptions = {
                                         'bg-red-100 text-red-800': form.role === 'super_admin',
                                         'bg-blue-100 text-blue-800': form.role === 'admin',
                                         'bg-green-100 text-green-800': form.role === 'marketing',
+                                        'bg-orange-100 text-orange-800': form.role === 'advertiser',
                                     }"
                                 >
                                     {{ roleLabels[form.role] }}
@@ -179,6 +182,7 @@ const roleDescriptions = {
                             <option value="marketing">Marketing</option>
                             <option value="admin">Admin</option>
                             <option value="super_admin">Super Admin</option>
+                            <option value="advertiser">Advertiser</option>
                         </select>
                         <p v-if="form.errors.role" class="text-sm text-red-500">{{ form.errors.role }}</p>
                         <p v-if="mode !== 'view'" class="text-sm text-muted-foreground">{{ roleDescriptions[form.role] }}</p>
