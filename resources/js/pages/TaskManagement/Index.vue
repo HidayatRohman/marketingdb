@@ -389,19 +389,17 @@ const canDeleteTask = (task: Task) => {
         <div class="py-6">
             <div class="w-full px-4 sm:px-6 lg:px-8">
                 <!-- Header -->
-                <div class="mb-8 flex items-center justify-between">
+                <div class="rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 p-4 sm:p-6 my-2 sm:my-3 shadow-sm mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-white">
                     <div>
-                        <h1
-                            class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-3xl font-bold text-slate-900 text-transparent dark:text-slate-100"
-                        >
+                        <h1 class="text-3xl font-bold text-white">
                             Task Management
                         </h1>
-                        <p class="mt-2 text-lg text-slate-600 dark:text-slate-400">Kelola dan pantau progress task Anda dengan mudah</p>
+                        <p class="mt-2 text-lg text-white/90">Kelola dan pantau progress task Anda dengan mudah</p>
                     </div>
                     <Button
                         v-if="props.permissions.canCrud || props.permissions.hasFullAccess"
                         @click="openCreateDialog"
-                        class="flex transform items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transition-all duration-200 hover:scale-105 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
+                        class="w-full md:w-auto flex transform items-center gap-2 bg-white text-blue-600 shadow-lg transition-all duration-200 hover:scale-105 hover:bg-white/90"
                     >
                         <Plus class="h-4 w-4" />
                         Tambah Task
