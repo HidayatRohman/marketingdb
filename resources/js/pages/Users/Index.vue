@@ -75,30 +75,32 @@ const roleLabels = {
 
 <template>
     <AppLayout>
-        <div class="space-y-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold">Manajemen Pengguna</h1>
-                    <p class="text-muted-foreground">Kelola akses pengguna sistem Marketing Database</p>
+        <div class="layout-content space-y-6">
+            <div class="rounded-xl border shadow-sm bg-gradient-to-r from-indigo-50 via-sky-50 to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 p-4 sm:p-6 my-2 sm:my-3">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold">Manajemen Pengguna</h1>
+                        <p class="text-muted-foreground">Kelola akses pengguna sistem Marketing Database</p>
+                    </div>
+                    <Button @click="showCreateModal" class="gap-2 w-full sm:w-auto">
+                        <UserPlus class="h-4 w-4" />
+                        Tambah Pengguna
+                    </Button>
                 </div>
-                <Button @click="showCreateModal" class="gap-2">
-                    <UserPlus class="h-4 w-4" />
-                    Tambah Pengguna
-                </Button>
             </div>
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div class="col-span-2">
-                    <div class="flex items-center gap-2">
-                        <Input v-model="search" placeholder="Cari nama atau email" class="flex-1" />
-                        <select v-model="roleFilter" class="rounded-md border px-3 py-2 text-sm">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <Input v-model="search" placeholder="Cari nama atau email" class="w-full sm:flex-1" />
+                        <select v-model="roleFilter" class="w-full sm:w-44 rounded-md border px-3 py-2 text-sm">
                             <option value="">Semua Role</option>
                             <option value="marketing">Marketing</option>
                             <option value="admin">Admin</option>
                             <option value="super_admin">Super Admin</option>
                             <option value="advertiser">Advertiser</option>
                         </select>
-                        <Button variant="outline" class="gap-2">
+                        <Button variant="outline" class="w-full sm:w-auto gap-2">
                             <Search class="h-4 w-4" />
                             Filter
                         </Button>
@@ -106,21 +108,21 @@ const roleLabels = {
                 </div>
             </div>
 
-            <div class="rounded-lg border">
-                <table class="w-full text-sm">
+            <div class="rounded-lg border overflow-x-auto">
+                <table class="w-full min-w-[640px] text-sm">
                     <thead>
                         <tr class="bg-muted">
-                            <th class="p-3 text-left">Nama</th>
-                            <th class="p-3 text-left">Email</th>
-                            <th class="p-3 text-left">Role</th>
-                            <th class="p-3 text-right">Aksi</th>
+                            <th class="p-2 sm:p-3 text-left">Nama</th>
+                            <th class="p-2 sm:p-3 text-left">Email</th>
+                            <th class="p-2 sm:p-3 text-left">Role</th>
+                            <th class="p-2 sm:p-3 text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="user in users" :key="user.id" class="border-t">
-                            <td class="p-3">{{ user.name }}</td>
-                            <td class="p-3">{{ user.email }}</td>
-                            <td class="p-3">
+                            <td class="p-2 sm:p-3">{{ user.name }}</td>
+                            <td class="p-2 sm:p-3">{{ user.email }}</td>
+                            <td class="p-2 sm:p-3">
                                 <Badge
                                     :class="{
                                         'bg-red-100 text-red-800': user.role === 'super_admin',
@@ -132,7 +134,7 @@ const roleLabels = {
                                     {{ roleLabels[user.role] }}
                                 </Badge>
                             </td>
-                            <td class="p-3 text-right">
+                            <td class="p-2 sm:p-3 text-right">
                                 <div class="flex items-center justify-end gap-2">
                                     <Button variant="outline" size="sm" @click="showViewModal(user)">
                                         Detail
