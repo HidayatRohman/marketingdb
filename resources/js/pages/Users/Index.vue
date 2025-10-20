@@ -65,6 +65,17 @@ const onSuccess = () => {
     router.reload({ only: ['users', 'filters', 'permissions'] })
 }
 
+// Apply filters by fetching users with query params
+const applyFilters = () => {
+    router.get('/users', {
+        search: search.value || undefined,
+        role: roleFilter.value || undefined,
+    }, {
+        preserveState: true,
+        replace: true,
+    });
+}
+
 const roleLabels = {
     super_admin: 'Super Admin',
     admin: 'Admin',
@@ -92,15 +103,15 @@ const roleLabels = {
             <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div class="col-span-2">
                     <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <Input v-model="search" placeholder="Cari nama atau email" class="w-full sm:flex-1" />
-                        <select v-model="roleFilter" class="w-full sm:w-44 rounded-md border px-3 py-2 text-sm">
+                        <Input v-model="search" @keyup.enter="applyFilters" placeholder="Cari nama atau email" class="w-full sm:flex-1" />
+                        <select v-model="roleFilter" @change="applyFilters" class="w-full sm:w-44 rounded-md border px-3 py-2 text-sm">
                             <option value="">Semua Role</option>
                             <option value="marketing">Marketing</option>
                             <option value="admin">Admin</option>
                             <option value="super_admin">Super Admin</option>
                             <option value="advertiser">Advertiser</option>
                         </select>
-                        <Button variant="outline" class="w-full sm:w-auto gap-2">
+                        <Button variant="outline" class="w-full sm:w-auto gap-2" @click="applyFilters">
                             <Search class="h-4 w-4" />
                             Filter
                         </Button>
