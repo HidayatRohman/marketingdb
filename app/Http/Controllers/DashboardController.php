@@ -869,7 +869,7 @@ class DashboardController extends Controller
 
         return $results->map(function ($item) {
             $costPerLead = $item->real_lead > 0 ? $item->spent / $item->real_lead : 0;
-            $roas = $item->spent > 0 ? $item->omset / $item->spent : 0;
+            $roas = $item->spent_with_tax > 0 ? $item->omset / $item->spent_with_tax : 0;
             
             return [
                 'brand' => $item->brand_name,
