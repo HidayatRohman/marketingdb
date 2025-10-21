@@ -28,7 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const page = usePage();
 const auth = computed(() => page.props.auth);
-const { siteTitle } = useSiteSettings();
+const { siteTitle, siteLogo } = useSiteSettings();
 
 const isCurrentRoute = computed(() => (url: NonNullable<InertiaLinkProps['href']>) => urlIsActive(url, page.url));
 
@@ -64,12 +64,7 @@ const rightNavItems: NavItem[] = [
         <div class="border-b border-sidebar-border/80">
             <!-- Mobile Layout -->
             <div class="flex h-16 items-center justify-between px-4 lg:hidden">
-                <!-- Mobile Logo - Left -->
-                <Link :href="dashboard()" class="flex items-center gap-x-2">
-                    <AppLogo />
-                </Link>
-                
-                <!-- Mobile Menu - Right -->
+                <!-- Mobile Menu - Left -->
                 <Sheet>
                     <SheetTrigger :as-child="true">
                         <Button variant="ghost" size="icon" class="h-9 w-9">
@@ -77,7 +72,7 @@ const rightNavItems: NavItem[] = [
                             <span class="sr-only">Open menu</span>
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="right" class="w-[300px] p-6">
+                    <SheetContent side="left" class="w-[300px] p-6">
                         <SheetTitle class="sr-only">{{ siteTitle }} Navigation</SheetTitle>
                         <SheetHeader class="flex justify-start text-left mb-6">
                             <div class="flex items-center gap-2">
@@ -123,6 +118,14 @@ const rightNavItems: NavItem[] = [
                         </div>
                     </SheetContent>
                 </Sheet>
+
+                <!-- Mobile Logo - Right (small icon) -->
+                <Link :href="dashboard()" class="flex items-center gap-x-2">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/15 p-1 backdrop-blur-sm">
+                        <img v-if="siteLogo" :src="siteLogo" :alt="siteTitle" class="size-7 rounded object-contain" />
+                        <AppLogoIcon v-else class="size-7 fill-current text-black dark:text-white" />
+                    </div>
+                </Link>
             </div>
 
             <!-- Desktop Layout -->
