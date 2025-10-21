@@ -3,7 +3,6 @@
     <!-- Date Input Trigger -->
     <div
       @click="toggleCalendar"
-      @focus="toggleCalendar"
       @keydown.enter.prevent="toggleCalendar"
       @keydown.space.prevent="toggleCalendar"
       tabindex="0"
