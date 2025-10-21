@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,14 +12,30 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('transaksis', function (Blueprint $table) {
-            // Drop foreign key constraint first
-            $table->dropForeign(['mitra_id']);
-            // Drop the mitra_id column
-            $table->dropColumn('mitra_id');
-            // Add nama_mitra as string
-            $table->string('nama_mitra')->after('user_id');
-        });
+        if (!Schema::hasTable('transaksis')) {
+            return;
+        }
+
+        // Drop FK on mitra_id if exists, then drop column
+        if (Schema::hasColumn('transaksis', 'mitra_id')) {
+            $constraints = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksis' AND COLUMN_NAME = 'mitra_id' AND REFERENCED_TABLE_NAME IS NOT NULL");
+            foreach ($constraints as $row) {
+                $name = $row->CONSTRAINT_NAME ?? $row->constraint_name ?? null;
+                if ($name) {
+                    DB::statement("ALTER TABLE `transaksis` DROP FOREIGN KEY `{$name}`");
+                }
+            }
+            Schema::table('transaksis', function (Blueprint $table) {
+                $table->dropColumn('mitra_id');
+            });
+        }
+
+        // Add nama_mitra string column if not exists
+        if (!Schema::hasColumn('transaksis', 'nama_mitra')) {
+            Schema::table('transaksis', function (Blueprint $table) {
+                $table->string('nama_mitra')->after('user_id');
+            });
+        }
     }
 
     /**
@@ -26,11 +43,22 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('transaksis', function (Blueprint $table) {
-            // Drop nama_mitra column
-            $table->dropColumn('nama_mitra');
-            // Add back mitra_id with foreign key
-            $table->foreignId('mitra_id')->after('user_id')->constrained()->onDelete('cascade');
-        });
+        if (!Schema::hasTable('transaksis')) {
+            return;
+        }
+
+        // Drop nama_mitra if exists
+        if (Schema::hasColumn('transaksis', 'nama_mitra')) {
+            Schema::table('transaksis', function (Blueprint $table) {
+                $table->dropColumn('nama_mitra');
+            });
+        }
+
+        // Restore mitra_id FK if not exists
+        if (!Schema::hasColumn('transaksis', 'mitra_id')) {
+            Schema::table('transaksis', function (Blueprint $table) {
+                $table->foreignId('mitra_id')->after('user_id')->constrained()->onDelete('cascade');
+            });
+        }
     }
 };
