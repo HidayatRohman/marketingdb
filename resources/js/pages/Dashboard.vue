@@ -247,8 +247,11 @@ const endDate = ref(props.filters.end_date || '');
 const selectedMarketing = ref(props.filters.marketing || 'all');
 const selectedBrand = ref(props.filters.brand || 'all');
 const selectedDateRange = ref('this_month');
-const selectedMonth = ref('')
-const selectedYear = ref('');
+const nowForFilter = new Date();
+const defaultMonth = String(nowForFilter.getMonth() + 1).padStart(2, '0');
+const defaultYear = String(nowForFilter.getFullYear());
+const selectedMonth = ref((props.filters as any)?.month || defaultMonth)
+const selectedYear = ref((props.filters as any)?.year || defaultYear);
 const refreshing = ref(false);
 const showMarketingDropdown = ref(false);
 const showBrandDropdown = ref(false);
@@ -258,6 +261,33 @@ const tooltipPosition = ref({ x: 0, y: 0 });
 const showTooltip = ref(false);
 const hoveredProgressLabel = ref<LabelDistribution | null>(null);
 const showProgressTooltip = ref(false);
+
+// Period label for subtitle
+const monthNames: Record<string, string> = {
+    '01': 'Januari',
+    '02': 'Februari',
+    '03': 'Maret',
+    '04': 'April',
+    '05': 'Mei',
+    '06': 'Juni',
+    '07': 'Juli',
+    '08': 'Agustus',
+    '09': 'September',
+    '10': 'Oktober',
+    '11': 'November',
+    '12': 'Desember',
+};
+
+const reportPeriodLabel = computed(() => {
+    const month = selectedMonth.value;
+    const year = selectedYear.value;
+    const monthLabel = month ? monthNames[month] || month : '';
+
+    if (month && year) return `${monthLabel} ${year}`;
+    if (month) return `${monthLabel}`;
+    if (year) return `${year}`;
+    return '';
+});
 
 // Computed values
 // Conversion Rate based on Transaksis: Closing / Lead (filtered, grouped by Brand)
@@ -554,6 +584,11 @@ onMounted(() => {
     onUnmounted(() => {
         document.removeEventListener('click', handleClickOutside);
     });
+
+    // Apply default month/year filter to URL if none provided
+    if (!(props.filters as any)?.month && !(props.filters as any)?.year) {
+        filterByMonthYear();
+    }
 });
 
 // PPN percentage for labeling Spent+PPN columns consistently
@@ -608,7 +643,10 @@ const ppnPercentage = computed(() => {
                         <BarChart3 class="h-6 w-6" />
                         Report Budget Vs Omset
                     </CardTitle>
-                    <p class="text-sm text-muted-foreground">Ringkasan performa budget marketing vs omset per brand</p>
+                    <p class="text-sm font-medium text-blue-700 dark:text-blue-300">
+                        Ringkasan performa budget marketing vs omset per brand
+                        <span v-if="reportPeriodLabel" class="ml-1">— {{ reportPeriodLabel }}</span>
+                    </p>
                 </CardHeader>
                 <CardContent class="p-6">
                     <!-- Filter Section -->
