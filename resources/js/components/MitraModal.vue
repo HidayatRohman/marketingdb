@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import DatePicker from '@/components/ui/datepicker/DatePicker.vue';
+
 import { useForm } from '@inertiajs/vue3';
 import { Building2, Calendar, FileText, Loader2, MapPin, MessageSquare, Package, Phone, Tag, User } from 'lucide-vue-next';
 import { watch, computed } from 'vue';
@@ -214,6 +214,14 @@ const formatDate = (dateString: string) => {
     });
 };
 
+// Ensure native date input opens picker on click/focus
+const openNativePicker = (e: Event) => {
+    const target = e.target as HTMLInputElement | null;
+    if (target && typeof (target as any).showPicker === 'function') {
+        (target as any).showPicker();
+    }
+};
+
 // Reset form when modal closes
 watch(
     () => props.open,
@@ -362,11 +370,15 @@ const selectedBrand = computed(() => {
                                     {{ formatDate(form.tanggal_lead) }}
                                 </span>
                             </div>
-                            <DatePicker
+                            <input
                                 v-else
+                                id="tanggal_lead"
+                                type="date"
                                 v-model="form.tanggal_lead"
-                                placeholder="Pilih tanggal lead"
                                 :disabled="mode === 'view'"
+                                @click="openNativePicker"
+                                @focus="openNativePicker"
+                                class="h-12 w-full rounded-lg border border-gray-300 bg-white px-4 text-base text-gray-800 placeholder-gray-500 shadow-sm transition-all duration-200 hover:border-emerald-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             />
                             
                             <p v-if="form.errors.tanggal_lead" class="text-sm text-destructive">
