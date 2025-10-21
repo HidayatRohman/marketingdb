@@ -147,7 +147,9 @@
                         <BarChart3 class="h-6 w-6" />
                         Report Budget Vs Omset
                     </CardTitle>
-                    <p class="text-sm text-muted-foreground">Ringkasan performa budget marketing vs omset per brand</p>
+                    <p class="text-sm text-blue-700 dark:text-blue-300">Ringkasan performa budget marketing vs omset per brand
+                        <span v-if="reportPeriodLabel" class="ml-1">— {{ reportPeriodLabel }}</span>
+                    </p>
                 </CardHeader>
                 <CardContent class="p-6">
                     <!-- Filter Section -->
@@ -714,8 +716,20 @@ const handleDeleteSuccess = () => {
 }
 
 // Report Budget Vs Omset variables
-const selectedMonth = ref('')
-const selectedYear = ref('')
+const nowForFilter = new Date()
+const defaultMonth = String(nowForFilter.getMonth() + 1).padStart(2, '0')
+const defaultYear = String(nowForFilter.getFullYear())
+const selectedMonth = ref(defaultMonth)
+const selectedYear = ref(defaultYear)
+
+// Label periode dinamis untuk subtitle
+const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
+const reportPeriodLabel = computed(() => {
+  const monthLabel = selectedMonth.value ? monthNames[Number(selectedMonth.value) - 1] : ''
+  const yearLabel = selectedYear.value || ''
+  if (monthLabel && yearLabel) return `${monthLabel} ${yearLabel}`
+  return monthLabel || yearLabel
+})
 
 // Summary Report computed property
 const summaryReport = computed(() => {
