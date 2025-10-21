@@ -591,8 +591,8 @@ const props = defineProps<Props>()
 
 // Breadcrumbs
 const breadcrumbs = computed(() => [
-  { label: 'Dashboard', href: '/' },
-  { label: 'Budget Iklan', href: '/iklan-budgets' }
+  { title: 'Dashboard', href: '/dashboard' },
+  { title: 'Budget Iklan', href: '/iklan-budgets' }
 ])
 
 // Ambil multiplier PPN dinamis dari Inertia shared props (siteSettings)

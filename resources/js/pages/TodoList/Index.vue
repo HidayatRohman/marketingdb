@@ -97,6 +97,12 @@ interface Props {
 
 const props = defineProps<Props>();
 
+// Breadcrumbs
+const breadcrumbs = [
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'To Do List', href: '/todos' },
+];
+
 // State
 const parseDate = (dateStr: string): Date => {
     const [year, month, day] = dateStr.split('-').map(Number);
@@ -672,7 +678,7 @@ const getStatusIcon = (status: string) => {
 </script>
 
 <template>
-    <AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="To Do List" />
 
         <div class="space-y-6 p-6">

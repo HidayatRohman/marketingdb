@@ -70,8 +70,8 @@ const selectedBrandName = computed(() => {
 
 // Breadcrumbs
 const breadcrumbs = [
-  { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Analisa Bisnis', href: '/analisa-bisnis' },
+  { title: 'Dashboard', href: '/dashboard' },
+  { title: 'Analisa Bisnis', href: '/analisa-bisnis' },
 ];
 
 // Charts state

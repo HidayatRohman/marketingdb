@@ -87,6 +87,10 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const breadcrumbs = [
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Task Management', href: '/task-management' },
+];
 // Reactive data
 const tasks = ref(props.tasks);
 const summary = ref(props.summary);
@@ -385,7 +389,7 @@ const canDeleteTask = (task: Task) => {
 <template>
     <Head title="Task Management" />
 
-    <AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="py-6">
             <div class="w-full px-4 sm:px-6 lg:px-8">
                 <!-- Header -->

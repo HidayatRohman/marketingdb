@@ -82,10 +82,15 @@ const roleLabels = {
     marketing: 'Marketing',
     advertiser: 'Advertiser',
 };
+// Breadcrumbs
+const breadcrumbs = [
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Users', href: '/users' },
+];
 </script>
 
 <template>
-    <AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="layout-content space-y-6">
             <div class="rounded-xl border shadow-sm bg-gradient-to-r from-indigo-50 via-sky-50 to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 p-4 sm:p-6 my-2 sm:my-3">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

@@ -202,8 +202,8 @@ interface JobAnalyticsData {
 
 // Breadcrumbs
 const breadcrumbs = [
-    { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Transaksi', href: '/transaksis' },
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Transaksi', href: '/transaksis' },
 ];
 
 // Debounced search function
