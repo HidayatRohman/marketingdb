@@ -38,9 +38,9 @@
             </div>
 
             <!-- Filter Card -->
-            <Card class="border-0 shadow-md mx-auto max-w-7xl">
-                <CardHeader class="pb-2 px-4 sm:px-6">
-                    <CardTitle class="flex items-center gap-2 text-lg font-semibold">
+            <Card class="border-0 shadow-md w-full">
+                <CardHeader class="px-4 py-3 sm:px-6 bg-gradient-to-r from-indigo-50 via-sky-50 to-blue-50 dark:from-indigo-900 dark:via-sky-900 dark:to-blue-900 rounded-t-lg border-b border-indigo-100 dark:border-indigo-800">
+                    <CardTitle class="flex items-center gap-2 text-lg font-semibold text-indigo-800 dark:text-indigo-100">
                         <Filter class="h-5 w-5" />
                         Filter Data
                     </CardTitle>
