@@ -40,7 +40,7 @@ const close = () => {
 </script>
 
 <template>
-    <div class="fixed top-4 right-4 z-50">
+    <div class="fixed top-4 right-4 z-50 w-[calc(100vw-2rem)] sm:w-auto">
         <Transition
             enter-active-class="transform ease-out duration-300 transition"
             enter-from-class="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
@@ -51,7 +51,9 @@ const close = () => {
         >
             <div
                 v-if="show && hasMessages"
-                class="ring-opacity-5 pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black dark:bg-gray-800 dark:ring-gray-600"
+                role="alert"
+                aria-live="assertive"
+                class="pointer-events-auto w-[min(92vw,300px)] max-w-none overflow-hidden rounded-xl bg-gradient-to-br from-white to-gray-50 shadow-xl ring-1 ring-black/10 dark:from-gray-800 dark:to-gray-700 dark:ring-gray-600"
             >
                 <!-- Success Message -->
                 <div v-if="flashMessages.success" class="p-4">
