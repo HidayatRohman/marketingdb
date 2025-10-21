@@ -11,9 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('transaksis', function (Blueprint $table) {
-            $table->string('nama_mitra')->nullable()->after('usia');
-        });
+        if (!Schema::hasTable('transaksis')) {
+            return;
+        }
+
+        if (!Schema::hasColumn('transaksis', 'nama_mitra')) {
+            Schema::table('transaksis', function (Blueprint $table) {
+                $table->string('nama_mitra')->nullable()->after('usia');
+            });
+        }
     }
 
     /**
@@ -21,8 +27,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('transaksis', function (Blueprint $table) {
-            $table->dropColumn('nama_mitra');
-        });
+        if (!Schema::hasTable('transaksis')) {
+            return;
+        }
+
+        if (Schema::hasColumn('transaksis', 'nama_mitra')) {
+            Schema::table('transaksis', function (Blueprint $table) {
+                $table->dropColumn('nama_mitra');
+            });
+        }
     }
 };
