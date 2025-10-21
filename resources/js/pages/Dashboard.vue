@@ -42,6 +42,7 @@ import {
     Users,
     X,
     Zap,
+    DollarSign,
 } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, Teleport } from 'vue';
 
@@ -653,7 +654,7 @@ const ppnPercentage = computed(() => {
                     </div>
 
                     <!-- Summary Statistics Cards -->
-                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-6 mb-6">
                         <Card class="relative bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
                             <CardContent class="p-6">
                                 <div class="absolute top-3 right-3 text-blue-500/60">
@@ -664,6 +665,22 @@ const ppnPercentage = computed(() => {
                                         <p class="text-sm font-medium text-blue-700 dark:text-blue-300">Total Spent</p>
                                         <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
                                             Rp {{ summaryReport.reduce((sum, item) => sum + item.spent, 0).toLocaleString('id-ID') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card class="relative bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900">
+                            <CardContent class="p-6">
+                                <div class="absolute top-3 right-3 text-red-500/60">
+                                    <DollarSign class="h-4 w-4" />
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-red-700 dark:text-red-300">Total Spent+PPN ({{ ppnPercentage }}%)</p>
+                                        <p class="text-2xl font-bold text-red-900 dark:text-red-100">
+                                            Rp {{ summaryReport.reduce((sum, item) => sum + item.spent_with_tax, 0).toLocaleString('id-ID') }}
                                         </p>
                                     </div>
                                 </div>
@@ -712,6 +729,28 @@ const ppnPercentage = computed(() => {
                                         <p class="text-sm font-medium text-orange-700 dark:text-orange-300">Total Closing</p>
                                         <p class="text-2xl font-bold text-orange-900 dark:text-orange-100">
                                             {{ summaryReport.reduce((sum, item) => sum + item.closing, 0).toLocaleString('id-ID') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card class="relative bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900">
+                            <CardContent class="p-6">
+                                <div class="absolute top-3 right-3 text-indigo-500/60">
+                                    <DollarSign class="h-4 w-4" />
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-indigo-700 dark:text-indigo-300">Cost Per Acquisition</p>
+                                        <p class="text-2xl font-bold text-indigo-900 dark:text-indigo-100">
+                                            {{
+                                                (() => {
+                                                    const totalSpent = summaryReport.reduce((sum, item) => sum + item.spent, 0)
+                                                    const totalClosing = summaryReport.reduce((sum, item) => sum + item.closing, 0)
+                                                    return totalClosing > 0 ? Math.round(totalSpent / totalClosing).toLocaleString('id-ID') : '0'
+                                                })()
+                                            }}
                                         </p>
                                     </div>
                                 </div>
