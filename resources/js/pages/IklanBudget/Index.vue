@@ -461,25 +461,25 @@
                         <BarChart3 class="h-6 w-6" />
                         Grafik Spent Bulanan
                     </CardTitle>
-                    <div class="mt-2 flex items-center gap-3">
-                        <div class="flex items-center gap-2">
+                    <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
                             <label for="spent-year" class="text-sm font-medium text-gray-700 dark:text-gray-300">Tahun:</label>
                             <select 
                                 id="spent-year" 
                                 v-model="spentChartYear" 
                                 @change="fetchMonthlySpentData"
-                                class="w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                class="w-full sm:w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             >
                                 <option v-for="yr in [2023, 2024, 2025, 2026]" :key="yr" :value="yr">{{ yr }}</option>
                             </select>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
                             <label for="spent-brand" class="text-sm font-medium text-gray-700 dark:text-gray-300">Brand:</label>
                             <select 
                                 id="spent-brand"
                                 v-model="chartBrandId"
                                 @change="fetchMonthlySpentData"
-                                class="w-48 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                class="w-full sm:w-48 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             >
                                 <option value="">Semua Brand</option>
                                 <option v-for="b in props.brands" :key="b.id" :value="String(b.id)">{{ b.nama }}</option>
