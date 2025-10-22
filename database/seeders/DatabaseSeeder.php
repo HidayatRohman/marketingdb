@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('🤝 Seeding business data...');
         $this->call([
             MitraSeeder::class,
+            IklanBudgetSeeder::class,
         ]);
 
         // 4. Task management data (depends on users)
