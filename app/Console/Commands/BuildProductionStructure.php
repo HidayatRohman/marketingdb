@@ -63,10 +63,8 @@ class BuildProductionStructure extends Command
             '.env',
             '.env.example',
             'dist',
-            'storage/logs',
-            'storage/framework/cache',
-            'storage/framework/sessions',
-            'storage/framework/views',
+            // Exclude entire storage folder from build
+            'storage',
             'tests',
             'phpunit.xml',
             'vite.config.js',
@@ -112,19 +110,7 @@ class BuildProductionStructure extends Command
         if (File::exists($envProduction)) {
             File::copy($envProduction, $destination.'/.env');
         }
-
-        // Create necessary storage directories
-        $storageDirs = [
-            'app/public',
-            'framework/cache/data',
-            'framework/sessions',
-            'framework/views',
-            'logs',
-        ];
-
-        foreach ($storageDirs as $dir) {
-            File::makeDirectory($destination.'/storage/'.$dir, 0755, true, true);
-        }
+        
     }
 
     private function copyPublicFiles(string $destination): void
@@ -173,6 +159,18 @@ class BuildProductionStructure extends Command
                 File::delete($devFilePath);
             }
         }
+
+        // Ensure public_html/storage is NOT included to avoid replacing existing storage on server
+        $publicStoragePath = $destination.'/storage';
+        if (File::exists($publicStoragePath)) {
+            // Delete directory or symlink
+            try {
+                File::deleteDirectory($publicStoragePath);
+            } catch (\Throwable $e) {
+                // Fallback: attempt unlink for symlink
+                @unlink($publicStoragePath);
+            }
+        }
     }
 
     private function modifyIndexPhpForProduction(string $publicHtmlPath): void
@@ -200,8 +198,8 @@ class BuildProductionStructure extends Command
         );
         
         $content = str_replace(
-            "file_exists(\$maintenance = __DIR__.'/../storage/framework/maintenance.php')",
-            "file_exists(\$maintenance = __DIR__.'/../laravel/storage/framework/maintenance.php')",
+            'file_exists($maintenance = __DIR__\'/../storage/framework/maintenance.php\')',
+            'file_exists($maintenance = __DIR__\'/../laravel/storage/framework/maintenance.php\')',
             $content
         );
         
