@@ -152,45 +152,11 @@
                     </p>
                 </CardHeader>
                 <CardContent class="p-6">
-                    <!-- Filter Section -->
+                    <!-- Filter Section (mengikuti filter halaman aktif) -->
                     <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                            <label for="month-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Bulan:</label>
-                            <select 
-                                id="month-filter" 
-                                v-model="selectedMonth" 
-                                @change="filterByMonthYear"
-                                class="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            >
-                                <option value="">Semua Bulan</option>
-                                <option value="01">Januari</option>
-                                <option value="02">Februari</option>
-                                <option value="03">Maret</option>
-                                <option value="04">April</option>
-                                <option value="05">Mei</option>
-                                <option value="06">Juni</option>
-                                <option value="07">Juli</option>
-                                <option value="08">Agustus</option>
-                                <option value="09">September</option>
-                                <option value="10">Oktober</option>
-                                <option value="11">November</option>
-                                <option value="12">Desember</option>
-                            </select>
-                        </div>
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                            <label for="year-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Tahun:</label>
-                            <select 
-                                id="year-filter" 
-                                v-model="selectedYear" 
-                                @change="filterByMonthYear"
-                                class="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            >
-                                <option value="">Semua Tahun</option>
-                                <option value="2023">2023</option>
-                                <option value="2024">2024</option>
-                                <option value="2025">2025</option>
-                                <option value="2026">2026</option>
-                            </select>
+                        <div class="text-sm text-gray-700 dark:text-gray-300">
+                            Report mengikuti filter halaman aktif (Brand dan Periode).
+                            <span v-if="reportPeriodLabel" class="ml-1">— {{ reportPeriodLabel }}</span>
                         </div>
                     </div>
 
@@ -361,7 +327,7 @@
                                             <span class="font-medium text-red-600">{{ formatCurrency(budget.spent_amount) }}</span>
                                         </TableCell>
                                         <TableCell class="text-center">
-                                            <span class="font-medium text-red-700">{{ formatCurrency((Number(budget.spent_amount) || 0) * ppnMultiplier) }}</span>
+                                            <span class="font-medium text-red-700">{{ formatCurrency((Number(budget.spent_amount) || 0) * ppnMultiplier.value) }}</span>
                                         </TableCell>
                                         <TableCell class="text-center">
                                             <span class="font-medium text-green-600">{{ budget.real_lead }}</span>
@@ -377,7 +343,7 @@
                                             <span class="font-medium text-green-700">{{ formatCurrency(budget.omset) }}</span>
                                         </TableCell>
                                         <TableCell class="text-center">
-                                            <span v-if="((Number(budget.spent_amount) || 0) * ppnMultiplier) > 0 && budget.omset > 0" class="font-medium text-indigo-600">{{ (budget.omset / ((Number(budget.spent_amount) || 0) * ppnMultiplier)).toFixed(2) }}</span>
+                                            <span v-if="((Number(budget.spent_amount) || 0) * ppnMultiplier.value) > 0 && budget.omset > 0" class="font-medium text-indigo-600">{{ (budget.omset / ((Number(budget.spent_amount) || 0) * ppnMultiplier.value)).toFixed(2) }}</span>
                                             <span v-else class="text-red-500 font-medium">0.00</span>
                                         </TableCell>
                                         <TableCell>
@@ -586,6 +552,17 @@ interface Props {
     canOnlyViewOwn: boolean
     role: string
   }
+  // Tambahkan prop reportSummary yang dikirim dari server
+  reportSummary: Array<{
+    brand: string
+    spent: number
+    spent_with_tax: number
+    real_lead: number
+    cost_per_lead: number
+    closing: number
+    omset: number
+    roas: number
+  }>
   brands: Array<{ id: number; nama: string }>
 }
 
@@ -716,70 +693,38 @@ const handleDeleteSuccess = () => {
 }
 
 // Report Budget Vs Omset variables
-const nowForFilter = new Date()
-const defaultMonth = String(nowForFilter.getMonth() + 1).padStart(2, '0')
-const defaultYear = String(nowForFilter.getFullYear())
-const selectedMonth = ref(defaultMonth)
-const selectedYear = ref(defaultYear)
+const selectedMonth = ref<string>('') // mengikuti filter halaman
+const selectedYear = ref<string>('')  // mengikuti filter halaman
 
-// Label periode dinamis untuk subtitle
-const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
+// Label periode dinamis untuk subtitle (mengikuti filter halaman)
 const reportPeriodLabel = computed(() => {
-  const monthLabel = selectedMonth.value ? monthNames[Number(selectedMonth.value) - 1] : ''
-  const yearLabel = selectedYear.value || ''
-  if (monthLabel && yearLabel) return `${monthLabel} ${yearLabel}`
-  return monthLabel || yearLabel
+  const brandId = filters.brand_id ? String(filters.brand_id) : ''
+  const brandName = brandId
+    ? (props.brands.find(br => String(br.id) === brandId)?.nama || `Brand #${brandId}`)
+    : 'Semua Brand'
+
+  const fmt = (d?: string) => {
+    if (!d) return ''
+    try {
+      return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    } catch {
+      return d as string
+    }
+  }
+
+  const start = filters.start_date || ''
+  const end = filters.end_date || ''
+  let period = 'Semua Periode'
+  if (start && end) period = `${fmt(start)} — ${fmt(end)}`
+  else if (start) period = `≥ ${fmt(start)}`
+  else if (end) period = `≤ ${fmt(end)}`
+
+  return `${brandName} • ${period}`
 })
 
 // Summary Report computed property
 const summaryReport = computed(() => {
-  let filteredData = props.iklanBudgets.data
-
-  // Filter by month and year if selected
-  if (selectedMonth.value || selectedYear.value) {
-    filteredData = filteredData.filter(budget => {
-      const budgetDate = new Date(budget.tanggal)
-      const budgetMonth = String(budgetDate.getMonth() + 1).padStart(2, '0')
-      const budgetYear = String(budgetDate.getFullYear())
-
-      const monthMatch = !selectedMonth.value || budgetMonth === selectedMonth.value
-      const yearMatch = !selectedYear.value || budgetYear === selectedYear.value
-
-      return monthMatch && yearMatch
-    })
-  }
-
-  // Group by brand
-  const brandGroups = filteredData.reduce((acc, budget) => {
-    const brandName = budget.brand?.nama || 'Unknown'
-    if (!acc[brandName]) {
-      acc[brandName] = {
-        brand: brandName,
-        spent: 0,
-        spent_with_tax: 0,
-        real_lead: 0,
-        closing: 0,
-        omset: 0,
-        cost_per_lead: 0,
-        roas: 0
-      }
-    }
-
-    acc[brandName].spent += Number(budget.spent_amount) || 0
-    acc[brandName].spent_with_tax += (Number(budget.spent_amount) || 0) * ppnMultiplier.value
-    acc[brandName].real_lead += Number(budget.real_lead) || 0
-    acc[brandName].closing += Number(budget.closing) || 0
-    acc[brandName].omset += Number(budget.omset) || 0
-
-    return acc
-  }, {} as Record<string, any>)
-
-  // Calculate derived metrics for each brand
-  return Object.values(brandGroups).map((group: any) => {
-    group.cost_per_lead = group.real_lead > 0 ? group.spent / group.real_lead : 0
-    group.roas = group.spent_with_tax > 0 ? group.omset / group.spent_with_tax : 0
-    return group
-  })
+  return Array.isArray(props.reportSummary) ? props.reportSummary : []
 })
 
 // Filter function for month and year

@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\IklanBudget;
 use App\Models\Brand;
+use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class IklanBudgetController extends Controller
 {
@@ -19,17 +21,16 @@ class IklanBudgetController extends Controller
         $currentUser = auth()->user();
         $query = IklanBudget::with('brand');
         
-        // Set default periode
+        // Set default periode ke bulan berjalan
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth = Carbon::now()->endOfMonth();
         
-        // Filter berdasarkan periode jika ada
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->inPeriod($request->start_date, $request->end_date);
-        } else {
-            // Default: tampilkan data bulan ini
-            $query->inPeriod($startOfMonth, $endOfMonth);
-        }
+        // Tentukan periode aktif: gunakan filter jika ada, jika tidak pakai default bulan berjalan
+        $activeStart = $request->filled('start_date') ? Carbon::parse($request->start_date) : $startOfMonth;
+        $activeEnd = $request->filled('end_date') ? Carbon::parse($request->end_date) : $endOfMonth;
+        
+        // Terapkan filter periode aktif untuk data tabel
+        $query->inPeriod($activeStart, $activeEnd);
         
         // Filter berdasarkan brand jika ada
         if ($request->filled('brand_id')) {
@@ -51,13 +52,8 @@ class IklanBudgetController extends Controller
             $budget->save();
         }
         
-        // Hitung total untuk periode yang dipilih
-        $totalQuery = IklanBudget::query();
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $totalQuery->inPeriod($request->start_date, $request->end_date);
-        } else {
-            $totalQuery->inPeriod($startOfMonth, $endOfMonth);
-        }
+        // Hitung total untuk periode aktif (global, terpisah dari data tabel)
+        $totalQuery = IklanBudget::query()->inPeriod($activeStart, $activeEnd);
         
         // Filter berdasarkan brand untuk total juga
         if ($request->filled('brand_id')) {
@@ -65,8 +61,8 @@ class IklanBudgetController extends Controller
         }
         
         $totals = $totalQuery->getTotals(
-            $request->start_date ?? $startOfMonth,
-            $request->end_date ?? $endOfMonth,
+            $activeStart->format('Y-m-d'),
+            $activeEnd->format('Y-m-d'),
             $request->brand_id
         )->first();
         
@@ -77,14 +73,71 @@ class IklanBudgetController extends Controller
             $totals->avg_cost_per_lead = 0;
         }
         
+        // Summary report by brand (global, bukan dari halaman tabel)
+        $selectedBrand = $request->brand_id;
+        $ppnRate = (float) SiteSetting::get('ppn_rate', 11);
+        $spentMultiplier = 1 + ($ppnRate / 100.0);
+
+        // Gunakan periode aktif untuk summary report
+        $startDate = $activeStart->format('Y-m-d');
+        $endDate = $activeEnd->format('Y-m-d');
+
+        // Build expressions dengan periode aktif
+        $spentExpr = 'COALESCE(SUM(CASE WHEN iklan_budgets.tanggal BETWEEN "' . $startDate . '" AND "' . $endDate . '" THEN iklan_budgets.spent_amount END), 0)';
+        $leadSub = 'SELECT COUNT(*) FROM mitras WHERE mitras.brand_id = brands.id AND mitras.tanggal_lead BETWEEN "' . $startDate . '" AND "' . $endDate . '"';
+        $closingSub = 'SELECT COUNT(*) FROM transaksis WHERE transaksis.lead_awal_brand_id = brands.id AND transaksis.tanggal_tf BETWEEN "' . $startDate . '" AND "' . $endDate . '"';
+        $omsetSub = 'SELECT COALESCE(SUM(transaksis.nominal_masuk), 0) FROM transaksis WHERE transaksis.lead_awal_brand_id = brands.id AND transaksis.tanggal_tf BETWEEN "' . $startDate . '" AND "' . $endDate . '"';
+
+        $reportQuery = Brand::select(
+            'brands.id',
+            'brands.nama',
+            DB::raw($spentExpr . ' as spent'),
+            DB::raw('(' . $leadSub . ') as real_lead'),
+            DB::raw('(' . $closingSub . ') as closing'),
+            DB::raw('(' . $omsetSub . ') as omset')
+        )
+        ->leftJoin('iklan_budgets', 'brands.id', '=', 'iklan_budgets.brand_id')
+        ->groupBy('brands.id', 'brands.nama');
+
+        if (!empty($selectedBrand)) {
+            $reportQuery->where('brands.id', $selectedBrand);
+        }
+
+        $reportRows = $reportQuery->get();
+
+        $reportSummary = $reportRows->map(function ($row) use ($spentMultiplier) {
+            $spent = (float) ($row->spent ?? 0);
+            $spentWithTax = $spent * $spentMultiplier;
+            $realLead = (int) ($row->real_lead ?? 0);
+            $closing = (int) ($row->closing ?? 0);
+            $omset = (float) ($row->omset ?? 0);
+
+            return [
+                'brand' => $row->nama,
+                'spent' => $spent,
+                'spent_with_tax' => $spentWithTax,
+                'real_lead' => $realLead,
+                'closing' => $closing,
+                'omset' => $omset,
+                'cost_per_lead' => $realLead > 0 ? ($spent / $realLead) : 0,
+                'roas' => $spentWithTax > 0 ? ($omset / $spentWithTax) : 0,
+            ];
+        })->values();
+        
         // Get brands for select options
         $brands = Brand::select('id', 'nama')->orderBy('nama')->get();
         
         return Inertia::render('IklanBudget/Index', [
             'iklanBudgets' => $iklanBudgets,
             'totals' => $totals,
+            'reportSummary' => $reportSummary,
             'brands' => $brands,
-            'filters' => $request->only(['start_date', 'end_date', 'brand_id']),
+            // Kirimkan filters dengan default bulan berjalan jika tidak disediakan
+            'filters' => [
+                'start_date' => $activeStart->format('Y-m-d'),
+                'end_date' => $activeEnd->format('Y-m-d'),
+                'brand_id' => $request->brand_id,
+            ],
             'permissions' => [
                 'canCrud' => $currentUser->canCrud(),
                 'canOnlyView' => $currentUser->canOnlyView(),
@@ -137,7 +190,7 @@ class IklanBudgetController extends Controller
             'spent_amount' => 'required|numeric|min:0',
         ]);
 
-        // Add custom validation for unique combination of tanggal and brand_id (excluding current record)
+        // Add custom validation for unique combination of tanggal dan brand_id (excluding current record)
         $validator->after(function ($validator) use ($request, $iklanBudget) {
             $exists = IklanBudget::where('tanggal', $request->tanggal)
                 ->where('brand_id', $request->brand_id)
