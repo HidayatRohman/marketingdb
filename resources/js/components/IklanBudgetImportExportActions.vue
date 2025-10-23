@@ -222,7 +222,7 @@ const handleExport = async () => {
             })
         }
 
-        const { url } = iklanBudgetsRoutes.exportMethod.get()
+        const { url } = iklanBudgetsRoutes.export.get()
         const absoluteUrl = new URL(`${url}?${params.toString()}`, window.location.origin).toString()
 
         const response = await fetch(absoluteUrl, {
@@ -408,7 +408,7 @@ const handleImport = async (file: File) => {
             throw new Error('CSRF token tidak ditemukan. Silakan refresh halaman dan coba lagi.')
         }
 
-        const { url } = iklanBudgetsRoutes.importMethod.post()
+        const { url } = iklanBudgetsRoutes.import.post()
         const absoluteUrl = new URL(url, window.location.origin).toString()
 
         const response = await fetch(absoluteUrl, {
