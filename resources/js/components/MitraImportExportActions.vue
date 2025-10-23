@@ -359,25 +359,22 @@ const handleImport = async (file: File) => {
         console.log('Response status:', response.status, response.statusText);
 
         if (!response.ok) {
-            // Try to get JSON error response, fallback to text
-            let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-            try {
-                const errorData = await response.json();
-                console.log('Error response:', errorData);
-                errorMessage = errorData.message || errorMessage;
-            } catch (e) {
-                // If JSON parsing fails, get text response
-                const textResponse = await response.text();
-                console.error('Non-JSON response received:', textResponse);
-                
-                // Check if it's a CSRF token mismatch specifically
-                if (textResponse.includes('CSRF token mismatch') || textResponse.includes('419')) {
-                    throw new Error('CSRF token tidak valid. Silakan refresh halaman dan coba lagi.');
+            const bodyText = await response.text().catch(() => '')
+            let errorMessage = `HTTP ${response.status}: ${response.statusText}`
+            if (bodyText) {
+                try {
+                    const errorData = JSON.parse(bodyText)
+                    console.log('Error response:', errorData)
+                    errorMessage = errorData.message || errorMessage
+                } catch (_) {
+                    console.error('Non-JSON response received:', bodyText)
+                    if (bodyText.includes('CSRF token mismatch') || bodyText.includes('419')) {
+                        throw new Error('CSRF token tidak valid. Silakan refresh halaman dan coba lagi.')
+                    }
+                    errorMessage = bodyText || errorMessage
                 }
-                
-                throw new Error(`Server error: ${errorMessage}`);
             }
-            throw new Error(errorMessage);
+            throw new Error(errorMessage)
         }
 
         const result = await response.json();
