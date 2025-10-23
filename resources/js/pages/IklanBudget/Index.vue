@@ -28,10 +28,21 @@
                                 <Plus class="mr-2 h-4 w-4" />
                                 Tambah Data
                             </Button>
+                            <!-- Import/Export Actions -->
+                            <IklanBudgetImportExportActions
+                                :filters="filters"
+                                :can-import="true"
+                                @import-success="handleImportSuccess"
+                            />
                         </div>
                         <!-- Read-only message for admin users -->
-                        <div v-else class="text-white/80 text-sm">
-                            <p>Mode tampilan saja - Anda tidak memiliki izin untuk menambah/edit data</p>
+                        <div v-else class="flex flex-col gap-2 sm:flex-row items-start sm:items-center">
+                            <!-- Import/Export Actions (no import when read-only) -->
+                            <IklanBudgetImportExportActions
+                                :filters="filters"
+                                :can-import="false"
+                            />
+                            <p class="text-white/80 text-sm">Mode tampilan saja - Anda tidak memiliki izin untuk menambah/edit data</p>
                         </div>
                     </div>
                 </div>
@@ -493,6 +504,7 @@ import { index } from '@/routes/iklan-budgets'
 import AppLayout from '@/layouts/AppLayout.vue'
 import IklanBudgetModal from '@/components/IklanBudgetModal.vue'
 import IklanBudgetDeleteModal from '@/components/IklanBudgetDeleteModal.vue'
+import IklanBudgetImportExportActions from '@/components/IklanBudgetImportExportActions.vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import DatePicker from '@/components/ui/datepicker/DatePicker.vue'
@@ -686,6 +698,13 @@ const handleBudgetSuccess = () => {
 
 const handleDeleteSuccess = () => {
   closeDeleteModal()
+  router.visit(index().url, {
+    preserveState: false,
+    preserveScroll: false
+  })
+}
+
+const handleImportSuccess = () => {
   router.visit(index().url, {
     preserveState: false,
     preserveScroll: false

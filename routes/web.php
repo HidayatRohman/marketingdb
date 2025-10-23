@@ -211,19 +211,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::middleware('role.access:view')->group(function () {
             Route::get('/', [\App\Http\Controllers\IklanBudgetController::class, 'index'])->name('index');
             Route::get('/analytics/monthly-spent', [\App\Http\Controllers\IklanBudgetController::class, 'monthlySpent'])->name('analytics.monthly-spent');
+            // Export & Template download (view permission)
+            Route::get('/export', [\App\Http\Controllers\IklanBudgetController::class, 'export'])->name('export');
+            Route::get('/template', [\App\Http\Controllers\IklanBudgetController::class, 'downloadTemplate'])->name('template');
         });
         
         Route::middleware('role.access:create')->group(function () {
             Route::post('/', [\App\Http\Controllers\IklanBudgetController::class, 'store'])->name('store');
             Route::post('/generate-monthly', [\App\Http\Controllers\IklanBudgetController::class, 'generateMonthlyBudget'])->name('generate-monthly');
+            // Import requires create permission
+            Route::post('/import', [\App\Http\Controllers\IklanBudgetController::class, 'import'])->name('import');
         });
         
         Route::middleware('role.access:edit')->group(function () {
-            Route::put('/{iklanBudget}', [\App\Http\Controllers\IklanBudgetController::class, 'update'])->name('update');
+            Route::put('/{iklanBudget}', [\App\Http\Controllers\IklanBudgetController::class, 'update'])->whereNumber('iklanBudget')->name('update');
         });
         
         Route::middleware('role.access:destroy')->group(function () {
-            Route::delete('/{iklanBudget}', [\App\Http\Controllers\IklanBudgetController::class, 'destroy'])->name('destroy');
+            Route::delete('/{iklanBudget}', [\App\Http\Controllers\IklanBudgetController::class, 'destroy'])->whereNumber('iklanBudget')->name('destroy');
         });
     });
 });

@@ -311,4 +311,254 @@ class IklanBudgetController extends Controller
             'data' => $data,
         ]);
     }
+
+    /**
+     * Export data IklanBudget berdasarkan filter ke Excel (Tanggal, Brand, Spent)
+     */
+    public function export(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            if (!$user) {
+                abort(403);
+            }
+
+            $startOfMonth = Carbon::now()->startOfMonth();
+            $endOfMonth = Carbon::now()->endOfMonth();
+
+            $activeStart = $request->filled('start_date') ? Carbon::parse($request->start_date) : $startOfMonth;
+            $activeEnd = $request->filled('end_date') ? Carbon::parse($request->end_date) : $endOfMonth;
+
+            $query = IklanBudget::with('brand')->inPeriod($activeStart, $activeEnd);
+            if ($request->filled('brand_id')) {
+                $query->where('brand_id', $request->brand_id);
+            }
+
+            $budgets = $query->orderBy('tanggal', 'asc')->get();
+
+            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Budget Iklan');
+
+            // Header
+            $sheet->setCellValue('A1', 'Tanggal');
+            $sheet->setCellValue('B1', 'Brand');
+            $sheet->setCellValue('C1', 'Spent');
+
+            $row = 2;
+            foreach ($budgets as $budget) {
+                $sheet->setCellValue('A' . $row, Carbon::parse($budget->tanggal)->format('Y-m-d'));
+                $sheet->setCellValue('B' . $row, optional($budget->brand)->nama);
+                $sheet->setCellValue('C' . $row, (float) $budget->spent_amount);
+                $row++;
+            }
+
+            $filename = 'export-iklan-budget-' . now()->format('Ymd_His') . '.xlsx';
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+
+            return response()->streamDownload(function () use ($writer) {
+                $writer->save('php://output');
+            }, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('IklanBudget export failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => auth()->id(),
+                'filters' => $request->all(),
+            ]);
+            return back()->with('error', 'Export gagal: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download template import Excel (Tanggal, Brand, Spent)
+     */
+    public function downloadTemplate()
+    {
+        try {
+            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Template Import');
+
+            // Header
+            $sheet->setCellValue('A1', 'Tanggal');
+            $sheet->setCellValue('B1', 'Brand');
+            $sheet->setCellValue('C1', 'Spent');
+
+            // Contoh data
+            $sheet->setCellValue('A2', now()->format('Y-m-d'));
+            $sampleBrand = Brand::select('nama')->orderBy('nama')->first();
+            $sheet->setCellValue('B2', $sampleBrand ? $sampleBrand->nama : 'Contoh Brand');
+            $sheet->setCellValue('C2', 100000);
+
+            $filename = 'template-import-iklan-budget.xlsx';
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+
+            return response()->streamDownload(function () use ($writer) {
+                $writer->save('php://output');
+            }, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('IklanBudget template generation failed', [
+                'error' => $e->getMessage(),
+            ]);
+            return back()->with('error', 'Gagal mengunduh template: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Import data dari Excel (Tanggal, Brand, Spent) dengan upsert per (brand_id, tanggal)
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $file = $request->file('file');
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getPathname());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray();
+
+            $imported = 0;
+            $updated = 0;
+            $skipped = 0;
+            $errors = [];
+
+            if (count($rows) === 0) {
+                throw new \Exception('File kosong atau tidak dapat dibaca.');
+            }
+
+            // Remove header
+            array_shift($rows);
+
+            foreach ($rows as $index => $row) {
+                $line = $index + 2; // Header di baris 1
+                $tanggalRaw = trim((string)($row[0] ?? ''));
+                $brandRaw = trim((string)($row[1] ?? ''));
+                $spentRaw = trim((string)($row[2] ?? ''));
+
+                // Skip baris kosong
+                if ($tanggalRaw === '' && $brandRaw === '' && $spentRaw === '') {
+                    continue;
+                }
+
+                if ($tanggalRaw === '') {
+                    $skipped++; $errors[] = "Baris {$line}: Tanggal kosong"; continue;
+                }
+                if ($brandRaw === '') {
+                    $skipped++; $errors[] = "Baris {$line}: Brand kosong"; continue;
+                }
+
+                // Parse tanggal
+                try {
+                    $tanggal = Carbon::parse($tanggalRaw)->format('Y-m-d');
+                } catch (\Throwable $e) {
+                    $skipped++; $errors[] = "Baris {$line}: Format tanggal tidak valid"; continue;
+                }
+
+                // Resolve brand
+                $brandId = null;
+                if (is_numeric($brandRaw)) {
+                    $brandId = (int) $brandRaw;
+                    if (!Brand::where('id', $brandId)->exists()) {
+                        $skipped++; $errors[] = "Baris {$line}: Brand ID tidak ditemukan"; continue;
+                    }
+                } else {
+                    $brand = Brand::where('nama', $brandRaw)->first();
+                    if (!$brand) {
+                        $skipped++; $errors[] = "Baris {$line}: Brand '{$brandRaw}' tidak ditemukan"; continue;
+                    }
+                    $brandId = $brand->id;
+                }
+
+                // Parse spent
+                $spentVal = 0;
+                if ($spentRaw !== '' && is_numeric($spentRaw)) {
+                    $spentVal = (float) $spentRaw;
+                } else {
+                    $clean = preg_replace('/[^0-9.,]/', '', $spentRaw);
+                    $clean = str_replace('.', '', $clean);
+                    $clean = str_replace(',', '.', $clean);
+                    $spentVal = is_numeric($clean) ? (float) $clean : 0;
+                }
+
+                try {
+                    $existing = IklanBudget::where('brand_id', $brandId)->where('tanggal', $tanggal)->first();
+                    if ($existing) {
+                        $existing->spent_amount = $spentVal;
+                        $existing->closing = IklanBudget::calculateClosingForDate($tanggal, $brandId);
+                        $existing->omset = IklanBudget::calculateOmsetForDate($tanggal, $brandId);
+                        $existing->save();
+                        $updated++;
+                    } else {
+                        $model = IklanBudget::create([
+                            'tanggal' => $tanggal,
+                            'brand_id' => $brandId,
+                            'spent_amount' => $spentVal,
+                        ]);
+                        $model->closing = IklanBudget::calculateClosingForDate($tanggal, $brandId);
+                        $model->omset = IklanBudget::calculateOmsetForDate($tanggal, $brandId);
+                        $model->save();
+                        $imported++;
+                    }
+                } catch (\Throwable $e) {
+                    $skipped++; $errors[] = "Baris {$line}: Gagal menyimpan - " . $e->getMessage();
+                }
+            }
+
+            DB::commit();
+
+            $message = "Import selesai. {$imported} baru, {$updated} diperbarui, {$skipped} dilewati.";
+            if (!empty($errors)) {
+                $message .= ' ' . count($errors) . ' catatan kesalahan.';
+            }
+
+            // Jika request AJAX/JSON, kembalikan payload JSON
+            $payload = [
+                'success' => true,
+                'message' => $message,
+                'imported' => $imported,
+                'updated' => $updated,
+                'skipped' => $skipped,
+                'errors' => $errors,
+                'total_processed' => $imported + $updated + $skipped,
+            ];
+            if ($request->expectsJson()) {
+                return response()->json($payload);
+            }
+
+            return redirect()->route('iklan-budgets.index')
+                ->with('success', $message)
+                ->with('import_errors', $errors);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            \Log::error('IklanBudget import failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => auth()->id(),
+            ]);
+
+            // Jika request AJAX/JSON, kembalikan error JSON
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Import gagal: ' . $e->getMessage(),
+                    'imported' => 0,
+                    'updated' => 0,
+                    'skipped' => 0,
+                    'errors' => [$e->getMessage()],
+                    'total_processed' => 0,
+                ], 500);
+            }
+
+            return back()->with('error', 'Import gagal: ' . $e->getMessage());
+        }
+    }
 }
