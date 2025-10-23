@@ -229,6 +229,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         Route::middleware('role.access:destroy')->group(function () {
             Route::delete('/{iklanBudget}', [\App\Http\Controllers\IklanBudgetController::class, 'destroy'])->whereNumber('iklanBudget')->name('destroy');
+            Route::delete('/bulk-destroy', [\App\Http\Controllers\IklanBudgetController::class, 'bulkDestroy'])->name('bulk-destroy');
         });
     });
 });

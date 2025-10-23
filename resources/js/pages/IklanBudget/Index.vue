@@ -309,10 +309,34 @@
                 </CardHeader>
                 <CardContent class="p-0">
                     <div class="relative overflow-hidden">
+                        <div v-if="permissions.canCrud" class="flex items-center justify-between px-4 py-2">
+                            <div class="text-sm text-muted-foreground" v-if="selectedIds.length > 0">
+                                {{ selectedIds.length }} dipilih
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <Button
+                                    :disabled="selectedIds.length === 0 || processingBulk"
+                                    @click="confirmBulkDelete"
+                                    class="bg-red-600 hover:bg-red-700 text-white"
+                                >
+                                    <Trash2 class="mr-2 h-4 w-4" />
+                                    Hapus Terpilih
+                                </Button>
+                            </div>
+                        </div>
                         <div class="overflow-x-auto">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
+                                        <TableHead v-if="permissions.canCrud" class="text-center w-[40px]">
+                                            <input
+                                                ref="headerCheckboxRef"
+                                                type="checkbox"
+                                                :checked="allSelected"
+                                                @change="(e) => toggleSelectAll((e.target as HTMLInputElement).checked)"
+                                                class="mx-auto h-4 w-4 cursor-pointer accent-blue-600"
+                                            />
+                                        </TableHead>
                                         <TableHead class="text-center">Tanggal</TableHead>
                                         <TableHead class="text-center">Brand</TableHead>
                                         <TableHead class="text-center">Spent</TableHead>
@@ -328,6 +352,14 @@
                                 </TableHeader>
                                 <TableBody>
                                     <TableRow v-for="budget in iklanBudgets.data" :key="budget.id">
+                                        <TableCell v-if="permissions.canCrud" class="text-center">
+                                              <input
+                                                  type="checkbox"
+                                                  :checked="selectedIds.includes(budget.id)"
+                                                  @change="(e) => toggleRowSelection(budget.id, (e.target as HTMLInputElement).checked)"
+                                                  class="mx-auto h-4 w-4 cursor-pointer accent-blue-600"
+                                              />
+                                          </TableCell>
                                         <TableCell class="text-center">
                                             {{ formatDate(budget.tanggal) }}
                                         </TableCell>
@@ -504,7 +536,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { router, Head, usePage } from '@inertiajs/vue3'
-import { index, destroy } from '@/routes/iklan-budgets'
+import { index, destroy, bulkDestroy } from '@/routes/iklan-budgets'
 import AppLayout from '@/layouts/AppLayout.vue'
 import IklanBudgetModal from '@/components/IklanBudgetModal.vue'
 import IklanBudgetDeleteModal from '@/components/IklanBudgetDeleteModal.vue'
@@ -519,6 +551,7 @@ import TableHead from '@/components/ui/table/TableHead.vue'
 import TableHeader from '@/components/ui/table/TableHeader.vue'
 import TableRow from '@/components/ui/table/TableRow.vue'
 import MonthlySpentChart from '@/components/MonthlySpentChart.vue'
+
 import { TrendingUp, Plus, Filter, Search, Edit, Trash2, RotateCcw, BarChart3, Target, Users, Award, DollarSign } from 'lucide-vue-next'
 
 interface IklanBudget {
@@ -583,6 +616,62 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const selectedIds = ref<number[]>([])
+const allSelected = computed(() => props.iklanBudgets?.data?.length > 0 && props.iklanBudgets.data.every(b => selectedIds.value.includes(b.id)))
+const someSelected = computed(() => selectedIds.value.length > 0 && !allSelected.value)
+// represent header checkbox state using reka-ui pattern (boolean | 'indeterminate')
+const headerCheckboxRef = ref<HTMLInputElement | null>(null)
+
+// Sinkronkan tampilan indeterminate pada checkbox header
+watch([selectedIds, allSelected, someSelected], () => {
+  const el = headerCheckboxRef.value
+  if (el) {
+    el.indeterminate = someSelected.value && !allSelected.value
+  }
+})
+
+const toggleSelectAll = (checked: boolean) => {
+  if (checked) {
+    selectedIds.value = props.iklanBudgets.data.map(b => b.id)
+  } else {
+    selectedIds.value = []
+  }
+}
+const toggleRowSelection = (id: number, checked: boolean) => {
+  if (checked) {
+    if (!selectedIds.value.includes(id)) selectedIds.value.push(id)
+  } else {
+    selectedIds.value = selectedIds.value.filter(x => x !== id)
+  }
+}
+watch(() => props.iklanBudgets.data, () => {
+  selectedIds.value = []
+})
+
+const processingBulk = ref(false)
+const confirmBulkDelete = () => {
+  if (selectedIds.value.length === 0 || processingBulk.value) return
+  const count = selectedIds.value.length
+  const ok = window.confirm(`Hapus ${count} data terpilih? Tindakan ini tidak bisa dikembalikan.`)
+  if (!ok) return
+  processingBulk.value = true
+  router.visit(bulkDestroy.url(), {
+    method: 'delete',
+    data: { ids: selectedIds.value },
+    preserveScroll: false,
+    onSuccess: () => {
+      selectedIds.value = []
+    },
+    onError: (errors) => {
+      console.error('Bulk delete error:', errors)
+      alert('Gagal menghapus data terpilih.')
+    },
+    onFinish: () => {
+      processingBulk.value = false
+    }
+  })
+}
 
 // Breadcrumbs
 const breadcrumbs = computed(() => [

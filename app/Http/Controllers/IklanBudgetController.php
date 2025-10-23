@@ -224,6 +224,33 @@ class IklanBudgetController extends Controller
     }
 
     /**
+     * Hapus banyak data budget iklan sekaligus.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('ids', []);
+
+        if (!is_array($ids) || empty($ids)) {
+            return back()->with('error', 'Tidak ada data yang dipilih untuk dihapus.');
+        }
+
+        try {
+            $deleted = IklanBudget::whereIn('id', $ids)->delete();
+
+            return redirect()->route('iklan-budgets.index')
+                ->with('success', "Berhasil menghapus {$deleted} data budget iklan.");
+        } catch (\Throwable $e) {
+            \Log::error('Bulk delete IklanBudget gagal', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'ids' => $ids,
+            ]);
+
+            return back()->with('error', 'Gagal menghapus data terpilih: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Generate budget data untuk satu bulan penuh
      */
     public function generateMonthlyBudget(Request $request)

@@ -67,6 +67,7 @@
             "@php artisan test"
         ],
         "build:production": [
+            "Composer\\Config::disableProcessTimeout",
             "powershell -Command \"if (Test-Path 'dist') { Remove-Item -Recurse -Force 'dist' }\"",
             "npm run build:clean",
             "@php artisan config:cache",
