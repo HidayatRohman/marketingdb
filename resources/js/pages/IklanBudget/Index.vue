@@ -370,10 +370,14 @@
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
+                                                    type="button"
                                                     @click="openDeleteModal(budget)"
+                                                    aria-label="Hapus data budget"
+                                                    title="Hapus data budget"
                                                     class="h-9 w-9 border border-red-300 bg-gradient-to-r from-red-100 to-red-200 p-0 text-red-700 transition-all duration-200 hover:from-red-200 hover:to-red-300"
                                                 >
                                                     <Trash2 class="h-4 w-4" />
+                                                    <span class="sr-only">Hapus data budget</span>
                                                 </Button>
                                             </div>
                                             <div v-else class="text-center text-gray-500 text-sm">
@@ -500,7 +504,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { router, Head, usePage } from '@inertiajs/vue3'
-import { index } from '@/routes/iklan-budgets'
+import { index, destroy } from '@/routes/iklan-budgets'
 import AppLayout from '@/layouts/AppLayout.vue'
 import IklanBudgetModal from '@/components/IklanBudgetModal.vue'
 import IklanBudgetDeleteModal from '@/components/IklanBudgetDeleteModal.vue'
@@ -674,8 +678,16 @@ const openEditModal = (budget: IklanBudget) => {
 }
 
 const openDeleteModal = (budget: IklanBudget) => {
-  deleteModal.budget = budget
-  deleteModal.open = true
+  const ok = window.confirm('Yakin ingin menghapus data ini?')
+  if (!ok) return
+  router.delete(destroy.url(budget.id), {
+    preserveScroll: false,
+    onSuccess: handleDeleteSuccess,
+    onError: (errors: any) => {
+      console.error('Gagal menghapus:', errors)
+      alert('Gagal menghapus data. Periksa izin dan koneksi, lalu coba lagi.')
+    },
+  })
 }
 
 const closeBudgetModal = () => {
