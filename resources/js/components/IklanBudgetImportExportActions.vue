@@ -423,16 +423,18 @@ const handleImport = async (file: File) => {
         })
 
         if (!response.ok) {
+            const bodyText = await response.text().catch(() => '')
             let errorMessage = `HTTP ${response.status}: ${response.statusText}`
-            try {
-                const errorData = await response.json()
-                errorMessage = errorData.message || errorMessage
-            } catch (e) {
-                const textResponse = await response.text()
-                if (textResponse.includes('CSRF token mismatch') || textResponse.includes('419')) {
-                    throw new Error('CSRF token tidak valid. Silakan refresh halaman dan coba lagi.')
+            if (bodyText) {
+                try {
+                    const errorData = JSON.parse(bodyText)
+                    errorMessage = errorData.message || errorMessage
+                } catch (_) {
+                    if (bodyText.includes('CSRF token mismatch') || bodyText.includes('419')) {
+                        throw new Error('CSRF token tidak valid. Silakan refresh halaman dan coba lagi.')
+                    }
+                    errorMessage = bodyText || errorMessage
                 }
-                throw new Error(`Server error: ${errorMessage}`)
             }
             throw new Error(errorMessage)
         }
