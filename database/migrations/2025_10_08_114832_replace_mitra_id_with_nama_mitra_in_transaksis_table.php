@@ -16,6 +16,16 @@ return new class extends Migration
             return;
         }
 
+        // For SQLite, skip MySQL-specific introspection and just add the column if needed
+        if (DB::getDriverName() === 'sqlite') {
+            if (!Schema::hasColumn('transaksis', 'nama_mitra')) {
+                Schema::table('transaksis', function (Blueprint $table) {
+                    $table->string('nama_mitra')->after('user_id');
+                });
+            }
+            return;
+        }
+
         // Drop FK on mitra_id if exists, then drop column
         if (Schema::hasColumn('transaksis', 'mitra_id')) {
             $constraints = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksis' AND COLUMN_NAME = 'mitra_id' AND REFERENCED_TABLE_NAME IS NOT NULL");
@@ -44,6 +54,11 @@ return new class extends Migration
     public function down(): void
     {
         if (!Schema::hasTable('transaksis')) {
+            return;
+        }
+
+        // Skip reverse for SQLite due to constraint/column differences
+        if (DB::getDriverName() === 'sqlite') {
             return;
         }
 

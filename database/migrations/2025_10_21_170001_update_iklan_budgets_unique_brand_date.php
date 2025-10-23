@@ -15,6 +15,10 @@ return new class extends Migration
         if (!Schema::hasTable('iklan_budgets')) {
             return;
         }
+        // Skip for SQLite (MySQL-specific index inspection)
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
 
         // Drop unique on tanggal if exists
         $uniqueTanggalExists = !empty(DB::select("SHOW INDEX FROM iklan_budgets WHERE Key_name = 'iklan_budgets_tanggal_unique'"));
@@ -39,6 +43,10 @@ return new class extends Migration
     public function down(): void
     {
         if (!Schema::hasTable('iklan_budgets')) {
+            return;
+        }
+        // Skip for SQLite (MySQL-specific index inspection)
+        if (DB::getDriverName() === 'sqlite') {
             return;
         }
 

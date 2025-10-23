@@ -15,6 +15,16 @@ return new class extends Migration
         if (!Schema::hasTable('iklan_budgets')) {
             return;
         }
+        // Handle SQLite: check index via sqlite_master then drop by name
+        if (DB::getDriverName() === 'sqlite') {
+            $uniqueExists = !empty(DB::select("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='iklan_budgets' AND name='iklan_budgets_tanggal_unique'"));
+            if ($uniqueExists) {
+                Schema::table('iklan_budgets', function (Blueprint $table) {
+                    $table->dropUnique('iklan_budgets_tanggal_unique');
+                });
+            }
+            return;
+        }
 
         $uniqueExists = !empty(DB::select("SHOW INDEX FROM iklan_budgets WHERE Key_name = 'iklan_budgets_tanggal_unique'"));
 
@@ -31,6 +41,16 @@ return new class extends Migration
     public function down(): void
     {
         if (!Schema::hasTable('iklan_budgets')) {
+            return;
+        }
+        // Handle SQLite: check index and re-add unique by name if missing
+        if (DB::getDriverName() === 'sqlite') {
+            $uniqueExists = !empty(DB::select("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='iklan_budgets' AND name='iklan_budgets_tanggal_unique'"));
+            if (! $uniqueExists) {
+                Schema::table('iklan_budgets', function (Blueprint $table) {
+                    $table->unique('tanggal');
+                });
+            }
             return;
         }
 
