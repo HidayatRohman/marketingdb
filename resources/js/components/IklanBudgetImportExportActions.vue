@@ -431,26 +431,35 @@ const handleImport = async (file: File) => {
         })
 
         if (!response.ok) {
-            let bodyText = ''
-            if (!response.bodyUsed) {
-                try {
-                    bodyText = await response.text()
-                } catch (e) {
-                    console.warn('Failed reading error body:', e)
-                    bodyText = ''
-                }
-            }
             let errorMessage = `HTTP ${response.status}: ${response.statusText}`
-            if (bodyText) {
-                try {
-                    const errorData = JSON.parse(bodyText)
-                    errorMessage = errorData.message || errorMessage
-                } catch (_) {
-                    if (bodyText.includes('CSRF token mismatch') || bodyText.includes('419')) {
-                        throw new Error('CSRF token tidak valid. Silakan refresh halaman dan coba lagi.')
+            try {
+                const contentType = response.headers.get('content-type') || ''
+                const respClone = response.clone()
+                if (contentType.includes('application/json')) {
+                    const data = await respClone.json()
+                    if (data && typeof (data as any).message === 'string') {
+                        errorMessage = (data as any).message
                     }
-                    errorMessage = bodyText || errorMessage
+                } else {
+                    const text = await respClone.text()
+                    if (text) {
+                        if (text.includes('CSRF token mismatch') || text.includes('419')) {
+                            throw new Error('CSRF token tidak valid. Silakan refresh halaman dan coba lagi.')
+                        }
+                        try {
+                            const parsed = JSON.parse(text)
+                            if (parsed && typeof parsed.message === 'string') {
+                                errorMessage = parsed.message
+                            } else {
+                                errorMessage = text || errorMessage
+                            }
+                        } catch {
+                            errorMessage = text || errorMessage
+                        }
+                    }
                 }
+            } catch (parseErr) {
+                console.warn('Failed to parse error response body:', parseErr)
             }
             throw new Error(errorMessage)
         }
