@@ -692,7 +692,7 @@ const ppnPercentage = computed(() => {
                     </div>
 
                     <!-- Summary Statistics Cards -->
-                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-6 mb-6">
+                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
                         <Card class="relative bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
                             <CardContent class="p-6">
                                 <div class="absolute top-3 right-3 text-blue-500/60">
