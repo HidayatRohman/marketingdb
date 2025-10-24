@@ -692,7 +692,7 @@ const ppnPercentage = computed(() => {
                     </div>
 
                     <!-- Summary Statistics Cards -->
-                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
+                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
                         <Card class="relative bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
                             <CardContent class="p-6">
                                 <div class="absolute top-3 right-3 text-blue-500/60">
@@ -741,6 +741,29 @@ const ppnPercentage = computed(() => {
                             </CardContent>
                         </Card>
 
+                        <!-- ROAS Keseluruhan (baru) -->
+                        <Card class="relative bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900">
+                            <CardContent class="p-6">
+                                <div class="absolute top-3 right-3 text-emerald-500/60">
+                                    <TrendingUp class="h-4 w-4" />
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-emerald-700 dark:text-emerald-300">ROAS Keseluruhan</p>
+                                        <p class="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
+                                            {{
+                                                (() => {
+                                                    const totalSpentWithTax = summaryReport.reduce((sum, item) => sum + item.spent_with_tax, 0)
+                                                    const totalOmset = summaryReport.reduce((sum, item) => sum + item.omset, 0)
+                                                    return totalSpentWithTax > 0 ? (totalOmset / totalSpentWithTax).toFixed(2) + 'x' : '0.00x'
+                                                })()
+                                            }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
                         <Card class="relative bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
                             <CardContent class="p-6">
                                 <div class="absolute top-3 right-3 text-purple-500/60">
@@ -767,6 +790,29 @@ const ppnPercentage = computed(() => {
                                         <p class="text-sm font-medium text-orange-700 dark:text-orange-300">Total Closing</p>
                                         <p class="text-2xl font-bold text-orange-900 dark:text-orange-100">
                                             {{ summaryReport.reduce((sum, item) => sum + item.closing, 0).toLocaleString('id-ID') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Cost Per Lead (baru) -->
+                        <Card class="relative bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950 dark:to-teal-900">
+                            <CardContent class="p-6">
+                                <div class="absolute top-3 right-3 text-teal-500/60">
+                                    <Target class="h-4 w-4" />
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-teal-700 dark:text-teal-300">Cost Per Lead</p>
+                                        <p class="text-2xl font-bold text-teal-900 dark:text-teal-100">
+                                            {{
+                                                (() => {
+                                                    const totalSpent = summaryReport.reduce((sum, item) => sum + item.spent, 0)
+                                                    const totalLead = summaryReport.reduce((sum, item) => sum + item.real_lead, 0)
+                                                    return totalLead > 0 ? Math.round(totalSpent / totalLead).toLocaleString('id-ID') : '0'
+                                                })()
+                                            }}
                                         </p>
                                     </div>
                                 </div>
