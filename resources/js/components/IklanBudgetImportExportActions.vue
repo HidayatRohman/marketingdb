@@ -408,6 +408,13 @@ const handleImport = async (file: File) => {
             throw new Error('CSRF token tidak ditemukan. Silakan refresh halaman dan coba lagi.')
         }
 
+        // Tambahkan token ke body untuk kompatibilitas middleware
+        formData.append('_token', csrfToken)
+
+        // Baca XSRF-TOKEN cookie dan kirim sebagai header jika tersedia
+        const xsrfCookiePair = document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))
+        const xsrfToken = xsrfCookiePair ? decodeURIComponent(xsrfCookiePair.split('=')[1]) : ''
+
         const { url } = iklanBudgetsRoutes.import.post()
         const absoluteUrl = new URL(url, window.location.origin).toString()
 
@@ -417,6 +424,7 @@ const handleImport = async (file: File) => {
             credentials: 'same-origin',
             headers: {
                 'X-CSRF-TOKEN': csrfToken,
+                ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}),
                 Accept: 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             },
