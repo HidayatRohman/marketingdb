@@ -431,7 +431,15 @@ const handleImport = async (file: File) => {
         })
 
         if (!response.ok) {
-            const bodyText = await response.text().catch(() => '')
+            let bodyText = ''
+            if (!response.bodyUsed) {
+                try {
+                    bodyText = await response.text()
+                } catch (e) {
+                    console.warn('Failed reading error body:', e)
+                    bodyText = ''
+                }
+            }
             let errorMessage = `HTTP ${response.status}: ${response.statusText}`
             if (bodyText) {
                 try {
