@@ -359,15 +359,21 @@ const handleImport = async (file: File) => {
         console.log('Response status:', response.status, response.statusText);
 
         if (!response.ok) {
-            const bodyText = await response.text().catch(() => '')
+            let bodyText = ''
+            if (!response.bodyUsed) {
+                try {
+                    bodyText = await response.text()
+                } catch (e) {
+                    console.warn('Failed reading error body:', e)
+                    bodyText = ''
+                }
+            }
             let errorMessage = `HTTP ${response.status}: ${response.statusText}`
             if (bodyText) {
                 try {
                     const errorData = JSON.parse(bodyText)
-                    console.log('Error response:', errorData)
                     errorMessage = errorData.message || errorMessage
                 } catch (_) {
-                    console.error('Non-JSON response received:', bodyText)
                     if (bodyText.includes('CSRF token mismatch') || bodyText.includes('419')) {
                         throw new Error('CSRF token tidak valid. Silakan refresh halaman dan coba lagi.')
                     }
