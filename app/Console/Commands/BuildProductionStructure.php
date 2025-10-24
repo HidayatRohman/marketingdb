@@ -10,7 +10,7 @@ use ZipArchive;
 
 class BuildProductionStructure extends Command
 {
-    protected $signature = 'build:production-structure';
+    protected $signature = 'build:production-structure {--no-vendor : Exclude vendor from dist and zip}';
     protected $description = 'Create production build structure with Laravel and public_html folders';
 
     public function handle(): int
@@ -20,6 +20,7 @@ class BuildProductionStructure extends Command
         $distPath = base_path('dist');
         $laravelPath = $distPath.'/laravel';
         $publicHtmlPath = $distPath.'/public_html';
+        $noVendor = (bool) $this->option('no-vendor');
 
         // Create directories
         File::makeDirectory($laravelPath, 0755, true, true);
@@ -28,7 +29,7 @@ class BuildProductionStructure extends Command
         $this->info('Created dist directories');
 
         // Copy Laravel files (excluding public directory)
-        $this->copyLaravelFiles($laravelPath);
+        $this->copyLaravelFiles($laravelPath, $noVendor);
         $this->info('Copied Laravel files');
 
         // Copy public files to public_html
@@ -44,17 +45,17 @@ class BuildProductionStructure extends Command
         $this->info('Modified index.php for production structure');
 
         // Create production.zip
-        $this->createZip($distPath);
-        $this->info('Created production.zip');
+        $this->createZip($distPath, $noVendor);
+        $this->info('Created production zip');
 
         $this->info('✅ Production build completed successfully!');
         $this->info('📁 Files created in: '.$distPath);
-        $this->info('📦 Production archive: '.$distPath.'/production.zip');
+        $this->info('📦 Production archive: '.$distPath.'/'.($noVendor ? 'production-novendor.zip' : 'production.zip'));
 
         return self::SUCCESS;
     }
 
-    private function copyLaravelFiles(string $destination): void
+    private function copyLaravelFiles(string $destination, bool $noVendor = false): void
     {
         $excludePaths = [
             'public',
@@ -75,6 +76,10 @@ class BuildProductionStructure extends Command
             '.styleci.yml',
             'README.md',
         ];
+
+        if ($noVendor) {
+            $excludePaths[] = 'vendor';
+        }
 
         $basePath = base_path();
 
@@ -246,9 +251,9 @@ class BuildProductionStructure extends Command
         }
     }
 
-    private function createZip(string $distPath): void
+    private function createZip(string $distPath, bool $noVendor = false): void
     {
-        $zipFile = $distPath.'/production.zip';
+        $zipFile = $distPath.'/'.($noVendor ? 'production-novendor.zip' : 'production.zip');
 
         if (File::exists($zipFile)) {
             File::delete($zipFile);
