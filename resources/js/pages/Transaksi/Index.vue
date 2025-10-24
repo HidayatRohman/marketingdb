@@ -114,15 +114,18 @@ const showFilters = ref(false);
 const transaksiData = computed(() => props.transaksis);
 
 // Tabs untuk Status Pembayaran
-const selectedPaymentStatus = ref<'dp_tj' | 'tambahan_dp' | 'pelunasan'>('dp_tj');
+const selectedPaymentStatus = ref<'semua' | 'dp_tj' | 'tambahan_dp' | 'pelunasan'>('dp_tj');
 
 const countDpTj = computed(() => (transaksiData.value?.data || []).filter(t => t.status_pembayaran === 'Dp / TJ').length);
 const countTambahanDp = computed(() => (transaksiData.value?.data || []).filter(t => t.status_pembayaran === 'Tambahan Dp').length);
 const countPelunasan = computed(() => (transaksiData.value?.data || []).filter(t => t.status_pembayaran === 'Pelunasan').length);
+const countAll = computed(() => (transaksiData.value?.data || []).length);
 
 const filteredTransaksiRows = computed(() => {
     const rows = transaksiData.value?.data || [];
     switch (selectedPaymentStatus.value) {
+        case 'semua':
+            return rows;
         case 'dp_tj':
             return rows.filter(t => t.status_pembayaran === 'Dp / TJ');
         case 'tambahan_dp':
@@ -786,6 +789,21 @@ onMounted(() => {
                         <div class="inline-flex items-center gap-1 rounded-lg bg-muted p-1 text-muted-foreground">
                             <button
                                 type="button"
+                                @click="selectedPaymentStatus = 'semua'"
+                                :class="[
+                                    'flex items-center rounded-md px-3.5 py-1.5 transition-colors text-xs sm:text-sm',
+                                    selectedPaymentStatus === 'semua'
+                                        ? 'bg-white shadow-xs dark:bg-neutral-800 dark:text-neutral-100'
+                                        : 'text-neutral-700 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-300 dark:hover:bg-neutral-700/60',
+                                ]"
+                            >
+                                <span class="mr-2">Semua</span>
+                                <span class="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+                                    {{ countAll }}
+                                </span>
+                            </button>
+                            <button
+                                type="button"
                                 @click="selectedPaymentStatus = 'dp_tj'"
                                 :class="[
                                     'flex items-center rounded-md px-3.5 py-1.5 transition-colors text-xs sm:text-sm',
@@ -832,7 +850,7 @@ onMounted(() => {
                         </div>
                         <div class="flex items-center space-x-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                             <span class="rounded-full bg-neutral-100 px-3 py-1 font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
-                                Status dipilih: {{ selectedPaymentStatus === 'dp_tj' ? 'DP/TJ' : selectedPaymentStatus === 'tambahan_dp' ? 'Tambahan DP' : 'Pelunasan' }}
+                                Status dipilih: {{ selectedPaymentStatus === 'semua' ? 'Semua' : selectedPaymentStatus === 'dp_tj' ? 'DP/TJ' : selectedPaymentStatus === 'tambahan_dp' ? 'Tambahan DP' : 'Pelunasan' }}
                             </span>
                             <span class="rounded-full bg-blue-100 px-3 py-1 font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
                                 {{ filteredTransaksiRows.length }} ditampilkan
