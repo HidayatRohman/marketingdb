@@ -442,13 +442,23 @@ class IklanBudgetController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|file',
+            'file' => 'required|file|max:10240', // Max 10MB
         ]);
 
         try {
             DB::beginTransaction();
 
             $file = $request->file('file');
+
+            // Check file size
+            if ($file->getSize() > 10 * 1024 * 1024) { // 10MB
+                throw new \Exception('File too large. Maximum size is 10MB.');
+            }
+
+            // Increase memory limit and execution time for large files
+            ini_set('memory_limit', '1G');
+            set_time_limit(300); // 5 minutes
+
             $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getPathname());
             $worksheet = $spreadsheet->getActiveSheet();
             $rows = $worksheet->toArray();
@@ -464,6 +474,10 @@ class IklanBudgetController extends Controller
 
             // Remove header
             array_shift($rows);
+
+            $batchSize = 100;
+            $totalRows = count($rows);
+            $processedRows = [];
 
             foreach ($rows as $index => $row) {
                 $line = $index + 2; // Header di baris 1
@@ -516,28 +530,23 @@ class IklanBudgetController extends Controller
                     $spentVal = is_numeric($clean) ? (float) $clean : 0;
                 }
 
-                try {
-                    $existing = IklanBudget::where('brand_id', $brandId)->where('tanggal', $tanggal)->first();
-                    if ($existing) {
-                        $existing->spent_amount = $spentVal;
-                        $existing->closing = IklanBudget::calculateClosingForDate($tanggal, $brandId);
-                        $existing->omset = IklanBudget::calculateOmsetForDate($tanggal, $brandId);
-                        $existing->save();
-                        $updated++;
-                    } else {
-                        $model = IklanBudget::create([
-                            'tanggal' => $tanggal,
-                            'brand_id' => $brandId,
-                            'spent_amount' => $spentVal,
-                        ]);
-                        $model->closing = IklanBudget::calculateClosingForDate($tanggal, $brandId);
-                        $model->omset = IklanBudget::calculateOmsetForDate($tanggal, $brandId);
-                        $model->save();
-                        $imported++;
-                    }
-                } catch (\Throwable $e) {
-                    $skipped++; $errors[] = "Baris {$line}: Gagal menyimpan - " . $e->getMessage();
+                $processedRows[] = [
+                    'tanggal' => $tanggal,
+                    'brand_id' => $brandId,
+                    'spent_amount' => $spentVal,
+                    'line' => $line
+                ];
+
+                // Process in batches
+                if (count($processedRows) >= $batchSize) {
+                    $this->processBatch($processedRows, $imported, $updated, $skipped, $errors);
+                    $processedRows = [];
                 }
+            }
+
+            // Process remaining rows
+            if (!empty($processedRows)) {
+                $this->processBatch($processedRows, $imported, $updated, $skipped, $errors);
             }
 
             DB::commit();
@@ -586,6 +595,38 @@ class IklanBudgetController extends Controller
             }
 
             return back()->with('error', 'Import gagal: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Process batch of import rows
+     */
+    private function processBatch(array $rows, int &$imported, int &$updated, int &$skipped, array &$errors)
+    {
+        foreach ($rows as $row) {
+            try {
+                $existing = IklanBudget::where('brand_id', $row['brand_id'])->where('tanggal', $row['tanggal'])->first();
+                if ($existing) {
+                    $existing->spent_amount = $row['spent_amount'];
+                    $existing->closing = IklanBudget::calculateClosingForDate($row['tanggal'], $row['brand_id']);
+                    $existing->omset = IklanBudget::calculateOmsetForDate($row['tanggal'], $row['brand_id']);
+                    $existing->save();
+                    $updated++;
+                } else {
+                    $model = IklanBudget::create([
+                        'tanggal' => $row['tanggal'],
+                        'brand_id' => $row['brand_id'],
+                        'spent_amount' => $row['spent_amount'],
+                    ]);
+                    $model->closing = IklanBudget::calculateClosingForDate($row['tanggal'], $row['brand_id']);
+                    $model->omset = IklanBudget::calculateOmsetForDate($row['tanggal'], $row['brand_id']);
+                    $model->save();
+                    $imported++;
+                }
+            } catch (\Throwable $e) {
+                $skipped++;
+                $errors[] = "Baris {$row['line']}: Gagal menyimpan - " . $e->getMessage();
+            }
         }
     }
 }

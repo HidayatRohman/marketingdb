@@ -179,13 +179,19 @@ class IklanBudget extends Model
      */
     public static function calculateClosingForDate($date, $brandId = null)
     {
-        $query = \App\Models\Transaksi::where('tanggal_tf', $date);
-        
-        if ($brandId) {
-            $query->where('lead_awal_brand_id', $brandId);
+        try {
+            $query = \App\Models\Transaksi::where('tanggal_tf', $date);
+
+            if ($brandId) {
+                $query->where('lead_awal_brand_id', $brandId);
+            }
+
+            return $query->count();
+        } catch (\Exception $e) {
+            // Handle case where transaksis table doesn't exist or has issues
+            \Log::warning('Failed to calculate closing for date: ' . $date . ', error: ' . $e->getMessage());
+            return 0;
         }
-        
-        return $query->count();
     }
 
     /**
@@ -194,13 +200,19 @@ class IklanBudget extends Model
      */
     public static function calculateOmsetForDate($date, $brandId = null)
     {
-        $query = \App\Models\Transaksi::where('tanggal_tf', $date);
-        
-        if ($brandId) {
-            $query->where('lead_awal_brand_id', $brandId);
+        try {
+            $query = \App\Models\Transaksi::where('tanggal_tf', $date);
+
+            if ($brandId) {
+                $query->where('lead_awal_brand_id', $brandId);
+            }
+
+            return $query->sum('nominal_masuk') ?? 0;
+        } catch (\Exception $e) {
+            // Handle case where transaksis table doesn't exist or has issues
+            \Log::warning('Failed to calculate omset for date: ' . $date . ', error: ' . $e->getMessage());
+            return 0;
         }
-        
-        return $query->sum('nominal_masuk') ?? 0;
     }
 
     /**
