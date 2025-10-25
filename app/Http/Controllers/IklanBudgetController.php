@@ -39,16 +39,19 @@ class IklanBudgetController extends Controller
         
         $iklanBudgets = $query->orderBy('tanggal', 'desc')->paginate(31);
         
-        // Update closing and omset values for the current page data
+        // Update closing, omset, dan spent_plus_tax untuk data halaman saat ini
+        $ppnRate = (float) SiteSetting::get('ppn_rate', 11);
+        $spentMultiplier = 1 + ($ppnRate / 100.0);
         foreach ($iklanBudgets->items() as $budget) {
             $closing = IklanBudget::calculateClosingForDate($budget->tanggal, $budget->brand_id);
             $omset = IklanBudget::calculateOmsetForDate($budget->tanggal, $budget->brand_id);
+            $spentPlusTax = ((float) ($budget->spent_amount ?? 0)) * $spentMultiplier;
             
-            // Update the model instance for display (without saving to database yet)
+            // Update the model instance for display (persist to database)
             $budget->closing = $closing;
             $budget->omset = $omset;
+            $budget->spent_plus_tax = $spentPlusTax;
             
-            // Optionally save to database to persist the calculated values
             $budget->save();
         }
         
@@ -174,6 +177,11 @@ class IklanBudgetController extends Controller
         }
 
         $iklanBudget = IklanBudget::create($validator->validated());
+        // Hitung dan simpan Spent+PPN setelah create
+        $ppnRate = (float) SiteSetting::get('ppn_rate', 11);
+        $spentMultiplier = 1 + ($ppnRate / 100.0);
+        $iklanBudget->spent_plus_tax = ((float) ($iklanBudget->spent_amount ?? 0)) * $spentMultiplier;
+        $iklanBudget->save();
 
         return redirect()->route('iklan-budgets.index')
             ->with('success', 'Data budget iklan berhasil ditambahkan.');
@@ -207,6 +215,11 @@ class IklanBudgetController extends Controller
         }
 
         $iklanBudget->update($validator->validated());
+        // Recalculate Spent+PPN setelah update
+        $ppnRate = (float) SiteSetting::get('ppn_rate', 11);
+        $spentMultiplier = 1 + ($ppnRate / 100.0);
+        $iklanBudget->spent_plus_tax = ((float) ($iklanBudget->spent_amount ?? 0)) * $spentMultiplier;
+        $iklanBudget->save();
 
         return redirect()->route('iklan-budgets.index')
             ->with('success', 'Data budget iklan berhasil diperbarui.');
@@ -649,10 +662,14 @@ class IklanBudgetController extends Controller
         foreach ($rows as $row) {
             try {
                 $existing = IklanBudget::where('brand_id', $row['brand_id'])->where('tanggal', $row['tanggal'])->first();
+                $ppnRate = (float) SiteSetting::get('ppn_rate', 11);
+                $spentMultiplier = 1 + ($ppnRate / 100.0);
+
                 if ($existing) {
                     $existing->spent_amount = $row['spent_amount'];
                     $existing->closing = IklanBudget::calculateClosingForDate($row['tanggal'], $row['brand_id']);
                     $existing->omset = IklanBudget::calculateOmsetForDate($row['tanggal'], $row['brand_id']);
+                    $existing->spent_plus_tax = ((float) $row['spent_amount']) * $spentMultiplier;
                     $existing->save();
                     $updated++;
                 } else {
@@ -663,6 +680,7 @@ class IklanBudgetController extends Controller
                     ]);
                     $model->closing = IklanBudget::calculateClosingForDate($row['tanggal'], $row['brand_id']);
                     $model->omset = IklanBudget::calculateOmsetForDate($row['tanggal'], $row['brand_id']);
+                    $model->spent_plus_tax = ((float) $row['spent_amount']) * $spentMultiplier;
                     $model->save();
                     $imported++;
                 }

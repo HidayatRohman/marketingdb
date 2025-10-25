@@ -21,6 +21,7 @@ class IklanBudget extends Model
     protected $casts = [
         'tanggal' => 'date',
         'spent_amount' => 'decimal:2',
+        'spent_plus_tax' => 'decimal:2',
     ];
 
     protected static function boot()
@@ -95,6 +96,21 @@ class IklanBudget extends Model
     public function getFormattedCostPerLeadAttribute()
     {
         return 'Rp ' . number_format($this->cost_per_lead, 0, ',', '.');
+    }
+
+    // Accessor: compute Spent+PPN from current PPN rate when missing or zero
+    public function getSpentPlusTaxAttribute()
+    {
+        $existing = $this->attributes['spent_plus_tax'] ?? null;
+        if (!is_null($existing) && (float) $existing > 0) {
+            return (float) $existing;
+        }
+
+        $ppnRate = (float) \App\Models\SiteSetting::get('ppn_rate', 11);
+        $spentMultiplier = 1 + ($ppnRate / 100.0);
+        $spent = (float) ($this->attributes['spent_amount'] ?? 0);
+
+        return $spent * $spentMultiplier;
     }
 
     public function scopeInPeriod($query, $startDate, $endDate)

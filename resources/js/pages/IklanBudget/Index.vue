@@ -370,7 +370,7 @@
                                             <span class="font-medium text-red-600">{{ formatCurrency(budget.spent_amount) }}</span>
                                         </TableCell>
                                         <TableCell class="text-center">
-                                            <span class="font-medium text-red-700">{{ formatCurrency((Number(budget.spent_amount) || 0) * ppnMultiplier.value) }}</span>
+                                            <span class="font-medium text-red-700">{{ formatCurrency(Number(budget.spent_plus_tax) || 0) }}</span>
                                         </TableCell>
                                         <TableCell class="text-center">
                                             <span class="font-medium text-green-600">{{ budget.real_lead }}</span>
@@ -386,7 +386,7 @@
                                             <span class="font-medium text-green-700">{{ formatCurrency(budget.omset) }}</span>
                                         </TableCell>
                                         <TableCell class="text-center">
-                                            <span v-if="((Number(budget.spent_amount) || 0) * ppnMultiplier.value) > 0 && budget.omset > 0" class="font-medium text-indigo-600">{{ (budget.omset / ((Number(budget.spent_amount) || 0) * ppnMultiplier.value)).toFixed(2) }}</span>
+                                            <span v-if="(Number(budget.spent_plus_tax) || 0) > 0 && budget.omset > 0" class="font-medium text-indigo-600">{{ (budget.omset / (Number(budget.spent_plus_tax) || 0)).toFixed(2) }}</span>
                                             <span v-else class="text-red-500 font-medium">0.00</span>
                                         </TableCell>
                                         <TableCell>
