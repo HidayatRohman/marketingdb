@@ -512,6 +512,25 @@
                     />
                 </CardContent>
             </Card>
+
+            <!-- Grafik Total Leads Bulanan -->
+            <Card class="border-0 shadow-md mt-6">
+                <CardHeader class="px-4 py-3 pb-2 bg-gradient-to-r from-teal-50 via-emerald-50 to-green-50 dark:from-teal-900 dark:via-emerald-900 dark:to-green-900 rounded-t-lg border-b border-teal-100 dark:border-teal-800">
+                    <CardTitle class="flex items-center gap-2 text-teal-800 dark:text-teal-100">
+                        <BarChart3 class="h-6 w-6" />
+                        Total Leads Per Bulan
+                    </CardTitle>
+                </CardHeader>
+                <CardContent class="p-4">
+                    <MonthlyLeadsChart 
+                        :data="monthlyLeadsData" 
+                        :loading="monthlyLeadsLoading"
+                        :year="leadsChartYear"
+                        :brand-name="selectedBrandName"
+                        @refresh="fetchMonthlyLeadsData"
+                    />
+                </CardContent>
+            </Card>
         </div>
 
         <!-- Modal Components -->
@@ -551,6 +570,7 @@ import TableHead from '@/components/ui/table/TableHead.vue'
 import TableHeader from '@/components/ui/table/TableHeader.vue'
 import TableRow from '@/components/ui/table/TableRow.vue'
 import MonthlySpentChart from '@/components/MonthlySpentChart.vue'
+import MonthlyLeadsChart from '@/components/MonthlyLeadsChart.vue'
 
 import { TrendingUp, Plus, Filter, Search, Edit, Trash2, RotateCcw, BarChart3, Target, Users, Award, DollarSign } from 'lucide-vue-next'
 
@@ -889,12 +909,45 @@ const fetchMonthlySpentData = async () => {
   }
 }
 
+// ============================
+// Monthly Leads Chart (Analytics)
+// ============================
+const leadsChartYear = ref<number>(new Date().getFullYear())
+const monthlyLeadsLoading = ref(false)
+const monthlyLeadsData = ref<Array<{ month: number; label: string; leads: number }>>([])
+
+const fetchMonthlyLeadsData = async () => {
+  monthlyLeadsLoading.value = true
+  try {
+    const params = new URLSearchParams({
+      year: String(leadsChartYear.value),
+    })
+    if (chartBrandId.value) {
+      params.append('brand_id', String(chartBrandId.value))
+    }
+    const response = await fetch(`/iklan-budgets/analytics/monthly-leads?${params.toString()}`)
+    if (response.ok) {
+      const result = await response.json()
+      monthlyLeadsData.value = result.data || []
+    }
+  } catch (err) {
+    console.error('Gagal memuat data grafik leads bulanan:', err)
+  } finally {
+    monthlyLeadsLoading.value = false
+  }
+}
+
 onMounted(() => {
   fetchMonthlySpentData()
+  fetchMonthlyLeadsData()
 })
 
 watch([spentChartYear, chartBrandId], () => {
   fetchMonthlySpentData()
+})
+
+watch(chartBrandId, () => {
+  fetchMonthlyLeadsData()
 })
 
 </script>

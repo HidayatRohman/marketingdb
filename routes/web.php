@@ -211,6 +211,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::middleware('role.access:view')->group(function () {
             Route::get('/', [\App\Http\Controllers\IklanBudgetController::class, 'index'])->name('index');
             Route::get('/analytics/monthly-spent', [\App\Http\Controllers\IklanBudgetController::class, 'monthlySpent'])->name('analytics.monthly-spent');
+            Route::get('/analytics/monthly-leads', [\App\Http\Controllers\IklanBudgetController::class, 'monthlyLeads'])->name('analytics.monthly-leads');
             // Export & Template download (view permission)
             Route::get('/export', [\App\Http\Controllers\IklanBudgetController::class, 'export'])->name('export');
             Route::get('/template', [\App\Http\Controllers\IklanBudgetController::class, 'downloadTemplate'])->name('template');

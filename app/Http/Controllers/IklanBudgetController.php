@@ -340,6 +340,49 @@ class IklanBudgetController extends Controller
     }
 
     /**
+     * Analytics: Get monthly leads totals for a given year and optional brand
+     */
+    public function monthlyLeads(Request $request)
+    {
+        $year = (int) ($request->get('year', now()->year));
+        $brandId = $request->get('brand_id');
+
+        $query = \App\Models\Mitra::query()->whereYear('tanggal_lead', $year);
+
+        if (!empty($brandId)) {
+            $query->where('brand_id', $brandId);
+        }
+
+        // Aggregate leads per month
+        $rows = $query->selectRaw('MONTH(tanggal_lead) as month, COUNT(*) as total_leads')
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        // Prepare a full 12-month series with zero filling
+        $monthLabels = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
+            7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
+        $data = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $found = $rows->firstWhere('month', $m);
+            $data[] = [
+                'month' => $m,
+                'label' => $monthLabels[$m],
+                'leads' => (int) ($found->total_leads ?? 0),
+            ];
+        }
+
+        return response()->json([
+            'year' => $year,
+            'brand_id' => $brandId,
+            'data' => $data,
+        ]);
+    }
+
+    /**
      * Export data IklanBudget berdasarkan filter ke Excel (Tanggal, Brand, Spent)
      */
     public function export(Request $request)
