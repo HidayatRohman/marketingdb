@@ -7,9 +7,11 @@ use App\Models\Transaksi;
 use App\Models\Brand;
 use App\Models\Sumber;
 use App\Models\Pekerjaan;
+use App\Models\Mitra;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class TransaksiController extends Controller
@@ -137,6 +139,106 @@ class TransaksiController extends Controller
         return response()->json([
             'data' => $data,
         ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'tanggal_tf' => 'required|date',
+            'tanggal_lead_masuk' => 'required|date',
+            'periode_lead' => 'required|string|in:Januari,Februari,Maret,April,Mei,Juni,Juli,Agustus,September,Oktober,November,Desember',
+            'no_wa' => 'required|string|max:20',
+            'usia' => 'required|integer|min:17|max:80',
+            'nama_mitra' => 'required|string|max:255',
+            'pekerjaan_id' => 'nullable|exists:pekerjaans,id',
+            'paket_brand_id' => 'required|exists:brands,id',
+            'lead_awal_brand_id' => 'required|exists:brands,id',
+            'sumber_id' => 'nullable|exists:sumbers,id',
+            'sumber' => 'nullable|string|max:255',
+            'kabupaten' => 'required|string|max:255',
+            'provinsi' => 'required|string|max:255',
+            'status_pembayaran' => 'required|in:Dp / TJ,Tambahan Dp,Pelunasan',
+            'nominal_masuk' => 'required|numeric|min:0',
+            'harga_paket' => 'required|numeric|min:0',
+            'nama_paket' => 'required|string|max:255',
+        ]);
+
+        // Derive sumber string from sumber_id or fallback to provided sumber/Unknown
+        $sumberString = 'Unknown';
+        if (!empty($validated['sumber_id'])) {
+            $ref = Sumber::find($validated['sumber_id']);
+            $sumberString = $ref ? $ref->nama : 'Unknown';
+        } elseif (!empty($validated['sumber'])) {
+            $sumberString = $validated['sumber'];
+        }
+
+        // If DB still has non-null mitra_id (e.g., SQLite dev), link or create Mitra
+        $mitraId = null;
+        if (Schema::hasColumn('transaksis', 'mitra_id')) {
+            $cleanPhone = preg_replace('/[^0-9]/', '', (string)($validated['no_wa'] ?? ''));
+            $existingMitra = null;
+            if (!empty($cleanPhone)) {
+                $existingMitra = Mitra::where('no_telp', $cleanPhone)->first();
+            }
+            if (!$existingMitra && !empty($validated['nama_mitra'])) {
+                $existingMitra = Mitra::where('nama', $validated['nama_mitra'])->first();
+            }
+            if (!$existingMitra) {
+                // Create a minimal Mitra to satisfy FK; defaults aligned with schema
+                $existingMitra = Mitra::create([
+                    'nama' => $validated['nama_mitra'],
+                    'no_telp' => $cleanPhone ?: '000',
+                    'tanggal_lead' => $validated['tanggal_lead_masuk'],
+                    'user_id' => $user->id,
+                    'brand_id' => $validated['paket_brand_id'],
+                    'label_id' => null,
+                    'chat' => 'masuk',
+                    'kota' => $validated['kabupaten'],
+                    'provinsi' => $validated['provinsi'],
+                    'komentar' => null,
+                    'webinar' => 'Tidak',
+                ]);
+            }
+            $mitraId = $existingMitra?->id;
+        }
+
+        $payload = [
+            'user_id' => $user->id,
+            'tanggal_tf' => $validated['tanggal_tf'],
+            'tanggal_lead_masuk' => $validated['tanggal_lead_masuk'],
+            'periode_lead' => $validated['periode_lead'],
+            'no_wa' => $validated['no_wa'],
+            'usia' => $validated['usia'],
+            'nama_mitra' => $validated['nama_mitra'] ?? null,
+            'pekerjaan_id' => $validated['pekerjaan_id'] ?? null,
+            'paket_brand_id' => $validated['paket_brand_id'],
+            'lead_awal_brand_id' => $validated['lead_awal_brand_id'],
+            'sumber_id' => $validated['sumber_id'] ?? null,
+            'sumber' => $sumberString,
+            'kabupaten' => $validated['kabupaten'],
+            'provinsi' => $validated['provinsi'],
+            'status_pembayaran' => $validated['status_pembayaran'],
+            'nominal_masuk' => $validated['nominal_masuk'],
+            'harga_paket' => $validated['harga_paket'],
+            'nama_paket' => $validated['nama_paket'],
+        ];
+        if ($mitraId !== null) {
+            $payload['mitra_id'] = $mitraId;
+        }
+
+        Transaksi::create($payload);
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Transaksi berhasil ditambahkan.']);
+        }
+
+        return redirect()->route('transaksis.index')
+            ->with('success', 'Transaksi berhasil ditambahkan.');
     }
 
     /**
@@ -353,5 +455,97 @@ class TransaksiController extends Controller
                 'canOnlyViewOwn' => $user->canOnlyViewOwn(),
             ],
         ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Transaksi $transaksi)
+    {
+        $user = auth()->user();
+
+        // Marketing can only update own records
+        if ($user->isMarketing() && $transaksi->user_id !== $user->id) {
+            abort(403, 'Anda tidak memiliki izin untuk mengupdate data ini.');
+        }
+
+        $validated = $request->validate([
+            'tanggal_tf' => 'required|date',
+            'tanggal_lead_masuk' => 'required|date',
+            'periode_lead' => 'required|string|in:Januari,Februari,Maret,April,Mei,Juni,Juli,Agustus,September,Oktober,November,Desember',
+            'no_wa' => 'required|string|max:20',
+            'usia' => 'required|integer|min:17|max:80',
+            'nama_mitra' => 'required|string|max:255',
+            'pekerjaan_id' => 'nullable|exists:pekerjaans,id',
+            'paket_brand_id' => 'required|exists:brands,id',
+            'lead_awal_brand_id' => 'required|exists:brands,id',
+            'sumber_id' => 'nullable|exists:sumbers,id',
+            'sumber' => 'nullable|string|max:255',
+            'kabupaten' => 'required|string|max:255',
+            'provinsi' => 'required|string|max:255',
+            'status_pembayaran' => 'required|in:Dp / TJ,Tambahan Dp,Pelunasan',
+            'nominal_masuk' => 'required|numeric|min:0',
+            'harga_paket' => 'required|numeric|min:0',
+            'nama_paket' => 'required|string|max:255',
+        ]);
+
+        // Derive sumber string from sumber_id or fallback
+        $sumberString = 'Unknown';
+        if (!empty($validated['sumber_id'])) {
+            $ref = Sumber::find($validated['sumber_id']);
+            $sumberString = $ref ? $ref->nama : 'Unknown';
+        } elseif (!empty($validated['sumber'])) {
+            $sumberString = $validated['sumber'];
+        }
+
+        $transaksi->update([
+            // Keep original user_id; do not force-change on update
+            'tanggal_tf' => $validated['tanggal_tf'],
+            'tanggal_lead_masuk' => $validated['tanggal_lead_masuk'],
+            'periode_lead' => $validated['periode_lead'],
+            'no_wa' => $validated['no_wa'],
+            'usia' => $validated['usia'],
+            'nama_mitra' => $validated['nama_mitra'] ?? null,
+            'pekerjaan_id' => $validated['pekerjaan_id'] ?? null,
+            'paket_brand_id' => $validated['paket_brand_id'],
+            'lead_awal_brand_id' => $validated['lead_awal_brand_id'],
+            'sumber_id' => $validated['sumber_id'] ?? null,
+            'sumber' => $sumberString,
+            'kabupaten' => $validated['kabupaten'],
+            'provinsi' => $validated['provinsi'],
+            'status_pembayaran' => $validated['status_pembayaran'],
+            'nominal_masuk' => $validated['nominal_masuk'],
+            'harga_paket' => $validated['harga_paket'],
+            'nama_paket' => $validated['nama_paket'],
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Transaksi berhasil diperbarui.']);
+        }
+
+        return redirect()->route('transaksis.index')
+            ->with('success', 'Transaksi berhasil diperbarui.');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Transaksi $transaksi)
+    {
+        $user = auth()->user();
+
+        // Marketing can only delete own records
+        if ($user->isMarketing() && $transaksi->user_id !== $user->id) {
+            abort(403, 'Anda tidak memiliki izin untuk menghapus data ini.');
+        }
+
+        $transaksi->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json(['message' => 'Transaksi berhasil dihapus.']);
+        }
+
+        return redirect()->route('transaksis.index')
+            ->with('success', 'Transaksi berhasil dihapus.');
     }
 }
