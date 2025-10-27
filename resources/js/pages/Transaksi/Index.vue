@@ -312,6 +312,7 @@ const fetchAgeChartData = async () => {
         const response = await fetch('/transaksis/analytics/usia?' + new URLSearchParams({
             start_date: periodeStart.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
             end_date: periodeEnd.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+            brand_id: selectedBrand.value || undefined,
         }));
 
         if (response.ok) {
@@ -336,6 +337,7 @@ const fetchLeadAwalChartData = async () => {
         const response = await fetch('/transaksis/analytics/lead-awal?' + new URLSearchParams({
             start_date: periodeStart.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
             end_date: periodeEnd.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+            brand_id: selectedBrand.value || undefined,
         }));
 
         if (response.ok) {
@@ -353,8 +355,8 @@ const refreshLeadAwalChart = () => {
     fetchLeadAwalChartData();
 };
 
-// Watch for date changes to refresh chart
-watch([periodeStart, periodeEnd], () => {
+// Watch for date and brand changes to refresh chart
+watch([periodeStart, periodeEnd, selectedBrand], () => {
     fetchChartData();
     fetchSourceChartData();
     fetchAgeChartData();

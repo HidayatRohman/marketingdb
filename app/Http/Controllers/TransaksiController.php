@@ -233,6 +233,107 @@ class TransaksiController extends Controller
     }
 
     /**
+     * Get age analytics data for chart
+     */
+    public function getAgeAnalytics(Request $request)
+    {
+        $user = auth()->user();
+        $query = Transaksi::query();
+
+        // Apply role-based filtering
+        $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply date range filter (default to current year)
+        $startDate = $request->get('start_date', now()->startOfYear()->format('Y-m-d'));
+        $endDate = $request->get('end_date', now()->endOfYear()->format('Y-m-d'));
+        
+        $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+
+        // Apply optional filters for marketing and brand
+        $marketingId = $request->get('marketing');
+        $brandId = $request->get('brand_id', $request->get('brand'));
+        if ($marketingId) {
+            $query->where('user_id', $marketingId);
+        }
+        if ($brandId) {
+            $query->where('lead_awal_brand_id', $brandId);
+        }
+
+        $data = $query->selectRaw('
+                CASE
+                    WHEN usia IS NULL THEN "Unknown"
+                    WHEN usia BETWEEN 0 AND 17 THEN "0-17"
+                    WHEN usia BETWEEN 18 AND 24 THEN "18-24"
+                    WHEN usia BETWEEN 25 AND 34 THEN "25-34"
+                    WHEN usia BETWEEN 35 AND 44 THEN "35-44"
+                    WHEN usia BETWEEN 45 AND 54 THEN "45-54"
+                    WHEN usia BETWEEN 55 AND 64 THEN "55-64"
+                    ELSE "65+"
+                END AS age_group,
+                COUNT(*) as count,
+                COALESCE(SUM(nominal_masuk), 0) as total_nominal
+            ')
+            ->groupBy('age_group')
+            ->orderByDesc('count')
+            ->get();
+
+        return response()->json([
+            'data' => $data,
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
+        ]);
+    }
+
+    /**
+     * Get lead awal analytics data for chart
+     */
+    public function getLeadAwalAnalytics(Request $request)
+    {
+        $user = auth()->user();
+        $query = Transaksi::query();
+
+        // Apply role-based filtering
+        $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply date range filter (default to current year)
+        $startDate = $request->get('start_date', now()->startOfYear()->format('Y-m-d'));
+        $endDate = $request->get('end_date', now()->endOfYear()->format('Y-m-d'));
+        
+        $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+
+        // Apply optional filters for marketing and brand
+        $marketingId = $request->get('marketing');
+        $brandId = $request->get('brand_id', $request->get('brand'));
+        if ($marketingId) {
+            $query->where('user_id', $marketingId);
+        }
+        if ($brandId) {
+            $query->where('lead_awal_brand_id', $brandId);
+        }
+
+        $data = $query
+            ->leftJoin('brands as lead_awal_brands', 'transaksis.lead_awal_brand_id', '=', 'lead_awal_brands.id')
+            ->selectRaw('
+                COALESCE(lead_awal_brands.nama, "Unknown") as lead_awal,
+                COUNT(*) as count,
+                COALESCE(SUM(transaksis.nominal_masuk), 0) as total_nominal
+            ')
+            ->groupBy('lead_awal')
+            ->orderByDesc('count')
+            ->get();
+
+        return response()->json([
+            'data' => $data,
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
+        ]);
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(Transaksi $transaksi)
