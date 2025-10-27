@@ -99,6 +99,7 @@ interface Props {
         canOnlyView: boolean;
         canOnlyViewOwn: boolean;
     };
+    totalNominal?: number;
 }
 
 const props = defineProps<Props>();
@@ -588,7 +589,7 @@ onMounted(() => {
                             <div class="flex-1">
                                 <p class="text-sm font-semibold text-emerald-700 dark:text-emerald-300 mb-2">Total Nominal</p>
                                 <p class="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
-                                    {{ formatCurrency(transaksiData.data.reduce((sum, t) => sum + t.nominal_masuk, 0)) }}
+                                    {{ formatCurrency((props.totalNominal ?? 0)) }}
                                 </p>
                                 <div class="mt-2 h-1 w-full bg-emerald-200 dark:bg-emerald-800 rounded-full">
                                     <div class="h-full w-4/5 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-1000"></div>
