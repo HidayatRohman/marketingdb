@@ -567,19 +567,19 @@ onMounted(() => {
             </div>
 
             <!-- Statistics Bar -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="grid grid-cols-[2fr_3fr] gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
                 <Card class="group relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 dark:from-blue-900/20 dark:to-blue-800/20 dark:border dark:border-blue-700/30">
                     <CardContent class="p-6">
                         <div class="flex items-center justify-between">
-                            <div class="flex-1">
-                                <p class="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">Total Transaksi</p>
-                                <p class="text-3xl font-bold text-blue-900 dark:text-blue-100">{{ transaksiData.total }}</p>
+                            <div class="flex-1 pr-6">
+                                <p class="text-xs sm:text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">Total Transaksi</p>
+                                <p class="text-xl sm:text-2xl leading-tight break-words font-bold text-blue-900 dark:text-blue-100">{{ transaksiData.total }}</p>
                                 <div class="mt-2 h-1 w-full bg-blue-200 dark:bg-blue-800 rounded-full">
                                     <div class="h-full w-3/4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000"></div>
                                 </div>
                             </div>
-                            <div class="ml-4 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <CreditCard class="h-7 w-7 text-white" />
+                            <div class="absolute top-2 right-2 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-1.5 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <CreditCard class="h-4 w-4 text-white" />
                             </div>
                         </div>
                     </CardContent>
@@ -588,17 +588,17 @@ onMounted(() => {
                 <Card class="group relative overflow-hidden border-0 bg-gradient-to-br from-emerald-50 to-emerald-100 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 dark:from-emerald-900/20 dark:to-emerald-800/20 dark:border dark:border-emerald-700/30">
                     <CardContent class="p-6">
                         <div class="flex items-center justify-between">
-                            <div class="flex-1">
-                                <p class="text-sm font-semibold text-emerald-700 dark:text-emerald-300 mb-2">Total Nominal</p>
-                                <p class="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
+                            <div class="flex-1 pr-6">
+                                <p class="text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 mb-2">Total Nominal</p>
+                                <p class="text-lg sm:text-xl leading-tight break-words font-bold text-emerald-900 dark:text-emerald-100">
                                     {{ formatCurrency((props.totalNominal ?? 0)) }}
                                 </p>
                                 <div class="mt-2 h-1 w-full bg-emerald-200 dark:bg-emerald-800 rounded-full">
                                     <div class="h-full w-4/5 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-1000"></div>
                                 </div>
                             </div>
-                            <div class="ml-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <DollarSign class="h-7 w-7 text-white" />
+                            <div class="absolute top-2 right-2 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-1.5 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <DollarSign class="h-4 w-4 text-white" />
                             </div>
                         </div>
                     </CardContent>
@@ -607,17 +607,17 @@ onMounted(() => {
                 <Card class="group relative overflow-hidden border-0 bg-gradient-to-br from-purple-50 to-purple-100 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 dark:from-purple-900/20 dark:to-purple-800/20 dark:border dark:border-purple-700/30">
                     <CardContent class="p-6">
                         <div class="flex items-center justify-between">
-                            <div class="flex-1">
-                                <p class="text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2">Bulan Ini</p>
-                                <p class="text-3xl font-bold text-purple-900 dark:text-purple-100">
+                            <div class="flex-1 pr-6">
+                                <p class="text-xs sm:text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2">Bulan Ini</p>
+                                <p class="text-xl sm:text-2xl leading-tight font-bold text-purple-900 dark:text-purple-100">
                                     {{ transaksiData.data.filter(t => new Date(t.tanggal_tf).getMonth() === new Date().getMonth()).length }}
                                 </p>
                                 <div class="mt-2 h-1 w-full bg-purple-200 dark:bg-purple-800 rounded-full">
                                     <div class="h-full w-2/3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-1000"></div>
                                 </div>
                             </div>
-                            <div class="ml-4 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 p-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <Calendar class="h-7 w-7 text-white" />
+                            <div class="absolute top-2 right-2 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 p-1.5 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <Calendar class="h-4 w-4 text-white" />
                             </div>
                         </div>
                     </CardContent>
@@ -626,17 +626,17 @@ onMounted(() => {
                 <Card class="group relative overflow-hidden border-0 bg-gradient-to-br from-amber-50 to-amber-100 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 dark:from-amber-900/20 dark:to-amber-800/20 dark:border dark:border-amber-700/30">
                     <CardContent class="p-6">
                         <div class="flex items-center justify-between">
-                            <div class="flex-1">
-                                <p class="text-sm font-semibold text-amber-700 dark:text-amber-300 mb-2">Rata-rata</p>
-                                <p class="text-2xl font-bold text-amber-900 dark:text-amber-100">
+                            <div class="flex-1 pr-6">
+                                <p class="text-xs sm:text-sm font-semibold text-amber-700 dark:text-amber-300 mb-2">Rata-rata</p>
+                                <p class="text-lg sm:text-xl leading-tight break-words font-bold text-amber-900 dark:text-amber-100">
                                     {{ transaksiData.total > 0 ? formatCurrency(transaksiData.data.reduce((sum, t) => sum + t.nominal_masuk, 0) / transaksiData.total) : formatCurrency(0) }}
                                 </p>
                                 <div class="mt-2 h-1 w-full bg-amber-200 dark:bg-amber-800 rounded-full">
                                     <div class="h-full w-5/6 bg-gradient-to-r from-amber-500 to-amber-600 rounded-full transition-all duration-1000"></div>
                                 </div>
                             </div>
-                            <div class="ml-4 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <User class="h-7 w-7 text-white" />
+                            <div class="absolute top-2 right-2 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-1.5 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <User class="h-4 w-4 text-white" />
                             </div>
                         </div>
                     </CardContent>
@@ -867,7 +867,7 @@ onMounted(() => {
                                     <TableRow class="border-b border-border hover:bg-transparent">
                                         <TableHead class="w-[80px] py-3 text-center font-semibold text-foreground">No</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Marketing</TableHead>
-                                        <TableHead class="sticky left-0 z-30 bg-background py-3 font-semibold text-foreground min-w-[180px] border-r border-border">Nama Mitra</TableHead>
+                                        <TableHead class="sticky left-0 z-30 bg-background p-2 sm:py-3 font-semibold text-foreground min-w-[120px] sm:min-w-[180px] border-r border-border text-sm sm:text-base">Nama Mitra</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">No Whatsapp</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Tgl Transfer</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Tanggal Masuk Lead</TableHead>
@@ -920,8 +920,8 @@ onMounted(() => {
                                          </div>
                                      </TableCell>
                                     <!-- Nama Mitra -->
-                                    <TableCell class="sticky left-0 z-20 bg-background py-3 px-3 font-medium text-foreground min-w-[180px] border-r border-border">
-                                         <span class="text-sm">{{ transaksi.nama_mitra || '-' }}</span>
+                                    <TableCell class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-foreground min-w-[120px] sm:min-w-[180px] border-r border-border">
+                                         <span class="text-xs sm:text-sm truncate">{{ transaksi.nama_mitra || '-' }}</span>
                                      </TableCell>
                                     <!-- No Whatsapp -->
                                     <TableCell class="py-3 px-3 font-medium text-foreground">
@@ -1150,7 +1150,7 @@ onMounted(() => {
                                     <TableRow class="border-b border-border hover:bg-transparent">
                                         <TableHead class="w-[80px] py-3 text-center font-semibold text-foreground">No</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Marketing</TableHead>
-                                        <TableHead class="py-3 font-semibold text-foreground">Nama Mitra</TableHead>
+                                        <TableHead class="p-2 sm:py-3 font-semibold text-foreground min-w-[120px] sm:min-w-[180px] text-sm sm:text-base">Nama Mitra</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">No Whatsapp</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Tgl Transfer</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Paket Brand</TableHead>
@@ -1194,8 +1194,8 @@ onMounted(() => {
                                             </div>
                                         </TableCell>
                                         <!-- Nama Mitra -->
-                                        <TableCell class="py-3 px-3 font-medium text-foreground">
-                                            <span class="text-sm">{{ transaksi.nama_mitra || '-' }}</span>
+                                        <TableCell class="p-2 sm:p-3 font-medium text-foreground min-w-[120px] sm:min-w-[180px]">
+                                            <span class="text-xs sm:text-sm truncate">{{ transaksi.nama_mitra || '-' }}</span>
                                         </TableCell>
                                         <!-- No Whatsapp -->
                                         <TableCell class="py-3 px-3 font-medium text-foreground">
