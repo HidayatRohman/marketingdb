@@ -867,7 +867,7 @@ onMounted(() => {
                                     <TableRow class="border-b border-border hover:bg-transparent">
                                         <TableHead class="w-[80px] py-3 text-center font-semibold text-foreground">No</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Marketing</TableHead>
-                                        <TableHead class="py-3 font-semibold text-foreground">Nama Mitra</TableHead>
+                                        <TableHead class="sticky left-0 z-30 bg-background py-3 font-semibold text-foreground min-w-[180px] border-r border-border">Nama Mitra</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">No Whatsapp</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Tgl Transfer</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Tanggal Masuk Lead</TableHead>
@@ -920,9 +920,9 @@ onMounted(() => {
                                          </div>
                                      </TableCell>
                                     <!-- Nama Mitra -->
-                                    <TableCell class="py-3 px-3 font-medium text-foreground">
-                                        <span class="text-sm">{{ transaksi.nama_mitra || '-' }}</span>
-                                    </TableCell>
+                                    <TableCell class="sticky left-0 z-20 bg-background py-3 px-3 font-medium text-foreground min-w-[180px] border-r border-border">
+                                         <span class="text-sm">{{ transaksi.nama_mitra || '-' }}</span>
+                                     </TableCell>
                                     <!-- No Whatsapp -->
                                     <TableCell class="py-3 px-3 font-medium text-foreground">
                                         <div class="flex items-center gap-2">
