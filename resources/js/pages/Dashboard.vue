@@ -847,7 +847,7 @@ const ppnPercentage = computed(() => {
                         <table class="w-full border-collapse">
                             <thead>
                                 <tr class="border-b">
-                                    <th class="text-left p-3 font-semibold sticky left-0 z-30 bg-background min-w-[180px] border-r border-border">Brand</th>
+                                    <th class="text-left p-2 sm:p-3 font-semibold sticky left-0 z-30 bg-background min-w-[140px] sm:min-w-[180px] border-r border-border">Brand</th>
                                     <th class="text-right p-3 font-semibold">Spent</th>
                                     <th class="text-right p-3 font-semibold">Spent+PPN ({{ ppnPercentage }}%)</th>
                                     <th class="text-right p-3 font-semibold">Real Lead</th>
@@ -859,7 +859,7 @@ const ppnPercentage = computed(() => {
                             </thead>
                             <tbody>
                                 <tr v-for="item in summaryReport" :key="item.brand" class="border-b hover:bg-muted/50">
-                                    <td class="p-3 font-medium text-blue-600 sticky left-0 z-20 bg-background min-w-[180px] border-r border-border">{{ item.brand }}</td>
+                                    <td class="p-2 sm:p-3 text-sm sm:text-base font-medium text-blue-600 sticky left-0 z-20 bg-background min-w-[140px] sm:min-w-[180px] border-r border-border">{{ item.brand }}</td>
                                     <td class="p-3 text-right text-red-600">Rp {{ item.spent.toLocaleString('id-ID') }}</td>
                                     <td class="p-3 text-right text-red-600">Rp {{ item.spent_with_tax.toLocaleString('id-ID') }}</td>
                                     <td class="p-3 text-right">{{ item.real_lead }}</td>

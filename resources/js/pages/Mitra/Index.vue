@@ -806,7 +806,7 @@ onMounted(() => {
                             <Table>
                                 <TableHeader>
                                     <TableRow class="border-b border-border hover:bg-transparent">
-                                        <TableHead class="sticky left-0 z-30 bg-background py-3 font-semibold text-foreground min-w-[180px] border-r border-border">Nama</TableHead>
+                                        <TableHead class="sticky left-0 z-30 bg-background p-2 sm:p-3 font-semibold text-foreground text-sm sm:text-base min-w-[120px] sm:min-w-[180px] border-r border-border">Nama</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Kontak</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Tanggal Lead</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Marketing</TableHead>
@@ -860,7 +860,7 @@ onMounted(() => {
 
                                     <!-- Data Rows -->
                                     <TableRow v-for="mitra in mitrasData.data" :key="mitra.id" class="transition-colors hover:bg-muted/30">
-                                        <TableCell class="sticky left-0 z-20 bg-background py-3 font-medium min-w-[180px] border-r border-border">
+                                        <TableCell class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-sm sm:text-base min-w-[120px] sm:min-w-[180px] border-r border-border">
                                             <div class="flex items-center gap-3">
                                                 <div
                                                     class="rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 p-2 dark:from-emerald-900/30 dark:to-teal-900/30"
