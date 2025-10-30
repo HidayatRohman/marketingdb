@@ -306,6 +306,11 @@
     @apply grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4;
 }
 
+/* Mobile 2-column override for specific stats grids */
+.stats-grid.stats-grid-mobile-2 {
+    @apply grid-cols-2 sm:grid-cols-2 lg:grid-cols-4;
+}
+
 .stats-card {
     @apply border-0 shadow-lg;
 }
@@ -336,6 +341,30 @@
 
 .stats-card-text {
     @apply min-w-0 flex-1;
+}
+
+/* Mobile font size overrides for selected stats cards */
+.stats-card-mobile .stats-card-label {
+    @apply text-xs sm:text-sm;
+}
+
+.stats-card-mobile .stats-card-value,
+.stats-card-mobile .stats-card-value-with-icon {
+    @apply text-lg sm:text-2xl leading-tight;
+}
+
+/* Position icon at top-right on mobile for selected stats cards */
+.stats-card-mobile .stats-card-content {
+    @apply relative;
+}
+
+.stats-card-mobile .stats-card-icon {
+    @apply absolute top-1 right-1 z-10 sm:static sm:top-auto sm:right-auto;
+}
+
+/* Smaller icon size on mobile */
+.stats-card-mobile .stats-icon-size {
+    @apply h-4 w-4 sm:h-6 sm:w-6;
 }
 
 .stats-card-label {

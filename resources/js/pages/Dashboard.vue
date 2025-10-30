@@ -890,26 +890,31 @@ const ppnPercentage = computed(() => {
             </Card>
 
             <!-- Main KPI Cards -->
-            <div class="stats-grid">
+            <div class="stats-grid stats-grid-mobile-2">
                 <!-- Total Leads -->
-                <Card class="stats-card stats-card-blue">
+                <Card class="relative stats-card stats-card-blue stats-card-mobile">
                     <CardContent class="stats-card-content">
+                        <!-- Icon ala ROAS: kecil, transparan, di pojok kanan atas -->
+                        <div class="absolute top-3 right-3 text-blue-500/60">
+                            <Users class="h-4 w-4" />
+                        </div>
                         <div class="stats-card-layout">
                             <div class="stats-card-text">
                                 <p class="stats-card-label stats-label-blue">Total Leads</p>
                                 <p class="stats-card-value stats-value-blue">{{ mitraStats.total }}</p>
                                 <p class="stats-card-subtitle stats-subtitle-blue">+{{ mitraStats.today }} hari ini</p>
                             </div>
-                            <div class="stats-card-icon stats-icon-blue">
-                                <Users class="stats-icon-size" />
-                            </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 <!-- Conversion Rate -->
-                <Card class="stats-card stats-card-green">
+                <Card class="relative stats-card stats-card-green stats-card-mobile">
                     <CardContent class="stats-card-content">
+                        <!-- Icon ala ROAS: kecil, transparan, di pojok kanan atas -->
+                        <div class="absolute top-3 right-3 text-green-500/60">
+                            <Target class="h-4 w-4" />
+                        </div>
                         <div class="stats-card-layout">
                             <div class="stats-card-text">
                                 <p class="stats-card-label stats-label-green">Conversion Rate</p>
@@ -922,40 +927,39 @@ const ppnPercentage = computed(() => {
                                 </p>
                                 <p class="stats-card-subtitle stats-subtitle-green">{{ conversionClosings }} dari {{ conversionLeads }}</p>
                             </div>
-                            <div class="stats-card-icon stats-icon-green">
-                                <Target class="stats-icon-size" />
-                            </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 <!-- Active Chats -->
-                <Card class="stats-card stats-card-orange">
+                <Card class="relative stats-card stats-card-orange stats-card-mobile">
                     <CardContent class="stats-card-content">
+                        <!-- Icon ala ROAS: kecil, transparan, di pojok kanan atas -->
+                        <div class="absolute top-3 right-3 text-orange-500/60">
+                            <MessageSquare class="h-4 w-4" />
+                        </div>
                         <div class="stats-card-layout">
                             <div class="stats-card-text">
                                 <p class="stats-card-label stats-label-orange">Chat Baru</p>
                                 <p class="stats-card-value stats-value-orange">{{ mitraStats.masuk }}</p>
                                 <p class="stats-card-subtitle stats-subtitle-orange">{{ mitraStats.this_week }} minggu ini</p>
                             </div>
-                            <div class="stats-card-icon stats-icon-orange">
-                                <MessageSquare class="stats-icon-size" />
-                            </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 <!-- Follow Ups -->
-                <Card class="stats-card stats-card-purple">
+                <Card class="relative stats-card stats-card-purple stats-card-mobile">
                     <CardContent class="stats-card-content">
+                        <!-- Icon ala ROAS: kecil, transparan, di pojok kanan atas -->
+                        <div class="absolute top-3 right-3 text-purple-500/60">
+                            <Phone class="h-4 w-4" />
+                        </div>
                         <div class="stats-card-layout">
                             <div class="stats-card-text">
                                 <p class="stats-card-label stats-label-purple">Follow Up</p>
                                 <p class="stats-card-value stats-value-purple">{{ mitraStats.followup }}</p>
                                 <p class="stats-card-subtitle stats-subtitle-purple">{{ mitraStats.this_month }} bulan ini</p>
-                            </div>
-                            <div class="stats-card-icon stats-icon-purple">
-                                <Phone class="stats-icon-size" />
                             </div>
                         </div>
                     </CardContent>
@@ -2089,7 +2093,7 @@ const ppnPercentage = computed(() => {
 
 
             <!-- Statistics Cards -->
-            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div class="grid grid-cols-2 gap-6 lg:grid-cols-4">
                 <Card class="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium text-blue-700 dark:text-blue-300">Total Users</CardTitle>
