@@ -692,6 +692,7 @@ const ppnPercentage = computed(() => {
                     </div>
 
                     <!-- Summary Statistics Cards -->
+                    <!-- Grid 1: ringkas utama (tetap responsif) -->
                     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
                         <Card class="relative bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
                             <CardContent class="p-6">
@@ -741,84 +742,7 @@ const ppnPercentage = computed(() => {
                             </CardContent>
                         </Card>
 
-                        <!-- ROAS Keseluruhan (baru) -->
-                        <Card class="relative bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900">
-                            <CardContent class="p-6">
-                                <div class="absolute top-3 right-3 text-emerald-500/60">
-                                    <TrendingUp class="h-4 w-4" />
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-sm font-medium text-emerald-700 dark:text-emerald-300">ROAS Keseluruhan</p>
-                                        <p class="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
-                                            {{
-                                                (() => {
-                                                    const totalSpentWithTax = summaryReport.reduce((sum, item) => sum + item.spent_with_tax, 0)
-                                                    const totalOmset = summaryReport.reduce((sum, item) => sum + item.omset, 0)
-                                                    return totalSpentWithTax > 0 ? (totalOmset / totalSpentWithTax).toFixed(2) + 'x' : '0.00x'
-                                                })()
-                                            }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card class="relative bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
-                            <CardContent class="p-6">
-                                <div class="absolute top-3 right-3 text-purple-500/60">
-                                    <Users class="h-4 w-4" />
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-sm font-medium text-purple-700 dark:text-purple-300">Total Leads</p>
-                                        <p class="text-2xl font-bold text-purple-900 dark:text-purple-100">
-                                            {{ summaryReport.reduce((sum, item) => sum + item.real_lead, 0).toLocaleString('id-ID') }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card class="relative bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
-                            <CardContent class="p-6">
-                                <div class="absolute top-3 right-3 text-orange-500/60">
-                                    <Award class="h-4 w-4" />
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-sm font-medium text-orange-700 dark:text-orange-300">Total Closing</p>
-                                        <p class="text-2xl font-bold text-orange-900 dark:text-orange-100">
-                                            {{ summaryReport.reduce((sum, item) => sum + item.closing, 0).toLocaleString('id-ID') }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <!-- Cost Per Lead (baru) -->
-                        <Card class="relative bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950 dark:to-teal-900">
-                            <CardContent class="p-6">
-                                <div class="absolute top-3 right-3 text-teal-500/60">
-                                    <Target class="h-4 w-4" />
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-sm font-medium text-teal-700 dark:text-teal-300">Cost Per Lead</p>
-                                        <p class="text-2xl font-bold text-teal-900 dark:text-teal-100">
-                                            {{
-                                                (() => {
-                                                    const totalSpent = summaryReport.reduce((sum, item) => sum + item.spent, 0)
-                                                    const totalLead = summaryReport.reduce((sum, item) => sum + item.real_lead, 0)
-                                                    return totalLead > 0 ? Math.round(totalSpent / totalLead).toLocaleString('id-ID') : '0'
-                                                })()
-                                            }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
+                        <!-- Cost Per Acquisition dipindah setelah Total Omset -->
                         <Card class="relative bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900">
                             <CardContent class="p-6">
                                 <div class="absolute top-3 right-3 text-indigo-500/60">
@@ -842,9 +766,90 @@ const ppnPercentage = computed(() => {
                         </Card>
                     </div>
 
+                    <!-- Grid 2: empat kartu dalam 2 kolom (50% : 50%) -->
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <!-- ROAS Keseluruhan (baru) -->
+                        <Card class="relative bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900">
+                            <CardContent class="p-6">
+                                <div class="absolute top-3 right-3 text-emerald-500/60">
+                                    <TrendingUp class="h-4 w-4" />
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs sm:text-sm font-medium text-emerald-700 dark:text-emerald-300">ROAS Keseluruhan</p>
+                                        <p class="text-lg sm:text-2xl font-bold leading-tight text-emerald-900 dark:text-emerald-100">
+                                            {{
+                                                (() => {
+                                                    const totalSpentWithTax = summaryReport.reduce((sum, item) => sum + item.spent_with_tax, 0)
+                                                    const totalOmset = summaryReport.reduce((sum, item) => sum + item.omset, 0)
+                                                    return totalSpentWithTax > 0 ? (totalOmset / totalSpentWithTax).toFixed(2) + 'x' : '0.00x'
+                                                })()
+                                            }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card class="relative bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
+                            <CardContent class="p-6">
+                                <div class="absolute top-3 right-3 text-purple-500/60">
+                                    <Users class="h-4 w-4" />
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs sm:text-sm font-medium text-purple-700 dark:text-purple-300">Total Leads</p>
+                                        <p class="text-lg sm:text-2xl font-bold leading-tight text-purple-900 dark:text-purple-100">
+                                            {{ summaryReport.reduce((sum, item) => sum + item.real_lead, 0).toLocaleString('id-ID') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card class="relative bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
+                            <CardContent class="p-6">
+                                <div class="absolute top-3 right-3 text-orange-500/60">
+                                    <Award class="h-4 w-4" />
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs sm:text-sm font-medium text-orange-700 dark:text-orange-300">Total Closing</p>
+                                        <p class="text-lg sm:text-2xl font-bold leading-tight text-orange-900 dark:text-orange-100">
+                                            {{ summaryReport.reduce((sum, item) => sum + item.closing, 0).toLocaleString('id-ID') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Cost Per Lead (baru) -->
+                        <Card class="relative bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950 dark:to-teal-900">
+                            <CardContent class="p-6">
+                                <div class="absolute top-3 right-3 text-teal-500/60">
+                                    <Target class="h-4 w-4" />
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs sm:text-sm font-medium text-teal-700 dark:text-teal-300">Cost Per Lead</p>
+                                        <p class="text-lg sm:text-2xl font-bold leading-tight text-teal-900 dark:text-teal-100">
+                                            {{
+                                                (() => {
+                                                    const totalSpent = summaryReport.reduce((sum, item) => sum + item.spent, 0)
+                                                    const totalLead = summaryReport.reduce((sum, item) => sum + item.real_lead, 0)
+                                                    return totalLead > 0 ? Math.round(totalSpent / totalLead).toLocaleString('id-ID') : '0'
+                                                })()
+                                            }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
                     <!-- Summary Report Table -->
                     <div v-if="summaryReport.length > 0" class="overflow-x-auto">
-                        <table class="w-full border-collapse">
+                        <table class="w-full border-collapse text-xs sm:text-sm">
                             <thead>
                                 <tr class="border-b">
                                     <th class="text-left p-2 sm:p-3 font-semibold sticky left-0 z-30 bg-background min-w-[140px] sm:min-w-[180px] border-r border-border">Brand</th>
@@ -859,7 +864,7 @@ const ppnPercentage = computed(() => {
                             </thead>
                             <tbody>
                                 <tr v-for="item in summaryReport" :key="item.brand" class="border-b hover:bg-muted/50">
-                                    <td class="p-2 sm:p-3 text-sm sm:text-base font-medium text-blue-600 sticky left-0 z-20 bg-background min-w-[140px] sm:min-w-[180px] border-r border-border">{{ item.brand }}</td>
+                                    <td class="p-2 sm:p-3 text-xs sm:text-sm font-medium text-blue-600 sticky left-0 z-20 bg-background min-w-[140px] sm:min-w-[180px] border-r border-border">{{ item.brand }}</td>
                                     <td class="p-3 text-right text-red-600">Rp {{ item.spent.toLocaleString('id-ID') }}</td>
                                     <td class="p-3 text-right text-red-600">Rp {{ item.spent_with_tax.toLocaleString('id-ID') }}</td>
                                     <td class="p-3 text-right">{{ item.real_lead }}</td>
@@ -1537,7 +1542,7 @@ const ppnPercentage = computed(() => {
 
                                 <!-- Table Header -->
                                 <div class="overflow-x-auto">
-                                    <table class="w-full text-sm">
+                                    <table class="w-full text-xs sm:text-sm">
                                         <thead>
                                             <tr class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30">
                                                 <th class="p-3 text-left font-semibold text-gray-700 dark:text-gray-300">Marketing</th>
@@ -1563,33 +1568,33 @@ const ppnPercentage = computed(() => {
                                                             <User class="h-4 w-4 text-white" />
                                                         </div>
                                                         <div>
-                                                            <p class="font-medium text-gray-900 dark:text-white">{{ marketing.name }}</p>
+                                                            <p class="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">{{ marketing.name }}</p>
                                                             <p class="text-xs text-gray-500 dark:text-gray-400">{{ marketing.email }}</p>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td class="p-3 text-center">
-                                                    <Badge class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                                    <Badge class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 text-xs sm:text-sm">
                                                         {{ marketing.pending_tasks }}
                                                     </Badge>
                                                 </td>
                                                 <td class="p-3 text-center">
-                                                    <Badge class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                    <Badge class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs sm:text-sm">
                                                         {{ marketing.in_progress_tasks }}
                                                     </Badge>
                                                 </td>
                                                 <td class="p-3 text-center">
-                                                    <Badge class="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                    <Badge class="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs sm:text-sm">
                                                         {{ marketing.completed_tasks }}
                                                     </Badge>
                                                 </td>
                                                 <td class="p-3 text-center">
-                                                    <Badge class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                                    <Badge class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 text-xs sm:text-sm">
                                                         {{ marketing.overdue_tasks }}
                                                     </Badge>
                                                 </td>
                                                 <td class="p-3 text-center">
-                                                    <Badge class="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                                                    <Badge class="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 text-xs sm:text-sm">
                                                         {{ marketing.total_tasks }}
                                                     </Badge>
                                                 </td>
@@ -1615,12 +1620,12 @@ const ppnPercentage = computed(() => {
                                 <div
                                     class="mt-4 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 p-4 dark:from-indigo-900/20 dark:to-purple-900/20"
                                 >
-                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm">
                                         <div class="flex items-center gap-2">
                                             <Award class="h-5 w-5 text-purple-600" />
                                             <span class="font-semibold text-gray-900 dark:text-white">Total Keseluruhan:</span>
                                         </div>
-                                        <div class="flex flex-wrap gap-4 text-sm">
+                                        <div class="flex flex-wrap gap-4">
                                             <span class="text-yellow-700 dark:text-yellow-400">
                                                 Rencana: <strong>{{ taskStats.overall.pending }}</strong>
                                             </span>
