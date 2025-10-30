@@ -802,7 +802,7 @@ onMounted(() => {
                 </CardHeader>
                 <CardContent class="p-0">
                     <div class="relative overflow-hidden">
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto table-compact-mobile">
                             <Table>
                                 <TableHeader>
                                     <TableRow class="border-b border-border hover:bg-transparent">

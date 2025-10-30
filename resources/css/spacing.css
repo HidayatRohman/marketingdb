@@ -591,3 +591,26 @@
 .table-card-content {
     @apply p-0;
 }
+
+/* Compact table font sizing on mobile (applies only to wrapped table area) */
+.table-compact-mobile {
+    @apply text-xs sm:text-sm;
+}
+
+.table-compact-mobile table {
+    @apply text-xs sm:text-sm;
+}
+
+.table-compact-mobile th,
+.table-compact-mobile td {
+    @apply text-xs sm:text-sm;
+}
+
+/* Override common font utilities inside table to be extra small on mobile */
+.table-compact-mobile .text-sm {
+    @apply text-xs sm:text-sm;
+}
+
+.table-compact-mobile .text-base {
+    @apply text-sm sm:text-base;
+}
