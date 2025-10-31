@@ -230,8 +230,8 @@ const breadcrumbs = [
 
       <!-- Daftar Peserta -->
       <Card class="border-0 shadow-md">
-        <CardHeader class="pb-2">
-          <CardTitle class="text-lg font-semibold">Daftar Peserta</CardTitle>
+        <CardHeader class="pb-2 bg-gray-50 dark:bg-gray-800/70 rounded-md px-3 py-2">
+          <CardTitle class="text-lg font-semibold text-gray-900 dark:text-white">Daftar Peserta</CardTitle>
         </CardHeader>
         <CardContent class="p-0">
           <div class="relative overflow-hidden">

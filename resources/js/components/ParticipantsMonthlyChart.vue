@@ -1,8 +1,8 @@
 <template>
   <Card class="border-0 shadow-md">
-    <CardHeader class="pb-2">
+    <CardHeader class="pb-2 bg-gray-50 dark:bg-gray-800/70 rounded-md px-3 py-2">
       <div class="flex items-center justify-between">
-        <CardTitle class="text-lg font-semibold">Analisa Daftar Peserta (12 Bulan)</CardTitle>
+        <CardTitle class="text-lg font-semibold text-gray-900 dark:text-white">Analisa Daftar Peserta (12 Bulan)</CardTitle>
       </div>
     </CardHeader>
     <CardContent>
