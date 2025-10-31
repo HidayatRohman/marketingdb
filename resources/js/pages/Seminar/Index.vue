@@ -134,32 +134,32 @@ const breadcrumbs = [
         <div class="relative z-10">
           <div class="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
             <div class="flex-1">
-              <h1 class="mb-2 flex items-center gap-2 text-xl font-bold tracking-tight sm:gap-3 sm:text-2xl lg:text-3xl">
+              <h1 class="mb-2 flex items-center gap-2 text-base font-bold tracking-tight sm:gap-3 sm:text-2xl lg:text-3xl">
                 <Calendar class="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
                 Manajemen Seminar
               </h1>
-              <p class="text-sm opacity-90">Kelola seminar dan lihat daftar peserta dari Mitra (Webinar = Ikut).</p>
+              <p class="text-xs opacity-90 sm:text-sm">Kelola seminar dan lihat daftar peserta dari Mitra (Webinar = Ikut).</p>
             </div>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
               <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <div class="flex flex-col gap-1" @click="openStartPicker">
-                  <Label for="startDate" class="text-white/90">Tanggal Awal</Label>
+                  <Label for="startDate" class="text-white/90 text-xs sm:text-sm">Tanggal Awal</Label>
                   <div class="relative">
-                    <Input id="startDate" type="date" v-model="startDate" class="bg-white/95 text-foreground cursor-pointer pr-9 date-input--no-native-icon" @click.stop="openPicker" />
+                    <Input id="startDate" type="date" v-model="startDate" class="bg-white/95 text-foreground cursor-pointer pr-9 date-input--no-native-icon text-[11px] sm:text-sm" @click.stop="openPicker" />
                     <Calendar class="absolute top-2 right-2 h-4 w-4 text-muted-foreground sm:hidden pointer-events-none" />
                   </div>
                 </div>
                 <div class="flex flex-col gap-1" @click="openEndPicker">
-                  <Label for="endDate" class="text-white/90">Tanggal Akhir</Label>
+                  <Label for="endDate" class="text-white/90 text-xs sm:text-sm">Tanggal Akhir</Label>
                   <div class="relative">
-                    <Input id="endDate" type="date" v-model="endDate" class="bg-white/95 text-foreground cursor-pointer pr-9 date-input--no-native-icon" @click.stop="openPicker" />
+                    <Input id="endDate" type="date" v-model="endDate" class="bg-white/95 text-foreground cursor-pointer pr-9 date-input--no-native-icon text-[11px] sm:text-sm" @click.stop="openPicker" />
                     <Calendar class="absolute top-2 right-2 h-4 w-4 text-muted-foreground sm:hidden pointer-events-none" />
                   </div>
                 </div>
               </div>
               <div class="flex items-center gap-2">
-                <Button variant="secondary" class="shadow-sm" @click="applyFilters">Terapkan Filter</Button>
-                <Button variant="default" class="shadow-sm" @click="exportXlsx">
+                <Button variant="secondary" class="shadow-sm text-xs sm:text-sm" @click="applyFilters">Terapkan Filter</Button>
+                <Button variant="default" class="shadow-sm text-xs sm:text-sm" @click="exportXlsx">
                   <Download class="mr-2 h-4 w-4" /> Export XLSX
                 </Button>
               </div>
@@ -183,14 +183,14 @@ const breadcrumbs = [
                 <TableHeader>
                   <TableRow class="border-b border-border hover:bg-transparent">
                     <TableHead class="font-semibold text-foreground sticky left-0 bg-background z-30 w-28 border-r border-border text-[11px] sm:static sm:left-auto sm:w-auto sm:text-sm">Nama</TableHead>
-                    <TableHead class="font-semibold text-foreground w-28 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Kontak</TableHead>
-                    <TableHead class="font-semibold text-foreground w-28 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Tanggal Lead</TableHead>
-                    <TableHead class="font-semibold text-foreground w-28 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Marketing</TableHead>
-                    <TableHead class="font-semibold text-foreground w-24 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Brand</TableHead>
-                    <TableHead class="font-semibold text-foreground w-20 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Chat</TableHead>
-                    <TableHead class="font-semibold text-foreground w-32 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Lokasi</TableHead>
-                    <TableHead class="font-semibold text-foreground w-24 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Label</TableHead>
-                    <TableHead class="font-semibold text-foreground w-24 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Webinar</TableHead>
+                    <TableHead class="font-semibold text-foreground w-28 px-2 py-2 sm:w-auto sm:px-3 sm:py-3"><span class="text-[11px] sm:text-sm">Kontak</span></TableHead>
+                    <TableHead class="font-semibold text-foreground w-28 px-2 py-2 sm:w-auto sm:px-3 sm:py-3"><span class="text-[11px] sm:text-sm">Tanggal Lead</span></TableHead>
+                    <TableHead class="font-semibold text-foreground w-28 px-2 py-2 sm:w-auto sm:px-3 sm:py-3"><span class="text-[11px] sm:text-sm">Marketing</span></TableHead>
+                    <TableHead class="font-semibold text-foreground w-24 px-2 py-2 sm:w-auto sm:px-3 sm:py-3"><span class="text-[11px] sm:text-sm">Brand</span></TableHead>
+                    <TableHead class="font-semibold text-foreground w-20 px-2 py-2 sm:w-auto sm:px-3 sm:py-3"><span class="text-[11px] sm:text-sm">Chat</span></TableHead>
+                    <TableHead class="font-semibold text-foreground w-32 px-2 py-2 sm:w-auto sm:px-3 sm:py-3"><span class="text-[11px] sm:text-sm">Lokasi</span></TableHead>
+                    <TableHead class="font-semibold text-foreground w-24 px-2 py-2 sm:w-auto sm:px-3 sm:py-3"><span class="text-[11px] sm:text-sm">Label</span></TableHead>
+                    <TableHead class="font-semibold text-foreground w-24 px-2 py-2 sm:w-auto sm:px-3 sm:py-3"><span class="text-[11px] sm:text-sm">Webinar</span></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -200,22 +200,32 @@ const breadcrumbs = [
                         <div class="font-medium truncate text-[11px] leading-tight max-w-[100px] sm:text-sm sm:leading-normal sm:max-w-none">{{ item.nama }}</div>
                         <div v-if="item.komentar" class="truncate text-[10px] text-muted-foreground sm:text-xs">{{ item.komentar }}</div>
                       </TableCell>
-                      <TableCell class="w-28 px-2 py-2 text-muted-foreground text-[11px] truncate sm:w-auto sm:p-3 sm:text-sm">{{ item.no_telp }}</TableCell>
-                      <TableCell class="w-28 px-2 py-2 text-muted-foreground text-[11px] whitespace-nowrap sm:w-auto sm:p-3 sm:text-sm">{{ item.tanggal_lead }}</TableCell>
-                      <TableCell class="w-28 px-2 py-2 text-muted-foreground text-[11px] truncate max-w-[120px] sm:w-auto sm:p-3 sm:text-sm sm:max-w-none">{{ item.user?.name || '-' }}</TableCell>
-                      <TableCell class="w-24 px-2 py-2 text-muted-foreground text-[11px] truncate max-w-[110px] sm:w-auto sm:p-3 sm:text-sm sm:max-w-none">{{ item.brand?.nama || '-' }}</TableCell>
-                      <TableCell class="w-20 px-2 py-2 sm:w-auto sm:p-3">
-                        <Badge variant="outline" class="px-2 py-1 text-[10px] sm:text-xs">{{ chatLabels[item.chat] || item.chat }}</Badge>
+                      <TableCell class="w-28 px-2 py-2 text-muted-foreground truncate sm:w-auto sm:p-3">
+                        <span class="text-[11px] sm:text-sm truncate">{{ item.no_telp }}</span>
                       </TableCell>
-                      <TableCell class="w-32 px-2 py-2 text-muted-foreground text-[11px] truncate max-w-[140px] sm:w-auto sm:p-3 sm:text-sm sm:max-w-none">{{ item.kota }}, {{ item.provinsi }}</TableCell>
+                      <TableCell class="w-28 px-2 py-2 text-muted-foreground sm:w-auto sm:p-3">
+                        <span class="text-[11px] sm:text-sm whitespace-nowrap">{{ item.tanggal_lead }}</span>
+                      </TableCell>
+                      <TableCell class="w-28 px-2 py-2 text-muted-foreground sm:w-auto sm:p-3">
+                        <div class="text-[11px] sm:text-sm truncate max-w-[120px] sm:max-w-none">{{ item.user?.name || '-' }}</div>
+                      </TableCell>
+                      <TableCell class="w-24 px-2 py-2 text-muted-foreground sm:w-auto sm:p-3">
+                        <div class="text-[11px] sm:text-sm truncate max-w-[110px] sm:max-w-none">{{ item.brand?.nama || '-' }}</div>
+                      </TableCell>
+                      <TableCell class="w-20 px-2 py-2 sm:w-auto sm:p-3">
+                        <Badge variant="outline" class="px-2 py-1 text-[11px] sm:text-sm">{{ chatLabels[item.chat] || item.chat }}</Badge>
+                      </TableCell>
+                      <TableCell class="w-32 px-2 py-2 text-muted-foreground sm:w-auto sm:p-3">
+                        <div class="text-[11px] sm:text-sm truncate max-w-[140px] sm:max-w-none">{{ item.kota }}, {{ item.provinsi }}</div>
+                      </TableCell>
                       <TableCell class="w-24 px-2 py-2 sm:w-auto sm:p-3">
-                        <Badge v-if="item.label" :style="{ backgroundColor: item.label.warna, color: '#fff' }" class="px-2 py-1 text-[10px] sm:text-xs">
+                        <Badge v-if="item.label" :style="{ backgroundColor: item.label.warna, color: '#fff' }" class="px-2 py-1 text-[11px] sm:text-sm">
                           {{ item.label.nama }}
                         </Badge>
                         <span v-else class="text-muted-foreground text-[11px] sm:text-sm">-</span>
                       </TableCell>
                       <TableCell class="w-24 px-2 py-2 sm:w-auto sm:p-3">
-                        <Badge :variant="item.webinar === 'Ikut' ? 'default' : 'secondary'" class="px-2 py-1 text-[10px] sm:text-xs">
+                        <Badge :variant="item.webinar === 'Ikut' ? 'default' : 'secondary'" class="px-2 py-1 text-[11px] sm:text-sm">
                           {{ item.webinar }}
                         </Badge>
                       </TableCell>
