@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar, Download } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 interface Brand { id: number; nama: string }
 interface Label { id: number; nama: string; warna: string }
@@ -111,6 +111,40 @@ const exportXlsx = () => {
   window.open(url.toString(), '_blank');
 };
 
+// Teks periode untuk header kartu: gunakan tanggal terpilih,
+// jika kosong, default ke rentang bulan berjalan
+const parseDate = (dateStr: string | null): Date | null => {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? null : d;
+};
+
+const formatDMY = (d: Date): string => {
+  return new Intl.DateTimeFormat('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(d);
+};
+
+const periodText = computed(() => {
+  const s = parseDate(startDate.value);
+  const e = parseDate(endDate.value);
+  if (s && e) {
+    return `${formatDMY(s)} – ${formatDMY(e)}`;
+  }
+  if (s && !e) {
+    return `${formatDMY(s)} – sekarang`;
+  }
+  if (!s && e) {
+    return `hingga ${formatDMY(e)}`;
+  }
+  const now = new Date();
+  const first = new Date(now.getFullYear(), now.getMonth(), 1);
+  const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  return `${formatDMY(first)} – ${formatDMY(last)}`;
+});
+
 const chatLabels: Record<string, string> = {
   masuk: 'Baru',
   followup: 'Follow Up',
@@ -138,7 +172,7 @@ const breadcrumbs = [
                 <Calendar class="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
                 Manajemen Seminar
               </h1>
-              <p class="text-xs opacity-90 sm:text-sm">Kelola seminar dan lihat daftar peserta dari Mitra (Webinar = Ikut).</p>
+              <p class="text-xs opacity-90 sm:text-sm">Kelola seminar dan lihat daftar peserta dari Mitra (Periode: {{ periodText }})</p>
             </div>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
               <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
