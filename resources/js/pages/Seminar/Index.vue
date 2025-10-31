@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar, Download } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 interface Brand { id: number; nama: string }
 interface Label { id: number; nama: string; warna: string }
@@ -69,6 +69,27 @@ const props = defineProps<Props>();
 
 const startDate = ref<string | null>(props.filters?.start_date ?? null);
 const endDate = ref<string | null>(props.filters?.end_date ?? null);
+
+// Nilai default input: awal dan akhir bulan berjalan saat filter kosong
+const toISODate = (d: Date): string => {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const getCurrentMonthRange = () => {
+  const now = new Date();
+  const first = new Date(now.getFullYear(), now.getMonth(), 1);
+  const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  return { start: toISODate(first), end: toISODate(last) };
+};
+
+onMounted(() => {
+  const { start, end } = getCurrentMonthRange();
+  if (!startDate.value) startDate.value = start;
+  if (!endDate.value) endDate.value = end;
+});
 
 // Pastikan klik di kolom input memunculkan date picker
 const openPicker = (e: Event) => {
