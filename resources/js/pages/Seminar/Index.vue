@@ -70,6 +70,33 @@ const props = defineProps<Props>();
 const startDate = ref<string | null>(props.filters?.start_date ?? null);
 const endDate = ref<string | null>(props.filters?.end_date ?? null);
 
+// Pastikan klik di kolom input memunculkan date picker
+const openPicker = (e: Event) => {
+  const el = e.target as HTMLInputElement | null;
+  if (!el) return;
+  // showPicker tersedia di Chromium modern
+  const anyEl = el as any;
+  if (typeof anyEl.showPicker === 'function') {
+    anyEl.showPicker();
+  } else {
+    el.focus();
+  }
+};
+
+const openStartPicker = () => {
+  const el = document.getElementById('startDate') as HTMLInputElement | null;
+  if (!el) return;
+  const anyEl = el as any;
+  if (typeof anyEl.showPicker === 'function') anyEl.showPicker(); else el.focus();
+};
+
+const openEndPicker = () => {
+  const el = document.getElementById('endDate') as HTMLInputElement | null;
+  if (!el) return;
+  const anyEl = el as any;
+  if (typeof anyEl.showPicker === 'function') anyEl.showPicker(); else el.focus();
+};
+
 const applyFilters = () => {
   const params: Record<string, string> = {};
   if (startDate.value) params.start_date = startDate.value;
@@ -115,13 +142,13 @@ const breadcrumbs = [
             </div>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
               <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <div class="flex flex-col gap-1">
+                <div class="flex flex-col gap-1" @click="openStartPicker">
                   <Label for="startDate" class="text-white/90">Tanggal Awal</Label>
-                  <Input id="startDate" type="date" v-model="startDate" class="bg-white/95 text-foreground" />
+                  <Input id="startDate" type="date" v-model="startDate" class="bg-white/95 text-foreground cursor-pointer" @click.stop="openPicker" />
                 </div>
-                <div class="flex flex-col gap-1">
+                <div class="flex flex-col gap-1" @click="openEndPicker">
                   <Label for="endDate" class="text-white/90">Tanggal Akhir</Label>
-                  <Input id="endDate" type="date" v-model="endDate" class="bg-white/95 text-foreground" />
+                  <Input id="endDate" type="date" v-model="endDate" class="bg-white/95 text-foreground cursor-pointer" @click.stop="openPicker" />
                 </div>
               </div>
               <div class="flex items-center gap-2">
