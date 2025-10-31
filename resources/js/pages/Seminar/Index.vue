@@ -9,6 +9,7 @@ import TableHead from '@/components/ui/table/TableHead.vue';
 import TableHeader from '@/components/ui/table/TableHeader.vue';
 import TableRow from '@/components/ui/table/TableRow.vue';
 import Badge from '@/components/ui/badge/Badge.vue';
+import ParticipantsMonthlyChart from '@/components/ParticipantsMonthlyChart.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -58,6 +59,7 @@ interface Paginated<T> {
 interface Props {
   seminars: Paginated<SeminarItem>;
   participants: Paginated<MitraParticipant>;
+  participantsMonthly?: Array<{ year: number; month: number; label: string; count: number }>;
   permissions: any;
   filters?: {
     start_date?: string | null;
@@ -299,6 +301,9 @@ const breadcrumbs = [
           </div>
         </CardContent>
       </Card>
+
+      <!-- Analisa Daftar Peserta (Grafik Garis 12 Bulan) -->
+      <ParticipantsMonthlyChart :data="props.participantsMonthly || []" />
     </div>
   </AppLayout>
 </template>

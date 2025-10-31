@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Seminar;
 use App\Models\Mitra;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -49,9 +51,65 @@ class SeminarController extends Controller
 
         $participants = $participantsQuery->paginate($perPage)->withQueryString();
 
+        // Analitik peserta webinar (Ikut) per bulan untuk 12 bulan terakhir
+        $rangeStart = Carbon::now()->subMonths(11)->startOfMonth();
+        $rangeEnd = Carbon::now()->endOfMonth();
+
+        // Gunakan ekspresi yang kompatibel dengan driver database yang aktif
+        $driver = DB::connection()->getDriverName();
+        if ($driver === 'sqlite') {
+            $yearMonthExpr = "CAST(strftime('%Y', tanggal_lead) AS INTEGER) as year, CAST(strftime('%m', tanggal_lead) AS INTEGER) as month";
+        } elseif ($driver === 'pgsql') {
+            $yearMonthExpr = 'EXTRACT(YEAR FROM tanggal_lead) as year, EXTRACT(MONTH FROM tanggal_lead) as month';
+        } else { // mysql/mariadb
+            $yearMonthExpr = 'YEAR(tanggal_lead) as year, MONTH(tanggal_lead) as month';
+        }
+
+        $monthlyCountsRaw = Mitra::query()
+            ->selectRaw($yearMonthExpr . ', COUNT(*) as total')
+            ->where('webinar', 'Ikut')
+            ->when($user->isMarketing() && $user->hasLimitedAccess(), function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->whereBetween('tanggal_lead', [
+                $rangeStart->toDateString(),
+                $rangeEnd->toDateString(),
+            ])
+            ->groupBy('year', 'month')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
+
+        // Susun 12 titik waktu berurutan dari rangeStart ke rangeEnd
+        $participantsMonthly = [];
+        $cursor = $rangeStart->copy();
+        while ($cursor->lte($rangeEnd)) {
+            $y = (int) $cursor->format('Y');
+            $m = (int) $cursor->format('n');
+
+            // Cari count untuk (y, m)
+            $found = $monthlyCountsRaw->first(function ($row) use ($y, $m) {
+                return ((int) $row->year === $y) && ((int) $row->month === $m);
+            });
+            $count = $found ? (int) $found->total : 0;
+
+            // Label bulan "Jan 2025" dalam locale ID
+            $label = $cursor->locale('id_ID')->translatedFormat('M Y');
+
+            $participantsMonthly[] = [
+                'year' => $y,
+                'month' => $m,
+                'label' => $label,
+                'count' => $count,
+            ];
+
+            $cursor->addMonth();
+        }
+
         return Inertia::render('Seminar/Index', [
             'seminars' => $seminars,
             'participants' => $participants,
+            'participantsMonthly' => $participantsMonthly,
             'filters' => [
                 'start_date' => $startDate,
                 'end_date' => $endDate,
