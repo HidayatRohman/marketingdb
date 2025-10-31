@@ -34,6 +34,12 @@ const mainNavItems = computed<NavItem[]>(() => {
             href: '/mitras',
             icon: Handshake,
         });
+        // Seminar - placed right below Mitra
+        items.push({
+            title: 'Seminar',
+            href: '/seminars',
+            icon: Calendar,
+        });
     }
 
     // Transaksi - accessible by all roles but with different permissions

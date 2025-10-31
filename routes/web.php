@@ -6,6 +6,7 @@ use App\Http\Controllers\LabelController;
 use App\Http\Controllers\PekerjaanController;
 use App\Http\Controllers\MitraController;
 use App\Http\Controllers\SumberController;
+use App\Http\Controllers\SeminarController;
 use App\Http\Controllers\TaskManagementController;
 use App\Http\Controllers\TodoListController;
 use App\Http\Controllers\TransaksiController;
@@ -81,6 +82,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::middleware('role.access:destroy')->group(function () {
         Route::delete('mitras/{mitra}', [MitraController::class, 'destroy'])->name('mitras.destroy');
+    });
+
+    // Seminars Management - Role-based access
+    Route::middleware('role.access:view')->group(function () {
+        Route::get('seminars', [SeminarController::class, 'index'])->name('seminars.index');
+        // Export XLSX peserta webinar (must be before dynamic routes)
+        Route::get('seminars/export', [SeminarController::class, 'exportParticipants'])->name('seminars.export');
+        Route::get('seminars/{seminar}', [SeminarController::class, 'show'])->name('seminars.show');
+    });
+
+    Route::middleware('role.access:create')->group(function () {
+        Route::get('seminars/create', [SeminarController::class, 'create'])->name('seminars.create');
+        Route::post('seminars', [SeminarController::class, 'store'])->name('seminars.store');
+    });
+
+    Route::middleware('role.access:edit')->group(function () {
+        Route::get('seminars/{seminar}/edit', [SeminarController::class, 'edit'])->name('seminars.edit');
+        Route::put('seminars/{seminar}', [SeminarController::class, 'update'])->name('seminars.update');
+    });
+
+    Route::middleware('role.access:destroy')->group(function () {
+        Route::delete('seminars/{seminar}', [SeminarController::class, 'destroy'])->name('seminars.destroy');
     });
 
     // Brands Management - Only Super Admin can CRUD, others can view
