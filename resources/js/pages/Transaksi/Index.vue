@@ -15,7 +15,7 @@ import TableHeader from '@/components/ui/table/TableHeader.vue';
 import TableRow from '@/components/ui/table/TableRow.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { CreditCard, Calendar, ChevronDown, ChevronUp, Edit, Eye, Filter, Plus, Search, Trash2, User, X, DollarSign, Phone } from 'lucide-vue-next';
+import { CreditCard, Calendar, ChevronDown, ChevronUp, Edit, Eye, Filter, Plus, Search, Trash2, User, X, DollarSign, Phone, Download } from 'lucide-vue-next';
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { debounce } from 'lodash';
 import PaymentStatusChart from '@/Components/PaymentStatusChart.vue';
@@ -520,6 +520,48 @@ onMounted(() => {
     fetchAgeChartData();
     fetchLeadAwalChartData();
 });
+
+// Export XLSX
+const isExporting = ref(false);
+const handleExport = async () => {
+    try {
+        isExporting.value = true;
+        const params = new URLSearchParams();
+        const filters = getFilterParams();
+        Object.entries(filters).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && String(value).length > 0) {
+                params.append(key, String(value));
+            }
+        });
+
+        const url = `/transaksis/export?${params.toString()}`;
+        const response = await fetch(url, { method: 'GET' });
+        if (!response.ok) {
+            throw new Error(`Gagal mengekspor: ${response.statusText}`);
+        }
+
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+
+        // Ambil filename dari header jika tersedia
+        const disposition = response.headers.get('Content-Disposition') || '';
+        const match = disposition.match(/filename="?([^";]+)"?/i);
+        const filename = match ? match[1] : `export-transaksi-${new Date().toISOString().slice(0,19).replace(/[:T]/g, '')}.xlsx`;
+
+        a.href = downloadUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+        console.error(err);
+        alert('Export gagal. Silakan coba lagi.');
+    } finally {
+        isExporting.value = false;
+    }
+};
 </script>
 
 <template>
@@ -546,6 +588,18 @@ onMounted(() => {
                         
                         <!-- Action Buttons - Responsive -->
                         <div class="flex flex-col space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0 lg:flex-shrink-0">
+                            <!-- Export XLSX Button -->
+                            <div>
+                                <Button
+                                    @click="handleExport"
+                                    :disabled="isExporting"
+                                    class="group relative w-full overflow-hidden rounded-xl border-2 border-white/30 bg-white/10 px-6 py-3 text-base font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/20 hover:scale-105 hover:shadow-xl dark:border-white/20 dark:bg-white/5 dark:hover:bg-white/10"
+                                >
+                                    <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                                    <Download class="mr-2 h-5 w-5" />
+                                    <span class="relative z-10">{{ isExporting ? 'Mengekspor...' : 'Export XLSX' }}</span>
+                                </Button>
+                            </div>
                             <!-- Add Transaksi Button -->
                             <div v-if="permissions.canCrud">
                                 <Button

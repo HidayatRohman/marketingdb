@@ -96,6 +96,121 @@ class TransaksiController extends Controller
     }
 
     /**
+     * Export daftar transaksi ke XLSX berdasarkan filter (periode tanggal & brand)
+     */
+    public function export(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            if (!$user) {
+                abort(403);
+            }
+
+            // Build base query with relations for display
+            $query = Transaksi::with(['user', 'paketBrand', 'leadAwalBrand', 'pekerjaan']);
+
+            // Apply role-based filtering
+            $query = $user->applyRoleFilter($query, 'user_id');
+
+            // Date filters: support both periode_* and start_date/end_date
+            $startDate = $request->get('periode_start', $request->get('start_date'));
+            $endDate = $request->get('periode_end', $request->get('end_date'));
+            if ($startDate) {
+                $query->whereDate('tanggal_tf', '>=', $startDate);
+            }
+            if ($endDate) {
+                $query->whereDate('tanggal_tf', '<=', $endDate);
+            }
+
+            // Optional brand filter (paket brand)
+            if ($request->filled('brand_id')) {
+                $query->where('paket_brand_id', $request->brand_id);
+            }
+
+            // Optional simple search filter (same fields as index)
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama_paket', 'like', "%{$search}%")
+                      ->orWhere('kabupaten', 'like', "%{$search}%")
+                      ->orWhere('provinsi', 'like', "%{$search}%")
+                      ->orWhere('no_wa', 'like', "%{$search}%")
+                      ->orWhere('nama_mitra', 'like', "%{$search}%")
+                      ->orWhereHas('user', function ($userQuery) use ($search) {
+                          $userQuery->where('name', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            $items = $query->orderBy('tanggal_tf', 'asc')->get();
+
+            // Prepare spreadsheet
+            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Daftar Transaksi');
+
+            // Header row
+            $sheet->setCellValue('A1', 'Tanggal TF');
+            $sheet->setCellValue('B1', 'Marketing');
+            $sheet->setCellValue('C1', 'Nama Mitra');
+            $sheet->setCellValue('D1', 'No WA');
+            $sheet->setCellValue('E1', 'Usia');
+            $sheet->setCellValue('F1', 'Pekerjaan');
+            $sheet->setCellValue('G1', 'Status Pembayaran');
+            $sheet->setCellValue('H1', 'Nominal Masuk');
+            $sheet->setCellValue('I1', 'Harga Paket');
+            $sheet->setCellValue('J1', 'Nama Paket');
+            $sheet->setCellValue('K1', 'Paket Brand');
+            $sheet->setCellValue('L1', 'Lead Awal Brand');
+            $sheet->setCellValue('M1', 'Sumber');
+            $sheet->setCellValue('N1', 'Kabupaten');
+            $sheet->setCellValue('O1', 'Provinsi');
+            $sheet->setCellValue('P1', 'Tanggal Lead Masuk');
+            $sheet->setCellValue('Q1', 'Periode Lead');
+
+            $row = 2;
+            foreach ($items as $trx) {
+                $sheet->setCellValue('A' . $row, (string) ($trx->tanggal_tf ? \Carbon\Carbon::parse($trx->tanggal_tf)->format('Y-m-d') : ''));
+                $sheet->setCellValue('B' . $row, (string) (optional($trx->user)->name ?? '-'));
+                $sheet->setCellValue('C' . $row, (string) ($trx->nama_mitra ?? '-'));
+                // Ensure phone stored as string to prevent scientific notation
+                $sheet->setCellValueExplicit('D' . $row, (string) ($trx->no_wa ?? ''), \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet->setCellValue('E' . $row, $trx->usia !== null ? (int) $trx->usia : null);
+                $sheet->setCellValue('F' . $row, (string) (optional($trx->pekerjaan)->nama ?? '-'));
+                $sheet->setCellValue('G' . $row, (string) ($trx->status_pembayaran ?? '-'));
+                $sheet->setCellValue('H' . $row, (float) ($trx->nominal_masuk ?? 0));
+                $sheet->setCellValue('I' . $row, (float) ($trx->harga_paket ?? 0));
+                $sheet->setCellValue('J' . $row, (string) ($trx->nama_paket ?? '-'));
+                $sheet->setCellValue('K' . $row, (string) (optional($trx->paketBrand)->nama ?? '-'));
+                $sheet->setCellValue('L' . $row, (string) (optional($trx->leadAwalBrand)->nama ?? '-'));
+                $sheet->setCellValue('M' . $row, (string) (trim((string) ($trx->sumber ?? '')) !== '' ? $trx->sumber : (optional($trx->sumberRef)->nama ?? 'Unknown')));
+                $sheet->setCellValue('N' . $row, (string) ($trx->kabupaten ?? '-'));
+                $sheet->setCellValue('O' . $row, (string) ($trx->provinsi ?? '-'));
+                $sheet->setCellValue('P' . $row, (string) ($trx->tanggal_lead_masuk ? \Carbon\Carbon::parse($trx->tanggal_lead_masuk)->format('Y-m-d') : ''));
+                $sheet->setCellValue('Q' . $row, (string) ($trx->periode_lead ?? '-'));
+                $row++;
+            }
+
+            $filename = 'export-transaksi-' . now()->format('Ymd_His') . '.xlsx';
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+
+            return response()->streamDownload(function () use ($writer) {
+                $writer->save('php://output');
+            }, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Transaksi export failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => auth()->id(),
+                'filters' => $request->all(),
+            ]);
+            return back()->with('error', 'Export gagal: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Get payment status analytics data for chart
      */
     public function getPaymentStatusAnalytics(Request $request)

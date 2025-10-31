@@ -189,6 +189,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Transaksi Management - Role-based access with data filtering
     Route::middleware('role.access:view')->group(function () {
         Route::get('transaksis', [TransaksiController::class, 'index'])->name('transaksis.index');
+        // Export XLSX - place before dynamic routes to avoid conflicts
+        Route::get('transaksis/export', [TransaksiController::class, 'export'])->name('transaksis.export');
         Route::get('transaksis/analytics/payment-status', [TransaksiController::class, 'getPaymentStatusAnalytics'])->name('transaksis.analytics.payment-status');
         Route::get('transaksis/analytics/sumber', [TransaksiController::class, 'getSourceAnalytics'])->name('transaksis.analytics.sumber');
         Route::get('transaksis/analytics/pekerjaan', [TransaksiController::class, 'getPekerjaanAnalytics'])->name('transaksis.analytics.pekerjaan');
