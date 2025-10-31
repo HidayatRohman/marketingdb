@@ -144,11 +144,17 @@ const breadcrumbs = [
               <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <div class="flex flex-col gap-1" @click="openStartPicker">
                   <Label for="startDate" class="text-white/90">Tanggal Awal</Label>
-                  <Input id="startDate" type="date" v-model="startDate" class="bg-white/95 text-foreground cursor-pointer" @click.stop="openPicker" />
+                  <div class="relative">
+                    <Input id="startDate" type="date" v-model="startDate" class="bg-white/95 text-foreground cursor-pointer pr-9 date-input--no-native-icon" @click.stop="openPicker" />
+                    <Calendar class="absolute top-2 right-2 h-4 w-4 text-muted-foreground sm:hidden pointer-events-none" />
+                  </div>
                 </div>
                 <div class="flex flex-col gap-1" @click="openEndPicker">
                   <Label for="endDate" class="text-white/90">Tanggal Akhir</Label>
-                  <Input id="endDate" type="date" v-model="endDate" class="bg-white/95 text-foreground cursor-pointer" @click.stop="openPicker" />
+                  <div class="relative">
+                    <Input id="endDate" type="date" v-model="endDate" class="bg-white/95 text-foreground cursor-pointer pr-9 date-input--no-native-icon" @click.stop="openPicker" />
+                    <Calendar class="absolute top-2 right-2 h-4 w-4 text-muted-foreground sm:hidden pointer-events-none" />
+                  </div>
                 </div>
               </div>
               <div class="flex items-center gap-2">
@@ -176,40 +182,40 @@ const breadcrumbs = [
               <Table>
                 <TableHeader>
                   <TableRow class="border-b border-border hover:bg-transparent">
-                    <TableHead class="font-semibold text-foreground">Nama</TableHead>
-                    <TableHead class="font-semibold text-foreground">Kontak</TableHead>
-                    <TableHead class="font-semibold text-foreground">Tanggal Lead</TableHead>
-                    <TableHead class="font-semibold text-foreground">Marketing</TableHead>
-                    <TableHead class="font-semibold text-foreground">Brand</TableHead>
-                    <TableHead class="font-semibold text-foreground">Chat</TableHead>
-                    <TableHead class="font-semibold text-foreground">Lokasi</TableHead>
-                    <TableHead class="font-semibold text-foreground">Label</TableHead>
-                    <TableHead class="font-semibold text-foreground">Webinar</TableHead>
+                    <TableHead class="font-semibold text-foreground sticky left-0 bg-background z-30 w-28 border-r border-border text-[11px] sm:static sm:left-auto sm:w-auto sm:text-sm">Nama</TableHead>
+                    <TableHead class="font-semibold text-foreground w-28 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Kontak</TableHead>
+                    <TableHead class="font-semibold text-foreground w-28 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Tanggal Lead</TableHead>
+                    <TableHead class="font-semibold text-foreground w-28 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Marketing</TableHead>
+                    <TableHead class="font-semibold text-foreground w-24 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Brand</TableHead>
+                    <TableHead class="font-semibold text-foreground w-20 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Chat</TableHead>
+                    <TableHead class="font-semibold text-foreground w-32 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Lokasi</TableHead>
+                    <TableHead class="font-semibold text-foreground w-24 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Label</TableHead>
+                    <TableHead class="font-semibold text-foreground w-24 px-2 py-2 text-[11px] sm:w-auto sm:px-3 sm:py-3 sm:text-sm">Webinar</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   <template v-if="props.participants.data.length">
                     <TableRow v-for="item in props.participants.data" :key="item.id" class="border-b border-border">
-                      <TableCell class="p-3 text-foreground">
-                        <div class="font-medium">{{ item.nama }}</div>
-                        <div v-if="item.komentar" class="text-xs text-muted-foreground">{{ item.komentar }}</div>
+                      <TableCell class="px-2 py-2 sm:p-3 text-foreground sticky left-0 bg-background z-20 w-28 border-r border-border sm:static sm:left-auto sm:w-auto">
+                        <div class="font-medium truncate text-[11px] leading-tight max-w-[100px] sm:text-sm sm:leading-normal sm:max-w-none">{{ item.nama }}</div>
+                        <div v-if="item.komentar" class="truncate text-[10px] text-muted-foreground sm:text-xs">{{ item.komentar }}</div>
                       </TableCell>
-                      <TableCell class="p-3 text-muted-foreground">{{ item.no_telp }}</TableCell>
-                      <TableCell class="p-3 text-muted-foreground">{{ item.tanggal_lead }}</TableCell>
-                      <TableCell class="p-3 text-muted-foreground">{{ item.user?.name || '-' }}</TableCell>
-                      <TableCell class="p-3 text-muted-foreground">{{ item.brand?.nama || '-' }}</TableCell>
-                      <TableCell class="p-3">
-                        <Badge variant="outline" class="px-2 py-1 text-xs">{{ chatLabels[item.chat] || item.chat }}</Badge>
+                      <TableCell class="w-28 px-2 py-2 text-muted-foreground text-[11px] truncate sm:w-auto sm:p-3 sm:text-sm">{{ item.no_telp }}</TableCell>
+                      <TableCell class="w-28 px-2 py-2 text-muted-foreground text-[11px] whitespace-nowrap sm:w-auto sm:p-3 sm:text-sm">{{ item.tanggal_lead }}</TableCell>
+                      <TableCell class="w-28 px-2 py-2 text-muted-foreground text-[11px] truncate max-w-[120px] sm:w-auto sm:p-3 sm:text-sm sm:max-w-none">{{ item.user?.name || '-' }}</TableCell>
+                      <TableCell class="w-24 px-2 py-2 text-muted-foreground text-[11px] truncate max-w-[110px] sm:w-auto sm:p-3 sm:text-sm sm:max-w-none">{{ item.brand?.nama || '-' }}</TableCell>
+                      <TableCell class="w-20 px-2 py-2 sm:w-auto sm:p-3">
+                        <Badge variant="outline" class="px-2 py-1 text-[10px] sm:text-xs">{{ chatLabels[item.chat] || item.chat }}</Badge>
                       </TableCell>
-                      <TableCell class="p-3 text-muted-foreground">{{ item.kota }}, {{ item.provinsi }}</TableCell>
-                      <TableCell class="p-3">
-                        <Badge v-if="item.label" :style="{ backgroundColor: item.label.warna, color: '#fff' }" class="px-2 py-1 text-xs">
+                      <TableCell class="w-32 px-2 py-2 text-muted-foreground text-[11px] truncate max-w-[140px] sm:w-auto sm:p-3 sm:text-sm sm:max-w-none">{{ item.kota }}, {{ item.provinsi }}</TableCell>
+                      <TableCell class="w-24 px-2 py-2 sm:w-auto sm:p-3">
+                        <Badge v-if="item.label" :style="{ backgroundColor: item.label.warna, color: '#fff' }" class="px-2 py-1 text-[10px] sm:text-xs">
                           {{ item.label.nama }}
                         </Badge>
-                        <span v-else class="text-muted-foreground">-</span>
+                        <span v-else class="text-muted-foreground text-[11px] sm:text-sm">-</span>
                       </TableCell>
-                      <TableCell class="p-3">
-                        <Badge :variant="item.webinar === 'Ikut' ? 'default' : 'secondary'" class="px-2 py-1 text-xs">
+                      <TableCell class="w-24 px-2 py-2 sm:w-auto sm:p-3">
+                        <Badge :variant="item.webinar === 'Ikut' ? 'default' : 'secondary'" class="px-2 py-1 text-[10px] sm:text-xs">
                           {{ item.webinar }}
                         </Badge>
                       </TableCell>
@@ -231,3 +237,14 @@ const breadcrumbs = [
     </div>
   </AppLayout>
 </template>
+<style>
+/* Sembunyikan ikon kalender native hanya di tampilan mobile untuk input filter tanggal */
+@media (max-width: 640px) {
+  input[type="date"].date-input--no-native-icon::-webkit-calendar-picker-indicator {
+    display: none !important;
+    -webkit-appearance: none;
+    appearance: none;
+    opacity: 0;
+  }
+}
+</style>
