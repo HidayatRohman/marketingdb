@@ -161,31 +161,40 @@ const breadcrumbs = [
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow v-for="item in props.participants.data" :key="item.id" class="border-b border-border">
-                    <TableCell class="p-3 text-foreground">
-                      <div class="font-medium">{{ item.nama }}</div>
-                      <div v-if="item.komentar" class="text-xs text-muted-foreground">{{ item.komentar }}</div>
-                    </TableCell>
-                    <TableCell class="p-3 text-muted-foreground">{{ item.no_telp }}</TableCell>
-                    <TableCell class="p-3 text-muted-foreground">{{ item.tanggal_lead }}</TableCell>
-                    <TableCell class="p-3 text-muted-foreground">{{ item.user?.name || '-' }}</TableCell>
-                    <TableCell class="p-3 text-muted-foreground">{{ item.brand?.nama || '-' }}</TableCell>
-                    <TableCell class="p-3">
-                      <Badge variant="outline" class="px-2 py-1 text-xs">{{ chatLabels[item.chat] || item.chat }}</Badge>
-                    </TableCell>
-                    <TableCell class="p-3 text-muted-foreground">{{ item.kota }}, {{ item.provinsi }}</TableCell>
-                    <TableCell class="p-3">
-                      <Badge v-if="item.label" :style="{ backgroundColor: item.label.warna, color: '#fff' }" class="px-2 py-1 text-xs">
-                        {{ item.label.nama }}
-                      </Badge>
-                      <span v-else class="text-muted-foreground">-</span>
-                    </TableCell>
-                    <TableCell class="p-3">
-                      <Badge :variant="item.webinar === 'Ikut' ? 'default' : 'secondary'" class="px-2 py-1 text-xs">
-                        {{ item.webinar }}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
+                  <template v-if="props.participants.data.length">
+                    <TableRow v-for="item in props.participants.data" :key="item.id" class="border-b border-border">
+                      <TableCell class="p-3 text-foreground">
+                        <div class="font-medium">{{ item.nama }}</div>
+                        <div v-if="item.komentar" class="text-xs text-muted-foreground">{{ item.komentar }}</div>
+                      </TableCell>
+                      <TableCell class="p-3 text-muted-foreground">{{ item.no_telp }}</TableCell>
+                      <TableCell class="p-3 text-muted-foreground">{{ item.tanggal_lead }}</TableCell>
+                      <TableCell class="p-3 text-muted-foreground">{{ item.user?.name || '-' }}</TableCell>
+                      <TableCell class="p-3 text-muted-foreground">{{ item.brand?.nama || '-' }}</TableCell>
+                      <TableCell class="p-3">
+                        <Badge variant="outline" class="px-2 py-1 text-xs">{{ chatLabels[item.chat] || item.chat }}</Badge>
+                      </TableCell>
+                      <TableCell class="p-3 text-muted-foreground">{{ item.kota }}, {{ item.provinsi }}</TableCell>
+                      <TableCell class="p-3">
+                        <Badge v-if="item.label" :style="{ backgroundColor: item.label.warna, color: '#fff' }" class="px-2 py-1 text-xs">
+                          {{ item.label.nama }}
+                        </Badge>
+                        <span v-else class="text-muted-foreground">-</span>
+                      </TableCell>
+                      <TableCell class="p-3">
+                        <Badge :variant="item.webinar === 'Ikut' ? 'default' : 'secondary'" class="px-2 py-1 text-xs">
+                          {{ item.webinar }}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  </template>
+                  <template v-else>
+                    <TableRow>
+                      <TableCell :colspan="9" class="p-8 text-center text-muted-foreground">
+                        Tidak ada peserta untuk periode yang dipilih. Silakan ubah rentang tanggal dan coba lagi.
+                      </TableCell>
+                    </TableRow>
+                  </template>
                 </TableBody>
               </Table>
             </div>
