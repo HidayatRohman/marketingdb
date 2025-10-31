@@ -6,6 +6,8 @@ use App\Models\Seminar;
 use App\Models\Mitra;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -24,10 +26,25 @@ class SeminarController extends Controller
         $perPage = (int) $request->get('per_page', 30);
         $perPage = in_array($perPage, [10, 20, 30, 50, 100]) ? $perPage : 30;
 
-        $seminars = Seminar::orderBy('tanggal', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10)
-            ->withQueryString();
+        // Graceful handling when 'seminars' table is missing (e.g., production DB not migrated yet)
+        if (Schema::hasTable('seminars')) {
+            $seminars = Seminar::orderBy('tanggal', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->paginate(10)
+                ->withQueryString();
+        } else {
+            // Provide an empty paginator to keep frontend happy without failing
+            $seminars = new LengthAwarePaginator(
+                [],
+                0,
+                $perPage,
+                1,
+                [
+                    'path' => $request->url(),
+                    'pageName' => 'page',
+                ]
+            );
+        }
 
         // Ambil peserta dari Mitra yang webinar = 'Ikut'
         $participantsQuery = Mitra::query()
