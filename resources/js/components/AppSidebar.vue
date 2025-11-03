@@ -2,11 +2,11 @@
 // import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarGroup, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Calendar, CreditCard, Handshake, Kanban, LayoutGrid, Tag, TrendingUp, Users, Zap, Globe, Briefcase, Settings, BarChart3 } from 'lucide-vue-next';
+import { Calendar, CreditCard, Handshake, Kanban, LayoutGrid, Tag, TrendingUp, Users, Zap, Globe, Briefcase, Settings, BarChart3, MessageSquare, History, Wrench, Package } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
@@ -171,6 +171,45 @@ const mainNavItems = computed<NavItem[]>(() => {
 
         <SidebarContent>
             <NavMain :items="mainNavItems" />
+            <!-- CS Menu Group -->
+            <SidebarGroup v-if="permissions.hasFullAccess || permissions.hasReadOnlyAccess || permissions.hasLimitedAccess" class="px-2 py-0 mt-2">
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton as-child tooltip="CS">
+                            <div class="flex items-center gap-2">
+                                <MessageSquare />
+                                <span>CS</span>
+                            </div>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+                <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton as-child :is-active="page.url.startsWith('/cs/repeats')">
+                            <Link href="/cs/repeats">
+                                <History />
+                                <span>CS Repeat</span>
+                            </Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton as-child :is-active="page.url.startsWith('/cs/maintenances')">
+                            <Link href="/cs/maintenances">
+                                <Wrench />
+                                <span>CS Maintenance</span>
+                            </Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton as-child :is-active="page.url.startsWith('/products')">
+                            <Link href="/products">
+                                <Package />
+                                <span>Produk</span>
+                            </Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                </SidebarMenuSub>
+            </SidebarGroup>
         </SidebarContent>
 
         <SidebarFooter>

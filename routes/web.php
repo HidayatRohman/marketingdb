@@ -10,6 +10,9 @@ use App\Http\Controllers\SeminarController;
 use App\Http\Controllers\TaskManagementController;
 use App\Http\Controllers\TodoListController;
 use App\Http\Controllers\TransaksiController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CsRepeatController;
+use App\Http\Controllers\CsMaintenanceController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -124,6 +127,54 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::middleware('role.access:destroy')->group(function () {
         Route::delete('brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
+    });
+
+    // Products Management - Only Super Admin/Admin can CRUD, others can view
+    Route::middleware('role.access:view')->group(function () {
+        Route::get('products', [ProductController::class, 'index'])->name('products.index');
+    });
+    Route::middleware('role.access:create')->group(function () {
+        Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
+        Route::post('products', [ProductController::class, 'store'])->name('products.store');
+    });
+    Route::middleware('role.access:edit')->group(function () {
+        Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+        Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
+    });
+    Route::middleware('role.access:destroy')->group(function () {
+        Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+    });
+
+    // CS Repeat - accessible by all roles to view; CRUD for elevated roles
+    Route::middleware('role.access:view')->group(function () {
+        Route::get('cs/repeats', [CsRepeatController::class, 'index'])->name('cs-repeats.index');
+    });
+    Route::middleware('role.access:create')->group(function () {
+        Route::get('cs/repeats/create', [CsRepeatController::class, 'create'])->name('cs-repeats.create');
+        Route::post('cs/repeats', [CsRepeatController::class, 'store'])->name('cs-repeats.store');
+    });
+    Route::middleware('role.access:edit')->group(function () {
+        Route::get('cs/repeats/{csRepeat}/edit', [CsRepeatController::class, 'edit'])->name('cs-repeats.edit');
+        Route::put('cs/repeats/{csRepeat}', [CsRepeatController::class, 'update'])->name('cs-repeats.update');
+    });
+    Route::middleware('role.access:destroy')->group(function () {
+        Route::delete('cs/repeats/{csRepeat}', [CsRepeatController::class, 'destroy'])->name('cs-repeats.destroy');
+    });
+
+    // CS Maintenance - accessible by all roles to view; CRUD for elevated roles
+    Route::middleware('role.access:view')->group(function () {
+        Route::get('cs/maintenances', [CsMaintenanceController::class, 'index'])->name('cs-maintenances.index');
+    });
+    Route::middleware('role.access:create')->group(function () {
+        Route::get('cs/maintenances/create', [CsMaintenanceController::class, 'create'])->name('cs-maintenances.create');
+        Route::post('cs/maintenances', [CsMaintenanceController::class, 'store'])->name('cs-maintenances.store');
+    });
+    Route::middleware('role.access:edit')->group(function () {
+        Route::get('cs/maintenances/{csMaintenance}/edit', [CsMaintenanceController::class, 'edit'])->name('cs-maintenances.edit');
+        Route::put('cs/maintenances/{csMaintenance}', [CsMaintenanceController::class, 'update'])->name('cs-maintenances.update');
+    });
+    Route::middleware('role.access:destroy')->group(function () {
+        Route::delete('cs/maintenances/{csMaintenance}', [CsMaintenanceController::class, 'destroy'])->name('cs-maintenances.destroy');
     });
 
     // Labels Management - Only Super Admin can CRUD, others can view
