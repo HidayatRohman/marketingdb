@@ -40,6 +40,17 @@ const selectedProduct = ref(props.filters.product_id || '')
 const periodeStart = ref(props.filters.periode_start || '')
 const periodeEnd = ref(props.filters.periode_end || '')
 
+// Ensure clicking the date field opens the native date picker
+const periodeStartRef = ref<HTMLInputElement | null>(null)
+const periodeEndRef = ref<HTMLInputElement | null>(null)
+const openDatePicker = (el: HTMLInputElement | null) => {
+  if (!el) return
+  el.focus()
+  // Chromium-based browsers support showPicker for date inputs
+  // Fallback: focusing still places cursor for manual entry
+  ;(el as any).showPicker?.()
+}
+
 watch([search, selectedProduct, periodeStart, periodeEnd], () => {
   router.get(
     '/cs/repeats',
@@ -148,9 +159,9 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
         <!-- Periode -->
         <div class="col-span-2 sm:col-span-2 flex items-center gap-2">
           <label class="text-sm text-gray-600">Periode:</label>
-          <Input type="date" v-model="periodeStart" class="w-full sm:w-40" />
+          <input type="date" v-model="periodeStart" ref="periodeStartRef" class="h-9 w-full sm:w-40 rounded border px-2" @click="openDatePicker(periodeStartRef)" @focus="openDatePicker(periodeStartRef)" />
           <span class="text-gray-500 text-xs sm:text-base">s/d</span>
-          <Input type="date" v-model="periodeEnd" class="w-full sm:w-40" />
+          <input type="date" v-model="periodeEnd" ref="periodeEndRef" class="h-9 w-full sm:w-40 rounded border px-2" @click="openDatePicker(periodeEndRef)" @focus="openDatePicker(periodeEndRef)" />
         </div>
         <!-- Produk -->
         <div class="col-span-2 sm:col-span-1">
