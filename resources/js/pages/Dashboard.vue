@@ -1751,8 +1751,8 @@ const ppnPercentage = computed(() => {
 
                     <!-- CS Repeat Analytics Section -->
                     <Card class="border-0 shadow-lg">
-                        <CardHeader>
-                            <CardTitle class="flex items-center gap-2">
+                        <CardHeader class="relative overflow-hidden rounded-t-xl bg-gradient-to-r from-indigo-600 via-sky-600 to-cyan-600 text-white dark:from-indigo-700 dark:via-sky-700 dark:to-cyan-700">
+                            <CardTitle class="flex items-center gap-2 text-white">
                                 CS Repeat Analytics
                             </CardTitle>
                         </CardHeader>
