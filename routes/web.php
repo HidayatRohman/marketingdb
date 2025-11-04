@@ -12,6 +12,7 @@ use App\Http\Controllers\TodoListController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\KendalaController;
+use App\Http\Controllers\SolusiController;
 use App\Http\Controllers\CsRepeatController;
 use App\Http\Controllers\CsMaintenanceController;
 use App\Http\Controllers\UserController;
@@ -210,6 +211,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
     Route::middleware('role.access:destroy')->group(function () {
         Route::delete('kendalas/{kendala}', [KendalaController::class, 'destroy'])->name('kendalas.destroy');
+    });
+
+    // Solusi Management - CRUD mirip Kendala, tampil di bawah Kendala
+    Route::middleware('role.access:view')->group(function () {
+        Route::get('solusis', [SolusiController::class, 'index'])->name('solusis.index');
+    });
+    Route::middleware('role.access:create')->group(function () {
+        Route::post('solusis', [SolusiController::class, 'store'])->name('solusis.store');
+    });
+    Route::middleware('role.access:edit')->group(function () {
+        Route::put('solusis/{solusi}', [SolusiController::class, 'update'])->name('solusis.update');
+    });
+    Route::middleware('role.access:destroy')->group(function () {
+        Route::delete('solusis/{solusi}', [SolusiController::class, 'destroy'])->name('solusis.destroy');
     });
 
     // Sumber Management - Role-based access
