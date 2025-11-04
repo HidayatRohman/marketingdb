@@ -7,7 +7,7 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { Head, router, useForm } from '@inertiajs/vue3'
 import { Edit, Plus, Trash2, Search, Repeat as RepeatIcon, Eye } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogScrollContent } from '@/components/ui/dialog'
 import CsRepeatDailyTransaksiChart from '@/components/CsRepeatDailyTransaksiChart.vue'
 import CsRepeatDailyProductChart from '@/components/CsRepeatDailyProductChart.vue'
 import { indonesianProvinces } from '@/lib/indonesianProvinces'
@@ -274,7 +274,7 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
 
     <!-- Dialog Create -->
     <Dialog :open="showCreate" @update:open="(v:boolean)=> showCreate = v">
-      <DialogContent class="sm:max-w-xl">
+      <DialogScrollContent class="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Tambah CS Repeat</DialogTitle>
         </DialogHeader>
@@ -345,12 +345,12 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
             <Button :disabled="createForm.processing" @click="submitCreate">Simpan</Button>
           </div>
         </div>
-      </DialogContent>
+      </DialogScrollContent>
     </Dialog>
 
     <!-- Dialog View Detail -->
     <Dialog :open="showView" @update:open="(v:boolean)=> showView = v">
-      <DialogContent class="sm:max-w-md">
+      <DialogScrollContent class="sm:max-w-md">
         <DialogHeader class="border-b border-indigo-100/50 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-900/40 dark:via-sky-900/30 dark:to-cyan-900/30 rounded-t-md -mx-6 -mt-6 px-6 py-3">
           <DialogTitle class="text-indigo-700 dark:text-indigo-200">Detail Repeat Order</DialogTitle>
         </DialogHeader>
@@ -394,7 +394,7 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
             <a v-if="viewItem" :href="editUrl(viewItem.id)">Edit</a>
           </Button>
         </div>
-      </DialogContent>
+      </DialogScrollContent>
     </Dialog>
 
   </AppLayout>
