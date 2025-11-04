@@ -178,8 +178,8 @@ const mainNavItems = computed<NavItem[]>(() => {
 
         <SidebarContent>
             <NavMain :items="mainNavItems" />
-            <!-- CS Menu Group -->
-            <SidebarGroup v-if="permissions.role === 'cs'" class="px-2 py-0 mt-2">
+            <!-- CS Menu Group: tampil untuk CS, Super Admin, Admin, dan Advertiser -->
+            <SidebarGroup v-if="permissions.hasFullAccess || permissions.hasReadOnlyAccess || permissions.role === 'cs'" class="px-2 py-0 mt-2">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton as-child tooltip="CS">

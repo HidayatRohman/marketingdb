@@ -73,6 +73,26 @@ class RoleBasedAccess
             return $next($request);
         }
 
+        // Restrict marketing role from accessing CS data (CS Repeat, CS Maintenance, Products)
+        if ($user->isMarketing()) {
+            $restrictedPrefixes = ['cs-repeats.', 'cs-maintenances.', 'products.'];
+            $isRestricted = false;
+
+            foreach ($restrictedPrefixes as $prefix) {
+                if (is_string($routeName) && str_starts_with($routeName, $prefix)) {
+                    $isRestricted = true;
+                    break;
+                }
+            }
+
+            if ($isRestricted) {
+                if ($request->wantsJson() || $request->expectsJson()) {
+                    return response()->json(['error' => 'Anda tidak memiliki izin untuk mengakses data CS.'], 403);
+                }
+                abort(403, 'Anda tidak memiliki izin untuk mengakses data CS.');
+            }
+        }
+
         switch ($permission) {
             case 'create':
             case 'store':
