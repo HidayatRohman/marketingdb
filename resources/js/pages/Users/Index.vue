@@ -13,14 +13,14 @@ interface User {
     id: number;
     name: string;
     email: string;
-    role: 'super_admin' | 'admin' | 'marketing' | 'advertiser';
+    role: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs';
 }
 
 interface PageProps {
     users: User[];
     filters: {
         search?: string;
-        role?: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | '';
+        role?: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | '';
     };
 }
 
@@ -81,6 +81,7 @@ const roleLabels = {
     admin: 'Admin',
     marketing: 'Marketing',
     advertiser: 'Advertiser',
+    cs: 'CS',
 };
 // Breadcrumbs
 const breadcrumbs = [
@@ -115,6 +116,7 @@ const breadcrumbs = [
                             <option value="admin">Admin</option>
                             <option value="super_admin">Super Admin</option>
                             <option value="advertiser">Advertiser</option>
+                            <option value="cs">CS</option>
                         </select>
                         <Button variant="outline" class="w-full sm:w-auto gap-2" @click="applyFilters">
                             <Search class="h-4 w-4" />
@@ -145,6 +147,7 @@ const breadcrumbs = [
                                         'bg-blue-100 text-blue-800': user.role === 'admin',
                                         'bg-green-100 text-green-800': user.role === 'marketing',
                                         'bg-orange-100 text-orange-800': user.role === 'advertiser',
+                                        'bg-teal-100 text-teal-800': user.role === 'cs',
                                     }"
                                 >
                                     {{ roleLabels[user.role] }}

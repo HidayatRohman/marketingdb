@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             SuperAdminSeeder::class,
             AdminSeeder::class, 
             MarketingSeeder::class,
+            CSSeeder::class,
         ]);
 
         // 2. Master data seeding (independent tables)
@@ -82,5 +83,6 @@ class DatabaseSeeder extends Seeder
         $this->command->info('   Super Admin: Check SuperAdminSeeder for credentials');
         $this->command->info('   Admin: Check AdminSeeder for credentials');  
         $this->command->info('   Marketing: Check MarketingSeeder for credentials');
+        $this->command->info('   CS: Check CSSeeder for credentials');
     }
 }

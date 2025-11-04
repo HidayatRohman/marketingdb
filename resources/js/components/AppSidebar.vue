@@ -18,13 +18,16 @@ const permissions = computed(() => auth.value?.permissions || {});
 
 // Define main navigation items with role-based visibility
 const mainNavItems = computed<NavItem[]>(() => {
-    const items: NavItem[] = [
-        {
+    const items: NavItem[] = [];
+
+    // Only non-CS roles see Dashboard in main navigation
+    if (permissions.value.role !== 'cs') {
+        items.push({
             title: 'Dashboard',
             href: dashboard(),
             icon: LayoutGrid,
-        },
-    ];
+        });
+    }
 
 
     // Mitra - accessible by all roles but with different permissions
@@ -60,19 +63,23 @@ const mainNavItems = computed<NavItem[]>(() => {
         });
     }
 
-    // Task Management - accessible by all authenticated users
-    items.push({
-        title: 'Task Management',
-        href: '/task-management',
-        icon: Kanban,
-    });
+    // Task Management - hide for CS (only show CS-specific menus)
+    if (permissions.value.role !== 'cs') {
+        items.push({
+            title: 'Task Management',
+            href: '/task-management',
+            icon: Kanban,
+        });
+    }
 
-    // To Do List - accessible by all authenticated users
-    items.push({
-        title: 'To Do List',
-        href: '/todos',
-        icon: Calendar,
-    });
+    // To Do List - hide for CS (only show CS-specific menus)
+    if (permissions.value.role !== 'cs') {
+        items.push({
+            title: 'To Do List',
+            href: '/todos',
+            icon: Calendar,
+        });
+    }
 
     // Users - only Super Admin and Admin can access
     if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess) {
@@ -172,7 +179,7 @@ const mainNavItems = computed<NavItem[]>(() => {
         <SidebarContent>
             <NavMain :items="mainNavItems" />
             <!-- CS Menu Group -->
-            <SidebarGroup v-if="permissions.hasFullAccess || permissions.hasReadOnlyAccess || permissions.hasLimitedAccess" class="px-2 py-0 mt-2">
+            <SidebarGroup v-if="permissions.role === 'cs'" class="px-2 py-0 mt-2">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton as-child tooltip="CS">

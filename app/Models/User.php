@@ -81,6 +81,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is customer service (CS)
+     */
+    public function isCs(): bool
+    {
+        return $this->hasRole('cs');
+    }
+
+    /**
      * Check if user is advertiser
      */
     public function isAdvertiser(): bool
@@ -122,6 +130,7 @@ class User extends Authenticatable
             'admin' => 'Admin',
             'marketing' => 'Marketing',
             'advertiser' => 'Advertiser',
+            'cs' => 'CS',
             default => ucfirst($this->role),
         };
     }

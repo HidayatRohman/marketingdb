@@ -8,6 +8,8 @@ import { Head, router, useForm } from '@inertiajs/vue3'
 import { Edit, Plus, Trash2, Search, Repeat as RepeatIcon } from 'lucide-vue-next'
 import { ref, watch } from 'vue'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import CsRepeatDailyTransaksiChart from '@/components/CsRepeatDailyTransaksiChart.vue'
+import CsRepeatDailyProductChart from '@/components/CsRepeatDailyProductChart.vue'
 
 interface Item {
   id: number
@@ -25,6 +27,7 @@ interface Props {
   products: Array<{ id: number; nama: string }>
   filters: { search?: string; product_id?: number | string }
   permissions: { canCrud: boolean }
+  charts: { dailyTransaksi: Array<{ date: string; total: number }>; dailyByProduct: Array<{ date: string; products: Record<string, number>; total: number }> }
 }
 
 const props = defineProps<Props>()
@@ -106,6 +109,12 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <CsRepeatDailyTransaksiChart :data="props.charts?.dailyTransaksi" />
+        <CsRepeatDailyProductChart :data="props.charts?.dailyByProduct" />
       </div>
 
       <Card>
@@ -247,7 +256,13 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Chat</label>
-            <textarea v-model="createForm.chat" class="w-full rounded border p-2" rows="3"></textarea>
+            <select v-model="createForm.chat" class="h-9 rounded border px-2 w-full">
+              <option value="">-- Pilih Status Chat --</option>
+              <option value="Baru">Baru</option>
+              <option value="Follow Up">Follow Up</option>
+              <option value="Follow Up 2">Follow Up 2</option>
+              <option value="Followup 3">Followup 3</option>
+            </select>
             <div v-if="createForm.errors.chat" class="text-sm text-red-600 mt-1">{{ createForm.errors.chat }}</div>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

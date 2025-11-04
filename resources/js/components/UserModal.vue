@@ -11,7 +11,7 @@ interface User {
     id?: number;
     name: string;
     email: string;
-    role: 'super_admin' | 'admin' | 'marketing' | 'advertiser';
+    role: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs';
     password?: string;
 }
 
@@ -30,7 +30,7 @@ const emit = defineEmits<{
 const form = useForm({
     name: '',
     email: '',
-    role: 'marketing' as 'super_admin' | 'admin' | 'marketing' | 'advertiser',
+    role: 'marketing' as 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs',
     password: '',
     password_confirmation: '',
 });
@@ -86,6 +86,7 @@ const roleLabels = {
     admin: 'Admin',
     marketing: 'Marketing',
     advertiser: 'Advertiser',
+    cs: 'CS',
 };
 
 const roleDescriptions = {
@@ -93,6 +94,7 @@ const roleDescriptions = {
     admin: 'Dapat mengelola user dan operasional',
     marketing: 'Akses terbatas untuk tim pemasaran',
     advertiser: 'Akses penuh ke semua menu dan dapat edit data',
+    cs: 'Hanya bisa CRUD di menu CS Repeat, CS Maintenance, dan Produk',
 };
 </script>
 
@@ -183,6 +185,7 @@ const roleDescriptions = {
                             <option value="admin">Admin</option>
                             <option value="super_admin">Super Admin</option>
                             <option value="advertiser">Advertiser</option>
+                            <option value="cs">CS</option>
                         </select>
                         <p v-if="form.errors.role" class="text-sm text-red-500">{{ form.errors.role }}</p>
                         <p v-if="mode !== 'view'" class="text-sm text-muted-foreground">{{ roleDescriptions[form.role] }}</p>

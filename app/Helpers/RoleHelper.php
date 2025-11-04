@@ -26,14 +26,16 @@ class RoleHelper
      */
     public static function getNavigationItems($user): array
     {
-        $baseItems = [
-            [
+        $baseItems = [];
+        // Only non-CS roles see Dashboard in navigation
+        if (!$user->isCs()) {
+            $baseItems[] = [
                 'name' => 'Dashboard',
                 'href' => route('dashboard'),
                 'icon' => 'home',
                 'visible' => true,
-            ],
-        ];
+            ];
+        }
 
         if ($user->hasFullAccess() || $user->hasReadOnlyAccess() || $user->hasLimitedAccess()) {
             $baseItems[] = [
@@ -78,6 +80,43 @@ class RoleHelper
                 'name' => 'Labels',
                 'href' => route('labels.index'),
                 'icon' => 'bookmark',
+                'visible' => true,
+                'actions' => [
+                    'create' => $user->canCrud(),
+                    'edit' => $user->canCrud(),
+                    'delete' => $user->canCrud(),
+                ],
+            ];
+        }
+
+        // Navigation for CS role: only show CS menus and Products
+        if ($user->isCs()) {
+            $baseItems[] = [
+                'name' => 'CS Repeat',
+                'href' => route('cs-repeats.index'),
+                'icon' => 'repeat',
+                'visible' => true,
+                'actions' => [
+                    'create' => $user->canCrud(),
+                    'edit' => $user->canCrud(),
+                    'delete' => $user->canCrud(),
+                ],
+            ];
+            $baseItems[] = [
+                'name' => 'CS Maintenance',
+                'href' => route('cs-maintenances.index'),
+                'icon' => 'wrench',
+                'visible' => true,
+                'actions' => [
+                    'create' => $user->canCrud(),
+                    'edit' => $user->canCrud(),
+                    'delete' => $user->canCrud(),
+                ],
+            ];
+            $baseItems[] = [
+                'name' => 'Products',
+                'href' => route('products.index'),
+                'icon' => 'box',
                 'visible' => true,
                 'actions' => [
                     'create' => $user->canCrud(),

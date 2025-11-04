@@ -78,7 +78,13 @@ const breadcrumbs = [
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Chat</label>
-          <textarea v-model="form.chat" class="w-full rounded border p-2" rows="3"></textarea>
+          <select v-model="form.chat" class="h-9 rounded border px-2 w-full">
+            <option value="">-- Pilih Status Chat --</option>
+            <option value="Baru">Baru</option>
+            <option value="Follow Up">Follow Up</option>
+            <option value="Follow Up 2">Follow Up 2</option>
+            <option value="Followup 3">Followup 3</option>
+          </select>
           <div v-if="form.errors.chat" class="text-sm text-red-600 mt-1">{{ form.errors.chat }}</div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
