@@ -53,7 +53,7 @@ const breadcrumbs = [
   <Head title="CS Maintenance" />
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="mx-6 mt-6 space-y-6">
-      <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 via-sky-600 to-cyan-600 p-4 text-white sm:p-6">
+      <div class="relative overflow-hidden rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 p-4 text-indigo-700 sm:p-6">
         <div class="relative z-10">
           <div class="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
             <div class="flex-1">
@@ -61,10 +61,10 @@ const breadcrumbs = [
                 <WrenchIcon class="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
                 Manajemen CS Maintenance
               </h1>
-              <p class="text-sm opacity-90">Kelola data CS Maintenance secara konsisten dan rapi.</p>
+              <p class="text-sm text-indigo-700/80">Kelola data CS Maintenance secara konsisten dan rapi.</p>
             </div>
             <div class="flex items-center gap-2">
-              <Button as-child variant="secondary" class="bg-white/20 hover:bg-white/30">
+              <Button as-child variant="secondary" class="bg-white/60 hover:bg-white/70 text-indigo-700">
                 <a href="/cs/maintenances/create">Tambah</a>
               </Button>
             </div>
@@ -89,11 +89,14 @@ const breadcrumbs = [
             <a href="/cs/maintenances/create">Tambah</a>
           </Button>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto responsive-table">
           <table class="min-w-full text-sm">
             <thead>
               <tr class="text-left border-b">
-                <th class="py-2 px-2">Nama Pelanggan</th>
+                <th class="py-2 px-2 sticky left-0 z-30 bg-background min-w-[120px] sm:min-w-[200px] border-r border-border">
+                  <span class="sm:hidden">Nama</span>
+                  <span class="hidden sm:inline">Nama Pelanggan</span>
+                </th>
                 <th class="py-2 px-2">No Tlp</th>
                 <th class="py-2 px-2">Tanggal</th>
                 <th class="py-2 px-2">Produk</th>
@@ -107,7 +110,7 @@ const breadcrumbs = [
             </thead>
             <tbody>
               <tr v-for="it in props.items.data" :key="it.id" class="border-b">
-                <td class="py-2 px-2">{{ it.nama_pelanggan }}</td>
+                <td class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-border">{{ it.nama_pelanggan }}</td>
                 <td class="py-2 px-2">{{ it.no_tlp }}</td>
                 <td class="py-2 px-2">{{ formatDate(it.tanggal) }}</td>
                 <td class="py-2 px-2">{{ it.product?.nama || '-' }}</td>
@@ -139,3 +142,9 @@ const breadcrumbs = [
     </div>
   </AppLayout>
   </template>
+
+<style scoped>
+.responsive-table {
+  -webkit-overflow-scrolling: touch;
+}
+</style>

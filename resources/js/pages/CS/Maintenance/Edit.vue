@@ -50,7 +50,7 @@ const breadcrumbs = [
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="mx-6 mt-6 space-y-6">
     <Card>
-      <CardHeader>
+      <CardHeader class="border-b border-indigo-100/50 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50">
         <CardTitle>Edit CS Maintenance</CardTitle>
       </CardHeader>
       <CardContent class="space-y-4">
