@@ -134,4 +134,52 @@ class CsMaintenanceController extends Controller
         $csMaintenance->delete();
         return redirect()->route('cs-maintenances.index')->with('success', 'CS Maintenance berhasil dihapus.');
     }
+
+    /**
+     * Analytics: jumlah maintenance per hari berdasarkan rentang tanggal.
+     * Query params: start_date, end_date (default ke bulan berjalan bila kosong)
+     * Response: { data: Array<{ date: string, count: number }> }
+     */
+    public function analyticsDailyCount(Request $request)
+    {
+        if (!Schema::hasTable('cs_maintenances')) {
+            return response()->json(['data' => []]);
+        }
+
+        $startDate = $request->get('start_date', now()->startOfMonth()->toDateString());
+        $endDate = $request->get('end_date', now()->endOfMonth()->toDateString());
+
+        $baseQuery = CsMaintenance::query()
+            ->whereBetween('tanggal', [$startDate, $endDate]);
+
+        if ($request->filled('product_id')) {
+            $baseQuery->where('product_id', $request->product_id);
+        }
+
+        $dailyCounts = $baseQuery->clone()
+            ->selectRaw('DATE(tanggal) as d, COUNT(*) as cnt')
+            ->groupBy('d')
+            ->orderBy('d')
+            ->get()
+            ->keyBy('d');
+
+        // Generate inclusive date range
+        $dates = [];
+        $cursor = \Carbon\Carbon::parse($startDate)->startOfDay();
+        $endCursor = \Carbon\Carbon::parse($endDate)->startOfDay();
+        while ($cursor->lte($endCursor)) {
+            $dates[] = $cursor->toDateString();
+            $cursor->addDay();
+        }
+
+        $series = collect($dates)->map(function ($d) use ($dailyCounts) {
+            $row = $dailyCounts->get($d);
+            return [
+                'date' => $d,
+                'count' => $row ? (int) $row->cnt : 0,
+            ];
+        });
+
+        return response()->json(['data' => $series]);
+    }
 }

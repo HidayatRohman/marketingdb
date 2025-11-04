@@ -5,7 +5,8 @@ import { Head, router } from '@inertiajs/vue3'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
+import CsMaintenanceDailyChart from '@/components/CsMaintenanceDailyChart.vue'
 
 interface Item {
   id: number
@@ -29,11 +30,48 @@ const props = defineProps<{
 const q = ref(props.filters.q || '')
 const productId = ref(props.filters.product_id || '')
 
+// Grafik: tanggal awal/akhir default 30 hari terakhir
+const today = new Date()
+const thirtyDaysAgo = new Date()
+thirtyDaysAgo.setDate(today.getDate() - 30)
+const startDate = ref(thirtyDaysAgo.toISOString().split('T')[0])
+const endDate = ref(today.toISOString().split('T')[0])
+const chartLoading = ref(false)
+const dailyData = ref<{ date: string; count: number }[]>([])
+
+const fetchDaily = async () => {
+  chartLoading.value = true
+  try {
+    const params = new URLSearchParams({
+      start_date: startDate.value,
+      end_date: endDate.value,
+      product_id: productId.value ? String(productId.value) : ''
+    })
+    const res = await fetch(`/cs/maintenances/analytics/daily-count?${params}`)
+    if (res.ok) {
+      const json = await res.json()
+      dailyData.value = Array.isArray(json.data) ? json.data : []
+    }
+  } catch (e) {
+    // noop
+  } finally {
+    chartLoading.value = false
+  }
+}
+
 watch([q, productId], () => {
   const params: Record<string, any> = {}
   if (q.value) params.q = q.value
   if (productId.value) params.product_id = productId.value
   router.get('/cs/maintenances', params, { preserveState: true, preserveScroll: true })
+})
+
+watch([startDate, endDate, productId], () => {
+  fetchDaily()
+})
+
+onMounted(() => {
+  fetchDaily()
 })
 
 const destroyItem = (id: number) => {
@@ -137,6 +175,25 @@ const breadcrumbs = [
           <div>Total: {{ props.items.total }}</div>
           <div>Halaman: {{ props.items.current_page }}</div>
         </div>
+      </CardContent>
+    </Card>
+
+    <!-- Report Grafik: ditempatkan di bawah CS Maintenance -->
+    <Card>
+      <CardHeader>
+        <CardTitle>Report Grafik (CS Maintenance)</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <Input type="date" v-model="startDate" class="w-40" />
+            <span class="text-sm text-muted-foreground">s/d</span>
+            <Input type="date" v-model="endDate" class="w-40" />
+            <Button variant="outline" @click="fetchDaily">Terapkan</Button>
+          </div>
+          <div class="text-sm text-muted-foreground" v-if="chartLoading">Memuat grafik…</div>
+        </div>
+        <CsMaintenanceDailyChart :data="dailyData" :startDate="startDate" :endDate="endDate" @refresh="fetchDaily" />
       </CardContent>
     </Card>
     </div>

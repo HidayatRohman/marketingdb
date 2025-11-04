@@ -170,6 +170,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // CS Maintenance - accessible by all roles to view; CRUD for elevated roles
     Route::middleware('role.access:view')->group(function () {
         Route::get('cs/maintenances', [CsMaintenanceController::class, 'index'])->name('cs-maintenances.index');
+        // CS Maintenance Analytics endpoints
+        Route::get('cs/maintenances/analytics/daily-count', [CsMaintenanceController::class, 'analyticsDailyCount'])->name('cs-maintenances.analytics.daily-count');
     });
     Route::middleware('role.access:create')->group(function () {
         Route::get('cs/maintenances/create', [CsMaintenanceController::class, 'create'])->name('cs-maintenances.create');
