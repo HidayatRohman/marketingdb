@@ -10,6 +10,7 @@ import { computed, ref, watch } from 'vue'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import CsRepeatDailyTransaksiChart from '@/components/CsRepeatDailyTransaksiChart.vue'
 import CsRepeatDailyProductChart from '@/components/CsRepeatDailyProductChart.vue'
+import { indonesianProvinces } from '@/lib/indonesianProvinces'
 
 interface Item {
   id: number
@@ -59,7 +60,7 @@ const createForm = useForm({
   product_id: '',
   chat: '',
   kota: '',
-  provinsi: '',
+  provinsi: 'Unknown',
   transaksi: 0,
   keterangan: '',
 })
@@ -306,7 +307,9 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
             </div>
             <div>
               <label class="block text-sm font-medium mb-1">Provinsi</label>
-              <Input v-model="createForm.provinsi" />
+              <select v-model="createForm.provinsi" class="h-9 rounded border px-2 w-full">
+                <option v-for="province in indonesianProvinces" :key="province" :value="province">{{ province }}</option>
+              </select>
               <div v-if="createForm.errors.provinsi" class="text-sm text-red-600 mt-1">{{ createForm.errors.provinsi }}</div>
             </div>
           </div>

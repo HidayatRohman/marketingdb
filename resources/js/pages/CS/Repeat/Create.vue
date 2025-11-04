@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Head, useForm } from '@inertiajs/vue3'
 import { ref, watch } from 'vue'
+import { indonesianProvinces } from '@/lib/indonesianProvinces'
 
 const props = defineProps<{ products: Array<{ id: number; nama: string }> }>()
 
@@ -15,7 +16,7 @@ const form = useForm({
   tanggal: '',
   chat: '',
   kota: '',
-  provinsi: '',
+  provinsi: 'Unknown',
   transaksi: 0,
   keterangan: '',
 })
@@ -95,7 +96,9 @@ const breadcrumbs = [
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Provinsi</label>
-            <Input v-model="form.provinsi" />
+            <select v-model="form.provinsi" class="h-9 rounded border px-2 w-full">
+              <option v-for="province in indonesianProvinces" :key="province" :value="province">{{ province }}</option>
+            </select>
             <div v-if="form.errors.provinsi" class="text-sm text-red-600 mt-1">{{ form.errors.provinsi }}</div>
           </div>
         </div>
