@@ -150,6 +150,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // CS Repeat - accessible by all roles to view; CRUD for elevated roles
     Route::middleware('role.access:view')->group(function () {
         Route::get('cs/repeats', [CsRepeatController::class, 'index'])->name('cs-repeats.index');
+        // CS Repeat Analytics endpoints (used by Dashboard)
+        Route::get('cs/repeats/analytics/summary', [CsRepeatController::class, 'analyticsSummary'])->name('cs-repeats.analytics.summary');
+        Route::get('cs/repeats/analytics/daily-transaksi', [CsRepeatController::class, 'analyticsDailyTransaksi'])->name('cs-repeats.analytics.daily-transaksi');
+        Route::get('cs/repeats/analytics/daily-by-product', [CsRepeatController::class, 'analyticsDailyByProduct'])->name('cs-repeats.analytics.daily-by-product');
     });
     Route::middleware('role.access:create')->group(function () {
         Route::get('cs/repeats/create', [CsRepeatController::class, 'create'])->name('cs-repeats.create');

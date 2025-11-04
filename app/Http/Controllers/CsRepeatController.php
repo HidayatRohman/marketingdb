@@ -161,6 +161,139 @@ class CsRepeatController extends Controller
         ]);
     }
 
+    /**
+     * Analytics: Summary (total omset dan jumlah transaksi) berdasarkan rentang tanggal.
+     * Query params: start_date, end_date (default ke bulan berjalan bila kosong)
+     */
+    public function analyticsSummary(Request $request)
+    {
+        if (!Schema::hasTable('cs_repeats')) {
+            return response()->json([
+                'data' => [
+                    'totalOmset' => 0,
+                    'jumlahTransaksi' => 0,
+                ],
+            ]);
+        }
+
+        $startDate = $request->get('start_date', now()->startOfMonth()->toDateString());
+        $endDate = $request->get('end_date', now()->endOfMonth()->toDateString());
+
+        $query = CsRepeat::query()->whereBetween('tanggal', [$startDate, $endDate]);
+
+        // Optional: filter by product_id jika diberikan (Dashboard saat ini tidak memakainya)
+        if ($request->filled('product_id')) {
+            $query->where('product_id', $request->product_id);
+        }
+
+        $totalOmset = (int) ($query->clone()->sum('transaksi') ?? 0);
+        $jumlahTransaksi = (int) ($query->clone()->count() ?? 0);
+
+        return response()->json([
+            'data' => [
+                'totalOmset' => $totalOmset,
+                'jumlahTransaksi' => $jumlahTransaksi,
+            ],
+        ]);
+    }
+
+    /**
+     * Analytics: Transaksi harian (tanggal -> total transaksi) berdasarkan rentang tanggal.
+     */
+    public function analyticsDailyTransaksi(Request $request)
+    {
+        if (!Schema::hasTable('cs_repeats')) {
+            return response()->json(['data' => []]);
+        }
+
+        $startDate = $request->get('start_date', now()->startOfMonth()->toDateString());
+        $endDate = $request->get('end_date', now()->endOfMonth()->toDateString());
+
+        $baseQuery = CsRepeat::query()->whereBetween('tanggal', [$startDate, $endDate]);
+        if ($request->filled('product_id')) {
+            $baseQuery->where('product_id', $request->product_id);
+        }
+
+        $dailyTotals = $baseQuery->clone()
+            ->selectRaw('DATE(tanggal) as d, COALESCE(SUM(transaksi),0) as total')
+            ->groupBy('d')
+            ->orderBy('d')
+            ->get()
+            ->keyBy('d');
+
+        // Generate inclusive date range
+        $dates = [];
+        $cursor = \Carbon\Carbon::parse($startDate)->startOfDay();
+        $endCursor = \Carbon\Carbon::parse($endDate)->startOfDay();
+        while ($cursor->lte($endCursor)) {
+            $dates[] = $cursor->toDateString();
+            $cursor->addDay();
+        }
+
+        $series = collect($dates)->map(function ($d) use ($dailyTotals) {
+            $row = $dailyTotals->get($d);
+            return [
+                'date' => $d,
+                'total' => $row ? (int) $row->total : 0,
+            ];
+        });
+
+        return response()->json(['data' => $series]);
+    }
+
+    /**
+     * Analytics: Transaksi harian per produk (tanggal -> {products: map, total}) berdasarkan rentang tanggal.
+     */
+    public function analyticsDailyByProduct(Request $request)
+    {
+        if (!Schema::hasTable('cs_repeats')) {
+            return response()->json(['data' => []]);
+        }
+
+        $startDate = $request->get('start_date', now()->startOfMonth()->toDateString());
+        $endDate = $request->get('end_date', now()->endOfMonth()->toDateString());
+
+        $baseQuery = CsRepeat::query()->whereBetween('tanggal', [$startDate, $endDate]);
+        if ($request->filled('product_id')) {
+            $baseQuery->where('product_id', $request->product_id);
+        }
+
+        $raw = $baseQuery->clone()
+            ->leftJoin('products', 'products.id', '=', 'cs_repeats.product_id')
+            ->selectRaw('DATE(tanggal) as d, COALESCE(products.nama, "Tanpa Produk") as product, COALESCE(SUM(transaksi),0) as total')
+            ->groupBy('d', 'product')
+            ->orderBy('d')
+            ->get();
+
+        $grouped = $raw->groupBy('d');
+
+        // Generate inclusive date range
+        $dates = [];
+        $cursor = \Carbon\Carbon::parse($startDate)->startOfDay();
+        $endCursor = \Carbon\Carbon::parse($endDate)->startOfDay();
+        while ($cursor->lte($endCursor)) {
+            $dates[] = $cursor->toDateString();
+            $cursor->addDay();
+        }
+
+        $series = collect($dates)->map(function ($d) use ($grouped) {
+            $rows = $grouped->get($d, collect());
+            $products = [];
+            $total = 0;
+            foreach ($rows as $row) {
+                $products[$row->product] = (int) $row->total;
+                $total += (int) $row->total;
+            }
+            return [
+                'date' => $d,
+                'products' => $products,
+                'total' => $total,
+            ];
+        });
+
+        return response()->json(['data' => $series]);
+    }
+
     public function create()
     {
         $products = Schema::hasTable('products')

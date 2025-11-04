@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import BrandPerformanceChart from '@/components/BrandPerformanceChart.vue';
 import MarketingPerformanceChart from '@/components/MarketingPerformanceChart.vue';
+import CsRepeatDailyTransaksiChart from '@/components/CsRepeatDailyTransaksiChart.vue';
+import CsRepeatDailyProductChart from '@/components/CsRepeatDailyProductChart.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,7 +46,7 @@ import {
     Zap,
     DollarSign,
 } from 'lucide-vue-next';
-import { computed, onMounted, onUnmounted, ref, Teleport } from 'vue';
+import { computed, onMounted, onUnmounted, ref, Teleport, watch } from 'vue';
 
 interface UserStats {
     total: number;
@@ -118,6 +120,11 @@ interface TopMarketing {
     closed_leads: number;
     closing_rate: number;
 }
+
+// CS Repeat analytics types
+interface CsRepeatDailyRow { date: string; total: number }
+interface CsRepeatDailyProductRow { date: string; products: Record<string, number>; total: number }
+interface CsRepeatSummary { totalOmset: number; jumlahTransaksi: number }
 
 interface BrandPerformance {
     id: number;
@@ -319,6 +326,99 @@ const growthIndicators = computed(() => {
         weekly: props.mitraStats.this_week,
         monthly: props.mitraStats.this_month,
     };
+});
+
+// ============================
+// CS Repeat Analytics (Dashboard)
+// ============================
+const csRepeatSummary = ref<CsRepeatSummary>({ totalOmset: 0, jumlahTransaksi: 0 });
+const csRepeatDailyTransaksi = ref<CsRepeatDailyRow[]>([]);
+const csRepeatDailyByProduct = ref<CsRepeatDailyProductRow[]>([]);
+const csRepeatLoading = ref({ summary: false, dailyTransaksi: false, dailyProduct: false });
+
+const fetchCsRepeatSummary = async () => {
+    csRepeatLoading.value.summary = true;
+    try {
+        const params = new URLSearchParams({
+            start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
+            end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+        });
+        if (selectedBrand.value && selectedBrand.value !== 'all') params.append('brand', String(selectedBrand.value));
+        if (selectedMarketing.value && selectedMarketing.value !== 'all') params.append('marketing', String(selectedMarketing.value));
+
+        const res = await fetch('/cs/repeats/analytics/summary?' + params.toString());
+        if (res.ok) {
+            const json = await res.json();
+            // Expecting { data: { totalOmset: number, jumlahTransaksi: number } }
+            csRepeatSummary.value = (json.data || { totalOmset: 0, jumlahTransaksi: 0 });
+        }
+    } catch (e) {
+        console.error('Gagal memuat summary CS Repeat:', e);
+    } finally {
+        csRepeatLoading.value.summary = false;
+    }
+};
+
+const fetchCsRepeatDailyTransaksi = async () => {
+    csRepeatLoading.value.dailyTransaksi = true;
+    try {
+        const params = new URLSearchParams({
+            start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
+            end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+        });
+        if (selectedBrand.value && selectedBrand.value !== 'all') params.append('brand', String(selectedBrand.value));
+        if (selectedMarketing.value && selectedMarketing.value !== 'all') params.append('marketing', String(selectedMarketing.value));
+
+        const res = await fetch('/cs/repeats/analytics/daily-transaksi?' + params.toString());
+        if (res.ok) {
+            const json = await res.json();
+            // Expecting { data: Array<{ date: string, total: number }> }
+            csRepeatDailyTransaksi.value = (json.data || []) as CsRepeatDailyRow[];
+        }
+    } catch (e) {
+        console.error('Gagal memuat transaksi harian CS Repeat:', e);
+    } finally {
+        csRepeatLoading.value.dailyTransaksi = false;
+    }
+};
+
+const fetchCsRepeatDailyByProduct = async () => {
+    csRepeatLoading.value.dailyProduct = true;
+    try {
+        const params = new URLSearchParams({
+            start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
+            end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+        });
+        if (selectedBrand.value && selectedBrand.value !== 'all') params.append('brand', String(selectedBrand.value));
+        if (selectedMarketing.value && selectedMarketing.value !== 'all') params.append('marketing', String(selectedMarketing.value));
+
+        const res = await fetch('/cs/repeats/analytics/daily-by-product?' + params.toString());
+        if (res.ok) {
+            const json = await res.json();
+            // Expecting { data: Array<{ date: string, products: Record<string, number>, total: number }> }
+            csRepeatDailyByProduct.value = (json.data || []) as CsRepeatDailyProductRow[];
+        }
+    } catch (e) {
+        console.error('Gagal memuat transaksi per produk harian CS Repeat:', e);
+    } finally {
+        csRepeatLoading.value.dailyProduct = false;
+    }
+};
+
+const refreshCsRepeatAnalytics = () => {
+    fetchCsRepeatSummary();
+    fetchCsRepeatDailyTransaksi();
+    fetchCsRepeatDailyByProduct();
+};
+
+onMounted(() => {
+    // Initial load for CS Repeat analytics
+    refreshCsRepeatAnalytics();
+});
+
+// Refresh when dashboard filters change
+watch([startDate, endDate, selectedBrand, selectedMarketing], () => {
+    refreshCsRepeatAnalytics();
 });
 
 // Functions
@@ -1645,6 +1745,46 @@ const ppnPercentage = computed(() => {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- CS Repeat Analytics Section -->
+                    <Card class="border-0 shadow-lg">
+                        <CardHeader>
+                            <CardTitle class="flex items-center gap-2">
+                                CS Repeat Analytics
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent class="space-y-6">
+                            <!-- Summary Cards -->
+                            <div class="flex flex-nowrap gap-4 sm:grid sm:grid-cols-2">
+                                <Card class="border border-indigo-100 basis-[65%] sm:basis-auto sm:col-span-1">
+                                    <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50">
+                                        <CardTitle class="text-sm sm:text-base">Total Omset</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div class="text-xl sm:text-2xl font-bold text-indigo-700">
+                                            {{ new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(csRepeatSummary.totalOmset || 0) }}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                                <Card class="border border-indigo-100 basis-[35%] sm:basis-auto sm:col-span-1">
+                                    <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50">
+                                        <CardTitle class="text-sm sm:text-base">Jumlah Transaksi</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div class="text-xl sm:text-2xl font-bold text-indigo-700">
+                                            {{ new Intl.NumberFormat('id-ID').format(csRepeatSummary.jumlahTransaksi || 0) }}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            <!-- Charts Grid -->
+                            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                                <CsRepeatDailyTransaksiChart :data="csRepeatDailyTransaksi" :loading="csRepeatLoading.dailyTransaksi" />
+                                <CsRepeatDailyProductChart :data="csRepeatDailyByProduct" :loading="csRepeatLoading.dailyProduct" />
                             </div>
                         </CardContent>
                     </Card>
