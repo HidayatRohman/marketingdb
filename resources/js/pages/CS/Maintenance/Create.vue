@@ -6,7 +6,11 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { Head, useForm } from '@inertiajs/vue3'
 import { indonesianProvinces } from '@/lib/indonesianProvinces'
 
-const props = defineProps<{ products: Array<{ id: number; nama: string }> }>()
+const props = defineProps<{ 
+  products: Array<{ id: number; nama: string }>, 
+  kendalas: Array<{ id: number; nama: string; warna?: string }>,
+  solusis: Array<{ id: number; nama: string; warna?: string }>,
+}>()
 
 const form = useForm({
   nama_pelanggan: '',
@@ -90,12 +94,18 @@ const breadcrumbs = [
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Kendala</label>
-          <textarea v-model="form.kendala" class="w-full rounded border p-2" rows="3"></textarea>
+          <select v-model="form.kendala" class="h-9 rounded border px-2 w-full">
+            <option value="">-- Pilih Kendala --</option>
+            <option v-for="k in props.kendalas" :key="k.id" :value="k.nama">{{ k.nama }}</option>
+          </select>
           <div v-if="form.errors.kendala" class="text-sm text-red-600 mt-1">{{ form.errors.kendala }}</div>
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Solusi</label>
-          <textarea v-model="form.solusi" class="w-full rounded border p-2" rows="3"></textarea>
+          <select v-model="form.solusi" class="h-9 rounded border px-2 w-full">
+            <option value="">-- Pilih Solusi --</option>
+            <option v-for="s in props.solusis" :key="s.id" :value="s.nama">{{ s.nama }}</option>
+          </select>
           <div v-if="form.errors.solusi" class="text-sm text-red-600 mt-1">{{ form.errors.solusi }}</div>
         </div>
         <div class="flex justify-end gap-2">

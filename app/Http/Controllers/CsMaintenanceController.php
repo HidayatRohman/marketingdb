@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\CsMaintenance;
 use App\Models\Product;
+use App\Models\Kendala;
+use App\Models\Solusi;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Schema;
@@ -59,8 +61,16 @@ class CsMaintenanceController extends Controller
         $products = Schema::hasTable('products')
             ? Product::select('id', 'nama')->orderBy('nama')->get()
             : collect([]);
+        $kendalas = Schema::hasTable('kendalas')
+            ? Kendala::select('id', 'nama', 'warna')->orderBy('nama')->get()
+            : collect([]);
+        $solusis = Schema::hasTable('solusis')
+            ? Solusi::select('id', 'nama', 'warna')->orderBy('nama')->get()
+            : collect([]);
         return Inertia::render('CS/Maintenance/Create', [
             'products' => $products,
+            'kendalas' => $kendalas,
+            'solusis' => $solusis,
         ]);
     }
 
@@ -87,9 +97,17 @@ class CsMaintenanceController extends Controller
         $products = Schema::hasTable('products')
             ? Product::select('id', 'nama')->orderBy('nama')->get()
             : collect([]);
+        $kendalas = Schema::hasTable('kendalas')
+            ? Kendala::select('id', 'nama', 'warna')->orderBy('nama')->get()
+            : collect([]);
+        $solusis = Schema::hasTable('solusis')
+            ? Solusi::select('id', 'nama', 'warna')->orderBy('nama')->get()
+            : collect([]);
         return Inertia::render('CS/Maintenance/Edit', [
             'item' => $csMaintenance->load('product'),
             'products' => $products,
+            'kendalas' => $kendalas,
+            'solusis' => $solusis,
         ]);
     }
 
