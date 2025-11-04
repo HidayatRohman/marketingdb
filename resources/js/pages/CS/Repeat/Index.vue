@@ -20,6 +20,7 @@ interface Item {
   kota: string | null
   provinsi: string | null
   transaksi: number
+  keterangan?: string
   product?: { id: number; nama: string } | null
 }
 
@@ -214,6 +215,7 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
                 <TableHead>Kota</TableHead>
                 <TableHead>Provinsi</TableHead>
                 <TableHead>Transaksi</TableHead>
+                <TableHead>Keterangan</TableHead>
                 <TableHead class="text-center">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -226,6 +228,7 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
                 <TableCell>{{ item.kota || '-' }}</TableCell>
                 <TableCell>{{ item.provinsi || '-' }}</TableCell>
                 <TableCell>{{ formatCurrency(item.transaksi || 0) }}</TableCell>
+                <TableCell>{{ item.keterangan || '-' }}</TableCell>
                 <TableCell class="text-center">
                   <div class="flex justify-center gap-2">
                     <Button variant="ghost" size="sm" @click="openView(item)">
@@ -368,6 +371,10 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
           <div class="grid grid-cols-3 gap-2">
             <div class="text-gray-500">Transaksi</div>
             <div class="col-span-2 font-semibold">{{ formatCurrency(viewItem.transaksi || 0) }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">Keterangan</div>
+            <div class="col-span-2">{{ viewItem.keterangan || '-' }}</div>
           </div>
         </div>
         <div class="flex justify-end gap-2 mt-4">
