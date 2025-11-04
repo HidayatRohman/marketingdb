@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Head, router, useForm } from '@inertiajs/vue3'
-import { Edit, Plus, Trash2, Search, Repeat as RepeatIcon } from 'lucide-vue-next'
+import { Edit, Plus, Trash2, Search, Repeat as RepeatIcon, Eye } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import CsRepeatDailyTransaksiChart from '@/components/CsRepeatDailyTransaksiChart.vue'
@@ -93,6 +93,17 @@ const editUrl = (id: number) => `/cs/repeats/${id}/edit`
 const deleteItem = (item: Item) => {
   if (!confirm('Yakin hapus data ini?')) return
   router.delete(`/cs/repeats/${item.id}`, { preserveScroll: true })
+}
+
+const showView = ref(false)
+const viewItem = ref<Item | null>(null)
+const openView = (item: Item) => {
+  viewItem.value = item
+  showView.value = true
+}
+const closeView = () => {
+  showView.value = false
+  viewItem.value = null
 }
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)
@@ -215,13 +226,18 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
                 <TableCell>{{ item.provinsi || '-' }}</TableCell>
                 <TableCell>{{ formatCurrency(item.transaksi || 0) }}</TableCell>
                 <TableCell class="text-center">
-                  <div class="flex justify-center gap-2" v-if="props.permissions.canCrud">
-                    <Button variant="ghost" size="sm" as-child>
-                      <a :href="editUrl(item.id)"><Edit class="h-4 w-4" /></a>
+                  <div class="flex justify-center gap-2">
+                    <Button variant="ghost" size="sm" @click="openView(item)">
+                      <Eye class="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" class="hover:text-red-600" @click="deleteItem(item)">
-                      <Trash2 class="h-4 w-4" />
-                    </Button>
+                    <template v-if="props.permissions.canCrud">
+                      <Button variant="ghost" size="sm" as-child>
+                        <a :href="editUrl(item.id)"><Edit class="h-4 w-4" /></a>
+                      </Button>
+                      <Button variant="ghost" size="sm" class="hover:text-red-600" @click="deleteItem(item)">
+                        <Trash2 class="h-4 w-4" />
+                      </Button>
+                    </template>
                   </div>
                 </TableCell>
               </TableRow>
@@ -315,6 +331,51 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
       </DialogContent>
     </Dialog>
 
+    <!-- Dialog View Detail -->
+    <Dialog :open="showView" @update:open="(v:boolean)=> showView = v">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader class="border-b border-indigo-100/50 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-900/40 dark:via-sky-900/30 dark:to-cyan-900/30 rounded-t-md -mx-6 -mt-6 px-6 py-3">
+          <DialogTitle class="text-indigo-700 dark:text-indigo-200">Detail Repeat Order</DialogTitle>
+        </DialogHeader>
+        <div v-if="viewItem" class="space-y-3 text-sm">
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">Nama</div>
+            <div class="col-span-2 font-medium">{{ viewItem.nama_pelanggan }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">No Tlp</div>
+            <div class="col-span-2">{{ viewItem.no_tlp }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">Tanggal</div>
+            <div class="col-span-2">{{ formatDate(viewItem.tanggal) }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">Produk</div>
+            <div class="col-span-2">{{ viewItem.product?.nama || '-' }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">Kota</div>
+            <div class="col-span-2">{{ viewItem.kota || '-' }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">Provinsi</div>
+            <div class="col-span-2">{{ viewItem.provinsi || '-' }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">Transaksi</div>
+            <div class="col-span-2 font-semibold">{{ formatCurrency(viewItem.transaksi || 0) }}</div>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 mt-4">
+          <Button variant="outline" @click="closeView">Tutup</Button>
+          <Button as-child>
+            <a v-if="viewItem" :href="editUrl(viewItem.id)">Edit</a>
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+
   </AppLayout>
   </template>
 
@@ -323,3 +384,5 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
   -webkit-overflow-scrolling: touch;
 }
 </style>
+
+<!-- View Detail Modal moved inside main template -->
