@@ -172,6 +172,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('cs/maintenances', [CsMaintenanceController::class, 'index'])->name('cs-maintenances.index');
         // CS Maintenance Analytics endpoints
         Route::get('cs/maintenances/analytics/daily-count', [CsMaintenanceController::class, 'analyticsDailyCount'])->name('cs-maintenances.analytics.daily-count');
+        Route::get('cs/maintenances/analytics/kendala', [CsMaintenanceController::class, 'analyticsKendala'])->name('cs-maintenances.analytics.kendala');
+        Route::get('cs/maintenances/analytics/solusi', [CsMaintenanceController::class, 'analyticsSolusi'])->name('cs-maintenances.analytics.solusi');
     });
     Route::middleware('role.access:create')->group(function () {
         Route::get('cs/maintenances/create', [CsMaintenanceController::class, 'create'])->name('cs-maintenances.create');

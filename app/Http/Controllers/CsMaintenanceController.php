@@ -182,4 +182,80 @@ class CsMaintenanceController extends Controller
 
         return response()->json(['data' => $series]);
     }
+
+    /**
+     * Analytics: distribusi Kendala berdasarkan rentang tanggal.
+     * Query params: start_date, end_date (default ke bulan berjalan bila kosong), optional product_id
+     * Response: { data: Array<{ label: string, count: number, warna: string }> }
+     */
+    public function analyticsKendala(Request $request)
+    {
+        if (!Schema::hasTable('cs_maintenances')) {
+            return response()->json(['data' => []]);
+        }
+
+        $startDate = $request->get('start_date', now()->startOfMonth()->toDateString());
+        $endDate = $request->get('end_date', now()->endOfMonth()->toDateString());
+
+        $query = CsMaintenance::query()
+            ->whereBetween('tanggal', [$startDate, $endDate]);
+
+        if ($request->filled('product_id')) {
+            $query->where('product_id', $request->product_id);
+        }
+
+        // Join ke tabel kendalas berdasarkan nama untuk mengambil warna jika tersedia
+        $data = $query
+            ->leftJoin('kendalas', function ($join) {
+                $join->on('cs_maintenances.kendala', '=', 'kendalas.nama');
+            })
+            ->selectRaw('
+                COALESCE(NULLIF(TRIM(cs_maintenances.kendala), ""), "Unknown") as label,
+                COUNT(*) as count,
+                COALESCE(kendalas.warna, "#9ca3af") as warna
+            ')
+            ->groupBy('label', 'warna')
+            ->orderByDesc('count')
+            ->get();
+
+        return response()->json(['data' => $data]);
+    }
+
+    /**
+     * Analytics: distribusi Solusi berdasarkan rentang tanggal.
+     * Query params: start_date, end_date (default ke bulan berjalan bila kosong), optional product_id
+     * Response: { data: Array<{ label: string, count: number, warna: string }> }
+     */
+    public function analyticsSolusi(Request $request)
+    {
+        if (!Schema::hasTable('cs_maintenances')) {
+            return response()->json(['data' => []]);
+        }
+
+        $startDate = $request->get('start_date', now()->startOfMonth()->toDateString());
+        $endDate = $request->get('end_date', now()->endOfMonth()->toDateString());
+
+        $query = CsMaintenance::query()
+            ->whereBetween('tanggal', [$startDate, $endDate]);
+
+        if ($request->filled('product_id')) {
+            $query->where('product_id', $request->product_id);
+        }
+
+        // Join ke tabel solusis berdasarkan nama untuk mengambil warna jika tersedia
+        $data = $query
+            ->leftJoin('solusis', function ($join) {
+                $join->on('cs_maintenances.solusi', '=', 'solusis.nama');
+            })
+            ->selectRaw('
+                COALESCE(NULLIF(TRIM(cs_maintenances.solusi), ""), "Unknown") as label,
+                COUNT(*) as count,
+                COALESCE(solusis.warna, "#9ca3af") as warna
+            ')
+            ->groupBy('label', 'warna')
+            ->orderByDesc('count')
+            ->get();
+
+        return response()->json(['data' => $data]);
+    }
 }

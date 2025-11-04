@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { ref, watch, onMounted } from 'vue'
 import { Dialog, DialogHeader, DialogTitle, DialogScrollContent } from '@/components/ui/dialog'
 import CsMaintenanceDailyChart from '@/components/CsMaintenanceDailyChart.vue'
+import CsMaintenanceCategoryPieChart from '@/components/CsMaintenanceCategoryPieChart.vue'
 
 interface Item {
   id: number
@@ -60,6 +61,52 @@ const fetchDaily = async () => {
   }
 }
 
+// Grafik Kendala & Solusi
+const kendalaLoading = ref(false)
+const solusiLoading = ref(false)
+const kendalaData = ref<Array<{ label: string; count: number; warna?: string }>>([])
+const solusiData = ref<Array<{ label: string; count: number; warna?: string }>>([])
+
+const fetchKendala = async () => {
+  kendalaLoading.value = true
+  try {
+    const params = new URLSearchParams({
+      start_date: startDate.value,
+      end_date: endDate.value,
+      product_id: productId.value ? String(productId.value) : ''
+    })
+    const res = await fetch(`/cs/maintenances/analytics/kendala?${params}`)
+    if (res.ok) {
+      const json = await res.json()
+      kendalaData.value = Array.isArray(json.data) ? json.data : []
+    }
+  } catch (e) {
+    // noop
+  } finally {
+    kendalaLoading.value = false
+  }
+}
+
+const fetchSolusi = async () => {
+  solusiLoading.value = true
+  try {
+    const params = new URLSearchParams({
+      start_date: startDate.value,
+      end_date: endDate.value,
+      product_id: productId.value ? String(productId.value) : ''
+    })
+    const res = await fetch(`/cs/maintenances/analytics/solusi?${params}`)
+    if (res.ok) {
+      const json = await res.json()
+      solusiData.value = Array.isArray(json.data) ? json.data : []
+    }
+  } catch (e) {
+    // noop
+  } finally {
+    solusiLoading.value = false
+  }
+}
+
 watch([q, productId], () => {
   const params: Record<string, any> = {}
   if (q.value) params.q = q.value
@@ -69,10 +116,14 @@ watch([q, productId], () => {
 
 watch([startDate, endDate, productId], () => {
   fetchDaily()
+  fetchKendala()
+  fetchSolusi()
 })
 
 onMounted(() => {
   fetchDaily()
+  fetchKendala()
+  fetchSolusi()
 })
 
 const destroyItem = (id: number) => {
@@ -210,6 +261,30 @@ const breadcrumbs = [
         <CsMaintenanceDailyChart :data="dailyData" :startDate="startDate" :endDate="endDate" @refresh="fetchDaily" />
       </CardContent>
     </Card>
+
+    <!-- Grafik Kendala -->
+    <CsMaintenanceCategoryPieChart
+      :title="'Grafik Kendala'"
+      :legendTitle="'Kendala'"
+      :data="kendalaData"
+      :loading="kendalaLoading"
+      :startDate="startDate"
+      :endDate="endDate"
+      emptyMessage="Tidak ada data kendala untuk periode ini."
+      @refresh="fetchKendala"
+    />
+
+    <!-- Grafik Solusi -->
+    <CsMaintenanceCategoryPieChart
+      :title="'Grafik Solusi'"
+      :legendTitle="'Solusi'"
+      :data="solusiData"
+      :loading="solusiLoading"
+      :startDate="startDate"
+      :endDate="endDate"
+      emptyMessage="Tidak ada data solusi untuk periode ini."
+      @refresh="fetchSolusi"
+    />
     </div>
 
     <!-- Dialog View Detail CS Maintenance -->
