@@ -17,6 +17,7 @@ interface Item {
   nama_pelanggan: string
   no_tlp: string
   tanggal?: string
+  chat?: string | null
   kota: string | null
   provinsi: string | null
   transaksi: number
@@ -51,6 +52,19 @@ const openDatePicker = (el: HTMLInputElement | null) => {
   ;(el as any).showPicker?.()
 }
 
+// Normalize various date formats to YYYY-MM-DD for HTML date inputs
+const toYMD = (input?: string | null): string => {
+  if (!input) return ''
+  const raw = String(input)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw
+  const d = new Date(raw)
+  if (isNaN(d.getTime())) return ''
+  // Convert to local date without time zone offset
+  const tzOffsetMs = d.getTimezoneOffset() * 60000
+  const local = new Date(d.getTime() - tzOffsetMs)
+  return local.toISOString().slice(0, 10)
+}
+
 watch([search, selectedProduct, periodeStart, periodeEnd], () => {
   router.get(
     '/cs/repeats',
@@ -65,6 +79,7 @@ watch([search, selectedProduct, periodeStart, periodeEnd], () => {
 })
 
 const showCreate = ref(false)
+const createDateRef = ref<HTMLInputElement | null>(null)
 const createForm = useForm({
   tanggal: '',
   nama_pelanggan: '',
@@ -102,6 +117,54 @@ const breadcrumbs = [
   { title: 'Dashboard', href: '/dashboard' },
   { title: 'CS Repeat', href: '/cs/repeats' },
 ]
+// Edit modal state and form
+const showEdit = ref(false)
+const editDateRef = ref<HTMLInputElement | null>(null)
+const editForm = useForm({
+  id: 0,
+  tanggal: '',
+  nama_pelanggan: '',
+  no_tlp: '',
+  product_id: '',
+  chat: '',
+  kota: '',
+  provinsi: 'Unknown',
+  transaksi: 0,
+  keterangan: '',
+})
+const editTransaksiFormatted = ref(new Intl.NumberFormat('id-ID').format(editForm.transaksi))
+const handleEditTransaksiInput = (e: Event) => {
+  const val = (e.target as HTMLInputElement).value
+  const num = parseRupiah(val)
+  editForm.transaksi = num
+  editTransaksiFormatted.value = new Intl.NumberFormat('id-ID').format(num)
+}
+watch(() => editForm.transaksi, (n) => {
+  const current = parseRupiah(editTransaksiFormatted.value)
+  if (current !== n) editTransaksiFormatted.value = new Intl.NumberFormat('id-ID').format(n)
+})
+const openEdit = (item: Item) => {
+  editForm.id = item.id
+  editForm.tanggal = toYMD(item.tanggal) || ''
+  editForm.nama_pelanggan = item.nama_pelanggan || ''
+  editForm.no_tlp = item.no_tlp || ''
+  editForm.product_id = item.product?.id ? String(item.product.id) : ''
+  editForm.chat = item.chat || ''
+  editForm.kota = item.kota || ''
+  editForm.provinsi = item.provinsi || 'Unknown'
+  editForm.transaksi = item.transaksi || 0
+  editTransaksiFormatted.value = new Intl.NumberFormat('id-ID').format(editForm.transaksi)
+  editForm.keterangan = item.keterangan || ''
+  showEdit.value = true
+}
+const submitEdit = () => {
+  editForm.put(`/cs/repeats/${editForm.id}` as any, {
+    preserveScroll: true,
+    onSuccess: () => {
+      showEdit.value = false
+    },
+  })
+}
 const editUrl = (id: number) => `/cs/repeats/${id}/edit`
 const deleteItem = (item: Item) => {
   if (!confirm('Yakin hapus data ini?')) return
@@ -246,8 +309,8 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
                       <Eye class="h-4 w-4" />
                     </Button>
                     <template v-if="props.permissions.canCrud">
-                      <Button variant="ghost" size="sm" as-child>
-                        <a :href="editUrl(item.id)"><Edit class="h-4 w-4" /></a>
+                      <Button variant="ghost" size="sm" @click="openEdit(item)">
+                        <Edit class="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="sm" class="hover:text-red-600" @click="deleteItem(item)">
                         <Trash2 class="h-4 w-4" />
@@ -279,11 +342,18 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
           <DialogTitle>Tambah CS Repeat</DialogTitle>
         </DialogHeader>
         <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">Tanggal</label>
-            <Input v-model="createForm.tanggal" type="date" />
-            <div v-if="createForm.errors.tanggal" class="text-sm text-red-600 mt-1">{{ createForm.errors.tanggal }}</div>
-          </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Tanggal</label>
+            <input
+              ref="createDateRef"
+              v-model="createForm.tanggal"
+              type="date"
+              class="h-9 rounded border px-2 w-full"
+              @focus="openDatePicker(createDateRef)"
+              @click="openDatePicker(createDateRef)"
+            />
+          <div v-if="createForm.errors.tanggal" class="text-sm text-red-600 mt-1">{{ createForm.errors.tanggal }}</div>
+        </div>
           <div>
             <label class="block text-sm font-medium mb-1">Nama Pelanggan</label>
             <Input v-model="createForm.nama_pelanggan" />
@@ -390,9 +460,89 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
         </div>
         <div class="flex justify-end gap-2 mt-4">
           <Button variant="outline" @click="closeView">Tutup</Button>
-          <Button as-child>
-            <a v-if="viewItem" :href="editUrl(viewItem.id)">Edit</a>
-          </Button>
+          <Button v-if="viewItem" @click="openEdit(viewItem)">Edit</Button>
+        </div>
+      </DialogScrollContent>
+    </Dialog>
+
+    <!-- Dialog Edit -->
+    <Dialog :open="showEdit" @update:open="(v:boolean)=> showEdit = v">
+      <DialogScrollContent class="sm:max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Edit CS Repeat</DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Tanggal</label>
+            <input
+              ref="editDateRef"
+              v-model="editForm.tanggal"
+              type="date"
+              class="h-9 rounded border px-2 w-full"
+              @click="openDatePicker(editDateRef)"
+            />
+            <div v-if="editForm.errors.tanggal" class="text-sm text-red-600 mt-1">{{ editForm.errors.tanggal }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Nama Pelanggan</label>
+            <Input v-model="editForm.nama_pelanggan" />
+            <div v-if="editForm.errors.nama_pelanggan" class="text-sm text-red-600 mt-1">{{ editForm.errors.nama_pelanggan }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">No Tlp</label>
+            <Input v-model="editForm.no_tlp" />
+            <div v-if="editForm.errors.no_tlp" class="text-sm text-red-600 mt-1">{{ editForm.errors.no_tlp }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Produk</label>
+            <select v-model="editForm.product_id" class="h-9 rounded border px-2 w-full">
+              <option value="">-- Pilih Produk --</option>
+              <option v-for="p in props.products" :key="p.id" :value="p.id">{{ p.nama }}</option>
+            </select>
+            <div v-if="editForm.errors.product_id" class="text-sm text-red-600 mt-1">{{ editForm.errors.product_id }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Chat</label>
+            <select v-model="editForm.chat" class="h-9 rounded border px-2 w-full">
+              <option value="">-- Pilih Status Chat --</option>
+              <option value="Baru">Baru</option>
+              <option value="Follow Up">Follow Up</option>
+              <option value="Follow Up 2">Follow Up 2</option>
+              <option value="Followup 3">Followup 3</option>
+            </select>
+            <div v-if="editForm.errors.chat" class="text-sm text-red-600 mt-1">{{ editForm.errors.chat }}</div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Kota</label>
+              <Input v-model="editForm.kota" />
+              <div v-if="editForm.errors.kota" class="text-sm text-red-600 mt-1">{{ editForm.errors.kota }}</div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Provinsi</label>
+              <select v-model="editForm.provinsi" class="h-9 rounded border px-2 w-full">
+                <option v-for="province in indonesianProvinces" :key="province" :value="province">{{ province }}</option>
+              </select>
+              <div v-if="editForm.errors.provinsi" class="text-sm text-red-600 mt-1">{{ editForm.errors.provinsi }}</div>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Transaksi (Rupiah)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">Rp</span>
+              <input type="text" class="pl-8 h-9 w-full rounded border px-2" :value="editTransaksiFormatted" @input="handleEditTransaksiInput" placeholder="0" />
+            </div>
+            <div v-if="editForm.errors.transaksi" class="text-sm text-red-600 mt-1">{{ editForm.errors.transaksi }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Keterangan</label>
+            <textarea v-model="editForm.keterangan" class="w-full rounded border p-2" rows="3"></textarea>
+            <div v-if="editForm.errors.keterangan" class="text-sm text-red-600 mt-1">{{ editForm.errors.keterangan }}</div>
+          </div>
+          <div class="flex justify-end gap-2">
+            <Button variant="outline" @click="showEdit = false">Batal</Button>
+            <Button :disabled="editForm.processing" @click="submitEdit">Simpan</Button>
+          </div>
         </div>
       </DialogScrollContent>
     </Dialog>
