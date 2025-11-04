@@ -28,21 +28,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BarChart3 } from 'lucide-vue-next'
 import { nextTick, onMounted, onUnmounted, ref, watch, computed } from 'vue'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  ChartOptions,
-  ChartData,
-} from 'chart.js'
-
-ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend, Filler)
+import ChartJS from 'chart.js/auto'
+import { ChartOptions, ChartData } from 'chart.js'
 
 interface DailyRow { date: string; count: number }
 interface Props { data?: DailyRow[]; startDate?: string; endDate?: string }
