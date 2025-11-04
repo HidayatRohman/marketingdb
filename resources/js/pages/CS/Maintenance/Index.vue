@@ -262,29 +262,30 @@ const breadcrumbs = [
       </CardContent>
     </Card>
 
-    <!-- Grafik Kendala -->
-    <CsMaintenanceCategoryPieChart
-      :title="'Grafik Kendala'"
-      :legendTitle="'Kendala'"
-      :data="kendalaData"
-      :loading="kendalaLoading"
-      :startDate="startDate"
-      :endDate="endDate"
-      emptyMessage="Tidak ada data kendala untuk periode ini."
-      @refresh="fetchKendala"
-    />
+    <!-- Grafik Kendala & Solusi dalam dua kolom pada desktop -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <CsMaintenanceCategoryPieChart
+        :title="'Grafik Kendala'"
+        :legendTitle="'Kendala'"
+        :data="kendalaData"
+        :loading="kendalaLoading"
+        :startDate="startDate"
+        :endDate="endDate"
+        emptyMessage="Tidak ada data kendala untuk periode ini."
+        @refresh="fetchKendala"
+      />
 
-    <!-- Grafik Solusi -->
-    <CsMaintenanceCategoryPieChart
-      :title="'Grafik Solusi'"
-      :legendTitle="'Solusi'"
-      :data="solusiData"
-      :loading="solusiLoading"
-      :startDate="startDate"
-      :endDate="endDate"
-      emptyMessage="Tidak ada data solusi untuk periode ini."
-      @refresh="fetchSolusi"
-    />
+      <CsMaintenanceCategoryPieChart
+        :title="'Grafik Solusi'"
+        :legendTitle="'Solusi'"
+        :data="solusiData"
+        :loading="solusiLoading"
+        :startDate="startDate"
+        :endDate="endDate"
+        emptyMessage="Tidak ada data solusi untuk periode ini."
+        @refresh="fetchSolusi"
+      />
+    </div>
     </div>
 
     <!-- Dialog View Detail CS Maintenance -->
