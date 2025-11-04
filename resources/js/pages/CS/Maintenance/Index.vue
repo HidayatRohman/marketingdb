@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ref, watch, onMounted } from 'vue'
+import { Dialog, DialogHeader, DialogTitle, DialogScrollContent } from '@/components/ui/dialog'
 import CsMaintenanceDailyChart from '@/components/CsMaintenanceDailyChart.vue'
 
 interface Item {
@@ -80,6 +81,18 @@ const destroyItem = (id: number) => {
 }
 
 const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') : '-')
+
+// View modal state & handlers (meniru Daftar Repeat Order)
+const showView = ref(false)
+const viewItem = ref<Item | null>(null)
+const openView = (item: Item) => {
+  viewItem.value = item
+  showView.value = true
+}
+const closeView = () => {
+  showView.value = false
+  viewItem.value = null
+}
 
 const breadcrumbs = [
   { title: 'Dashboard', href: '/dashboard' },
@@ -159,6 +172,7 @@ const breadcrumbs = [
                 <td class="py-2 px-2">{{ it.solusi || '-' }}</td>
                 <td class="py-2 px-2">
                   <div class="flex gap-2">
+                    <Button variant="secondary" @click="openView(it)">View</Button>
                     <Button variant="outline" as-child><a :href="`/cs/maintenances/${it.id}/edit`">Edit</a></Button>
                     <Button variant="destructive" @click="destroyItem(it.id)">Hapus</Button>
                   </div>
@@ -197,6 +211,57 @@ const breadcrumbs = [
       </CardContent>
     </Card>
     </div>
+
+    <!-- Dialog View Detail CS Maintenance -->
+    <Dialog :open="showView" @update:open="(v:boolean)=> showView = v">
+      <DialogScrollContent class="sm:max-w-md">
+        <DialogHeader class="bg-gradient-to-r from-indigo-600 via-sky-600 to-cyan-600 text-white rounded-t-md -mx-6 -mt-6 px-6 py-3">
+          <DialogTitle>Detail CS Maintenance</DialogTitle>
+        </DialogHeader>
+        <div v-if="viewItem" class="space-y-3 text-sm">
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">Nama</div>
+            <div class="col-span-2 font-medium">{{ viewItem.nama_pelanggan }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">No Tlp</div>
+            <div class="col-span-2">{{ viewItem.no_tlp }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">Tanggal</div>
+            <div class="col-span-2">{{ formatDate(viewItem.tanggal) }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">Produk</div>
+            <div class="col-span-2">{{ viewItem.product?.nama || '-' }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">Chat</div>
+            <div class="col-span-2">{{ viewItem.chat || '-' }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">Kota</div>
+            <div class="col-span-2">{{ viewItem.kota || '-' }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">Provinsi</div>
+            <div class="col-span-2">{{ viewItem.provinsi || '-' }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">Kendala</div>
+            <div class="col-span-2">{{ viewItem.kendala || '-' }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-gray-500">Solusi</div>
+            <div class="col-span-2">{{ viewItem.solusi || '-' }}</div>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 mt-4">
+          <Button variant="outline" @click="closeView">Tutup</Button>
+          <Button v-if="viewItem" as-child><a :href="`/cs/maintenances/${viewItem.id}/edit`">Edit</a></Button>
+        </div>
+      </DialogScrollContent>
+    </Dialog>
   </AppLayout>
   </template>
 
