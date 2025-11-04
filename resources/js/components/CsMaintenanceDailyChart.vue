@@ -75,13 +75,13 @@ const chartData = computed<ChartData<'line'> | null>(() => {
       {
         label: 'Interaksi',
         data,
-        borderColor: '#10b981',
-        backgroundColor: '#10b98118',
+        borderColor: '#6366f1',
+        backgroundColor: '#6366f110',
         borderWidth: 2,
         tension: 0.3,
         fill: {
           target: 'origin',
-          above: '#10b98112',
+          above: '#6366f108',
         },
         pointRadius: 3,
         pointHoverRadius: 5,

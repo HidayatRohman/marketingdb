@@ -30,12 +30,12 @@ const props = defineProps<{
 const q = ref(props.filters.q || '')
 const productId = ref(props.filters.product_id || '')
 
-// Grafik: tanggal awal/akhir default 30 hari terakhir
+// Grafik: tanggal awal/akhir default bulan berjalan
 const today = new Date()
-const thirtyDaysAgo = new Date()
-thirtyDaysAgo.setDate(today.getDate() - 30)
-const startDate = ref(thirtyDaysAgo.toISOString().split('T')[0])
-const endDate = ref(today.toISOString().split('T')[0])
+const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+const startDate = ref(startOfMonth.toISOString().split('T')[0])
+const endDate = ref(endOfMonth.toISOString().split('T')[0])
 const chartLoading = ref(false)
 const dailyData = ref<{ date: string; count: number }[]>([])
 
