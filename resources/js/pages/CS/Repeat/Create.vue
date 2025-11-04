@@ -9,11 +9,17 @@ import { indonesianProvinces } from '@/lib/indonesianProvinces'
 
 const props = defineProps<{ products: Array<{ id: number; nama: string }> }>()
 
+const getTodayYMD = () => {
+  const now = new Date()
+  const tzOffsetMs = now.getTimezoneOffset() * 60000
+  return new Date(now.getTime() - tzOffsetMs).toISOString().slice(0, 10)
+}
+
 const form = useForm({
   nama_pelanggan: '',
   no_tlp: '',
   product_id: '',
-  tanggal: '',
+  tanggal: getTodayYMD(),
   chat: '',
   kota: '',
   provinsi: 'Unknown',

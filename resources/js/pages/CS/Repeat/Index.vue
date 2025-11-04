@@ -103,6 +103,15 @@ watch(() => createForm.transaksi, (n) => {
   const current = parseRupiah(transaksiFormatted.value)
   if (current !== n) transaksiFormatted.value = new Intl.NumberFormat('id-ID').format(n)
 })
+// Set default date to today when opening the Create modal
+const getTodayYMD = () => {
+  const now = new Date()
+  const tzOffsetMs = now.getTimezoneOffset() * 60000
+  return new Date(now.getTime() - tzOffsetMs).toISOString().slice(0, 10)
+}
+watch(() => showCreate.value, (v) => {
+  if (v) createForm.tanggal = getTodayYMD()
+})
 const submitCreate = () => {
   createForm.post('/cs/repeats', {
     preserveScroll: true,
@@ -349,7 +358,6 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
               v-model="createForm.tanggal"
               type="date"
               class="h-9 rounded border px-2 w-full"
-              @focus="openDatePicker(createDateRef)"
               @click="openDatePicker(createDateRef)"
             />
           <div v-if="createForm.errors.tanggal" class="text-sm text-red-600 mt-1">{{ createForm.errors.tanggal }}</div>
