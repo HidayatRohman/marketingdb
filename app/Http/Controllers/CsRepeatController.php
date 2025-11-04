@@ -14,9 +14,16 @@ class CsRepeatController extends Controller
     public function index(Request $request)
     {
         $currentUser = auth()->user();
-        // Determine period range (default: current month)
+        // Determine period range (default: month of latest data if available, otherwise current month)
         $defaultStart = now()->startOfMonth()->toDateString();
         $defaultEnd = now()->endOfMonth()->toDateString();
+        if (\Illuminate\Support\Facades\Schema::hasTable('cs_repeats')) {
+            $latestDate = CsRepeat::max('tanggal');
+            if ($latestDate) {
+                $defaultStart = \Carbon\Carbon::parse($latestDate)->startOfMonth()->toDateString();
+                $defaultEnd = \Carbon\Carbon::parse($latestDate)->endOfMonth()->toDateString();
+            }
+        }
         $periodeStart = $request->filled('periode_start') ? $request->input('periode_start') : $defaultStart;
         $periodeEnd = $request->filled('periode_end') ? $request->input('periode_end') : $defaultEnd;
 
@@ -25,6 +32,10 @@ class CsRepeatController extends Controller
             $charts = [
                 'dailyTransaksi' => [],
                 'dailyByProduct' => [],
+            ];
+            $summary = [
+                'totalOmset' => 0,
+                'jumlahTransaksi' => 0,
             ];
         } else {
             $query = CsRepeat::with('product');
@@ -66,6 +77,12 @@ class CsRepeatController extends Controller
                 $filterQuery->where('product_id', $request->product_id);
             }
             $filterQuery->whereBetween('tanggal', [$startDate, $endDate]);
+
+            // Summary totals for current filters
+            $summary = [
+                'totalOmset' => (int) ($filterQuery->clone()->sum('transaksi') ?? 0),
+                'jumlahTransaksi' => (int) ($filterQuery->clone()->count() ?? 0),
+            ];
 
             // Daily transaksi totals
             $dailyTotals = $filterQuery->clone()
@@ -135,6 +152,7 @@ class CsRepeatController extends Controller
                 'periode_end' => $periodeEnd,
             ],
             'charts' => $charts,
+            'summary' => $summary,
             'permissions' => [
                 'canCrud' => $currentUser->canCrud(),
                 'canOnlyView' => $currentUser->canOnlyView(),

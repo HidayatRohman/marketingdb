@@ -9,11 +9,19 @@ import { ref, watch } from 'vue'
 interface Item { id: number; nama_pelanggan: string; no_tlp: string; product?: { id: number; nama: string } | null; tanggal?: string; chat?: string; kota?: string; provinsi?: string; transaksi: number; keterangan?: string }
 const props = defineProps<{ item: Item; products: Array<{ id: number; nama: string }> }>()
 
+const normalizeDateInput = (s?: string) => {
+  if (!s) return ''
+  // Support "YYYY-MM-DD", "YYYY-MM-DD HH:MM:SS", or ISO strings
+  if (s.includes('T')) return s.split('T')[0]
+  if (s.includes(' ')) return s.split(' ')[0]
+  return s
+}
+
 const form = useForm({
   nama_pelanggan: props.item.nama_pelanggan,
   no_tlp: props.item.no_tlp,
   product_id: props.item.product?.id || '',
-  tanggal: props.item.tanggal || '',
+  tanggal: normalizeDateInput(props.item.tanggal) || '',
   chat: props.item.chat || '',
   kota: props.item.kota || '',
   provinsi: props.item.provinsi || '',

@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Head, router, useForm } from '@inertiajs/vue3'
 import { Edit, Plus, Trash2, Search, Repeat as RepeatIcon } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import CsRepeatDailyTransaksiChart from '@/components/CsRepeatDailyTransaksiChart.vue'
 import CsRepeatDailyProductChart from '@/components/CsRepeatDailyProductChart.vue'
@@ -25,18 +25,30 @@ interface Item {
 interface Props {
   items: { data: Item[]; current_page: number; last_page: number; per_page: number; total: number; prev_page_url: string | null; next_page_url: string | null }
   products: Array<{ id: number; nama: string }>
-  filters: { search?: string; product_id?: number | string }
+  filters: { search?: string; product_id?: number | string; periode_start?: string; periode_end?: string }
   permissions: { canCrud: boolean }
   charts: { dailyTransaksi: Array<{ date: string; total: number }>; dailyByProduct: Array<{ date: string; products: Record<string, number>; total: number }> }
+  summary: { totalOmset: number; jumlahTransaksi: number }
 }
 
 const props = defineProps<Props>()
-const items = props.items
+const items = computed(() => props.items)
 const search = ref(props.filters.search || '')
 const selectedProduct = ref(props.filters.product_id || '')
+const periodeStart = ref(props.filters.periode_start || '')
+const periodeEnd = ref(props.filters.periode_end || '')
 
-watch([search, selectedProduct], () => {
-  router.get('/cs/repeats', { search: search.value, product_id: selectedProduct.value }, { preserveState: true, replace: true })
+watch([search, selectedProduct, periodeStart, periodeEnd], () => {
+  router.get(
+    '/cs/repeats',
+    {
+      search: search.value || undefined,
+      product_id: selectedProduct.value || undefined,
+      periode_start: periodeStart.value || undefined,
+      periode_end: periodeEnd.value || undefined,
+    },
+    { preserveState: true, replace: true }
+  )
 })
 
 const showCreate = ref(false)
@@ -111,6 +123,55 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
         </div>
       </div>
 
+      <!-- Filter Bar (mobile-friendly) -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 rounded-lg border border-indigo-100 bg-white/70 p-3">
+        <!-- Cari -->
+        <div class="col-span-2 sm:col-span-1">
+          <div class="relative">
+            <Search class="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input v-model="search" placeholder="Cari..." class="pl-8 w-full" />
+          </div>
+        </div>
+        <!-- Periode -->
+        <div class="col-span-2 sm:col-span-2 flex items-center gap-2">
+          <label class="text-sm text-gray-600">Periode:</label>
+          <Input type="date" v-model="periodeStart" class="w-full sm:w-40" />
+          <span class="text-gray-500 text-xs sm:text-base">s/d</span>
+          <Input type="date" v-model="periodeEnd" class="w-full sm:w-40" />
+        </div>
+        <!-- Produk -->
+        <div class="col-span-2 sm:col-span-1">
+          <select v-model="selectedProduct" class="h-9 w-full rounded border px-2">
+            <option value="">Semua Produk</option>
+            <option v-for="p in props.products" :key="p.id" :value="p.id">{{ p.nama }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="flex flex-nowrap gap-4 sm:grid sm:grid-cols-2">
+        <Card class="border border-indigo-100 basis-[65%] sm:basis-auto sm:col-span-1">
+          <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50">
+            <CardTitle class="text-sm sm:text-base">Total Omset</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div class="text-xl sm:text-2xl font-bold text-indigo-700">
+              {{ formatCurrency(props.summary?.totalOmset || 0) }}
+            </div>
+          </CardContent>
+        </Card>
+        <Card class="border border-indigo-100 basis-[35%] sm:basis-auto sm:col-span-1">
+          <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50">
+            <CardTitle class="text-sm sm:text-base">Jumlah Transaksi</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div class="text-xl sm:text-2xl font-bold text-indigo-700">
+              {{ new Intl.NumberFormat('id-ID').format(props.summary?.jumlahTransaksi || 0) }}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <!-- Charts Grid -->
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <CsRepeatDailyTransaksiChart :data="props.charts?.dailyTransaksi" />
@@ -118,28 +179,23 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
       </div>
 
       <Card>
-      <CardHeader class="flex items-center justify-between border-b border-indigo-100/50">
-        <CardTitle>CS Repeat</CardTitle>
+      <CardHeader class="flex items-center justify-between border-b border-indigo-100/50 bg-gradient-to-br from-indigo-50 via-sky-50 to-cyan-50">
+        <CardTitle>Daftar Repeat Order</CardTitle>
         <div class="flex items-center gap-2">
-          <div class="relative">
-            <Search class="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input v-model="search" placeholder="Cari..." class="pl-8 w-56" />
-          </div>
-          <select v-model="selectedProduct" class="h-9 rounded border px-2">
-            <option value="">Semua Produk</option>
-            <option v-for="p in props.products" :key="p.id" :value="p.id">{{ p.nama }}</option>
-          </select>
           <Button v-if="props.permissions.canCrud" @click="showCreate = true">
             <Plus class="h-4 w-4 mr-2" />Tambah
           </Button>
         </div>
       </CardHeader>
       <CardContent class="pt-4">
-        <div class="overflow-x-auto hidden md:block">
-          <Table>
+        <div class="overflow-x-auto responsive-table">
+          <Table class="min-w-[900px]">
             <TableHeader>
               <TableRow>
-                <TableHead>Nama Pelanggan</TableHead>
+                <TableHead class="sticky left-0 z-30 bg-background min-w-[120px] sm:min-w-[200px] border-r border-border">
+                  <span class="sm:hidden">Nama</span>
+                  <span class="hidden sm:inline">Nama Pelanggan</span>
+                </TableHead>
                 <TableHead>No Tlp</TableHead>
                 <TableHead>Tanggal</TableHead>
                 <TableHead>Produk</TableHead>
@@ -151,7 +207,7 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
             </TableHeader>
             <TableBody>
               <TableRow v-for="item in items.data" :key="item.id">
-                <TableCell>{{ item.nama_pelanggan }}</TableCell>
+                <TableCell class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-border">{{ item.nama_pelanggan }}</TableCell>
                 <TableCell>{{ item.no_tlp }}</TableCell>
                 <TableCell>{{ formatDate(item.tanggal) }}</TableCell>
                 <TableCell>{{ item.product?.nama || '-' }}</TableCell>
@@ -171,45 +227,6 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
               </TableRow>
             </TableBody>
           </Table>
-        </div>
-
-        <!-- Kartu responsif untuk mobile -->
-        <div class="md:hidden space-y-3">
-          <div v-for="item in items.data" :key="item.id" class="rounded-lg border border-indigo-100 bg-white/60 shadow-sm">
-            <div class="p-3">
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="text-sm font-semibold text-indigo-700">{{ item.nama_pelanggan }}</div>
-                  <div class="text-xs text-gray-500">{{ item.no_tlp }}</div>
-                </div>
-                <div class="text-xs text-indigo-600">{{ formatDate(item.tanggal) }}</div>
-              </div>
-              <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <div class="text-gray-500">Produk</div>
-                  <div class="text-gray-800">{{ item.product?.nama || '-' }}</div>
-                </div>
-                <div>
-                  <div class="text-gray-500">Transaksi</div>
-                  <div class="text-gray-800">{{ formatCurrency(item.transaksi || 0) }}</div>
-                </div>
-                <div>
-                  <div class="text-gray-500">Kota</div>
-                  <div class="text-gray-800">{{ item.kota || '-' }}</div>
-                </div>
-                <div>
-                  <div class="text-gray-500">Provinsi</div>
-                  <div class="text-gray-800">{{ item.provinsi || '-' }}</div>
-                </div>
-              </div>
-              <div class="mt-3 flex justify-end gap-2" v-if="props.permissions.canCrud">
-                <Button variant="outline" size="sm" as-child>
-                  <a :href="editUrl(item.id)">Edit</a>
-                </Button>
-                <Button variant="ghost" size="sm" class="text-red-600" @click="deleteItem(item)">Hapus</Button>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div class="mt-4 flex items-center justify-between text-sm text-muted-foreground">
@@ -300,3 +317,9 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
 
   </AppLayout>
   </template>
+
+<style scoped>
+.responsive-table {
+  -webkit-overflow-scrolling: touch;
+}
+</style>
