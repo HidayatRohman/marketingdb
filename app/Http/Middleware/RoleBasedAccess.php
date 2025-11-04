@@ -27,7 +27,7 @@ class RoleBasedAccess
         
         // Special handling for CS role: restrict access to CS menus and Products only
         if ($user->isCs()) {
-            $allowedPrefixes = ['cs-repeats.', 'cs-maintenances.', 'products.'];
+            $allowedPrefixes = ['cs-repeats.', 'cs-maintenances.', 'products.', 'kendalas.'];
             $isAllowed = false;
 
             switch ($permission) {
@@ -75,7 +75,7 @@ class RoleBasedAccess
 
         // Restrict marketing role from accessing CS data (CS Repeat, CS Maintenance, Products)
         if ($user->isMarketing()) {
-            $restrictedPrefixes = ['cs-repeats.', 'cs-maintenances.', 'products.'];
+            $restrictedPrefixes = ['cs-repeats.', 'cs-maintenances.', 'products.', 'kendalas.'];
             $isRestricted = false;
 
             foreach ($restrictedPrefixes as $prefix) {

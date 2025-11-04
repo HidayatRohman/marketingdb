@@ -11,6 +11,7 @@ use App\Http\Controllers\TaskManagementController;
 use App\Http\Controllers\TodoListController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\KendalaController;
 use App\Http\Controllers\CsRepeatController;
 use App\Http\Controllers\CsMaintenanceController;
 use App\Http\Controllers\UserController;
@@ -195,6 +196,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::middleware('role.access:destroy')->group(function () {
         Route::delete('labels/{label}', [LabelController::class, 'destroy'])->name('labels.destroy');
+    });
+
+    // Kendala Management - CRUD mirip Label, tampil di menu CS (di bawah Produk)
+    Route::middleware('role.access:view')->group(function () {
+        Route::get('kendalas', [KendalaController::class, 'index'])->name('kendalas.index');
+    });
+    Route::middleware('role.access:create')->group(function () {
+        Route::post('kendalas', [KendalaController::class, 'store'])->name('kendalas.store');
+    });
+    Route::middleware('role.access:edit')->group(function () {
+        Route::put('kendalas/{kendala}', [KendalaController::class, 'update'])->name('kendalas.update');
+    });
+    Route::middleware('role.access:destroy')->group(function () {
+        Route::delete('kendalas/{kendala}', [KendalaController::class, 'destroy'])->name('kendalas.destroy');
     });
 
     // Sumber Management - Role-based access

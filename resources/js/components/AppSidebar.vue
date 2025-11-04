@@ -6,7 +6,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Calendar, CreditCard, Handshake, Kanban, LayoutGrid, Tag, TrendingUp, Users, Zap, Globe, Briefcase, Settings, BarChart3, MessageSquare, History, Wrench, Package } from 'lucide-vue-next';
+import { Calendar, CreditCard, Handshake, Kanban, LayoutGrid, Tag, TrendingUp, Users, Zap, Globe, Briefcase, Settings, BarChart3, MessageSquare, History, Wrench, Package, AlertTriangle } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
@@ -212,6 +212,14 @@ const mainNavItems = computed<NavItem[]>(() => {
                             <Link href="/products">
                                 <Package />
                                 <span>Produk</span>
+                            </Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton as-child :is-active="page.url.startsWith('/kendalas')">
+                            <Link href="/kendalas">
+                                <AlertTriangle />
+                                <span>Kendala</span>
                             </Link>
                         </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
