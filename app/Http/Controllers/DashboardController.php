@@ -18,6 +18,10 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $currentUser = auth()->user();
+        // Redirect CS role to CS Repeat page as default landing
+        if ($currentUser && $currentUser->role === 'cs') {
+            return redirect()->route('cs-repeats.index');
+        }
         
         // Validate date inputs
         $request->validate([

@@ -737,7 +737,7 @@ const ppnPercentage = computed(() => {
             </div>
 
             <!-- Report Budget Vs Omset -->
-            <Card v-if="permissions.hasFullAccess || permissions.hasReadOnlyAccess" class="mb-6 border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:from-gray-800/30 dark:to-gray-700/30 shadow-lg">
+            <Card v-if="permissions.hasFullAccess || permissions.hasReadOnlyAccess || permissions.hasLimitedAccess" class="mb-6 border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:from-gray-800/30 dark:to-gray-700/30 shadow-lg">
                 <CardHeader>
                     <CardTitle class="flex items-center gap-2">
                         <BarChart3 class="h-6 w-6" />
@@ -1327,8 +1327,50 @@ const ppnPercentage = computed(() => {
                 </Card>
             </div>
 
+            <!-- CS-only: CS Repeat Analytics outside Tabs -->
+            <div v-if="permissions.role === 'cs'">
+                <Card class="border-0 shadow-lg">
+                    <CardHeader class="relative overflow-hidden rounded-t-xl bg-gradient-to-r from-indigo-600 via-sky-600 to-cyan-600 text-white dark:from-indigo-700 dark:via-sky-700 dark:to-cyan-700">
+                        <CardTitle class="flex items-center gap-2 text-white">
+                            CS Repeat Analytics
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent class="space-y-6">
+                        <!-- Summary Cards -->
+                        <div class="flex flex-nowrap gap-4 sm:grid sm:grid-cols-2">
+                            <Card class="border border-indigo-100 basis-[65%] sm:basis-auto sm:col-span-1">
+                                <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50">
+                                    <CardTitle class="text-sm sm:text-base">Total Omset</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div class="text-xl sm:text-2xl font-bold text-indigo-700">
+                                        {{ new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(csRepeatSummary.totalOmset || 0) }}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card class="border border-indigo-100 basis-[35%] sm:basis-auto sm:col-span-1">
+                                <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50">
+                                    <CardTitle class="text-sm sm:text-base">Jumlah Transaksi</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div class="text-xl sm:text-2xl font-bold text-indigo-700">
+                                        {{ new Intl.NumberFormat('id-ID').format(csRepeatSummary.jumlahTransaksi || 0) }}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        <!-- Charts Grid -->
+                        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                            <CsRepeatDailyTransaksiChart :data="csRepeatDailyTransaksi" :loading="csRepeatLoading.dailyTransaksi" />
+                            <CsRepeatDailyProductChart :data="csRepeatDailyByProduct" :loading="csRepeatLoading.dailyProduct" />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
             <!-- Tabs for Different Analytics Views -->
-            <Tabs default-value="overview" class="w-full">
+            <Tabs v-if="permissions.role !== 'cs'" default-value="overview" class="w-full">
                 <div class="w-full overflow-x-auto pb-2">
                     <TabsList class="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground min-w-max">
                         <TabsTrigger value="overview" class="text-xs md:text-sm whitespace-nowrap px-3 py-2 min-w-[80px] md:min-w-[100px]">
@@ -1359,7 +1401,7 @@ const ppnPercentage = computed(() => {
                 <TabsContent value="overview" class="space-y-6">
                     <div class="grid gap-6 md:grid-cols-2">
                         <!-- Closing Analysis -->
-                        <Card class="border-0 shadow-lg">
+                        <Card v-if="permissions.role !== 'cs'" class="border-0 shadow-lg">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <Award class="h-5 w-5" />
@@ -1382,7 +1424,7 @@ const ppnPercentage = computed(() => {
                         </Card>
 
                         <!-- System Overview -->
-                        <Card class="border-0 shadow-lg">
+                        <Card v-if="permissions.role !== 'cs'" class="border-0 shadow-lg">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <Activity class="h-5 w-5" />
@@ -1417,7 +1459,7 @@ const ppnPercentage = computed(() => {
                     </div>
 
                     <!-- Marketing Performance Chart Section -->
-                    <Card class="analytics-card">
+                    <Card v-if="permissions.role !== 'cs'" class="analytics-card">
                         <CardHeader class="analytics-card-header">
                             <CardTitle class="analytics-card-title">
                                 <User class="h-6 w-6" />
@@ -1442,7 +1484,7 @@ const ppnPercentage = computed(() => {
                     </Card>
 
                     <!-- Brand Performance Chart Section -->
-                    <Card class="analytics-card">
+                    <Card v-if="permissions.role !== 'cs'" class="analytics-card">
                         <CardHeader class="analytics-card-header">
                             <CardTitle class="analytics-card-title">
                                 <Tag class="h-6 w-6" />
@@ -1467,7 +1509,7 @@ const ppnPercentage = computed(() => {
                     </Card>
 
                     <!-- Recent Activities -->
-                    <Card class="border-0 shadow-lg">
+                    <Card v-if="permissions.role !== 'cs'" class="border-0 shadow-lg">
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2">
                                 <Clock class="h-5 w-5" />
@@ -1514,7 +1556,7 @@ const ppnPercentage = computed(() => {
                     </Card>
 
                     <!-- Task Management Report -->
-                    <Card class="border-0 bg-gradient-to-br from-indigo-50 to-purple-50 shadow-xl dark:from-indigo-950/50 dark:to-purple-950/50">
+                    <Card v-if="permissions.role !== 'cs'" class="border-0 bg-gradient-to-br from-indigo-50 to-purple-50 shadow-xl dark:from-indigo-950/50 dark:to-purple-950/50">
                         <CardHeader class="pb-3 sm:pb-4">
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <CardTitle class="flex items-center gap-3 text-lg font-bold sm:text-xl">
