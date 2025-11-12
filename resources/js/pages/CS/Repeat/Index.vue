@@ -310,9 +310,13 @@ const totalNominalOrder = computed(() => timelineEvents.value.reduce((sum, e) =>
       </div>
 
       <Card>
-      <CardHeader class="flex items-center justify-between border-b border-indigo-100/50 bg-gradient-to-br from-indigo-50 via-sky-50 to-cyan-50">
+      <CardHeader class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-indigo-100/50 bg-gradient-to-br from-indigo-50 via-sky-50 to-cyan-50">
         <CardTitle>Daftar Repeat Order</CardTitle>
-        <div class="flex items-center gap-2">
+        <div class="flex w-full items-center gap-2 mt-1 sm:mt-0 sm:w-auto sm:justify-end">
+          <div class="relative flex-1 sm:flex-none">
+            <Search class="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input v-model="search" placeholder="Cari nama/no tlp" class="pl-8 w-full sm:w-64" />
+          </div>
           <Button v-if="props.permissions.canCrud" @click="showCreate = true">
             <Plus class="h-4 w-4 mr-2" />Tambah
           </Button>
