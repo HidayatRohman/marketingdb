@@ -492,9 +492,9 @@ const timelineEvents = computed<Item[]>(() => {
                 <div class="grid grid-cols-[120px_1fr] gap-3">
                   <div class="text-indigo-700 dark:text-indigo-300 font-semibold">{{ formatDate(e.tanggal) }}</div>
                   <div class="col-span-2">
-                    <div class="text-xs text-gray-600 dark:text-gray-400">Produk: {{ e.product?.nama || '-' }}</div>
-                    <div class="text-xs text-gray-600 dark:text-gray-400">Transaksi: {{ formatCurrency(e.transaksi || 0) }}</div>
-                    <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">Keterangan: {{ e.keterangan || '-' }}</div>
+                    <div class="text-xs"><span class="font-semibold text-black">Produk:</span> <span class="text-gray-600 dark:text-gray-400">{{ e.product?.nama || '-' }}</span></div>
+                    <div class="text-xs"><span class="font-semibold text-black">Transaksi:</span> <span class="text-gray-600 dark:text-gray-400">{{ formatCurrency(e.transaksi || 0) }}</span></div>
+                    <div class="text-xs mt-1"><span class="font-semibold text-black">Keterangan:</span> <span class="text-gray-600 dark:text-gray-400">{{ e.keterangan || '-' }}</span></div>
                   </div>
                 </div>
               </div>
