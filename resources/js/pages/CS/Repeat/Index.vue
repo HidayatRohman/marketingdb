@@ -190,9 +190,43 @@ const closeView = () => {
   showView.value = false
   viewItem.value = null
 }
+const startOrderFromView = () => {
+  const v = viewItem.value
+  if (!v) return
+  showView.value = false
+  createForm.tanggal = getTodayYMD()
+  createForm.nama_pelanggan = v.nama_pelanggan || ''
+  createForm.no_tlp = v.no_tlp || ''
+  createForm.kota = v.kota || ''
+  createForm.provinsi = v.provinsi || 'Unknown'
+  createForm.chat = v.chat || ''
+  createForm.keterangan = v.keterangan || ''
+  createForm.product_id = ''
+  createForm.transaksi = 0
+  transaksiFormatted.value = '0'
+  showCreate.value = true
+}
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)
 const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') : '-')
+const asTime = (d?: string) => {
+  if (!d) return 0
+  const x = new Date(d)
+  return isNaN(x.getTime()) ? 0 : x.getTime()
+}
+const timelineEvents = computed<Item[]>(() => {
+  const v = viewItem.value
+  if (!v) return []
+  const keyPhone = (v.no_tlp || '').trim()
+  const keyName = (v.nama_pelanggan || '').trim().toLowerCase()
+  return [...items.value.data]
+    .filter((i) => {
+      const samePhone = keyPhone && (i.no_tlp || '').trim() === keyPhone
+      const sameName = keyName && (i.nama_pelanggan || '').trim().toLowerCase() === keyName
+      return samePhone || sameName
+    })
+    .sort((a, b) => asTime(a.tanggal) - asTime(b.tanggal))
+})
 </script>
 
 <template>
@@ -465,10 +499,27 @@ const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') 
             <div class="text-gray-500">Keterangan</div>
             <div class="col-span-2">{{ viewItem.keterangan || '-' }}</div>
           </div>
+          <div v-if="timelineEvents.length > 1" class="mt-6">
+            <div class="text-sm font-semibold text-indigo-700">Timeline Repeat Order</div>
+            <div class="relative mt-3 pl-6 pr-2 max-h-64 overflow-y-auto">
+              <div class="absolute left-2 top-0 h-full w-0.5 bg-indigo-200 dark:bg-indigo-800"></div>
+              <div v-for="e in timelineEvents" :key="e.id" class="relative mb-4">
+                <div class="absolute -left-1.5 top-1 h-3 w-3 rounded-full border-2 border-indigo-500 bg-white dark:bg-gray-900"></div>
+                <div class="grid grid-cols-3 gap-2">
+                  <div class="text-gray-500">{{ formatDate(e.tanggal) }}</div>
+                  <div class="col-span-2">
+                    <div class="font-medium">{{ e.nama_pelanggan }}</div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400">Produk: {{ e.product?.nama || '-' }} · Transaksi: {{ formatCurrency(e.transaksi || 0) }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="flex justify-end gap-2 mt-4">
           <Button variant="outline" @click="closeView">Tutup</Button>
           <Button v-if="viewItem" @click="openEdit(viewItem)">Edit</Button>
+          <Button v-if="viewItem" variant="secondary" @click="startOrderFromView">Order</Button>
         </div>
       </DialogScrollContent>
     </Dialog>
