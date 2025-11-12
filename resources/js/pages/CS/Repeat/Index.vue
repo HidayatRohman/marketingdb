@@ -469,8 +469,8 @@ const totalNominalOrder = computed(() => timelineEvents.value.reduce((sum, e) =>
 
     <!-- Dialog View Detail -->
     <Dialog :open="showView" @update:open="(v:boolean)=> showView = v">
-      <DialogScrollContent class="sm:max-w-md">
-        <DialogHeader class="border-b border-indigo-100/50 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-900/40 dark:via-sky-900/30 dark:to-cyan-900/30 rounded-t-md -mx-6 -mt-6 px-6 py-3">
+      <DialogScrollContent class="m-[20px] sm:m-0 sm:max-w-md">
+        <DialogHeader class="border-b border-indigo-100/50 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-900/40 dark:via-sky-900/30 dark:to-cyan-900/30 rounded-t-md sm:-mx-6 sm:-mt-6 px-4 sm:px-6 py-3">
           <DialogTitle class="text-indigo-700 dark:text-indigo-200">Detail Repeat Order</DialogTitle>
         </DialogHeader>
         <div v-if="viewItem" class="space-y-3 text-sm">
