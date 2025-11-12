@@ -227,6 +227,7 @@ const timelineEvents = computed<Item[]>(() => {
     })
     .sort((a, b) => asTime(a.tanggal) - asTime(b.tanggal))
 })
+const totalNominalOrder = computed(() => timelineEvents.value.reduce((sum, e) => sum + (e.transaksi || 0), 0))
 </script>
 
 <template>
@@ -482,6 +483,10 @@ const timelineEvents = computed<Item[]>(() => {
           <div class="grid grid-cols-3 gap-2">
             <div class="font-semibold text-black">Provinsi</div>
             <div class="col-span-2">{{ viewItem.provinsi || '-' }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="font-semibold text-black">Nominal Order</div>
+            <div class="col-span-2">{{ formatCurrency(totalNominalOrder) }}</div>
           </div>
           <div v-if="timelineEvents.length > 1" class="mt-6">
             <div class="text-sm font-semibold text-indigo-700">Timeline Repeat Order</div>
