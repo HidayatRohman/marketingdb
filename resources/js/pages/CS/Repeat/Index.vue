@@ -264,11 +264,13 @@ const totalNominalOrder = computed(() => timelineEvents.value.reduce((sum, e) =>
           </div>
         </div>
         <!-- Periode -->
-        <div class="col-span-2 sm:col-span-2 flex items-center gap-2">
-          <label class="text-sm text-gray-600">Periode:</label>
-          <input type="date" v-model="periodeStart" ref="periodeStartRef" class="h-9 w-full sm:w-40 rounded border px-2" @click="openDatePicker(periodeStartRef)" @focus="openDatePicker(periodeStartRef)" />
-          <span class="text-gray-500 text-xs sm:text-base">s/d</span>
-          <input type="date" v-model="periodeEnd" ref="periodeEndRef" class="h-9 w-full sm:w-40 rounded border px-2" @click="openDatePicker(periodeEndRef)" @focus="openDatePicker(periodeEndRef)" />
+        <div class="col-span-2 sm:col-span-2">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+            <label class="text-sm text-gray-600">Periode:</label>
+            <input type="date" v-model="periodeStart" ref="periodeStartRef" class="h-9 w-full sm:w-40 rounded border px-2 min-w-0" @click="openDatePicker(periodeStartRef)" @focus="openDatePicker(periodeStartRef)" />
+            <span class="text-gray-500 text-xs sm:text-base">s/d</span>
+            <input type="date" v-model="periodeEnd" ref="periodeEndRef" class="h-9 w-full sm:w-40 rounded border px-2 min-w-0" @click="openDatePicker(periodeEndRef)" @focus="openDatePicker(periodeEndRef)" />
+          </div>
         </div>
         <!-- Produk -->
         <div class="col-span-2 sm:col-span-1">
