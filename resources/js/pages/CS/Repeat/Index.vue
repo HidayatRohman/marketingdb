@@ -476,14 +476,6 @@ const timelineEvents = computed<Item[]>(() => {
             <div class="col-span-2">{{ viewItem.no_tlp }}</div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">Tanggal</div>
-            <div class="col-span-2">{{ formatDate(viewItem.tanggal) }}</div>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">Produk</div>
-            <div class="col-span-2">{{ viewItem.product?.nama || '-' }}</div>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
             <div class="text-gray-500">Kota</div>
             <div class="col-span-2">{{ viewItem.kota || '-' }}</div>
           </div>
@@ -491,25 +483,18 @@ const timelineEvents = computed<Item[]>(() => {
             <div class="text-gray-500">Provinsi</div>
             <div class="col-span-2">{{ viewItem.provinsi || '-' }}</div>
           </div>
-          <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">Transaksi</div>
-            <div class="col-span-2 font-semibold">{{ formatCurrency(viewItem.transaksi || 0) }}</div>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">Keterangan</div>
-            <div class="col-span-2">{{ viewItem.keterangan || '-' }}</div>
-          </div>
           <div v-if="timelineEvents.length > 1" class="mt-6">
             <div class="text-sm font-semibold text-indigo-700">Timeline Repeat Order</div>
-            <div class="relative mt-3 pl-6 pr-2 max-h-64 overflow-y-auto">
-              <div class="absolute left-2 top-0 h-full w-0.5 bg-indigo-200 dark:bg-indigo-800"></div>
+            <div class="relative mt-3 pl-8 pr-2 max-h-64 overflow-y-auto">
+              <div class="absolute left-3 top-0 h-full w-0.5 bg-indigo-200 dark:bg-indigo-800"></div>
               <div v-for="e in timelineEvents" :key="e.id" class="relative mb-4">
-                <div class="absolute -left-1.5 top-1 h-3 w-3 rounded-full border-2 border-indigo-500 bg-white dark:bg-gray-900"></div>
-                <div class="grid grid-cols-3 gap-2">
-                  <div class="text-gray-500">{{ formatDate(e.tanggal) }}</div>
+                <div class="absolute -left-4 top-1 h-3 w-3 rounded-full border-2 border-indigo-500 bg-white dark:bg-gray-900"></div>
+                <div class="grid grid-cols-[120px_1fr] gap-3">
+                  <div class="text-indigo-700 dark:text-indigo-300 font-semibold">{{ formatDate(e.tanggal) }}</div>
                   <div class="col-span-2">
-                    <div class="font-medium">{{ e.nama_pelanggan }}</div>
-                    <div class="text-xs text-gray-600 dark:text-gray-400">Produk: {{ e.product?.nama || '-' }} · Transaksi: {{ formatCurrency(e.transaksi || 0) }}</div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400">Produk: {{ e.product?.nama || '-' }}</div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400">Transaksi: {{ formatCurrency(e.transaksi || 0) }}</div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">Keterangan: {{ e.keterangan || '-' }}</div>
                   </div>
                 </div>
               </div>
