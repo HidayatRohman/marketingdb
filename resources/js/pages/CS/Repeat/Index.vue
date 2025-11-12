@@ -495,7 +495,7 @@ const totalNominalOrder = computed(() => timelineEvents.value.reduce((sum, e) =>
             <div class="col-span-2">{{ formatCurrency(totalNominalOrder) }}</div>
           </div>
           <div v-if="timelineEvents.length > 1" class="mt-6">
-            <div class="text-sm font-semibold text-indigo-700">Timeline Repeat Order</div>
+            <div class="text-sm font-semibold text-indigo-700 border border-indigo-100/50 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-900/40 dark:via-sky-900/30 dark:to-cyan-900/30 rounded-md px-3 py-2">Histori Pembelian</div>
             <div class="relative mt-3 pl-8 pr-2 max-h-64 overflow-y-auto">
               <div class="absolute left-3 top-0 h-full w-0.5 bg-indigo-200 dark:bg-indigo-800"></div>
               <div v-for="e in timelineEvents" :key="e.id" class="relative mb-4">
