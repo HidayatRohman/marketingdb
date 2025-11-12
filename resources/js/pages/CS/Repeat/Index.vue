@@ -468,19 +468,19 @@ const timelineEvents = computed<Item[]>(() => {
         </DialogHeader>
         <div v-if="viewItem" class="space-y-3 text-sm">
           <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">Nama</div>
+            <div class="font-semibold text-black">Nama</div>
             <div class="col-span-2 font-medium">{{ viewItem.nama_pelanggan }}</div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">No Tlp</div>
+            <div class="font-semibold text-black">No Tlp</div>
             <div class="col-span-2">{{ viewItem.no_tlp }}</div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">Kota</div>
+            <div class="font-semibold text-black">Kota</div>
             <div class="col-span-2">{{ viewItem.kota || '-' }}</div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">Provinsi</div>
+            <div class="font-semibold text-black">Provinsi</div>
             <div class="col-span-2">{{ viewItem.provinsi || '-' }}</div>
           </div>
           <div v-if="timelineEvents.length > 1" class="mt-6">
