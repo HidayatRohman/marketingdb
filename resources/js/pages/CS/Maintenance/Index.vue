@@ -5,7 +5,7 @@ import { Head, router } from '@inertiajs/vue3'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { Dialog, DialogHeader, DialogTitle, DialogScrollContent } from '@/components/ui/dialog'
 import CsMaintenanceDailyChart from '@/components/CsMaintenanceDailyChart.vue'
 import CsMaintenanceCategoryPieChart from '@/components/CsMaintenanceCategoryPieChart.vue'
@@ -144,6 +144,25 @@ const closeView = () => {
   showView.value = false
   viewItem.value = null
 }
+
+const asTime = (d?: string) => {
+  if (!d) return 0
+  const x = new Date(d)
+  return isNaN(x.getTime()) ? 0 : x.getTime()
+}
+const timelineEvents = computed<Item[]>(() => {
+  const v = viewItem.value
+  if (!v) return []
+  const keyPhone = (v.no_tlp || '').trim()
+  const keyName = (v.nama_pelanggan || '').trim().toLowerCase()
+  return [...props.items.data]
+    .filter((i) => {
+      const samePhone = keyPhone && (i.no_tlp || '').trim() === keyPhone
+      const sameName = keyName && (i.nama_pelanggan || '').trim().toLowerCase() === keyName
+      return samePhone || sameName
+    })
+    .sort((a, b) => asTime(a.tanggal) - asTime(b.tanggal))
+})
 
 const breadcrumbs = [
   { title: 'Dashboard', href: '/dashboard' },
@@ -296,40 +315,37 @@ const breadcrumbs = [
         </DialogHeader>
         <div v-if="viewItem" class="space-y-3 text-sm">
           <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">Nama</div>
+            <div class="font-semibold text-black">Nama</div>
             <div class="col-span-2 font-medium">{{ viewItem.nama_pelanggan }}</div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">No Tlp</div>
+            <div class="font-semibold text-black">No Tlp</div>
             <div class="col-span-2">{{ viewItem.no_tlp }}</div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">Tanggal</div>
-            <div class="col-span-2">{{ formatDate(viewItem.tanggal) }}</div>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">Produk</div>
-            <div class="col-span-2">{{ viewItem.product?.nama || '-' }}</div>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">Chat</div>
-            <div class="col-span-2">{{ viewItem.chat || '-' }}</div>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">Kota</div>
+            <div class="font-semibold text-black">Kota</div>
             <div class="col-span-2">{{ viewItem.kota || '-' }}</div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">Provinsi</div>
+            <div class="font-semibold text-black">Provinsi</div>
             <div class="col-span-2">{{ viewItem.provinsi || '-' }}</div>
           </div>
-          <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">Kendala</div>
-            <div class="col-span-2">{{ viewItem.kendala || '-' }}</div>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <div class="text-gray-500">Solusi</div>
-            <div class="col-span-2">{{ viewItem.solusi || '-' }}</div>
+
+          <div v-if="timelineEvents.length >= 1" class="mt-6">
+            <div class="text-sm font-semibold text-indigo-700 border border-indigo-100/50 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-900/40 dark:via-sky-900/30 dark:to-cyan-900/30 rounded-md px-3 py-2">Histori Maintenance</div>
+            <div class="relative mt-3 pl-8 pr-2 max-h-64 overflow-y-auto">
+              <div class="absolute left-3 top-0 h-full w-0.5 bg-indigo-200 dark:bg-indigo-800"></div>
+              <div v-for="e in timelineEvents" :key="e.id" class="relative mb-4">
+                <div class="absolute -left-4 top-1 h-3 w-3 rounded-full border-2 border-indigo-500 bg-white dark:bg-gray-900"></div>
+                <div class="grid grid-cols-[120px_1fr] gap-3">
+                  <div class="text-indigo-700 dark:text-indigo-300 font-semibold">{{ formatDate(e.tanggal) }}</div>
+                  <div class="col-span-2">
+                    <div class="text-xs"><span class="font-semibold text-black">Kendala:</span> <span class="text-gray-600 dark:text-gray-400">{{ e.kendala || '-' }}</span></div>
+                    <div class="text-xs"><span class="font-semibold text-black">Solusi:</span> <span class="text-gray-600 dark:text-gray-400">{{ e.solusi || '-' }}</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="flex justify-end gap-2 mt-4">
