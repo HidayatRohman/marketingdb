@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Wrench as WrenchIcon } from 'lucide-vue-next'
-import { Head, router } from '@inertiajs/vue3'
+import { Head, router, useForm } from '@inertiajs/vue3'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ref, watch, onMounted, computed } from 'vue'
+import { indonesianProvinces } from '@/lib/indonesianProvinces'
 import { Dialog, DialogHeader, DialogTitle, DialogScrollContent } from '@/components/ui/dialog'
 import CsMaintenanceDailyChart from '@/components/CsMaintenanceDailyChart.vue'
 import CsMaintenanceCategoryPieChart from '@/components/CsMaintenanceCategoryPieChart.vue'
@@ -164,24 +165,89 @@ const timelineEvents = computed<Item[]>(() => {
     .sort((a, b) => asTime(a.tanggal) - asTime(b.tanggal))
 })
 
+const toYMD = (input?: string | null): string => {
+  if (!input) return ''
+  const raw = String(input)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw
+  const d = new Date(raw)
+  if (isNaN(d.getTime())) return ''
+  const tzOffsetMs = d.getTimezoneOffset() * 60000
+  const local = new Date(d.getTime() - tzOffsetMs)
+  return local.toISOString().slice(0, 10)
+}
 const getTodayYMD = () => {
   const now = new Date()
   const tzOffsetMs = now.getTimezoneOffset() * 60000
   return new Date(now.getTime() - tzOffsetMs).toISOString().slice(0, 10)
 }
-const startMaintenanceFromView = () => {
-  const v = viewItem.value
-  if (!v) return
-  const params: Record<string, any> = {
-    nama_pelanggan: v.nama_pelanggan || '',
-    no_tlp: v.no_tlp || '',
-    product_id: v.product?.id ? String(v.product.id) : '',
-    chat: v.chat || '',
-    kota: v.kota || '',
-    provinsi: v.provinsi || 'Unknown',
-    tanggal: getTodayYMD(),
-  }
-  router.get('/cs/maintenances/create', params, { preserveScroll: true })
+
+const showEdit = ref(false)
+const editForm = useForm({
+  id: 0,
+  nama_pelanggan: '',
+  no_tlp: '',
+  product_id: '',
+  tanggal: '',
+  chat: '',
+  kota: '',
+  provinsi: 'Unknown',
+  kendala: '',
+  solusi: '',
+})
+const openEdit = (item: Item) => {
+  editForm.id = item.id
+  editForm.nama_pelanggan = item.nama_pelanggan || ''
+  editForm.no_tlp = item.no_tlp || ''
+  editForm.product_id = item.product?.id ? String(item.product.id) : ''
+  editForm.tanggal = toYMD(item.tanggal) || ''
+  editForm.chat = item.chat || ''
+  editForm.kota = item.kota || ''
+  editForm.provinsi = item.provinsi || 'Unknown'
+  editForm.kendala = item.kendala || ''
+  editForm.solusi = item.solusi || ''
+  showEdit.value = true
+}
+const submitEdit = () => {
+  editForm.put(`/cs/maintenances/${editForm.id}` as any, {
+    preserveScroll: true,
+    onSuccess: () => {
+      showEdit.value = false
+    },
+  })
+}
+
+const showMaintenance = ref(false)
+const maintenanceForm = useForm({
+  nama_pelanggan: '',
+  no_tlp: '',
+  product_id: '',
+  tanggal: '',
+  chat: '',
+  kota: '',
+  provinsi: 'Unknown',
+  kendala: '',
+  solusi: '',
+})
+const openMaintenanceFromView = (item: Item) => {
+  maintenanceForm.nama_pelanggan = item.nama_pelanggan || ''
+  maintenanceForm.no_tlp = item.no_tlp || ''
+  maintenanceForm.product_id = item.product?.id ? String(item.product.id) : ''
+  maintenanceForm.tanggal = getTodayYMD()
+  maintenanceForm.chat = item.chat || ''
+  maintenanceForm.kota = item.kota || ''
+  maintenanceForm.provinsi = item.provinsi || 'Unknown'
+  maintenanceForm.kendala = ''
+  maintenanceForm.solusi = ''
+  showMaintenance.value = true
+}
+const submitMaintenance = () => {
+  maintenanceForm.post('/cs/maintenances', {
+    preserveScroll: true,
+    onSuccess: () => {
+      showMaintenance.value = false
+      maintenanceForm.reset()
+    },
+  })
 }
 
 const breadcrumbs = [
@@ -263,7 +329,7 @@ const breadcrumbs = [
                 <td class="py-2 px-2">
                   <div class="flex gap-2">
                     <Button variant="secondary" @click="openView(it)">View</Button>
-                    <Button variant="outline" as-child><a :href="`/cs/maintenances/${it.id}/edit`">Edit</a></Button>
+                    <Button variant="outline" @click="openEdit(it)">Edit</Button>
                     <Button variant="destructive" @click="destroyItem(it.id)">Hapus</Button>
                   </div>
                 </td>
@@ -370,8 +436,166 @@ const breadcrumbs = [
         </div>
         <div class="flex justify-end gap-2 mt-4">
           <Button variant="outline" @click="closeView">Tutup</Button>
-          <Button v-if="viewItem" as-child><a :href="`/cs/maintenances/${viewItem.id}/edit`">Edit</a></Button>
-          <Button v-if="viewItem" variant="secondary" @click="startMaintenanceFromView">Maintenance</Button>
+          <Button v-if="viewItem" @click="openEdit(viewItem as any)">Edit</Button>
+          <Button v-if="viewItem" variant="secondary" @click="openMaintenanceFromView(viewItem as any)">Maintenance</Button>
+        </div>
+      </DialogScrollContent>
+    </Dialog>
+
+    <!-- Dialog Edit CS Maintenance -->
+    <Dialog :open="showEdit" @update:open="(v:boolean)=> showEdit = v">
+      <DialogScrollContent class="sm:max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Edit CS Maintenance</DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Tanggal</label>
+            <Input v-model="editForm.tanggal" type="date" />
+            <div v-if="editForm.errors.tanggal" class="text-sm text-red-600 mt-1">{{ editForm.errors.tanggal }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Nama Pelanggan</label>
+            <Input v-model="editForm.nama_pelanggan" />
+            <div v-if="editForm.errors.nama_pelanggan" class="text-sm text-red-600 mt-1">{{ editForm.errors.nama_pelanggan }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">No Tlp</label>
+            <Input v-model="editForm.no_tlp" />
+            <div v-if="editForm.errors.no_tlp" class="text-sm text-red-600 mt-1">{{ editForm.errors.no_tlp }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Produk</label>
+            <select v-model="editForm.product_id" class="h-9 rounded border px-2 w-full">
+              <option value="">-- Pilih Produk --</option>
+              <option v-for="p in props.products" :key="p.id" :value="p.id">{{ p.nama }}</option>
+            </select>
+            <div v-if="editForm.errors.product_id" class="text-sm text-red-600 mt-1">{{ editForm.errors.product_id }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Chat</label>
+            <select v-model="editForm.chat" class="h-9 rounded border px-2 w-full">
+              <option value="">-- Pilih Status Chat --</option>
+              <option value="Baru">Baru</option>
+              <option value="Follow Up">Follow Up</option>
+              <option value="Follow Up 2">Follow Up 2</option>
+              <option value="Followup 3">Followup 3</option>
+            </select>
+            <div v-if="editForm.errors.chat" class="text-sm text-red-600 mt-1">{{ editForm.errors.chat }}</div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Kota</label>
+              <Input v-model="editForm.kota" />
+              <div v-if="editForm.errors.kota" class="text-sm text-red-600 mt-1">{{ editForm.errors.kota }}</div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Provinsi</label>
+              <select v-model="editForm.provinsi" class="h-9 rounded border px-2 w-full">
+                <option v-for="province in indonesianProvinces" :key="province" :value="province">{{ province }}</option>
+              </select>
+              <div v-if="editForm.errors.provinsi" class="text-sm text-red-600 mt-1">{{ editForm.errors.provinsi }}</div>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Kendala</label>
+            <select v-model="editForm.kendala" class="h-9 rounded border px-2 w-full">
+              <option value="">-- Pilih Kendala --</option>
+              <option v-for="k in kendalaData" :key="k.label" :value="k.label">{{ k.label }}</option>
+            </select>
+            <div v-if="editForm.errors.kendala" class="text-sm text-red-600 mt-1">{{ editForm.errors.kendala }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Solusi</label>
+            <select v-model="editForm.solusi" class="h-9 rounded border px-2 w-full">
+              <option value="">-- Pilih Solusi --</option>
+              <option v-for="s in solusiData" :key="s.label" :value="s.label">{{ s.label }}</option>
+            </select>
+            <div v-if="editForm.errors.solusi" class="text-sm text-red-600 mt-1">{{ editForm.errors.solusi }}</div>
+          </div>
+          <div class="flex justify-end gap-2">
+            <Button variant="outline" @click="showEdit = false">Batal</Button>
+            <Button :disabled="editForm.processing" @click="submitEdit">Simpan</Button>
+          </div>
+        </div>
+      </DialogScrollContent>
+    </Dialog>
+
+    <!-- Dialog Tambah Maintenance -->
+    <Dialog :open="showMaintenance" @update:open="(v:boolean)=> showMaintenance = v">
+      <DialogScrollContent class="sm:max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Tambah Histori Maintenance</DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Tanggal</label>
+            <Input v-model="maintenanceForm.tanggal" type="date" />
+            <div v-if="maintenanceForm.errors.tanggal" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.tanggal }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Nama Pelanggan</label>
+            <Input v-model="maintenanceForm.nama_pelanggan" />
+            <div v-if="maintenanceForm.errors.nama_pelanggan" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.nama_pelanggan }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">No Tlp</label>
+            <Input v-model="maintenanceForm.no_tlp" />
+            <div v-if="maintenanceForm.errors.no_tlp" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.no_tlp }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Produk</label>
+            <select v-model="maintenanceForm.product_id" class="h-9 rounded border px-2 w-full">
+              <option value="">-- Pilih Produk --</option>
+              <option v-for="p in props.products" :key="p.id" :value="p.id">{{ p.nama }}</option>
+            </select>
+            <div v-if="maintenanceForm.errors.product_id" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.product_id }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Chat</label>
+            <select v-model="maintenanceForm.chat" class="h-9 rounded border px-2 w-full">
+              <option value="">-- Pilih Status Chat --</option>
+              <option value="Baru">Baru</option>
+              <option value="Follow Up">Follow Up</option>
+              <option value="Follow Up 2">Follow Up 2</option>
+              <option value="Followup 3">Followup 3</option>
+            </select>
+            <div v-if="maintenanceForm.errors.chat" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.chat }}</div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Kota</label>
+              <Input v-model="maintenanceForm.kota" />
+              <div v-if="maintenanceForm.errors.kota" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.kota }}</div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Provinsi</label>
+              <select v-model="maintenanceForm.provinsi" class="h-9 rounded border px-2 w-full">
+                <option v-for="province in indonesianProvinces" :key="province" :value="province">{{ province }}</option>
+              </select>
+              <div v-if="maintenanceForm.errors.provinsi" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.provinsi }}</div>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Kendala</label>
+            <select v-model="maintenanceForm.kendala" class="h-9 rounded border px-2 w-full">
+              <option value="">-- Pilih Kendala --</option>
+              <option v-for="k in kendalaData" :key="k.label" :value="k.label">{{ k.label }}</option>
+            </select>
+            <div v-if="maintenanceForm.errors.kendala" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.kendala }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Solusi</label>
+            <select v-model="maintenanceForm.solusi" class="h-9 rounded border px-2 w-full">
+              <option value="">-- Pilih Solusi --</option>
+              <option v-for="s in solusiData" :key="s.label" :value="s.label">{{ s.label }}</option>
+            </select>
+            <div v-if="maintenanceForm.errors.solusi" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.solusi }}</div>
+          </div>
+          <div class="flex justify-end gap-2">
+            <Button variant="outline" @click="showMaintenance = false">Batal</Button>
+            <Button :disabled="maintenanceForm.processing" @click="submitMaintenance">Simpan</Button>
+          </div>
         </div>
       </DialogScrollContent>
     </Dialog>
