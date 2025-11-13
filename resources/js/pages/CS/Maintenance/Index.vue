@@ -164,6 +164,26 @@ const timelineEvents = computed<Item[]>(() => {
     .sort((a, b) => asTime(a.tanggal) - asTime(b.tanggal))
 })
 
+const getTodayYMD = () => {
+  const now = new Date()
+  const tzOffsetMs = now.getTimezoneOffset() * 60000
+  return new Date(now.getTime() - tzOffsetMs).toISOString().slice(0, 10)
+}
+const startMaintenanceFromView = () => {
+  const v = viewItem.value
+  if (!v) return
+  const params: Record<string, any> = {
+    nama_pelanggan: v.nama_pelanggan || '',
+    no_tlp: v.no_tlp || '',
+    product_id: v.product?.id ? String(v.product.id) : '',
+    chat: v.chat || '',
+    kota: v.kota || '',
+    provinsi: v.provinsi || 'Unknown',
+    tanggal: getTodayYMD(),
+  }
+  router.get('/cs/maintenances/create', params, { preserveScroll: true })
+}
+
 const breadcrumbs = [
   { title: 'Dashboard', href: '/dashboard' },
   { title: 'CS Maintenance', href: '/cs/maintenances' },
@@ -351,6 +371,7 @@ const breadcrumbs = [
         <div class="flex justify-end gap-2 mt-4">
           <Button variant="outline" @click="closeView">Tutup</Button>
           <Button v-if="viewItem" as-child><a :href="`/cs/maintenances/${viewItem.id}/edit`">Edit</a></Button>
+          <Button v-if="viewItem" variant="secondary" @click="startMaintenanceFromView">Maintenance</Button>
         </div>
       </DialogScrollContent>
     </Dialog>

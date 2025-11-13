@@ -24,6 +24,26 @@ const form = useForm({
   solusi: '',
 })
 
+const toYMD = (input?: string | null): string => {
+  if (!input) return ''
+  const raw = String(input)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw
+  const d = new Date(raw)
+  if (isNaN(d.getTime())) return ''
+  const tzOffsetMs = d.getTimezoneOffset() * 60000
+  const local = new Date(d.getTime() - tzOffsetMs)
+  return local.toISOString().slice(0, 10)
+}
+
+const params = new URLSearchParams(window.location.search)
+form.nama_pelanggan = params.get('nama_pelanggan') || form.nama_pelanggan
+form.no_tlp = params.get('no_tlp') || form.no_tlp
+form.product_id = params.get('product_id') || form.product_id
+form.chat = params.get('chat') || form.chat
+form.kota = params.get('kota') || form.kota
+form.provinsi = params.get('provinsi') || form.provinsi
+form.tanggal = toYMD(params.get('tanggal')) || form.tanggal
+
 const submit = () => {
   form.post('/cs/maintenances')
 }
