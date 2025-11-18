@@ -18,6 +18,7 @@ const getTodayYMD = () => {
 const form = useForm({
   nama_pelanggan: '',
   no_tlp: '',
+  bio_pelanggan: '',
   product_id: '',
   tanggal: getTodayYMD(),
   chat: '',
@@ -74,6 +75,11 @@ const breadcrumbs = [
           <label class="block text-sm font-medium mb-1">No Tlp</label>
           <Input v-model="form.no_tlp" />
           <div v-if="form.errors.no_tlp" class="text-sm text-red-600 mt-1">{{ form.errors.no_tlp }}</div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Bio Pelanggan</label>
+          <textarea v-model="form.bio_pelanggan" class="w-full rounded border p-2" rows="3"></textarea>
+          <div v-if="form.errors.bio_pelanggan" class="text-sm text-red-600 mt-1">{{ form.errors.bio_pelanggan }}</div>
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Produk</label>

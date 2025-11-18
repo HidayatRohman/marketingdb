@@ -10,12 +10,14 @@ import { computed, ref, watch } from 'vue'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogScrollContent } from '@/components/ui/dialog'
 import CsRepeatDailyTransaksiChart from '@/components/CsRepeatDailyTransaksiChart.vue'
 import CsRepeatDailyProductChart from '@/components/CsRepeatDailyProductChart.vue'
+import CsRepeatPartnerTransaksiChart from '@/components/CsRepeatPartnerTransaksiChart.vue'
 import { indonesianProvinces } from '@/lib/indonesianProvinces'
 
 interface Item {
   id: number
   nama_pelanggan: string
   no_tlp: string
+  bio_pelanggan?: string | null
   tanggal?: string
   chat?: string | null
   kota: string | null
@@ -84,6 +86,7 @@ const createForm = useForm({
   tanggal: '',
   nama_pelanggan: '',
   no_tlp: '',
+  bio_pelanggan: '',
   product_id: '',
   chat: '',
   kota: '',
@@ -134,6 +137,7 @@ const editForm = useForm({
   tanggal: '',
   nama_pelanggan: '',
   no_tlp: '',
+  bio_pelanggan: '',
   product_id: '',
   chat: '',
   kota: '',
@@ -157,6 +161,7 @@ const openEdit = (item: Item) => {
   editForm.tanggal = toYMD(item.tanggal) || ''
   editForm.nama_pelanggan = item.nama_pelanggan || ''
   editForm.no_tlp = item.no_tlp || ''
+  editForm.bio_pelanggan = item.bio_pelanggan || ''
   editForm.product_id = item.product?.id ? String(item.product.id) : ''
   editForm.chat = item.chat || ''
   editForm.kota = item.kota || ''
@@ -333,13 +338,14 @@ const totalNominalOrder = computed(() => timelineEvents.value.reduce((sum, e) =>
                   <span class="sm:hidden">Nama</span>
                   <span class="hidden sm:inline">Nama Pelanggan</span>
                 </TableHead>
-                <TableHead>No Tlp</TableHead>
-                <TableHead>Tanggal</TableHead>
-                <TableHead>Produk</TableHead>
-                <TableHead>Kota</TableHead>
-                <TableHead>Provinsi</TableHead>
-                <TableHead>Transaksi</TableHead>
-                <TableHead>Keterangan</TableHead>
+            <TableHead>No Tlp</TableHead>
+            <TableHead>Bio Pelanggan</TableHead>
+            <TableHead>Tanggal</TableHead>
+            <TableHead>Produk</TableHead>
+            <TableHead>Kota</TableHead>
+            <TableHead>Provinsi</TableHead>
+            <TableHead>Transaksi</TableHead>
+            <TableHead>Keterangan</TableHead>
                 <TableHead class="text-center">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -347,6 +353,7 @@ const totalNominalOrder = computed(() => timelineEvents.value.reduce((sum, e) =>
               <TableRow v-for="item in items.data" :key="item.id">
                 <TableCell class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-border">{{ item.nama_pelanggan }}</TableCell>
                 <TableCell>{{ item.no_tlp }}</TableCell>
+                <TableCell>{{ item.bio_pelanggan || '-' }}</TableCell>
                 <TableCell>{{ formatDate(item.tanggal) }}</TableCell>
                 <TableCell>{{ item.product?.nama || '-' }}</TableCell>
                 <TableCell>{{ item.kota || '-' }}</TableCell>
@@ -383,6 +390,8 @@ const totalNominalOrder = computed(() => timelineEvents.value.reduce((sum, e) =>
         </div>
       </CardContent>
       </Card>
+
+      <CsRepeatPartnerTransaksiChart :items="items.data.map(i=>({ nama_pelanggan: i.nama_pelanggan, no_tlp: i.no_tlp, transaksi: i.transaksi || 0, tanggal: i.tanggal }))" />
     </div>
 
     <!-- Dialog Create -->
@@ -412,6 +421,11 @@ const totalNominalOrder = computed(() => timelineEvents.value.reduce((sum, e) =>
             <label class="block text-sm font-medium mb-1">No Tlp</label>
             <Input v-model="createForm.no_tlp" />
             <div v-if="createForm.errors.no_tlp" class="text-sm text-red-600 mt-1">{{ createForm.errors.no_tlp }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Bio Pelanggan</label>
+            <textarea v-model="createForm.bio_pelanggan" class="w-full rounded border p-2" rows="3"></textarea>
+            <div v-if="createForm.errors.bio_pelanggan" class="text-sm text-red-600 mt-1">{{ createForm.errors.bio_pelanggan }}</div>
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Produk</label>
@@ -491,6 +505,10 @@ const totalNominalOrder = computed(() => timelineEvents.value.reduce((sum, e) =>
             <div class="col-span-2">{{ viewItem.provinsi || '-' }}</div>
           </div>
           <div class="grid grid-cols-3 gap-2">
+            <div class="font-semibold text-black">Bio Pelanggan</div>
+            <div class="col-span-2">{{ viewItem.bio_pelanggan || '-' }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
             <div class="font-semibold text-black">Nominal Order</div>
             <div class="col-span-2">{{ formatCurrency(totalNominalOrder) }}</div>
           </div>
@@ -547,6 +565,11 @@ const totalNominalOrder = computed(() => timelineEvents.value.reduce((sum, e) =>
             <label class="block text-sm font-medium mb-1">No Tlp</label>
             <Input v-model="editForm.no_tlp" />
             <div v-if="editForm.errors.no_tlp" class="text-sm text-red-600 mt-1">{{ editForm.errors.no_tlp }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Bio Pelanggan</label>
+            <textarea v-model="editForm.bio_pelanggan" class="w-full rounded border p-2" rows="3"></textarea>
+            <div v-if="editForm.errors.bio_pelanggan" class="text-sm text-red-600 mt-1">{{ editForm.errors.bio_pelanggan }}</div>
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Produk</label>

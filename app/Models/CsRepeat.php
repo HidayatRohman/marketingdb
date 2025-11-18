@@ -12,6 +12,7 @@ class CsRepeat extends Model
     protected $fillable = [
         'nama_pelanggan',
         'no_tlp',
+        'bio_pelanggan',
         'product_id',
         'tanggal',
         'chat',

@@ -44,6 +44,7 @@ class CsRepeatController extends Controller
                 $query->where(function ($q) use ($search) {
                     $q->where('nama_pelanggan', 'like', "%{$search}%")
                       ->orWhere('no_tlp', 'like', "%{$search}%")
+                      ->orWhere('bio_pelanggan', 'like', "%{$search}%")
                       ->orWhere('kota', 'like', "%{$search}%")
                       ->orWhere('provinsi', 'like', "%{$search}%")
                       ->orWhere('chat', 'like', "%{$search}%")
@@ -67,6 +68,7 @@ class CsRepeatController extends Controller
                 $filterQuery->where(function ($q) use ($search) {
                     $q->where('nama_pelanggan', 'like', "%{$search}%")
                       ->orWhere('no_tlp', 'like', "%{$search}%")
+                      ->orWhere('bio_pelanggan', 'like', "%{$search}%")
                       ->orWhere('kota', 'like', "%{$search}%")
                       ->orWhere('provinsi', 'like', "%{$search}%")
                       ->orWhere('chat', 'like', "%{$search}%")
@@ -309,6 +311,7 @@ class CsRepeatController extends Controller
         $validated = $request->validate([
             'nama_pelanggan' => 'required|string|max:255',
             'no_tlp' => 'required|string|max:50',
+            'bio_pelanggan' => 'nullable|string',
             'product_id' => 'nullable|exists:products,id',
             'tanggal' => 'required|date',
             'chat' => 'nullable|in:Baru,Follow Up,Follow Up 2,Followup 3',
@@ -338,6 +341,7 @@ class CsRepeatController extends Controller
         $validated = $request->validate([
             'nama_pelanggan' => 'required|string|max:255',
             'no_tlp' => 'required|string|max:50',
+            'bio_pelanggan' => 'nullable|string',
             'product_id' => 'nullable|exists:products,id',
             'tanggal' => 'required|date',
             'chat' => 'nullable|in:Baru,Follow Up,Follow Up 2,Followup 3',
