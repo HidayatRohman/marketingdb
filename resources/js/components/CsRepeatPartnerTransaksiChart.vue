@@ -16,8 +16,28 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="r in agg" :key="r.key" class="border-b">
-              <td class="py-2 px-2">{{ r.nama }}</td>
+            <tr v-for="(r, idx) in agg" :key="r.key" class="border-b">
+              <td class="py-2 px-2">
+                <div class="flex items-center gap-2">
+                  <div v-if="idx < 3" class="medal-wrap" :class="rankMedalClass(idx)">
+                    <svg class="medal-svg" viewBox="0 0 40 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <circle class="medal-circle" cx="20" cy="14" r="12" />
+                      <circle class="medal-inner" cx="20" cy="14" r="8.5" />
+                      <g class="medal-laurel">
+                        <path d="M11 14c0-2 2-4 4-5-1 2-1 3 0 5-1 1-2 2-4 0z" />
+                        <path d="M29 14c0-2-2-4-4-5 1 2 1 3 0 5 1 1 2 2 4 0z" />
+                      </g>
+                      <g class="medal-ribbon">
+                        <path class="ribbon-left" d="M14 24 L14 40 L18 36 L18 24 Z" />
+                        <path class="ribbon-right" d="M26 24 L26 40 L22 36 L22 24 Z" />
+                        <rect class="ribbon-center" x="18" y="24" width="4" height="12" />
+                      </g>
+                    </svg>
+                    <span class="medal-number">{{ idx + 1 }}</span>
+                  </div>
+                  <span class="font-medium">{{ r.nama }}</span>
+                </div>
+              </td>
               <td class="py-2 px-2">{{ r.no_tlp }}</td>
               <td class="py-2 px-2">{{ formatCurrency(r.total) }}</td>
               <td class="py-2 px-2">
@@ -83,6 +103,13 @@ const canvasId = computed(() => `cs-repeat-partner-transaksi-${canvasKey.value}`
 
 const selected = ref<AggRow | null>(null)
 const showChart = ref(false)
+
+const rankMedalClass = (idx: number) => {
+  if (idx === 0) return 'medal-gold'
+  if (idx === 1) return 'medal-silver'
+  if (idx === 2) return 'medal-bronze'
+  return ''
+}
 
 const selectedBio = computed(() => {
   if (!selected.value) return null
@@ -172,4 +199,17 @@ watch(() => showChart.value, async (v) => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.medal-wrap { width: 28px; height: 34px; position: relative; background: rgba(255,255,255,0.9); border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+.medal-svg { width: 100%; height: 100%; display: block; }
+.medal-number { position: absolute; top: 6px; left: 0; width: 28px; text-align: center; font-weight: 800; font-size: 12px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+.medal-circle { stroke-width: 2; }
+.medal-inner { fill: #ffffff33; }
+.medal-laurel path { fill: #ffffffcc; }
+.medal-ribbon .ribbon-left { fill: #d32f2f; }
+.medal-ribbon .ribbon-right { fill: #d32f2f; }
+.medal-ribbon .ribbon-center { fill: #ffffff; }
+.medal-gold .medal-circle { fill: #f5c33b; stroke: #e6a700; }
+.medal-silver .medal-circle { fill: #b0bec5; stroke: #90a4ae; }
+.medal-bronze .medal-circle { fill: #d27c2c; stroke: #b4651f; }
+</style>
