@@ -1,6 +1,6 @@
 <template>
   <Card class="border-0 shadow-md">
-    <CardHeader class="pb-3">
+    <CardHeader class="pb-3 border-b border-indigo-100/50 bg-gradient-to-br from-indigo-50 via-sky-50 to-cyan-50">
       <CardTitle>Daftar Transaksi Mitra</CardTitle>
     </CardHeader>
     <CardContent>
