@@ -391,7 +391,7 @@ const totalNominalOrder = computed(() => timelineEvents.value.reduce((sum, e) =>
       </CardContent>
       </Card>
 
-      <CsRepeatPartnerTransaksiChart :items="items.data.map(i=>({ nama_pelanggan: i.nama_pelanggan, no_tlp: i.no_tlp, transaksi: i.transaksi || 0, tanggal: i.tanggal }))" />
+      <CsRepeatPartnerTransaksiChart :items="items.data.map(i=>({ nama_pelanggan: i.nama_pelanggan, no_tlp: i.no_tlp, transaksi: i.transaksi || 0, tanggal: i.tanggal, bio_pelanggan: i.bio_pelanggan }))" />
     </div>
 
     <!-- Dialog Create -->

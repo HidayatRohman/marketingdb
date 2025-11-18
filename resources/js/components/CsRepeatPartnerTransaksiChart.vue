@@ -35,7 +35,8 @@
       <DialogHeader>
         <DialogTitle>Grafik Transaksi Pelanggan</DialogTitle>
       </DialogHeader>
-      <div v-if="selected" class="mb-3 text-sm text-muted-foreground">{{ selected.nama }} · {{ selected.no_tlp }}</div>
+      <div v-if="selected" class="mb-1 text-sm text-muted-foreground">{{ selected.nama }} · {{ selected.no_tlp }}</div>
+      <div v-if="selected" class="mb-3 text-sm"><span class="font-semibold text-black">Bio Pelanggan</span>: {{ selectedBio || '-' }}</div>
       <div v-if="chartEmpty" class="py-8 text-center text-sm text-muted-foreground">Tidak ada transaksi untuk pelanggan ini.</div>
       <div v-else class="h-64">
         <canvas :key="canvasKey" ref="chartCanvas" :id="canvasId"></canvas>
@@ -56,7 +57,7 @@ import ChartJS from 'chart.js/auto'
 import type { ChartData, ChartOptions } from 'chart.js'
 import { Eye } from 'lucide-vue-next'
 
-interface Item { nama_pelanggan: string; no_tlp: string; transaksi: number; tanggal?: string }
+interface Item { nama_pelanggan: string; no_tlp: string; transaksi: number; tanggal?: string; bio_pelanggan?: string | null }
 const props = defineProps<{ items?: Item[] }>()
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)
@@ -82,6 +83,17 @@ const canvasId = computed(() => `cs-repeat-partner-transaksi-${canvasKey.value}`
 
 const selected = ref<AggRow | null>(null)
 const showChart = ref(false)
+
+const selectedBio = computed(() => {
+  if (!selected.value) return null
+  const arr = Array.isArray(props.items) ? props.items : []
+  const match = arr.find(it => {
+    const samePhone = (it.no_tlp || '').trim() === (selected.value!.no_tlp || '').trim()
+    const sameName = (it.nama_pelanggan || '').trim().toLowerCase() === selected.value!.nama.trim().toLowerCase()
+    return samePhone || sameName
+  })
+  return match?.bio_pelanggan ?? null
+})
 
 const filteredBySelected = computed(() => {
   if (!selected.value) return [] as Item[]
