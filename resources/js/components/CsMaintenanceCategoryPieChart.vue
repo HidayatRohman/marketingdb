@@ -250,11 +250,15 @@ const chartOptions = computed<ChartOptions<'doughnut'>>(() => ({
 const createChart = async () => {
   if (!chartCanvas.value || !chartData.value) return;
 
-  // Destroy existing chart
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    chartInstance.value = null;
-  }
+  // Destroy existing chart instance and any globally registered chart on this canvas id
+  try {
+    if (chartInstance.value) {
+      chartInstance.value.destroy();
+      chartInstance.value = null;
+    }
+    const existing = Chart.getChart(canvasId.value as any);
+    if (existing) existing.destroy();
+  } catch (_e) {}
 
   await nextTick();
 
@@ -281,22 +285,25 @@ const updateChart = async () => {
 // Watchers
 watch(() => props.data, async () => {
   if (props.data && props.data.length > 0) {
-    canvasKey.value++;
-    await nextTick();
-    await createChart();
+    await updateChart();
+  } else {
+    if (chartInstance.value) {
+      chartInstance.value.destroy();
+      chartInstance.value = null;
+    }
   }
 }, { deep: true });
 
-watch(() => props.loading, (newLoading) => {
+watch(() => props.loading, async (newLoading) => {
   if (!newLoading && props.data && props.data.length > 0) {
-    nextTick(() => createChart());
+    await updateChart();
   }
 });
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   if (props.data && props.data.length > 0) {
-    nextTick(() => createChart());
+    await createChart();
   }
 });
 

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Wrench as WrenchIcon } from 'lucide-vue-next'
-import { Head, router, useForm } from '@inertiajs/vue3'
+import { Head, router, useForm, usePage } from '@inertiajs/vue3'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ref, watch, onMounted, computed } from 'vue'
 import { indonesianProvinces } from '@/lib/indonesianProvinces'
-import { Dialog, DialogHeader, DialogTitle, DialogScrollContent } from '@/components/ui/dialog'
+import { Dialog, DialogHeader, DialogTitle, DialogScrollContent, DialogDescription } from '@/components/ui/dialog'
 import CsMaintenanceDailyChart from '@/components/CsMaintenanceDailyChart.vue'
 import CsMaintenanceCategoryPieChart from '@/components/CsMaintenanceCategoryPieChart.vue'
 
@@ -29,6 +29,9 @@ const props = defineProps<{
   filters: { q?: string | null; product_id?: number | string | null }
   products: Array<{ id: number; nama: string }>
 }>()
+
+const inertiaPage = usePage() as any
+const inertiaVersion = inertiaPage?.version || ''
 
 const q = ref(props.filters.q || '')
 const productId = ref(props.filters.product_id || '')
@@ -67,6 +70,217 @@ const kendalaLoading = ref(false)
 const solusiLoading = ref(false)
 const kendalaData = ref<Array<{ label: string; count: number; warna?: string }>>([])
 const solusiData = ref<Array<{ label: string; count: number; warna?: string }>>([])
+const kendalaOptions = ref<string[]>([])
+const solusiOptions = ref<string[]>([])
+
+type RepeatRow = {
+  id?: number
+  nama_pelanggan: string
+  no_tlp: string
+  bio_pelanggan?: string | null
+  tanggal?: string
+  product?: { id: number; nama: string } | null
+  kota?: string
+  provinsi?: string
+  kendala?: string | null
+  solusi?: string | null
+  maintenance_tanggal?: string | null
+  join_tanggal?: string | null
+}
+const repeatTableLoading = ref(false)
+const repeatTableRows = ref<RepeatRow[]>([])
+const mitraKey = (r: RepeatRow) => ((r.no_tlp || '').trim()) || ((r.nama_pelanggan || '').trim().toLowerCase())
+const inactiveSet = ref<Set<string>>(new Set())
+const loadInactive = () => {
+  try {
+    const raw = localStorage.getItem('mitraInactive')
+    if (raw) inactiveSet.value = new Set(JSON.parse(raw))
+  } catch {}
+}
+const saveInactive = () => {
+  try {
+    localStorage.setItem('mitraInactive', JSON.stringify(Array.from(inactiveSet.value)))
+  } catch {}
+}
+const isInactive = (r: RepeatRow) => inactiveSet.value.has(mitraKey(r))
+const toggleMitraActive = (r: RepeatRow) => {
+  const key = mitraKey(r)
+  if (!key) return
+  if (inactiveSet.value.has(key)) inactiveSet.value.delete(key)
+  else inactiveSet.value.add(key)
+  saveInactive()
+}
+const fetchRepeatTable = async () => {
+  repeatTableLoading.value = true
+  try {
+    const params = new URLSearchParams()
+    if (productId.value) params.append('product_id', String(productId.value))
+    if (q.value) params.append('search', q.value)
+
+    const fetchProps = async (url: string) => {
+      const res = await fetch(`${url}?${params.toString()}`, {
+        headers: {
+          'X-Inertia': 'true',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+          'X-Inertia-Partial-Component': 'CS/Repeat/Index',
+          'X-Inertia-Partial-Data': 'items',
+          ...(inertiaVersion ? { 'X-Inertia-Version': inertiaVersion } : {}),
+        }
+      })
+      if (!res.ok) return null
+      try {
+        const page = await res.json()
+        // Support full Inertia response and partial-only (items) response
+        const items = page?.props?.items?.data ?? page?.items?.data ?? page?.items ?? null
+        return items
+      } catch {
+        return null
+      }
+    }
+
+    let rows = await fetchProps('/cs/repeats')
+    if (!rows) rows = await fetchProps('/repeats')
+
+    // Build latest kendala/solusi map from maintenance items
+    const latestMap: Record<string, { kendala?: string; solusi?: string; tanggal?: string }> = {}
+    props.items.data.forEach((it) => {
+      const key = ((it.no_tlp || '').trim()) || ((it.nama_pelanggan || '').trim().toLowerCase())
+      const prev = latestMap[key]
+      const curTime = it.tanggal ? new Date(it.tanggal).getTime() : 0
+      const prevTime = prev?.tanggal ? new Date(prev.tanggal).getTime() : -1
+      if (!prev || curTime >= prevTime) {
+        latestMap[key] = { kendala: it.kendala, solusi: it.solusi, tanggal: it.tanggal }
+      }
+    })
+
+    // Build earliest maintenance date map for join date (fix: first ever maintenance)
+    const earliestMap: Record<string, { tanggal?: string }> = {}
+    props.items.data.forEach((it) => {
+      const key = ((it.no_tlp || '').trim()) || ((it.nama_pelanggan || '').trim().toLowerCase())
+      const prev = earliestMap[key]
+      const curTime = it.tanggal ? new Date(it.tanggal).getTime() : Number.POSITIVE_INFINITY
+      const prevTime = prev?.tanggal ? new Date(prev.tanggal).getTime() : Number.POSITIVE_INFINITY
+      if (!prev || curTime < prevTime) {
+        if (it.tanggal) earliestMap[key] = { tanggal: it.tanggal }
+      }
+    })
+
+    const mapped = Array.isArray(rows)
+      ? rows.map((n: any, idx: number) => {
+          const key = (String(n?.no_tlp || '').trim()) || (String(n?.nama_pelanggan ?? n?.nama ?? '').trim().toLowerCase())
+          const latest = latestMap[key] || {}
+          const earliest = earliestMap[key] || {}
+          return ({
+            id: Number(n?.id ?? idx + 1),
+            nama_pelanggan: String(n?.nama_pelanggan ?? n?.nama ?? ''),
+            no_tlp: String(n?.no_tlp ?? ''),
+            bio_pelanggan: n?.bio_pelanggan ?? null,
+            tanggal: String(n?.tanggal ?? n?.created_at ?? ''),
+            product: n?.product ? { id: Number(n.product.id), nama: String(n.product.nama) } : (n?.product_id ? { id: Number(n.product_id), nama: String(n?.product_nama ?? '-') } : null),
+            kota: String(n?.kota ?? ''),
+            provinsi: String(n?.provinsi ?? ''),
+            kendala: latest.kendala ?? null,
+            solusi: latest.solusi ?? null,
+            maintenance_tanggal: latest.tanggal ?? null,
+            join_tanggal: earliest.tanggal ?? null,
+          })
+        })
+      : []
+
+    const grouped = new Map<string, RepeatRow>()
+    for (const r of mapped) {
+      const k = (r.nama_pelanggan || '').trim().toLowerCase()
+      if (!k) continue
+      const prev = grouped.get(k)
+      const currTime = r.tanggal ? new Date(r.tanggal).getTime() : -1
+      const prevTime = prev?.tanggal ? new Date(prev.tanggal).getTime() : -1
+      if (!prev || currTime >= prevTime) {
+        grouped.set(k, r)
+      }
+    }
+    repeatTableRows.value = Array.from(grouped.values())
+  } catch (e) {
+    repeatTableRows.value = []
+  } finally {
+    repeatTableLoading.value = false
+  }
+}
+
+// Earliest Repeat Order date per mitra across full history
+const repeatJoinCache = new Map<string, string>()
+const fetchEarliestRepeatDate = async (searchKey: string, targetPhone?: string, targetName?: string): Promise<string | null> => {
+  if (!searchKey) return null
+  if (repeatJoinCache.has(searchKey)) return repeatJoinCache.get(searchKey) || null
+  const params = new URLSearchParams({
+    search: searchKey,
+    periode_start: '2000-01-01',
+    periode_end: '2099-12-31',
+    page: '1'
+  })
+  try {
+    const fetchPage = async (pageNum: number) => {
+      params.set('page', String(pageNum))
+      const res = await fetch(`/cs/repeats?${params.toString()}`, {
+        headers: {
+          'X-Inertia': 'true',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+          'X-Inertia-Partial-Component': 'CS/Repeat/Index',
+          'X-Inertia-Partial-Data': 'items',
+          ...(inertiaVersion ? { 'X-Inertia-Version': inertiaVersion } : {}),
+        }
+      })
+      if (!res.ok) return null
+      const page = await res.json()
+      const items = page?.props?.items ?? page?.items ?? null
+      return items
+    }
+    const first = await fetchPage(1)
+    if (!first || !Array.isArray(first.data)) {
+      repeatJoinCache.set(searchKey, '')
+      return null
+    }
+    let earliest: string | null = null
+    const consider = (arr: any[]) => {
+      for (const t of arr) {
+        const phone = String(t?.no_tlp || '').trim()
+        const name = String(t?.nama_pelanggan ?? t?.nama ?? '').trim().toLowerCase()
+        const phoneMatch = targetPhone ? (phone === String(targetPhone).trim()) : false
+        const nameMatch = !phoneMatch && targetName ? (name === String(targetName).trim().toLowerCase()) : false
+        if (!phoneMatch && !nameMatch) continue
+        const d = String(t?.tanggal ?? '')
+        if (!d) continue
+        const time = new Date(d).getTime()
+        const prev = earliest ? new Date(earliest).getTime() : Number.POSITIVE_INFINITY
+        if (!earliest || time < prev) earliest = d
+      }
+    }
+    consider(first.data)
+    const lastPage = Number(first.current_page && first.last_page ? first.last_page : first?.last_page ?? 1)
+    for (let p = 2; p <= lastPage; p++) {
+      const page = await fetchPage(p)
+      if (page && Array.isArray(page.data)) consider(page.data)
+    }
+    repeatJoinCache.set(searchKey, earliest || '')
+    return earliest || null
+  } catch {
+    return null
+  }
+}
+
+const fillRepeatJoinDates = async () => {
+  const tasks: Promise<void>[] = []
+  for (const r of repeatTableRows.value) {
+    const key = (r.no_tlp || '').trim() || (r.nama_pelanggan || '').trim().toLowerCase()
+    if (!key) continue
+    tasks.push((async () => {
+      const d = await fetchEarliestRepeatDate(key, r.no_tlp || '', (r.nama_pelanggan || '').trim().toLowerCase())
+      if (d) r.join_tanggal = d
+    })())
+  }
+  await Promise.allSettled(tasks)
+}
 
 const fetchKendala = async () => {
   kendalaLoading.value = true
@@ -108,23 +322,70 @@ const fetchSolusi = async () => {
   }
 }
 
+const fetchKendalaOptions = async () => {
+  try {
+    const res = await fetch(`/kendalas`, {
+      headers: {
+        'X-Inertia': 'true',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json',
+        'X-Inertia-Partial-Component': 'Kendalas/Index',
+        'X-Inertia-Partial-Data': 'kendalas',
+        ...(inertiaVersion ? { 'X-Inertia-Version': inertiaVersion } : {}),
+      }
+    })
+    if (!res.ok) return
+    const page = await res.json()
+    const list = page?.props?.kendalas ?? page?.kendalas ?? []
+    kendalaOptions.value = Array.isArray(list) ? list.map((k: any) => String(k?.nama || '')) : []
+  } catch {}
+}
+
+const fetchSolusiOptions = async () => {
+  try {
+    const res = await fetch(`/solusis`, {
+      headers: {
+        'X-Inertia': 'true',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json',
+        'X-Inertia-Partial-Component': 'Solusis/Index',
+        'X-Inertia-Partial-Data': 'solusis',
+        ...(inertiaVersion ? { 'X-Inertia-Version': inertiaVersion } : {}),
+      }
+    })
+    if (!res.ok) return
+    const page = await res.json()
+    const list = page?.props?.solusis ?? page?.solusis ?? []
+    solusiOptions.value = Array.isArray(list) ? list.map((s: any) => String(s?.nama || '')) : []
+  } catch {}
+}
+
 watch([q, productId], () => {
   const params: Record<string, any> = {}
   if (q.value) params.q = q.value
   if (productId.value) params.product_id = productId.value
   router.get('/cs/maintenances', params, { preserveState: true, preserveScroll: true })
+  fetchRepeatTable()
+  setTimeout(() => fillRepeatJoinDates(), 0)
 })
 
 watch([startDate, endDate, productId], () => {
   fetchDaily()
   fetchKendala()
   fetchSolusi()
+  fetchRepeatTable()
+  setTimeout(() => fillRepeatJoinDates(), 0)
 })
 
 onMounted(() => {
+  loadInactive()
   fetchDaily()
   fetchKendala()
   fetchSolusi()
+  fetchKendalaOptions()
+  fetchSolusiOptions()
+  fetchRepeatTable()
+  setTimeout(() => fillRepeatJoinDates(), 0)
 })
 
 const destroyItem = (id: number) => {
@@ -132,7 +393,19 @@ const destroyItem = (id: number) => {
   router.delete(`/cs/maintenances/${id}`)
 }
 
-const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('id-ID') : '-')
+const formatDate = (d?: string) => {
+  if (!d) return '-'
+  const raw = String(d)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const [y, m, da] = raw.split('-').map((x) => parseInt(x, 10))
+    const dd = String(da).padStart(2, '0')
+    const mm = String(m).padStart(2, '0')
+    const yyyy = String(y)
+    return `${dd}/${mm}/${yyyy}`
+  }
+  const dt = new Date(raw)
+  return isNaN(dt.getTime()) ? '-' : dt.toLocaleDateString('id-ID')
+}
 
 // View modal state & handlers (meniru Daftar Repeat Order)
 const showView = ref(false)
@@ -240,6 +513,82 @@ const openMaintenanceFromView = (item: Item) => {
   maintenanceForm.solusi = ''
   showMaintenance.value = true
 }
+
+// Mitra view/edit state & handlers
+const showMitraView = ref(false)
+const showMitraEdit = ref(false)
+const mitraItem = ref<RepeatRow | null>(null)
+const mitraEditForm = useForm({
+  nama_pelanggan: '',
+  no_tlp: '',
+  bio_pelanggan: '',
+  product_id: '',
+  kota: '',
+  provinsi: 'Unknown',
+  kendala: '',
+  solusi: '',
+  tanggal: '',
+  chat: '',
+})
+const mitraEditProductName = computed(() => {
+  return mitraItem.value?.product?.nama || '-'
+})
+const openMitraView = (row: RepeatRow) => {
+  mitraItem.value = row
+  showMitraView.value = true
+}
+const openMitraEdit = (row: RepeatRow) => {
+  mitraItem.value = row
+  mitraEditForm.nama_pelanggan = row.nama_pelanggan || ''
+  mitraEditForm.no_tlp = row.no_tlp || ''
+  mitraEditForm.bio_pelanggan = String(row.bio_pelanggan || '')
+  mitraEditForm.product_id = row.product?.id ? String(row.product.id) : ''
+  mitraEditForm.kota = row.kota || ''
+  mitraEditForm.provinsi = row.provinsi || 'Unknown'
+  mitraEditForm.kendala = String(row.kendala || '')
+  mitraEditForm.solusi = String(row.solusi || '')
+  mitraEditForm.tanggal = toYMD(row.maintenance_tanggal || row.tanggal) || getTodayYMD()
+  mitraEditForm.chat = ''
+  showMitraEdit.value = true
+}
+const mitraTimelineEvents = computed<Item[]>(() => {
+  const v = mitraItem.value
+  if (!v) return []
+  const keyPhone = (v.no_tlp || '').trim()
+  const keyName = (v.nama_pelanggan || '').trim().toLowerCase()
+  return [...props.items.data]
+    .filter((i) => {
+      const samePhone = keyPhone && (i.no_tlp || '').trim() === keyPhone
+      const sameName = keyName && (i.nama_pelanggan || '').trim().toLowerCase() === keyName
+      return samePhone || sameName
+    })
+    .sort((a, b) => asTime(a.tanggal) - asTime(b.tanggal))
+})
+const submitMitraEdit = () => {
+  // Simpan sebagai entry CS Maintenance baru; setelah sukses, sinkronkan tampilan tabel mitra
+  mitraEditForm.post('/cs/maintenances', {
+    preserveScroll: true,
+    onSuccess: () => {
+      showMitraEdit.value = false
+      const keyPhone = (mitraEditForm.no_tlp || '').trim()
+      const keyName = (mitraEditForm.nama_pelanggan || '').trim().toLowerCase()
+      repeatTableRows.value = repeatTableRows.value.map((r) => {
+        const samePhone = keyPhone && (r.no_tlp || '').trim() === keyPhone
+        const sameName = keyName && (r.nama_pelanggan || '').trim().toLowerCase() === keyName
+        if (samePhone || sameName) {
+          return {
+            ...r,
+            kendala: mitraEditForm.kendala || null,
+            solusi: mitraEditForm.solusi || null,
+            maintenance_tanggal: mitraEditForm.tanggal || r.maintenance_tanggal || null,
+          }
+        }
+        return r
+      })
+      router.reload({ only: ['items'] })
+    },
+  })
+}
 const submitMaintenance = () => {
   maintenanceForm.post('/cs/maintenances', {
     preserveScroll: true,
@@ -260,6 +609,85 @@ const breadcrumbs = [
   <Head title="CS Maintenance" />
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="mx-6 mt-6 space-y-6">
+  <Card>
+    <CardHeader class="border-b border-indigo-100/50 bg-gradient-to-br from-indigo-50 via-sky-50 to-cyan-50">
+      <CardTitle>Daftar Maintenance Mitra</CardTitle>
+    </CardHeader>
+    <CardContent>
+        <div class="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between mb-4">
+          <div class="flex gap-2 items-center">
+            <Input v-model="q" placeholder="Cari nama/kota/provinsi/kendala/solusi" class="w-64" />
+            <select v-model="productId" class="h-9 rounded border px-2">
+              <option value="">Semua Produk</option>
+              <option v-for="p in props.products" :key="p.id" :value="p.id">{{ p.nama }}</option>
+            </select>
+          </div>
+        </div>
+        <div v-if="repeatTableLoading" class="py-6 text-sm text-muted-foreground">Memuat data dari Repeat Order…</div>
+        <div v-else class="overflow-x-auto responsive-table">
+        <table class="min-w-full text-sm">
+            <thead>
+              <tr class="text-left border-b">
+                <th class="py-2 px-2 sticky left-0 z-30 bg-background min-w-[120px] sm:min-w-[200px] border-r border-border">
+                  <span class="sm:hidden">Nama</span>
+                  <span class="hidden sm:inline">Nama Pelanggan</span>
+                </th>
+                <th class="py-2 px-2">No Tlp</th>
+                <th class="py-2 px-2">Bio Pelanggan</th>
+                <th class="py-2 px-2">Tanggal Join</th>
+                <th class="py-2 px-2">Produk</th>
+                <th class="py-2 px-2">Kota</th>
+                <th class="py-2 px-2">Provinsi</th>
+                <th class="py-2 px-2">Tanggal Maintenance</th>
+                <th class="py-2 px-2">Kendala</th>
+                <th class="py-2 px-2">Solusi</th>
+                <th class="py-2 px-2">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="it in repeatTableRows" :key="it.id" class="border-b" :class="{ 'bg-red-50': isInactive(it) }">
+                <td class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-border">{{ it.nama_pelanggan }}</td>
+                <td class="py-2 px-2">{{ it.no_tlp }}</td>
+                <td class="py-2 px-2">{{ it.bio_pelanggan || '-' }}</td>
+                <td class="py-2 px-2">{{ formatDate(it.join_tanggal || '') }}</td>
+                <td class="py-2 px-2">{{ it.product?.nama || '-' }}</td>
+                <td class="py-2 px-2">{{ it.kota || '-' }}</td>
+                <td class="py-2 px-2">{{ it.provinsi || '-' }}</td>
+                <td class="py-2 px-2">{{ formatDate(it.maintenance_tanggal || '') }}</td>
+                <td class="py-2 px-2">{{ it.kendala || '-' }}</td>
+                <td class="py-2 px-2">{{ it.solusi || '-' }}</td>
+                <td class="py-2 px-2">
+                  <div class="flex gap-2">
+                    <Button variant="secondary" @click="openMitraView(it)">View</Button>
+                    <Button variant="outline" @click="openMitraEdit(it)">Edit</Button>
+                    <button
+                      type="button"
+                      @click="toggleMitraActive(it)"
+                      :class="[
+                        'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none',
+                        isInactive(it) ? 'bg-gray-300' : 'bg-blue-500'
+                      ]"
+                      aria-checked="false"
+                      role="switch"
+                    >
+                      <span class="sr-only">Toggle aktif</span>
+                      <span
+                        aria-hidden="true"
+                        class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200"
+                        :class="isInactive(it) ? 'translate-x-0.5' : 'translate-x-5'"
+                      />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="repeatTableRows.length === 0">
+                <td colspan="11" class="text-center py-6 text-muted-foreground">Tidak ada data Repeat untuk ditampilkan</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
       <div class="relative overflow-hidden rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 p-4 text-indigo-700 sm:p-6">
         <div class="relative z-10">
           <div class="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
@@ -346,7 +774,7 @@ const breadcrumbs = [
           <div>Halaman: {{ props.items.current_page }}</div>
         </div>
       </CardContent>
-    </Card>
+  </Card>
 
     <!-- Report Grafik: ditempatkan di bawah CS Maintenance -->
     <Card>
@@ -364,8 +792,8 @@ const breadcrumbs = [
           <div class="text-sm text-muted-foreground" v-if="chartLoading">Memuat grafik…</div>
         </div>
         <CsMaintenanceDailyChart :data="dailyData" :startDate="startDate" :endDate="endDate" @refresh="fetchDaily" />
-      </CardContent>
-    </Card>
+  </CardContent>
+  </Card>
 
     <!-- Grafik Kendala & Solusi dalam dua kolom pada desktop -->
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -580,7 +1008,7 @@ const breadcrumbs = [
             <label class="block text-sm font-medium mb-1">Kendala</label>
             <select v-model="maintenanceForm.kendala" class="h-9 rounded border px-2 w-full">
               <option value="">-- Pilih Kendala --</option>
-              <option v-for="k in kendalaData" :key="k.label" :value="k.label">{{ k.label }}</option>
+              <option v-for="k in kendalaOptions" :key="k" :value="k">{{ k }}</option>
             </select>
             <div v-if="maintenanceForm.errors.kendala" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.kendala }}</div>
           </div>
@@ -588,7 +1016,7 @@ const breadcrumbs = [
             <label class="block text-sm font-medium mb-1">Solusi</label>
             <select v-model="maintenanceForm.solusi" class="h-9 rounded border px-2 w-full">
               <option value="">-- Pilih Solusi --</option>
-              <option v-for="s in solusiData" :key="s.label" :value="s.label">{{ s.label }}</option>
+              <option v-for="s in solusiOptions" :key="s" :value="s">{{ s }}</option>
             </select>
             <div v-if="maintenanceForm.errors.solusi" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.solusi }}</div>
           </div>
@@ -599,6 +1027,126 @@ const breadcrumbs = [
         </div>
       </DialogScrollContent>
     </Dialog>
+    <!-- Modals: Mitra View & Edit (khusus kartu Daftar Maintenance Mitra) -->
+    <Dialog :open="showMitraView" @update:open="(v:boolean)=> showMitraView = v">
+      <DialogScrollContent class="sm:max-w-md">
+        <DialogHeader class="bg-gradient-to-r from-indigo-600 via-sky-600 to-cyan-600 text-white rounded-t-md -mx-6 -mt-6 px-6 py-3">
+          <DialogTitle>Detail CS Maintenance</DialogTitle>
+        </DialogHeader>
+        <div v-if="mitraItem" class="space-y-3 text-sm">
+          <div class="grid grid-cols-3 gap-2">
+            <div class="font-semibold text-black">Nama</div>
+            <div class="col-span-2 font-medium">{{ mitraItem.nama_pelanggan }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="font-semibold text-black">No Tlp</div>
+            <div class="col-span-2">{{ mitraItem.no_tlp }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="font-semibold text-black">Kota</div>
+            <div class="col-span-2">{{ mitraItem.kota || '-' }}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="font-semibold text-black">Provinsi</div>
+            <div class="col-span-2">{{ mitraItem.provinsi || '-' }}</div>
+          </div>
+
+          <div v-if="mitraTimelineEvents.length >= 1" class="mt-6">
+            <div class="text-sm font-semibold text-indigo-700 border border-indigo-100/50 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-900/40 dark:via-sky-900/30 dark:to-cyan-900/30 rounded-md px-3 py-2">Histori Maintenance</div>
+            <div class="relative mt-3 pl-8 pr-2 max-h-64 overflow-y-auto">
+              <div class="absolute left-3 top-0 h-full w-0.5 bg-indigo-200 dark:bg-indigo-800"></div>
+              <div v-for="e in mitraTimelineEvents" :key="e.id" class="relative mb-4">
+                <div class="absolute -left-4 top-1 h-3 w-3 rounded-full border-2 border-indigo-500 bg-white dark:bg-gray-900"></div>
+                <div class="grid grid-cols-[120px_1fr] gap-3">
+                  <div class="text-indigo-700 dark:text-indigo-300 font-semibold">{{ formatDate(e.tanggal) }}</div>
+                  <div class="col-span-2">
+                    <div class="text-xs"><span class="font-semibold text-black">Kendala:</span> <span class="text-gray-600 dark:text-gray-400">{{ e.kendala || '-' }}</span></div>
+                    <div class="text-xs"><span class="font-semibold text-black">Solusi:</span> <span class="text-gray-600 dark:text-gray-400">{{ e.solusi || '-' }}</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 mt-4">
+          <Button variant="outline" @click="showMitraView = false">Tutup</Button>
+          <Button v-if="mitraItem" @click="openMitraEdit(mitraItem as any)">Edit</Button>
+          <Button v-if="mitraItem" variant="secondary" @click="openMaintenanceFromView({
+            id: 0,
+            nama_pelanggan: mitraItem!.nama_pelanggan,
+            no_tlp: mitraItem!.no_tlp,
+            product: mitraItem!.product || null,
+            tanggal: '',
+            chat: '',
+            kota: mitraItem!.kota || '',
+            provinsi: mitraItem!.provinsi || 'Unknown',
+            kendala: '',
+            solusi: ''
+          } as any)">Maintenance</Button>
+        </div>
+      </DialogScrollContent>
+    </Dialog>
+
+    <Dialog :open="showMitraEdit" @update:open="(v:boolean)=> showMitraEdit = v">
+      <DialogScrollContent class="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Edit Kendala & Solusi (Mitra)</DialogTitle>
+          <DialogDescription>Hanya Kendala dan Solusi yang dapat diedit. Data lain bersifat readonly.</DialogDescription>
+        </DialogHeader>
+        <div class="space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium mb-1">Tanggal Maintenance</label>
+              <Input v-model="mitraEditForm.tanggal" type="date" />
+              <div v-if="mitraEditForm.errors.tanggal" class="text-sm text-red-600 mt-1">{{ mitraEditForm.errors.tanggal }}</div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Nama Pelanggan</label>
+              <Input v-model="mitraEditForm.nama_pelanggan" readonly />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">No Tlp</label>
+              <Input v-model="mitraEditForm.no_tlp" readonly />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-sm font-medium mb-1">Bio Pelanggan</label>
+              <Input v-model="mitraEditForm.bio_pelanggan" readonly />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Produk</label>
+              <Input :model-value="mitraEditProductName" readonly />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Kota</label>
+              <Input v-model="mitraEditForm.kota" readonly />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Provinsi</label>
+              <Input v-model="mitraEditForm.provinsi" readonly />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Kendala</label>
+              <select v-model="mitraEditForm.kendala" class="h-9 rounded border px-2 w-full">
+                <option value="">-- Pilih Kendala --</option>
+                <option v-for="k in kendalaOptions" :key="k" :value="k">{{ k }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Solusi</label>
+              <select v-model="mitraEditForm.solusi" class="h-9 rounded border px-2 w-full">
+                <option value="">-- Pilih Solusi --</option>
+                <option v-for="s in solusiOptions" :key="s" :value="s">{{ s }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2">
+            <Button variant="outline" @click="showMitraEdit = false">Batal</Button>
+            <Button :disabled="mitraEditForm.processing" @click="submitMitraEdit">Simpan</Button>
+          </div>
+        </div>
+      </DialogScrollContent>
+    </Dialog>
+
   </AppLayout>
   </template>
 
