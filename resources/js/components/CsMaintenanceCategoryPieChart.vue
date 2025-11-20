@@ -34,12 +34,8 @@
         </div>
       </div>
 
-      <div v-else-if="chartData && (chartData.labels.length > 0)" class="relative space-y-4">
-        <div class="flex w-full items-center justify-center">
-          <div class="h-52 w-52 sm:h-64 sm:w-64 rounded-full shadow-inner ring-1 ring-gray-200 dark:ring-gray-700" :style="conicGradientStyle"></div>
-        </div>
-
-        <div class="h-64 w-full sm:h-80">
+      <div v-else-if="chartData && (chartData.labels.length > 0)" class="relative">
+        <div class="h-56 w-full sm:h-72">
           <canvas :key="canvasKey" ref="chartCanvas" :id="canvasId"></canvas>
         </div>
 
@@ -194,22 +190,7 @@ const countsByLabel = computed<Record<string, number>>(() => {
   return map;
 });
 
-const conicGradientStyle = computed(() => {
-  const list = props.data || [];
-  const total = list.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
-  if (!total || list.length === 0) {
-    return { background: 'conic-gradient(#e5e7eb 0deg, #e5e7eb 360deg)' };
-  }
-  let current = 0;
-  const segments = list.map((item, idx) => {
-    const start = (current / total) * 360;
-    current += Number(item.count) || 0;
-    const end = (current / total) * 360;
-    const color = item.warna || getColorForIndex(idx);
-    return `${color} ${start}deg ${end}deg`;
-  });
-  return { background: `conic-gradient(${segments.join(', ')})` };
-});
+// HTML fallback pie dihapus agar hanya satu grafik (canvas) ditampilkan
 
 const topItems = computed(() => {
   if (!props.data) return [] as { label: string; count: number }[];

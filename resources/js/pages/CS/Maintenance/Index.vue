@@ -937,7 +937,7 @@ const breadcrumbs = [
   </Card>
 
     <!-- Grafik Kendala & Solusi dalam dua kolom pada desktop -->
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
       <CsMaintenanceCategoryPieChart
         :title="'Grafik Kendala'"
         :legendTitle="'Kendala'"
