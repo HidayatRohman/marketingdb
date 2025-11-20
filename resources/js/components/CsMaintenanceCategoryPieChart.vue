@@ -136,6 +136,10 @@ const chartInstance = ref<any>(null);
 // Canvas management to avoid reuse issues
 const canvasKey = ref(0);
 const canvasId = computed(() => `cs-maintenance-category-pie-${canvasKey.value}`);
+const bumpCanvas = async () => {
+  canvasKey.value++;
+  await nextTick();
+};
 
 const getColorForIndex = (index: number) => {
   const hues = [210, 260, 300, 180, 20, 45, 90, 120, 150, 200];
@@ -251,8 +255,6 @@ const createChart = async () => {
       chartInstance.value.destroy();
       chartInstance.value = null;
     }
-    const existing = Chart.getChart(canvasId.value as any);
-    if (existing) existing.destroy();
   } catch (_e) {}
 
   await nextTick();
@@ -268,7 +270,8 @@ const createChart = async () => {
 };
 
 const updateChart = async () => {
-  if (!chartInstance.value || !chartData.value) {
+  if (!chartData.value) return;
+  if (!chartInstance.value) {
     await createChart();
     return;
   }
@@ -279,17 +282,20 @@ const updateChart = async () => {
 
 // Watchers
 watch(() => props.data, async () => {
-  await updateChart();
+  await bumpCanvas();
+  await createChart();
 }, { deep: true });
 
 watch(() => props.loading, async (newLoading) => {
   if (!newLoading) {
-    await updateChart();
+    await bumpCanvas();
+    await createChart();
   }
 });
 
 // Lifecycle
 onMounted(async () => {
+  await bumpCanvas();
   await createChart();
 });
 
