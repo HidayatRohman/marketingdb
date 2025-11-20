@@ -34,13 +34,13 @@
         </div>
       </div>
 
-      <div v-else-if="chartData && (chartData.labels.length > 0)" class="relative">
+      <div v-else class="relative">
         <div class="h-56 w-full sm:h-72">
           <canvas :key="canvasKey" ref="chartCanvas" :id="canvasId"></canvas>
         </div>
 
         <!-- Legend & Stats -->
-        <div class="mt-3 grid grid-cols-1 gap-3 sm:mt-4 sm:gap-4 lg:grid-cols-2">
+        <div v-if="props.data && props.data.length > 0" class="mt-3 grid grid-cols-1 gap-3 sm:mt-4 sm:gap-4 lg:grid-cols-2">
           <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
             <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
               <Palette class="h-4 w-4" />
@@ -92,18 +92,7 @@
         </div>
       </div>
 
-      <!-- Empty State -->
-      <div v-else class="flex flex-col items-center justify-center py-8 sm:py-12">
-        <div class="rounded-full bg-gray-100 dark:bg-gray-800 p-3 mb-3 sm:p-4 sm:mb-4">
-          <TrendingUp class="h-6 w-6 text-gray-400 sm:h-8 sm:w-8" />
-        </div>
-        <h3 class="text-base font-medium text-gray-900 dark:text-white mb-2 sm:text-lg">
-          Belum Ada Data
-        </h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm px-4 sm:max-w-md sm:px-0">
-          {{ emptyMessage || 'Tidak ada data untuk periode yang dipilih. Pilih tanggal atau filter yang berbeda.' }}
-        </p>
-      </div>
+      
   </CardContent>
   </Card>
 </template>
@@ -155,11 +144,13 @@ const getColorForIndex = (index: number) => {
 };
 
 // Computed properties
-const chartData = computed<ChartData<'pie'> | null>(() => {
-  if (!props.data || props.data.length === 0) return null;
-  const labels = props.data.map(item => item.label || 'Unknown');
-  const counts = props.data.map(item => item.count);
-  const colors = labels.map((_, idx) => props.data?.[idx]?.warna || getColorForIndex(idx));
+const chartData = computed<ChartData<'pie'>>(() => {
+  const hasData = props.data && props.data.length > 0;
+  const labels = hasData ? props.data!.map(item => item.label || 'Unknown') : ['Tidak ada data'];
+  const counts = hasData ? props.data!.map(item => item.count) : [1];
+  const colors = hasData
+    ? labels.map((_, idx) => props.data?.[idx]?.warna || getColorForIndex(idx))
+    : ['#e5e7eb'];
 
   return {
     labels,
@@ -240,7 +231,11 @@ const chartOptions = computed<ChartOptions<'pie'>>(() => ({
       displayColors: true,
       callbacks: {
         title: (context) => `Kategori: ${context[0].label || 'Unknown'}`,
-        label: (context) => `Jumlah: ${context.parsed}`,
+        label: (context) => {
+          const lbl = context.label || '';
+          if (lbl === 'Tidak ada data') return 'Jumlah: 0';
+          return `Jumlah: ${context.parsed}`;
+        },
       },
     },
   },
@@ -284,27 +279,18 @@ const updateChart = async () => {
 
 // Watchers
 watch(() => props.data, async () => {
-  if (props.data && props.data.length > 0) {
-    await updateChart();
-  } else {
-    if (chartInstance.value) {
-      chartInstance.value.destroy();
-      chartInstance.value = null;
-    }
-  }
+  await updateChart();
 }, { deep: true });
 
 watch(() => props.loading, async (newLoading) => {
-  if (!newLoading && props.data && props.data.length > 0) {
+  if (!newLoading) {
     await updateChart();
   }
 });
 
 // Lifecycle
 onMounted(async () => {
-  if (props.data && props.data.length > 0) {
-    await createChart();
-  }
+  await createChart();
 });
 
 onUnmounted(() => {
