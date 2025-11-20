@@ -25,7 +25,16 @@ interface Item {
 }
 
 const props = defineProps<{
-  items: { data: Item[]; total: number; per_page: number; current_page: number }
+  items: {
+    data: Item[]
+    total: number
+    per_page: number
+    current_page: number
+    last_page?: number
+    prev_page_url?: string | null
+    next_page_url?: string | null
+    links?: Array<{ url: string | null; label: string; active: boolean }>
+  }
   filters: { q?: string | null; product_id?: number | string | null }
   products: Array<{ id: number; nama: string }>
 }>()
@@ -35,6 +44,29 @@ const inertiaVersion = inertiaPage?.version || ''
 
 const q = ref(props.filters.q || '')
 const productId = ref(props.filters.product_id || '')
+
+const pageLinks = computed(() => {
+  const links = (props.items as any)?.links || []
+  return Array.isArray(links) ? links : []
+})
+const numericLinks = computed(() => {
+  const links = pageLinks.value || []
+  return links.filter((ln: any) => ln && ln.label && /^\d+$/.test(String(ln.label)))
+})
+const totalPages = computed(() => Number((props.items as any)?.last_page || 1))
+const prevUrl = computed(() => (props.items as any)?.prev_page_url || null)
+const nextUrl = computed(() => (props.items as any)?.next_page_url || null)
+const goTo = (url: string | null) => {
+  if (!url) return
+  router.visit(url, { preserveState: true, preserveScroll: true })
+}
+const goToPage = (page: number) => {
+  const params: Record<string, any> = {}
+  if (q.value) params.q = q.value
+  if (productId.value) params.product_id = productId.value
+  params.page = page
+  router.get('/cs/maintenances', params, { preserveState: true, preserveScroll: true })
+}
 
 // Grafik: tanggal awal/akhir default bulan berjalan
 const today = new Date()
@@ -833,9 +865,54 @@ const breadcrumbs = [
           </table>
         </div>
 
-        <div class="flex justify-between items-center mt-4 text-sm">
-          <div>Total: {{ props.items.total }}</div>
-          <div>Halaman: {{ props.items.current_page }}</div>
+        <div class="mt-4 flex items-center justify-between">
+          <div class="text-sm text-muted-foreground">
+            Total {{ props.items.total }} data • Hal {{ props.items.current_page }}
+          </div>
+          <nav aria-label="Pagination" class="flex items-center gap-2">
+            <button
+              type="button"
+              class="inline-flex items-center rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              :disabled="!prevUrl"
+              @click="goTo(prevUrl)"
+            >Prev</button>
+
+            <template v-if="pageLinks && pageLinks.length">
+              <button
+                v-for="(ln, idx) in numericLinks"
+                :key="`${ln.label}-${idx}`"
+                type="button"
+                @click="goTo(ln.url)"
+                :class="[
+                  'inline-flex items-center rounded-md border px-3 py-1.5 text-sm',
+                  ln.active
+                    ? 'border-blue-200 bg-blue-50 text-blue-700 font-medium'
+                    : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100'
+                ]"
+              >{{ ln.label }}</button>
+            </template>
+            <template v-else>
+              <button
+                v-for="p in totalPages"
+                :key="p"
+                type="button"
+                @click="goToPage(p as number)"
+                :class="[
+                  'inline-flex items-center rounded-md border px-3 py-1.5 text-sm',
+                  (props.items.current_page === p)
+                    ? 'border-blue-200 bg-blue-50 text-blue-700 font-medium'
+                    : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100'
+                ]"
+              >{{ p }}</button>
+            </template>
+
+            <button
+              type="button"
+              class="inline-flex items-center rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              :disabled="!nextUrl"
+              @click="goTo(nextUrl)"
+            >Next</button>
+          </nav>
         </div>
       </CardContent>
   </Card>
