@@ -643,6 +643,24 @@ const breadcrumbs = [
   <Head title="CS Maintenance" />
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="mx-6 mt-6 space-y-6">
+      <div class="relative overflow-hidden rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 p-4 text-indigo-700 sm:p-6">
+        <div class="relative z-10">
+          <div class="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+            <div class="flex-1">
+              <h1 class="mb-2 flex items-center gap-2 text-xl font-bold tracking-tight sm:gap-3 sm:text-2xl lg:text-3xl">
+                <WrenchIcon class="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
+                Manajemen CS Maintenance
+              </h1>
+              <p class="text-sm text-indigo-700/80">Kelola data CS Maintenance secara konsisten dan rapi.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <Button as-child variant="secondary" class="bg-white/60 hover:bg-white/70 text-indigo-700">
+                <a href="/cs/maintenances/create">Tambah</a>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
   <Card>
     <CardHeader class="border-b border-indigo-100/50 bg-gradient-to-br from-indigo-50 via-sky-50 to-cyan-50">
       <CardTitle>Daftar Maintenance Mitra</CardTitle>
@@ -784,24 +802,6 @@ const breadcrumbs = [
         </div>
       </CardContent>
     </Card>
-      <div class="relative overflow-hidden rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 p-4 text-indigo-700 sm:p-6">
-        <div class="relative z-10">
-          <div class="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
-            <div class="flex-1">
-              <h1 class="mb-2 flex items-center gap-2 text-xl font-bold tracking-tight sm:gap-3 sm:text-2xl lg:text-3xl">
-                <WrenchIcon class="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
-                Manajemen CS Maintenance
-              </h1>
-              <p class="text-sm text-indigo-700/80">Kelola data CS Maintenance secara konsisten dan rapi.</p>
-            </div>
-            <div class="flex items-center gap-2">
-              <Button as-child variant="secondary" class="bg-white/60 hover:bg-white/70 text-indigo-700">
-                <a href="/cs/maintenances/create">Tambah</a>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
 
     <Card>
       <CardHeader>
