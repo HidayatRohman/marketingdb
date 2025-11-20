@@ -110,6 +110,8 @@ const toggleMitraActive = (r: RepeatRow) => {
   else inactiveSet.value.add(key)
   saveInactive()
 }
+const inactiveRows = computed(() => repeatTableRows.value.filter((r) => isInactive(r)))
+const activeRows = computed(() => repeatTableRows.value.filter((r) => !isInactive(r)))
 const fetchRepeatTable = async () => {
   repeatTableLoading.value = true
   try {
@@ -271,7 +273,7 @@ const fetchEarliestRepeatDate = async (searchKey: string, targetPhone?: string, 
 
 const fillRepeatJoinDates = async () => {
   const tasks: Promise<void>[] = []
-  for (const r of repeatTableRows.value) {
+  for (const r of activeRows.value) {
     const key = (r.no_tlp || '').trim() || (r.nama_pelanggan || '').trim().toLowerCase()
     if (!key) continue
     tasks.push((async () => {
@@ -645,7 +647,7 @@ const breadcrumbs = [
               </tr>
             </thead>
             <tbody>
-              <tr v-for="it in repeatTableRows" :key="it.id" class="border-b" :class="{ 'bg-red-50': isInactive(it) }">
+              <tr v-for="it in activeRows" :key="it.id" class="border-b">
                 <td class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-border">{{ it.nama_pelanggan }}</td>
                 <td class="py-2 px-2">{{ it.no_tlp }}</td>
                 <td class="py-2 px-2">{{ it.bio_pelanggan || '-' }}</td>
@@ -680,8 +682,70 @@ const breadcrumbs = [
                   </div>
                 </td>
               </tr>
-              <tr v-if="repeatTableRows.length === 0">
+              <tr v-if="activeRows.length === 0">
                 <td colspan="11" class="text-center py-6 text-muted-foreground">Tidak ada data Repeat untuk ditampilkan</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+    <Card>
+      <CardHeader class="border-b border-red-100/50 bg-red-50">
+        <CardTitle>Daftar Mitra Tidak Aktif</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="overflow-x-auto responsive-table">
+          <table class="min-w-full text-sm">
+            <thead>
+              <tr class="text-left border-b">
+                <th class="py-2 px-2 sticky left-0 z-30 bg-background min-w-[120px] sm:min-w-[200px] border-r border-border">Nama Pelanggan</th>
+                <th class="py-2 px-2">No Tlp</th>
+                <th class="py-2 px-2">Tanggal Join</th>
+                <th class="py-2 px-2">Produk</th>
+                <th class="py-2 px-2">Kota</th>
+                <th class="py-2 px-2">Provinsi</th>
+                <th class="py-2 px-2">Tanggal Maintenance</th>
+                <th class="py-2 px-2">Kendala</th>
+                <th class="py-2 px-2">Solusi</th>
+                <th class="py-2 px-2">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="it in inactiveRows" :key="mitraKey(it)" class="border-b bg-red-50">
+                <td class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-border">{{ it.nama_pelanggan }}</td>
+                <td class="py-2 px-2">{{ it.no_tlp }}</td>
+                <td class="py-2 px-2">{{ formatDate(it.join_tanggal || '') }}</td>
+                <td class="py-2 px-2">{{ it.product?.nama || '-' }}</td>
+                <td class="py-2 px-2">{{ it.kota || '-' }}</td>
+                <td class="py-2 px-2">{{ it.provinsi || '-' }}</td>
+                <td class="py-2 px-2">{{ formatDate(it.maintenance_tanggal || '') }}</td>
+                <td class="py-2 px-2">{{ it.kendala || '-' }}</td>
+                <td class="py-2 px-2">{{ it.solusi || '-' }}</td>
+                <td class="py-2 px-2">
+                  <div class="flex gap-2">
+                    <button
+                      type="button"
+                      @click="toggleMitraActive(it)"
+                      :class="[
+                        'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none',
+                        isInactive(it) ? 'bg-gray-300' : 'bg-blue-500'
+                      ]"
+                      aria-checked="false"
+                      role="switch"
+                    >
+                      <span class="sr-only">Toggle aktif</span>
+                      <span
+                        aria-hidden="true"
+                        class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200"
+                        :class="isInactive(it) ? 'translate-x-0.5' : 'translate-x-5'"
+                      />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="inactiveRows.length === 0">
+                <td colspan="10" class="text-center py-6 text-muted-foreground">Tidak ada mitra tidak aktif</td>
               </tr>
             </tbody>
           </table>
