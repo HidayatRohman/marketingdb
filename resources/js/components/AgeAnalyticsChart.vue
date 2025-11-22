@@ -12,38 +12,6 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <!-- Chart Type Toggle -->
-          <div class="flex items-center rounded-lg border border-gray-200 dark:border-gray-700 p-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              @click="viewMode = 'bar'"
-              :class="[
-                'h-7 px-2 text-xs transition-all duration-200',
-                viewMode === 'bar'
-                  ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-              ]"
-            >
-              <BarChart3 class="h-3 w-3" />
-              <span class="ml-1 hidden sm:inline">Bar</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              @click="viewMode = 'doughnut'"
-              :class="[
-                'h-7 px-2 text-xs transition-all duration-200',
-                viewMode === 'doughnut'
-                  ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-              ]"
-            >
-              <TrendingUp class="h-3 w-3" />
-              <span class="ml-1 hidden sm:inline">Pie</span>
-            </Button>
-          </div>
-
           <!-- Refresh Button -->
           <Button
             variant="outline"
@@ -69,9 +37,18 @@
       </div>
 
       <!-- Chart Container -->
-      <div v-else class="relative">
-        <div class="h-64 w-full sm:h-80">
-          <canvas :key="canvasKey" ref="chartCanvas" :id="canvasId"></canvas>
+      <div v-else-if="props.data && props.data.length > 0" class="relative">
+        <div class="flex items-center justify-center h-64 w-full sm:h-80">
+          <div ref="pieRef" class="relative" style="width: 240px; height: 240px;"
+               @mouseenter="onPieEnter" @mousemove="onPieMove" @mouseleave="onPieLeave">
+            <div class="w-full h-full rounded-full" :style="pieStyle"></div>
+            <div class="absolute inset-0 m-auto rounded-full bg-white dark:bg-gray-900" style="width: 120px; height: 120px;"></div>
+            <div v-if="tooltip.visible" class="absolute z-10 px-2 py-1 text-xs rounded-md shadow-md bg-gray-900 text-white"
+                 :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }">
+              <div class="font-medium">{{ tooltip.label }}</div>
+              <div>Jumlah: {{ tooltip.count }}</div>
+            </div>
+          </div>
         </div>
 
         <!-- Legend & Stats -->
@@ -84,7 +61,7 @@
             </h4>
             <div class="grid grid-cols-1 gap-2">
               <div 
-                v-for="(label, index) in chartData.labels" 
+                v-for="(label, index) in ageLabels" 
                 :key="index"
                 class="flex items-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-800 px-2 py-1"
               >
@@ -141,37 +118,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, BarChart3, RefreshCw, Clock, Palette } from 'lucide-vue-next';
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  BarController,
-  DoughnutController,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  ArcElement,
-  ChartOptions,
-  ChartData,
-} from 'chart.js';
+import { RefreshCw, Clock, Palette } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  BarController,
-  DoughnutController,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  ArcElement,
-);
+/* HTML-based pie chart; no Chart.js registration */
 
 interface AgeAnalyticsData {
   usia_bucket: string;
@@ -194,14 +144,7 @@ const emit = defineEmits<{
   refresh: [];
 }>();
 
-// Component state
-const chartCanvas = ref<HTMLCanvasElement>();
-const chartInstance = ref<ChartJS | null>(null);
-const viewMode = ref<'bar' | 'doughnut'>('bar');
-
-// Canvas management to avoid reuse issues
-const canvasKey = ref(0);
-const canvasId = computed(() => `age-analytics-chart-${canvasKey.value}`);
+const pieRef = ref<HTMLDivElement>();
 
 // Colors
 const palette = [
@@ -215,10 +158,10 @@ const palette = [
   '#f97316', // Orange
 ];
 
-const backgroundColors = computed(() => {
-  const labels = chartData.value?.labels || [];
-  return labels.map((_, idx) => palette[idx % palette.length]);
-});
+const ageLabels = computed(() => (props.data || []).map(item => item.usia_bucket || 'Unknown'));
+const counts = computed(() => ageLabels.value.map(label => countsByLabel.value[label] || 0));
+const total = computed(() => counts.value.reduce((a, b) => a + b, 0));
+const backgroundColors = computed(() => ageLabels.value.map((_, idx) => palette[idx % palette.length]));
 
 // Aggregations
 const countsByLabel = computed<Record<string, number>>(() => {
@@ -238,157 +181,24 @@ const topBuckets = computed(() => {
     .slice(0, 3);
 });
 
-// Computed chart data
-const chartData = computed<ChartData<'bar' | 'doughnut'> | null>(() => {
-  if (!props.data) {
-    return null;
+const pieStyle = computed(() => {
+  const colors = backgroundColors.value;
+  const c = counts.value;
+  const t = total.value;
+  if (t <= 0) return { background: 'conic-gradient(#e5e7eb 0deg 360deg)', borderRadius: '50%' } as any;
+  let current = 0;
+  const parts: string[] = [];
+  for (let i = 0; i < c.length; i++) {
+    const angle = (c[i] / t) * 360;
+    const start = current;
+    const end = current + angle;
+    parts.push(`${colors[i]} ${start}deg ${end}deg`);
+    current = end;
   }
-
-  const defaultLabels = ['Unknown', '17-24', '25-34', '35-44', '45-54', '55+'];
-  const labels = (props.data.length > 0)
-    ? props.data.map(item => item.usia_bucket || 'Unknown')
-    : defaultLabels;
-  const counts = (props.data.length > 0)
-    ? props.data.map(item => item.count || 0)
-    : new Array(labels.length).fill(0);
-
-  if (viewMode.value === 'bar') {
-    return {
-      labels,
-      datasets: [
-        {
-          label: 'Jumlah Transaksi',
-          data: counts,
-          borderColor: '#6366f1',
-          backgroundColor: '#6366f120',
-          borderWidth: 2,
-        },
-      ],
-    } as ChartData<'bar'>;
-  }
-
-  // Doughnut
-  return {
-    labels,
-    datasets: [
-      {
-        label: 'Jumlah Transaksi',
-        data: counts,
-        backgroundColor: backgroundColors.value,
-        borderColor: backgroundColors.value,
-        borderWidth: 1,
-      },
-    ],
-  } as ChartData<'doughnut'>;
+  return { background: `conic-gradient(${parts.join(', ')})`, borderRadius: '50%' } as any;
 });
 
-// Chart options
-const chartOptions = computed<ChartOptions<'bar' | 'doughnut'>>(() => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: viewMode.value === 'doughnut',
-      position: 'bottom',
-      labels: {
-        color: '#6b7280',
-        font: { size: 11 },
-        usePointStyle: true,
-        pointStyle: 'circle',
-      },
-    },
-    tooltip: {
-      enabled: true,
-      backgroundColor: 'rgba(17, 24, 39, 0.9)',
-      titleColor: '#fff',
-      bodyColor: '#e5e7eb',
-      borderColor: 'rgba(255,255,255,0.15)',
-      borderWidth: 1,
-      padding: 10,
-      cornerRadius: 8,
-      displayColors: true,
-      callbacks: {
-        title: (context) => `Usia: ${context[0].label || 'Unknown'}`,
-        label: (context) => `Jumlah: ${context.parsed}`,
-      },
-    },
-  },
-  indexAxis: viewMode.value === 'bar' ? 'y' : undefined,
-  scales: viewMode.value === 'bar' ? {
-    x: {
-      beginAtZero: true,
-      grid: { color: 'rgba(107, 114, 128, 0.1)' },
-      ticks: { color: '#6b7280', font: { size: 11 } },
-    },
-    y: {
-      grid: { display: false },
-      ticks: { color: '#6b7280', font: { size: 11 } },
-    },
-  } : undefined,
-}));
+/* no chart options for HTML pie */
 
-// Chart management
-const createChart = async () => {
-  if (!chartCanvas.value || !chartData.value) return;
-
-  // Destroy existing chart
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    chartInstance.value = null;
-  }
-
-  await nextTick();
-
-  const ctx = chartCanvas.value.getContext('2d');
-  if (!ctx) return;
-
-  chartInstance.value = new ChartJS(ctx, {
-    type: viewMode.value,
-    data: chartData.value as any,
-    options: chartOptions.value as any,
-  });
-};
-
-const updateChart = async () => {
-  if (!chartInstance.value || !chartData.value) {
-    await createChart();
-    return;
-  }
-
-  // Update chart type if changed
-  if (chartInstance.value.config.type !== viewMode.value) {
-    await createChart();
-    return;
-  }
-
-  // Update data
-  chartInstance.value.data = chartData.value as any;
-  chartInstance.value.options = chartOptions.value as any;
-  chartInstance.value.update('none');
-};
-
-// Watchers
-watch([() => chartData.value, viewMode], async () => {
-  canvasKey.value++;
-  await nextTick();
-  await createChart();
-}, { deep: true });
-
-watch(() => props.loading, (newLoading) => {
-  if (!newLoading) {
-    nextTick(() => createChart());
-  }
-});
-
-// Lifecycle
-onMounted(() => {
-  nextTick(() => createChart());
-});
-
-onUnmounted(() => {
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    chartInstance.value = null;
-  }
-});
+/* no Chart.js lifecycle needed */
 </script>

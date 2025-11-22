@@ -334,11 +334,9 @@ const refreshAgeChart = () => {
 const fetchLeadAwalChartData = async () => {
     leadAwalChartLoading.value = true;
     try {
-        const response = await fetch('/transaksis/analytics/lead-awal?' + new URLSearchParams({
-            start_date: periodeStart.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-            end_date: periodeEnd.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
-            brand_id: selectedBrand.value || undefined,
-        }));
+        const params = new URLSearchParams();
+        if (selectedBrand.value) params.append('brand_id', String(selectedBrand.value));
+        const response = await fetch('/transaksis/analytics/lead-awal' + (params.toString() ? ('?' + params.toString()) : ''));
 
         if (response.ok) {
             const result = await response.json();

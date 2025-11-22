@@ -162,13 +162,11 @@ const fetchSourceAnalytics = async () => {
 const fetchAgeAnalytics = async () => {
   ageChartLoading.value = true;
   try {
-    const params = new URLSearchParams({
-      start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-      end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
-    });
+    const params = new URLSearchParams();
     if (selectedMarketing.value && selectedMarketing.value !== 'all') params.append('marketing', String(selectedMarketing.value));
     if (selectedBrand.value && selectedBrand.value !== 'all') params.append('brand', String(selectedBrand.value));
-    const res = await fetch('/transaksis/analytics/usia?' + params.toString());
+    const query = params.toString();
+    const res = await fetch('/transaksis/analytics/usia' + (query ? ('?' + query) : ''));
     if (res.ok) {
       const json = await res.json();
       ageChartData.value = json.data || [];
@@ -183,13 +181,10 @@ const fetchAgeAnalytics = async () => {
 const fetchLeadAwalAnalytics = async () => {
   leadAwalChartLoading.value = true;
   try {
-    const params = new URLSearchParams({
-      start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-      end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
-    });
+    const params = new URLSearchParams();
     if (selectedMarketing.value && selectedMarketing.value !== 'all') params.append('marketing', String(selectedMarketing.value));
     if (selectedBrand.value && selectedBrand.value !== 'all') params.append('brand', String(selectedBrand.value));
-    const res = await fetch('/transaksis/analytics/lead-awal?' + params.toString());
+    const res = await fetch('/transaksis/analytics/lead-awal' + (params.toString() ? ('?' + params.toString()) : ''));
     if (res.ok) {
       const json = await res.json();
       leadAwalChartData.value = json.data || [];

@@ -391,11 +391,16 @@ class TransaksiController extends Controller
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
 
-        // Apply date range filter (default to current year)
-        $startDate = $request->get('start_date', now()->startOfYear()->format('Y-m-d'));
-        $endDate = $request->get('end_date', now()->endOfYear()->format('Y-m-d'));
-        
-        $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+        // Apply date range filter only if provided (default: all time)
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        if ($startDate && $endDate) {
+            $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+        } elseif ($startDate) {
+            $query->whereDate('tanggal_tf', '>=', $startDate);
+        } elseif ($endDate) {
+            $query->whereDate('tanggal_tf', '<=', $endDate);
+        }
 
         // Apply optional filters for marketing and brand
         $marketingId = $request->get('marketing');
@@ -484,11 +489,16 @@ class TransaksiController extends Controller
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
 
-        // Apply date range filter (default to current year)
-        $startDate = $request->get('start_date', now()->startOfYear()->format('Y-m-d'));
-        $endDate = $request->get('end_date', now()->endOfYear()->format('Y-m-d'));
-        
-        $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+        // Apply date range filter only if provided (default: all time)
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        if ($startDate && $endDate) {
+            $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+        } elseif ($startDate) {
+            $query->whereDate('tanggal_tf', '>=', $startDate);
+        } elseif ($endDate) {
+            $query->whereDate('tanggal_tf', '<=', $endDate);
+        }
 
         // Apply optional filters for marketing and brand
         $marketingId = $request->get('marketing');
@@ -510,11 +520,11 @@ class TransaksiController extends Controller
                     WHEN usia BETWEEN 45 AND 54 THEN "45-54"
                     WHEN usia BETWEEN 55 AND 64 THEN "55-64"
                     ELSE "65+"
-                END AS age_group,
+                END AS usia_bucket,
                 COUNT(*) as count,
                 COALESCE(SUM(nominal_masuk), 0) as total_nominal
             ')
-            ->groupBy('age_group')
+            ->groupBy('usia_bucket')
             ->orderByDesc('count')
             ->get();
 
@@ -538,11 +548,16 @@ class TransaksiController extends Controller
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
 
-        // Apply date range filter (default to current year)
-        $startDate = $request->get('start_date', now()->startOfYear()->format('Y-m-d'));
-        $endDate = $request->get('end_date', now()->endOfYear()->format('Y-m-d'));
-        
-        $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+        // Apply date range filter only if provided (default: all time)
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        if ($startDate && $endDate) {
+            $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+        } elseif ($startDate) {
+            $query->whereDate('tanggal_tf', '>=', $startDate);
+        } elseif ($endDate) {
+            $query->whereDate('tanggal_tf', '<=', $endDate);
+        }
 
         // Apply optional filters for marketing and brand
         $marketingId = $request->get('marketing');
