@@ -145,6 +145,7 @@ const emit = defineEmits<{
 }>();
 
 const pieRef = ref<HTMLDivElement>();
+const tooltip = ref({ visible: false, x: 0, y: 0, label: '', count: 0 });
 
 // Colors
 const palette = [
@@ -201,4 +202,46 @@ const pieStyle = computed(() => {
 /* no chart options for HTML pie */
 
 /* no Chart.js lifecycle needed */
+const segmentRanges = computed(() => {
+  const labels = ageLabels.value;
+  const c = counts.value;
+  const colors = backgroundColors.value;
+  const t = total.value;
+  let current = 0;
+  const ranges: { start: number; end: number; label: string; count: number; color: string }[] = [];
+  for (let i = 0; i < c.length; i++) {
+    const angle = t > 0 ? (c[i] / t) * 360 : 0;
+    const start = current;
+    const end = current + angle;
+    ranges.push({ start, end, label: labels[i] || 'Unknown', count: c[i] || 0, color: colors[i] });
+    current = end;
+  }
+  return ranges;
+});
+
+const onPieEnter = () => {
+  tooltip.value.visible = true;
+};
+
+const onPieLeave = () => {
+  tooltip.value.visible = false;
+};
+
+const onPieMove = (e: MouseEvent) => {
+  const el = pieRef.value;
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const dx = e.clientX - cx;
+  const dy = e.clientY - cy;
+  let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+  if (angle < 0) angle += 360;
+  const seg = segmentRanges.value.find(s => angle >= s.start && angle < s.end) || segmentRanges.value[segmentRanges.value.length - 1];
+  if (!seg) return;
+  tooltip.value.label = seg.label;
+  tooltip.value.count = seg.count;
+  tooltip.value.x = e.clientX - rect.left + 8;
+  tooltip.value.y = e.clientY - rect.top + 8;
+};
 </script>
