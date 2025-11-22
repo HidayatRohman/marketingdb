@@ -317,17 +317,36 @@ class IklanBudgetController extends Controller
         $year = (int) ($request->get('year', now()->year));
         $brandId = $request->get('brand_id');
 
-        $query = IklanBudget::query()->whereYear('tanggal', $year);
+        try {
+            $query = IklanBudget::query()->whereYear('tanggal', $year);
 
-        if (!empty($brandId)) {
-            $query->where('brand_id', $brandId);
+            if (!empty($brandId)) {
+                $query->where('brand_id', $brandId);
+            }
+
+            $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
+            if ($driver === 'sqlite') {
+                $monthExpr = "CAST(strftime('%m', tanggal) AS INTEGER)";
+            } elseif ($driver === 'pgsql') {
+                $monthExpr = "EXTRACT(MONTH FROM tanggal)";
+            } else {
+                $monthExpr = "MONTH(tanggal)";
+            }
+
+            $rows = $query
+                ->selectRaw($monthExpr . ' as month, COALESCE(SUM(spent_amount), 0) as total_spent')
+                ->groupBy(\Illuminate\Support\Facades\DB::raw($monthExpr))
+                ->orderBy('month')
+                ->get();
+        } catch (\Throwable $e) {
+            \Log::error('monthlySpent analytics failed', [
+                'error' => $e->getMessage(),
+                'driver' => \Illuminate\Support\Facades\DB::connection()->getDriverName(),
+                'year' => $year,
+                'brand_id' => $brandId,
+            ]);
+            $rows = collect([]);
         }
-
-        // Aggregate spent per month
-        $rows = $query->selectRaw('MONTH(tanggal) as month, COALESCE(SUM(spent_amount), 0) as total_spent')
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
 
         // Prepare a full 12-month series with zero filling
         $monthLabels = [
@@ -360,17 +379,36 @@ class IklanBudgetController extends Controller
         $year = (int) ($request->get('year', now()->year));
         $brandId = $request->get('brand_id');
 
-        $query = \App\Models\Mitra::query()->whereYear('tanggal_lead', $year);
+        try {
+            $query = \App\Models\Mitra::query()->whereYear('tanggal_lead', $year);
 
-        if (!empty($brandId)) {
-            $query->where('brand_id', $brandId);
+            if (!empty($brandId)) {
+                $query->where('brand_id', $brandId);
+            }
+
+            $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
+            if ($driver === 'sqlite') {
+                $monthExpr = "CAST(strftime('%m', tanggal_lead) AS INTEGER)";
+            } elseif ($driver === 'pgsql') {
+                $monthExpr = "EXTRACT(MONTH FROM tanggal_lead)";
+            } else {
+                $monthExpr = "MONTH(tanggal_lead)";
+            }
+
+            $rows = $query
+                ->selectRaw($monthExpr . ' as month, COUNT(*) as total_leads')
+                ->groupBy(\Illuminate\Support\Facades\DB::raw($monthExpr))
+                ->orderBy('month')
+                ->get();
+        } catch (\Throwable $e) {
+            \Log::error('monthlyLeads analytics failed', [
+                'error' => $e->getMessage(),
+                'driver' => \Illuminate\Support\Facades\DB::connection()->getDriverName(),
+                'year' => $year,
+                'brand_id' => $brandId,
+            ]);
+            $rows = collect([]);
         }
-
-        // Aggregate leads per month
-        $rows = $query->selectRaw('MONTH(tanggal_lead) as month, COUNT(*) as total_leads')
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
 
         // Prepare a full 12-month series with zero filling
         $monthLabels = [
