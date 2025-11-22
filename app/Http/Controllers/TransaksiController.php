@@ -221,9 +221,9 @@ class TransaksiController extends Controller
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
 
-        // Apply date range filter (default to current year)
-        $startDate = $request->get('start_date', now()->startOfYear()->format('Y-m-d'));
-        $endDate = $request->get('end_date', now()->endOfYear()->format('Y-m-d'));
+        // Apply date range filter (default to current month)
+        $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->get('end_date', now()->endOfMonth()->format('Y-m-d'));
         
         $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
 
@@ -239,20 +239,44 @@ class TransaksiController extends Controller
             $query->where('lead_awal_brand_id', $brandId);
         }
 
-        // Group by month and status_pembayaran
-        $data = $query->selectRaw('
-                YEAR(tanggal_tf) as year,
-                MONTH(tanggal_tf) as month,
-                status_pembayaran,
-                COUNT(*) as count
-            ')
-            ->groupBy('year', 'month', 'status_pembayaran')
-            ->orderBy('year')
-            ->orderBy('month')
-            ->get();
+        $driver = config('database.default');
+        $connection = config("database.connections.{$driver}.driver");
+
+        if ($connection === 'sqlite') {
+            $data = $query->selectRaw('
+                    strftime("%Y-%m-%d", tanggal_tf) as date,
+                    status_pembayaran,
+                    COUNT(*) as count
+                ')
+                ->groupBy('date', 'status_pembayaran')
+                ->orderBy('date')
+                ->get();
+        } elseif ($connection === 'pgsql') {
+            $data = $query->selectRaw('
+                    CAST(tanggal_tf AS DATE) as date,
+                    status_pembayaran,
+                    COUNT(*) as count
+                ')
+                ->groupBy('date', 'status_pembayaran')
+                ->orderBy('date')
+                ->get();
+        } else {
+            $data = $query->selectRaw('
+                    DATE(tanggal_tf) as date,
+                    status_pembayaran,
+                    COUNT(*) as count
+                ')
+                ->groupBy('date', 'status_pembayaran')
+                ->orderBy('date')
+                ->get();
+        }
 
         return response()->json([
             'data' => $data,
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
         ]);
     }
 

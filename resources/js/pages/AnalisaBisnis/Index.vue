@@ -117,9 +117,12 @@ const fetchMonthlySpent = async () => {
 const fetchPaymentStatus = async () => {
   paymentStatusLoading.value = true;
   try {
+    const now = new Date();
+    const defaultStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const defaultEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
     const params = new URLSearchParams({
-      start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-      end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+      start_date: startDate.value || defaultStart,
+      end_date: endDate.value || defaultEnd,
     });
     if (selectedMarketing.value && selectedMarketing.value !== 'all') params.append('marketing', String(selectedMarketing.value));
     if (selectedBrand.value && selectedBrand.value !== 'all') params.append('brand', String(selectedBrand.value));

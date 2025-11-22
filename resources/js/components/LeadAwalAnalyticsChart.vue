@@ -36,7 +36,7 @@
       </div>
 
       <!-- Content -->
-      <div v-else-if="processed.length > 0" class="space-y-4">
+      <div v-else class="space-y-4">
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <!-- Grafik Lead Awal (Progress Bars) -->
           <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gradient-to-br from-indigo-50 to-pink-50 dark:from-indigo-900/20 dark:to-pink-900/20">
@@ -46,7 +46,7 @@
             </h4>
             <div class="space-y-3">
               <div
-                v-for="(item, idx) in processed"
+                v-for="(item, idx) in (processed.length > 0 ? processed : [{ lead_awal: 'Tidak ada data', count: 0, percentage: 0 }])"
                 :key="item.lead_awal + '-' + idx"
                 class="space-y-1"
               >
@@ -67,7 +67,7 @@
                   :value="item.percentage"
                   class="h-2 rounded-lg transition-all duration-200 hover:h-3"
                   :trackClass="'bg-gray-100 dark:bg-gray-800'"
-                  :barStyle="{ background: gradientFor(item.lead_awal, idx) }"
+                  :barStyle="{ background: processed.length > 0 ? gradientFor(item.lead_awal, idx) : 'linear-gradient(90deg, #e5e7eb, #e5e7eb)' }"
                 />
               </div>
             </div>
@@ -81,7 +81,7 @@
             </h4>
             <div class="space-y-2 max-h-64 overflow-auto pr-1">
               <div
-                v-for="(item, idx) in processed"
+                v-for="(item, idx) in (processed.length > 0 ? processed : [{ lead_awal: 'Tidak ada data', count: 0, percentage: 0 }])"
                 :key="'detail-' + item.lead_awal + '-' + idx"
                 class="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-gray-800 px-2 py-1"
               >
@@ -97,7 +97,7 @@
                 <div class="flex items-center gap-2">
                   <Badge variant="secondary" class="text-xs">{{ item.count }}</Badge>
                   <span class="text-xs text-gray-500">{{ item.percentage.toFixed(1) }}%</span>
-                </div>
+              </div>
               </div>
             </div>
           </div>
@@ -125,18 +125,7 @@
         </div>
       </div>
 
-      <!-- Empty State -->
-      <div v-else class="flex flex-col items-center justify-center py-8 sm:py-12">
-        <div class="rounded-full bg-gray-100 dark:bg-gray-800 p-3 mb-3 sm:p-4 sm:mb-4">
-          <TrendingUp class="h-6 w-6 text-gray-400 sm:h-8 sm:w-8" />
-        </div>
-        <h3 class="text-base font-medium text-gray-900 dark:text-white mb-2 sm:text-lg">
-          Belum Ada Data Transaksi
-        </h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm px-4 sm:max-w-md sm:px-0">
-          Tidak ada data untuk periode yang dipilih. Pilih tanggal atau filter yang berbeda.
-        </p>
-      </div>
+      
     </CardContent>
   </Card>
 </template>

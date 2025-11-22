@@ -69,7 +69,7 @@
       </div>
 
       <!-- Chart Container -->
-      <div v-else-if="chartData && chartData.labels.length > 0" class="relative">
+      <div v-else class="relative">
         <div class="h-64 w-full sm:h-80">
           <canvas :key="canvasKey" ref="chartCanvas" :id="canvasId"></canvas>
         </div>
@@ -369,24 +369,20 @@ const updateChart = async () => {
 
 // Watchers
 watch([() => chartData.value, viewMode], async () => {
-  if (chartData.value) {
-    canvasKey.value++;
-    await nextTick();
-    await createChart();
-  }
+  canvasKey.value++;
+  await nextTick();
+  await createChart();
 }, { deep: true });
 
 watch(() => props.loading, (newLoading) => {
-  if (!newLoading && chartData.value) {
+  if (!newLoading) {
     nextTick(() => createChart());
   }
 });
 
 // Lifecycle
 onMounted(() => {
-  if (chartData.value) {
-    nextTick(() => createChart());
-  }
+  nextTick(() => createChart());
 });
 
 onUnmounted(() => {

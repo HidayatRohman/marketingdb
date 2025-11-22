@@ -208,6 +208,7 @@ const emit = defineEmits<{
 // Component state
 const chartCanvas = ref<HTMLCanvasElement>();
 const chartInstance = ref<ChartJS | null>(null);
+const isCreating = ref(false);
 const viewMode = ref<'bar' | 'doughnut'>('doughnut');
 
 // Canvas management to avoid reuse issues
@@ -371,11 +372,23 @@ const chartOptions = computed<ChartOptions<'bar' | 'doughnut'>>(() => ({
 // Chart management
 const createChart = async () => {
   if (!chartCanvas.value || !chartData.value) return;
+  if (isCreating.value) return;
+  isCreating.value = true;
 
   // Destroy existing chart
   if (chartInstance.value) {
     chartInstance.value.destroy();
     chartInstance.value = null;
+  }
+
+  // Ensure no lingering chart bound to the same canvas
+  const existing = ChartJS.getChart(chartCanvas.value);
+  if (existing) {
+    existing.destroy();
+  }
+  const existingById = ChartJS.getChart(canvasId.value as any);
+  if (existingById) {
+    existingById.destroy();
   }
 
   await nextTick();
@@ -388,6 +401,7 @@ const createChart = async () => {
     data: chartData.value as any,
     options: chartOptions.value as any,
   });
+  isCreating.value = false;
 };
 
 const updateChart = async () => {
@@ -435,5 +449,9 @@ onUnmounted(() => {
     chartInstance.value.destroy();
     chartInstance.value = null;
   }
+  const existing = ChartJS.getChart(chartCanvas.value as any);
+  if (existing) existing.destroy();
+  const existingById = ChartJS.getChart(canvasId.value as any);
+  if (existingById) existingById.destroy();
 });
 </script>

@@ -69,78 +69,60 @@
       </div>
 
       <!-- Chart Container -->
-      <div v-else-if="chartData && chartData.datasets.length > 0" class="relative">
+      <div v-else class="relative">
         <div class="h-64 w-full sm:h-80">
           <canvas :key="canvasKey" ref="chartCanvas" :id="canvasId"></canvas>
         </div>
-        
-        <!-- Legend & Stats -->
         <div class="mt-3 grid grid-cols-1 gap-3 sm:mt-4 sm:gap-4 lg:grid-cols-2">
-          <!-- Status Legend -->
-          <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-              <Palette class="h-4 w-4" />
-              Status Pembayaran
-            </h4>
-            <div class="grid grid-cols-1 gap-2">
-              <div 
-                v-for="(dataset, index) in chartData.datasets" 
-                :key="index"
-                class="flex items-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-800 px-2 py-1"
-              >
-                <div 
-                  class="w-3 h-3 rounded-full flex-shrink-0" 
-                  :style="{ backgroundColor: dataset.borderColor }"
-                ></div>
-                <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate flex-1">
-                  {{ dataset.label }}
-                </span>
-                <Badge variant="secondary" class="text-xs flex-shrink-0">
-                  {{ getTotalForStatus(dataset.label) }}
-                </Badge>
-              </div>
-            </div>
-          </div>
-
-          <!-- Monthly Stats -->
           <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
             <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
               <Clock class="h-4 w-4" />
-              Bulan Tertinggi
+              Top 3 Tanggal Tertinggi
             </h4>
             <div class="space-y-1.5 sm:space-y-2">
-              <div 
-                v-for="peak in topMonths" 
-                :key="peak.month"
+              <div
+                v-for="peak in topDays"
+                :key="peak.date"
                 class="flex items-center justify-between rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 px-2 py-1"
               >
                 <span class="text-xs font-medium text-indigo-900 dark:text-indigo-100">
-                  {{ peak.month }}
+                  {{ peak.date }}
                 </span>
-                <div class="flex items-center gap-1">
-                  <Badge variant="default" class="text-xs">
-                    {{ peak.total }} transaksi
-                  </Badge>
+                <div class="flex items-center gap-2">
+                  <Badge variant="default" class="text-xs">{{ peak.total }} transaksi</Badge>
                   <TrendingUp class="h-3 w-3 text-indigo-500" />
                 </div>
               </div>
             </div>
           </div>
+
+          <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+              <Palette class="h-4 w-4" />
+              Ringkasan Status Bulan Ini
+            </h4>
+            <div class="grid grid-cols-1 gap-2">
+              <div class="flex items-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-800 px-2 py-1">
+                <div class="w-3 h-3 rounded-full flex-shrink-0" :style="{ backgroundColor: statusColors['DP'] }"></div>
+                <span class="text-xs font-medium text-gray-700 dark:text-gray-300 flex-1">DP/TJ</span>
+                <Badge variant="secondary" class="text-xs">{{ monthTotals.dp }}</Badge>
+              </div>
+              <div class="flex items-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-800 px-2 py-1">
+                <div class="w-3 h-3 rounded-full flex-shrink-0" :style="{ backgroundColor: statusColors['Tambahan DP'] }"></div>
+                <span class="text-xs font-medium text-gray-700 dark:text-gray-300 flex-1">Tambahan DP</span>
+                <Badge variant="secondary" class="text-xs">{{ monthTotals.tambahan_dp }}</Badge>
+              </div>
+              <div class="flex items-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-800 px-2 py-1">
+                <div class="w-3 h-3 rounded-full flex-shrink-0" :style="{ backgroundColor: statusColors['Pelunasan'] }"></div>
+                <span class="text-xs font-medium text-gray-700 dark:text-gray-300 flex-1">Pelunasan</span>
+                <Badge variant="secondary" class="text-xs">{{ monthTotals.pelunasan }}</Badge>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Empty State -->
-      <div v-else class="flex flex-col items-center justify-center py-8 sm:py-12">
-        <div class="rounded-full bg-gray-100 dark:bg-gray-800 p-3 mb-3 sm:p-4 sm:mb-4">
-          <TrendingUp class="h-6 w-6 text-gray-400 sm:h-8 sm:w-8" />
-        </div>
-        <h3 class="text-base font-medium text-gray-900 dark:text-white mb-2 sm:text-lg">
-          Belum Ada Data Transaksi
-        </h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm px-4 sm:max-w-md sm:px-0">
-          {{ emptyMessage || 'Tidak ada data transaksi untuk periode yang dipilih. Pilih tanggal atau filter yang berbeda.' }}
-        </p>
-      </div>
+      
     </CardContent>
   </Card>
 </template>
@@ -184,11 +166,9 @@ ChartJS.register(
 );
 
 interface PaymentStatusData {
-  month: string;
-  dp: number;
-  tambahan_dp: number;
-  pelunasan: number;
-  total: number;
+  date?: string;
+  status_pembayaran?: string;
+  count?: number;
 }
 
 interface Props {
@@ -209,11 +189,16 @@ const emit = defineEmits<{
 // Component state
 const chartCanvas = ref<HTMLCanvasElement>();
 const chartInstance = ref<ChartJS | null>(null);
+const isCreating = ref(false);
 const viewMode = ref<'line' | 'bar'>('line');
 
 // Canvas management to avoid reuse issues
 const canvasKey = ref(0);
 const canvasId = computed(() => `payment-status-chart-${canvasKey.value}`);
+const bumpCanvas = async () => {
+  canvasKey.value++;
+  await nextTick();
+};
 
 // Status colors
 const statusColors = {
@@ -222,53 +207,102 @@ const statusColors = {
   'Pelunasan': '#6366f1', // Indigo
 };
 
+// Helpers
+const monthLabel = (m: number | string | undefined) => {
+  const map = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const n = Number(m);
+  if (!isNaN(n) && n >= 1 && n <= 12) return map[n-1];
+  return String(m ?? '');
+};
+
+const statusMap: Record<string, 'DP' | 'Tambahan DP' | 'Pelunasan'> = {
+  'Dp / TJ': 'DP',
+  'DP': 'DP',
+  'Tambahan Dp': 'Tambahan DP',
+  'Tambahan DP': 'Tambahan DP',
+  'Pelunasan': 'Pelunasan',
+};
+
+const processed = computed(() => {
+  const rows = (props.data || []) as PaymentStatusData[];
+  const map: Record<string, { dp: number; tambahan_dp: number; pelunasan: number; total: number }> = {};
+  for (const r of rows) {
+    const d = String(r.date || '');
+    if (!map[d]) map[d] = { dp: 0, tambahan_dp: 0, pelunasan: 0, total: 0 };
+    const key = statusMap[String(r.status_pembayaran || '').trim()] || 'DP';
+    const cnt = Number(r.count || 0);
+    if (key === 'DP') map[d].dp += cnt;
+    else if (key === 'Tambahan DP') map[d].tambahan_dp += cnt;
+    else if (key === 'Pelunasan') map[d].pelunasan += cnt;
+    map[d].total += cnt;
+  }
+  return map;
+});
+
 // Computed properties
 const chartData = computed(() => {
-  if (!props.data || props.data.length === 0) {
-    return null;
+  const rows = processed.value as Record<string, { dp: number; tambahan_dp: number; pelunasan: number; total: number }>;
+  let baseDate = new Date();
+  const firstKey = Object.keys(rows)[0];
+  if (firstKey) {
+    const parsed = new Date(firstKey);
+    if (!isNaN(parsed.getTime())) baseDate = parsed;
+  }
+  const year = baseDate.getFullYear();
+  const month = baseDate.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const labels: string[] = [];
+  for (let day = 1; day <= daysInMonth; day++) {
+    const d = new Date(year, month, day);
+    labels.push(d.toISOString().split('T')[0]);
   }
 
-  const labels = props.data.map(item => item.month);
-  
+  const dpData = labels.map(d => rows[d]?.dp ?? 0);
+  const tambahanData = labels.map(d => rows[d]?.tambahan_dp ?? 0);
+  const pelunasanData = labels.map(d => rows[d]?.pelunasan ?? 0);
+
   const datasets = [
     {
-      label: 'DP',
-      data: props.data.map(item => item.dp),
+      label: 'DP/TJ',
+      data: dpData,
       borderColor: statusColors['DP'],
-      backgroundColor: viewMode.value === 'bar' ? statusColors['DP'] + '20' : statusColors['DP'] + '10',
+      backgroundColor: '#10b98120',
       borderWidth: 2,
-      tension: 0.4,
+      tension: 0.3,
+      fill: viewMode.value === 'line' ? { target: 'origin', above: '#10b98110' } : undefined,
       pointBackgroundColor: statusColors['DP'],
       pointBorderColor: '#ffffff',
       pointBorderWidth: 2,
-      pointRadius: 4,
-      pointHoverRadius: 6,
+      pointRadius: 3,
+      pointHoverRadius: 5,
     },
     {
       label: 'Tambahan DP',
-      data: props.data.map(item => item.tambahan_dp),
+      data: tambahanData,
       borderColor: statusColors['Tambahan DP'],
-      backgroundColor: viewMode.value === 'bar' ? statusColors['Tambahan DP'] + '20' : statusColors['Tambahan DP'] + '10',
+      backgroundColor: '#f59e0b20',
       borderWidth: 2,
-      tension: 0.4,
+      tension: 0.3,
+      fill: viewMode.value === 'line' ? { target: 'origin', above: '#f59e0b10' } : undefined,
       pointBackgroundColor: statusColors['Tambahan DP'],
       pointBorderColor: '#ffffff',
       pointBorderWidth: 2,
-      pointRadius: 4,
-      pointHoverRadius: 6,
+      pointRadius: 3,
+      pointHoverRadius: 5,
     },
     {
       label: 'Pelunasan',
-      data: props.data.map(item => item.pelunasan),
+      data: pelunasanData,
       borderColor: statusColors['Pelunasan'],
-      backgroundColor: viewMode.value === 'bar' ? statusColors['Pelunasan'] + '20' : statusColors['Pelunasan'] + '10',
+      backgroundColor: '#6366f120',
       borderWidth: 2,
-      tension: 0.4,
+      tension: 0.3,
+      fill: viewMode.value === 'line' ? { target: 'origin', above: '#6366f110' } : undefined,
       pointBackgroundColor: statusColors['Pelunasan'],
       pointBorderColor: '#ffffff',
       pointBorderWidth: 2,
-      pointRadius: 4,
-      pointHoverRadius: 6,
+      pointRadius: 3,
+      pointHoverRadius: 5,
     },
   ];
 
@@ -286,6 +320,7 @@ const chartOptions = computed<ChartOptions<'line' | 'bar'>>(() => ({
     intersect: false,
     mode: 'index',
   },
+  animation: false,
   plugins: {
     legend: {
       display: false, // We'll use custom legend
@@ -300,7 +335,7 @@ const chartOptions = computed<ChartOptions<'line' | 'bar'>>(() => ({
       displayColors: true,
       callbacks: {
         title: (context) => {
-          return `Bulan: ${context[0].label}`;
+          return `Tanggal: ${context[0].label}`;
         },
         label: (context) => {
           return `${context.dataset.label}: ${context.parsed.y} transaksi`;
@@ -339,42 +374,46 @@ const chartOptions = computed<ChartOptions<'line' | 'bar'>>(() => ({
 }));
 
 // Helper functions
-const getTotalForStatus = (status: string) => {
-  if (!props.data) return 0;
-  
-  switch (status) {
-    case 'DP':
-      return props.data.reduce((sum, item) => sum + item.dp, 0);
-    case 'Tambahan DP':
-      return props.data.reduce((sum, item) => sum + item.tambahan_dp, 0);
-    case 'Pelunasan':
-      return props.data.reduce((sum, item) => sum + item.pelunasan, 0);
-    default:
-      return 0;
-  }
-};
+const getTotalForMonth = (monthLabelStr: string) => 0;
 
-const topMonths = computed(() => {
-  if (!props.data) return [];
-  
-  return props.data
-    .map(item => ({
-      month: item.month,
-      total: item.total,
-    }))
+const topMonths = computed(() => []);
+
+const topDays = computed(() => {
+  const map = processed.value as Record<string, { dp: number; tambahan_dp: number; pelunasan: number; total: number }>;
+  return Object.entries(map)
+    .map(([date, v]) => ({ date, total: Number(v.total || v.dp + v.tambahan_dp + v.pelunasan || 0) }))
     .sort((a, b) => b.total - a.total)
     .slice(0, 3);
+});
+
+const monthTotals = computed(() => {
+  const map = processed.value as Record<string, { dp: number; tambahan_dp: number; pelunasan: number; total: number }>;
+  const acc = { dp: 0, tambahan_dp: 0, pelunasan: 0 };
+  for (const v of Object.values(map)) {
+    acc.dp += v.dp || 0;
+    acc.tambahan_dp += v.tambahan_dp || 0;
+    acc.pelunasan += v.pelunasan || 0;
+  }
+  return acc;
 });
 
 // Chart management
 const createChart = async () => {
   if (!chartCanvas.value || !chartData.value) return;
+  if (isCreating.value) return;
+  isCreating.value = true;
   
   // Destroy existing chart
   if (chartInstance.value) {
     chartInstance.value.destroy();
     chartInstance.value = null;
   }
+  
+  // Ensure no lingering chart bound to the same canvas
+  const existing = ChartJS.getChart(chartCanvas.value as any);
+  if (existing) existing.destroy();
+  const existingById = ChartJS.getChart(canvasId.value as any);
+  if (existingById) existingById.destroy();
   
   await nextTick();
   
@@ -386,21 +425,21 @@ const createChart = async () => {
     data: chartData.value,
     options: chartOptions.value,
   });
+  isCreating.value = false;
 };
 
 const updateChart = async () => {
-  if (!chartInstance.value || !chartData.value) {
+  if (!chartData.value) return;
+  if (!chartInstance.value) {
     await createChart();
     return;
   }
-  
-  // Update chart type if changed
+  // If type changed, recreate
   if (chartInstance.value.config.type !== viewMode.value) {
+    await bumpCanvas();
     await createChart();
     return;
   }
-  
-  // Update data
   chartInstance.value.data = chartData.value;
   chartInstance.value.options = chartOptions.value;
   chartInstance.value.update('none');
@@ -408,24 +447,21 @@ const updateChart = async () => {
 
 // Watchers
 watch([() => props.data, viewMode], async () => {
-  if (props.data && props.data.length > 0) {
-    canvasKey.value++;
-    await nextTick();
-    await createChart();
-  }
+  await bumpCanvas();
+  await createChart();
 }, { deep: true });
 
-watch(() => props.loading, (newLoading) => {
-  if (!newLoading && props.data && props.data.length > 0) {
-    nextTick(() => createChart());
+watch(() => props.loading, async (newLoading) => {
+  if (!newLoading) {
+    await bumpCanvas();
+    await createChart();
   }
 });
 
 // Lifecycle
-onMounted(() => {
-  if (props.data && props.data.length > 0) {
-    nextTick(() => createChart());
-  }
+onMounted(async () => {
+  await bumpCanvas();
+  await createChart();
 });
 
 onUnmounted(() => {
@@ -433,5 +469,9 @@ onUnmounted(() => {
     chartInstance.value.destroy();
     chartInstance.value = null;
   }
+  const existing = ChartJS.getChart(chartCanvas.value as any);
+  if (existing) existing.destroy();
+  const existingById = ChartJS.getChart(canvasId.value as any);
+  if (existingById) existingById.destroy();
 });
 </script>

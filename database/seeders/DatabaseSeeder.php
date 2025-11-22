@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             LabelSeeder::class,
             BrandSeeder::class,
+            SumberSeeder::class,
             PekerjaanSeeder::class,
         ]);
 
@@ -39,6 +40,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             MitraSeeder::class,
             IklanBudgetSeeder::class,
+            TransaksiSeeder::class,
         ]);
 
         // 4. Task management data (depends on users)
@@ -77,6 +79,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('  • Labels: ' . \App\Models\Label::count() . ' records');
         $this->command->info('  • Pekerjaans: ' . \App\Models\Pekerjaan::count() . ' records');
         $this->command->info('  • Mitras: ' . \App\Models\Mitra::count() . ' records');
+        $this->command->info('  • Transaksis: ' . \App\Models\Transaksi::count() . ' records');
         $this->command->info('  • TodoLists: ' . \App\Models\TodoList::count() . ' records');
         $this->command->line('');
         $this->command->info('🎉 Ready to use! You can now login with the seeded users.');

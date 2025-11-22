@@ -359,6 +359,11 @@ const createChart = async () => {
     chartInstance.value = null;
   }
 
+  const existing = ChartJS.getChart(chartCanvas.value);
+  if (existing) {
+    existing.destroy();
+  }
+
   await nextTick();
 
   const ctx = chartCanvas.value.getContext('2d');
