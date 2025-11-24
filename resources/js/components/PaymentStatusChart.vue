@@ -12,37 +12,6 @@
         </div>
         
         <div class="flex items-center gap-2">
-          <!-- Chart Type Toggle -->
-          <div class="flex items-center rounded-lg border border-gray-200 dark:border-gray-700 p-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              @click="viewMode = 'line'"
-              :class="[
-                'h-7 px-2 text-xs transition-all duration-200',
-                viewMode === 'line'
-                  ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-              ]"
-            >
-              <TrendingUp class="h-3 w-3" />
-              <span class="ml-1 hidden sm:inline">Line</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              @click="viewMode = 'bar'"
-              :class="[
-                'h-7 px-2 text-xs transition-all duration-200',
-                viewMode === 'bar'
-                  ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-              ]"
-            >
-              <BarChart3 class="h-3 w-3" />
-              <span class="ml-1 hidden sm:inline">Bar</span>
-            </Button>
-          </div>
           
           <!-- Refresh Button -->
           <Button
@@ -131,7 +100,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, BarChart3, RefreshCw, Clock, Palette } from 'lucide-vue-next';
+import { RefreshCw, Clock, Palette } from 'lucide-vue-next';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import {
   Chart as ChartJS,
@@ -190,7 +159,7 @@ const emit = defineEmits<{
 const chartCanvas = ref<HTMLCanvasElement>();
 const chartInstance = ref<ChartJS | null>(null);
 const isCreating = ref(false);
-const viewMode = ref<'line' | 'bar'>('line');
+const viewMode = ref<'line' | 'bar'>('bar');
 
 // Canvas management to avoid reuse issues
 const canvasKey = ref(0);
@@ -200,11 +169,11 @@ const bumpCanvas = async () => {
   await nextTick();
 };
 
-// Status colors
+// Status colors (requested scheme): DP Blue, Tambahan DP Yellow, Pelunasan Green
 const statusColors = {
-  'DP': '#10b981', // Emerald
-  'Tambahan DP': '#f59e0b', // Amber
-  'Pelunasan': '#6366f1', // Indigo
+  'DP': '#3b82f6', // Blue
+  'Tambahan DP': '#f59e0b', // Yellow/Amber
+  'Pelunasan': '#10b981', // Green/Emerald
 };
 
 // Helpers
@@ -261,59 +230,94 @@ const chartData = computed(() => {
   const tambahanData = labels.map(d => rows[d]?.tambahan_dp ?? 0);
   const pelunasanData = labels.map(d => rows[d]?.pelunasan ?? 0);
 
-  const datasets = [
+  const barDatasets = [
     {
+      type: 'bar',
       label: 'DP/TJ',
       data: dpData,
-      borderColor: statusColors['DP'],
-      backgroundColor: '#10b98120',
-      borderWidth: 2,
-      tension: 0.3,
-      fill: viewMode.value === 'line' ? { target: 'origin', above: '#10b98110' } : undefined,
-      pointBackgroundColor: statusColors['DP'],
-      pointBorderColor: '#ffffff',
-      pointBorderWidth: 2,
-      pointRadius: 3,
-      pointHoverRadius: 5,
+      backgroundColor: 'rgba(59, 130, 246, 0.7)',
+      hoverBackgroundColor: 'rgba(59, 130, 246, 0.9)',
+      borderColor: 'rgba(59, 130, 246, 1)',
+      borderWidth: 0,
+      borderRadius: 4,
+      barPercentage: 0.9,
+      categoryPercentage: 0.7,
+      order: 1,
     },
     {
+      type: 'bar',
       label: 'Tambahan DP',
       data: tambahanData,
-      borderColor: statusColors['Tambahan DP'],
-      backgroundColor: '#f59e0b20',
-      borderWidth: 2,
-      tension: 0.3,
-      fill: viewMode.value === 'line' ? { target: 'origin', above: '#f59e0b10' } : undefined,
-      pointBackgroundColor: statusColors['Tambahan DP'],
-      pointBorderColor: '#ffffff',
-      pointBorderWidth: 2,
-      pointRadius: 3,
-      pointHoverRadius: 5,
+      backgroundColor: 'rgba(245, 158, 11, 0.7)',
+      hoverBackgroundColor: 'rgba(245, 158, 11, 0.9)',
+      borderColor: 'rgba(245, 158, 11, 1)',
+      borderWidth: 0,
+      borderRadius: 4,
+      barPercentage: 0.9,
+      categoryPercentage: 0.7,
+      order: 2,
     },
     {
+      type: 'bar',
       label: 'Pelunasan',
       data: pelunasanData,
-      borderColor: statusColors['Pelunasan'],
-      backgroundColor: '#6366f120',
-      borderWidth: 2,
-      tension: 0.3,
-      fill: viewMode.value === 'line' ? { target: 'origin', above: '#6366f110' } : undefined,
-      pointBackgroundColor: statusColors['Pelunasan'],
-      pointBorderColor: '#ffffff',
-      pointBorderWidth: 2,
-      pointRadius: 3,
-      pointHoverRadius: 5,
+      backgroundColor: 'rgba(16, 185, 129, 0.7)',
+      hoverBackgroundColor: 'rgba(16, 185, 129, 0.9)',
+      borderColor: 'rgba(16, 185, 129, 1)',
+      borderWidth: 0,
+      borderRadius: 4,
+      barPercentage: 0.9,
+      categoryPercentage: 0.7,
+      order: 3,
     },
   ];
 
+  
+
+  const makeLaneDatasets = (key: 'dp' | 'tambahan_dp' | 'pelunasan', color: string, label: string) => {
+    const rowsMap = rows as Record<string, { dp: number; tambahan_dp: number; pelunasan: number }>
+    const lanes: any[] = []
+    for (let i = 0; i < labels.length; i++) {
+      const cnt = Number(rowsMap[labels[i]]?.[key] || 0)
+      if (cnt >= 1) {
+        for (let j = 1; j <= cnt; j++) {
+          const arr = new Array(labels.length).fill(null)
+          // Buat segmen pendek agar terlihat sebagai "garis" di sekitar tanggal tersebut
+          const prev = Math.max(0, i - 1)
+          arr[prev] = j
+          arr[i] = j
+          lanes.push({
+            label: `lane:${label} #${j} @${labels[i]}`,
+            data: arr,
+            borderColor: color,
+            backgroundColor: 'transparent',
+            borderWidth: 1,
+            tension: 0,
+            fill: false,
+            pointBackgroundColor: color,
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 1,
+            pointRadius: 2,
+            pointHoverRadius: 3,
+            borderDash: [3, 3],
+            spanGaps: true,
+            order: 10,
+          })
+        }
+      }
+    }
+    return lanes
+  }
+
+  // Gunakan hanya batang (bar) tanpa garis overlay
   return {
     labels,
-    datasets,
-  } as ChartData<'line' | 'bar'>;
+    datasets: barDatasets,
+  } as ChartData<'bar'>;
 });
 
 // Chart options
-const chartOptions = computed<ChartOptions<'line' | 'bar'>>(() => ({
+const chartOptions = computed<ChartOptions<'bar'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
   interaction: {
@@ -323,7 +327,15 @@ const chartOptions = computed<ChartOptions<'line' | 'bar'>>(() => ({
   animation: false,
   plugins: {
     legend: {
-      display: false, // We'll use custom legend
+      display: true,
+      position: 'top',
+      labels: {
+        filter: (legendItem, data) => {
+          const ds = (data?.datasets || [])[legendItem.datasetIndex as number] as any
+          const text = String(legendItem.text || '')
+          return !text.startsWith('lane:') && ds?.type !== 'line'
+        }
+      }
     },
     tooltip: {
       backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -333,6 +345,10 @@ const chartOptions = computed<ChartOptions<'line' | 'bar'>>(() => ({
       borderWidth: 1,
       cornerRadius: 8,
       displayColors: true,
+      filter: (item) => {
+        const lbl = String(item.dataset.label || '')
+        return !lbl.startsWith('lane:') && (item.dataset as any)?.type !== 'line'
+      },
       callbacks: {
         title: (context) => {
           return `Tanggal: ${context[0].label}`;
@@ -345,6 +361,7 @@ const chartOptions = computed<ChartOptions<'line' | 'bar'>>(() => ({
   },
   scales: {
     x: {
+      stacked: false,
       grid: {
         display: false,
       },
@@ -357,6 +374,7 @@ const chartOptions = computed<ChartOptions<'line' | 'bar'>>(() => ({
     },
     y: {
       beginAtZero: true,
+      stacked: false,
       grid: {
         color: 'rgba(107, 114, 128, 0.1)',
       },
@@ -421,7 +439,7 @@ const createChart = async () => {
   if (!ctx) return;
   
   chartInstance.value = new ChartJS(ctx, {
-    type: viewMode.value,
+    type: 'bar',
     data: chartData.value,
     options: chartOptions.value,
   });
