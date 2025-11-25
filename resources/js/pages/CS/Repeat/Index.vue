@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogScrollContent }
 import CsRepeatDailyTransaksiChart from '@/components/CsRepeatDailyTransaksiChart.vue'
 import CsRepeatWeeklyTransaksiChart from '@/components/CsRepeatWeeklyTransaksiChart.vue'
 import CsRepeatMonthlyTransaksiChart from '@/components/CsRepeatMonthlyTransaksiChart.vue'
+import CsRepeatSummaryTransaksiChart from '@/components/CsRepeatSummaryTransaksiChart.vue'
 import CsRepeatDailyProductChart from '@/components/CsRepeatDailyProductChart.vue'
 import CsRepeatPartnerTransaksiChart from '@/components/CsRepeatPartnerTransaksiChart.vue'
 import { indonesianProvinces } from '@/lib/indonesianProvinces'
@@ -311,6 +312,9 @@ const totalNominalOrder = computed(() => timelineEvents.value.reduce((sum, e) =>
           </CardContent>
         </Card>
       </div>
+
+      <!-- Grafik Transaksi CS (mengikuti filter di atas) -->
+      <CsRepeatSummaryTransaksiChart :data="props.charts?.dailyTransaksi" />
 
       <!-- Charts Grid -->
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
