@@ -9,6 +9,8 @@ import { Edit, Plus, Trash2, Search, Repeat as RepeatIcon, Eye } from 'lucide-vu
 import { computed, ref, watch } from 'vue'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogScrollContent } from '@/components/ui/dialog'
 import CsRepeatDailyTransaksiChart from '@/components/CsRepeatDailyTransaksiChart.vue'
+import CsRepeatWeeklyTransaksiChart from '@/components/CsRepeatWeeklyTransaksiChart.vue'
+import CsRepeatMonthlyTransaksiChart from '@/components/CsRepeatMonthlyTransaksiChart.vue'
 import CsRepeatDailyProductChart from '@/components/CsRepeatDailyProductChart.vue'
 import CsRepeatPartnerTransaksiChart from '@/components/CsRepeatPartnerTransaksiChart.vue'
 import { indonesianProvinces } from '@/lib/indonesianProvinces'
@@ -313,6 +315,12 @@ const totalNominalOrder = computed(() => timelineEvents.value.reduce((sum, e) =>
       <!-- Charts Grid -->
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <CsRepeatDailyTransaksiChart :data="props.charts?.dailyTransaksi" />
+        <CsRepeatWeeklyTransaksiChart :data="props.charts?.dailyTransaksi" />
+      </div>
+
+      <!-- Weekly & Monthly below daily -->
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <CsRepeatMonthlyTransaksiChart :data="props.charts?.dailyTransaksi" />
         <CsRepeatDailyProductChart :data="props.charts?.dailyByProduct" />
       </div>
 
