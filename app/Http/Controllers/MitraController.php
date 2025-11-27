@@ -89,6 +89,12 @@ class MitraController extends Controller
             $query->where('user_id', $request->user);
         }
 
+        // Apply brand filter (accepts brand or brand_id)
+        $brandId = $request->get('brand_id', $request->get('brand'));
+        if (!empty($brandId)) {
+            $query->where('brand_id', $brandId);
+        }
+
         // Default ordering by tanggal_lead (newest first), then by created_at
         $query->orderBy('tanggal_lead', 'desc')->orderBy('created_at', 'desc');
 
@@ -109,6 +115,7 @@ class MitraController extends Controller
                 'chat' => $request->chat,
                 'label' => $request->label,
                 'user' => $request->user,
+                'brand' => $request->get('brand', $request->get('brand_id')),
             ],
             'user_role' => $user->role,
             'user_id' => $user->id
@@ -145,6 +152,7 @@ class MitraController extends Controller
                 'chat' => $request->chat,
                 'label' => $request->label,
                 'user' => $request->user,
+                'brand' => $request->get('brand', $request->get('brand_id')),
                 'periode_start' => $request->periode_start,
                 'periode_end' => $request->periode_end,
                 'per_page' => $perPage,
@@ -473,6 +481,12 @@ class MitraController extends Controller
             $query->where('user_id', $request->user);
         }
 
+        // Apply brand filter (accepts brand or brand_id)
+        $brandId = $request->get('brand_id', $request->get('brand'));
+        if (!empty($brandId)) {
+            $query->where('brand_id', $brandId);
+        }
+
         // Get database driver to use appropriate hour extraction function
         $driver = config('database.default');
         $connection = config("database.connections.{$driver}.driver");
@@ -486,11 +500,7 @@ class MitraController extends Controller
         }
 
         // Get data with hour extraction from mitras.created_at
-        $results = $query->selectRaw("
-                {$hourExpression} as hour,
-                brands.nama as brand_name,
-                COUNT(*) as lead_count
-            ")
+        $results = $query->selectRaw("\n                {$hourExpression} as hour,\n                brands.nama as brand_name,\n                COUNT(*) as lead_count\n            ")
             ->join('brands', 'mitras.brand_id', '=', 'brands.id')
             ->groupBy('hour', 'brands.nama')
             ->orderBy('hour')

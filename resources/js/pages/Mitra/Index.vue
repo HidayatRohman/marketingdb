@@ -88,6 +88,7 @@ interface Props {
         chat?: string;
         label?: string;
         user?: string;
+        brand?: string;
         periode_start?: string;
         periode_end?: string;
         per_page?: number;
@@ -100,6 +101,7 @@ const search = ref(props.filters.search || '');
 const chat = ref(props.filters.chat || '');
 const label = ref(props.filters.label || '');
 const user = ref(props.filters.user || '');
+const brand = ref(props.filters.brand || '');
 const periodeStart = ref(props.filters.periode_start || '');
 const periodeEnd = ref(props.filters.periode_end || '');
 const perPage = ref(props.filters.per_page || 30);
@@ -179,7 +181,7 @@ const setDatePreset = (preset: string) => {
 // Filter panel state
 const showFilters = ref(false);
 const hasActiveFilters = computed(() => {
-    return search.value || chat.value || label.value || user.value || periodeStart.value || periodeEnd.value;
+    return search.value || chat.value || label.value || user.value || brand.value || periodeStart.value || periodeEnd.value;
 });
 
 // Watch for manual date changes to update preset to custom
@@ -249,7 +251,7 @@ const chatLabels = {
 let debounceTimer: number;
 
 // Watch for filter changes and update URL
-watch([search, chat, label, user, periodeStart, periodeEnd, perPage], () => {
+watch([search, chat, label, user, brand, periodeStart, periodeEnd, perPage], () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
         console.log('Frontend Filter Debug:', {
@@ -257,6 +259,7 @@ watch([search, chat, label, user, periodeStart, periodeEnd, perPage], () => {
             chat: chat.value,
             label: label.value,
             user: user.value,
+            brand: brand.value,
             periode_start: periodeStart.value,
             periode_end: periodeEnd.value,
             per_page: perPage.value || 30,
@@ -269,6 +272,7 @@ watch([search, chat, label, user, periodeStart, periodeEnd, perPage], () => {
                 chat: chat.value || undefined,
                 label: label.value || undefined,
                 user: user.value || undefined,
+                brand: brand.value || undefined,
                 periode_start: periodeStart.value || undefined,
                 periode_end: periodeEnd.value || undefined,
                 per_page: perPage.value || 30,
@@ -406,6 +410,7 @@ const clearFilters = () => {
     chat.value = '';
     label.value = '';
     user.value = '';
+    brand.value = '';
     periodeStart.value = '';
     periodeEnd.value = '';
     selectedPreset.value = '';
@@ -423,6 +428,7 @@ const getFilterParams = () => {
         chat: chat.value || undefined,
         label: label.value || undefined,
         user: user.value || undefined,
+        brand: brand.value || undefined,
         periode_start: periodeStart.value || undefined,
         periode_end: periodeEnd.value || undefined,
         per_page: perPage.value || 30,
@@ -675,7 +681,7 @@ onMounted(() => {
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
                             <!-- Periode Start -->
                             <div class="space-y-1">
                                 <label class="flex items-center gap-2 text-sm font-medium text-foreground/90 dark:text-foreground">
@@ -719,6 +725,28 @@ onMounted(() => {
                                         class="bg-background text-foreground"
                                     >
                                         {{ userOption.name }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Brand Filter -->
+                            <div class="space-y-1">
+                                <label class="flex items-center gap-2 text-sm font-medium text-foreground/90 dark:text-foreground">
+                                    <Building2 class="h-4 w-4" />
+                                    Brand
+                                </label>
+                                <select
+                                    v-model="brand"
+                                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
+                                >
+                                    <option value="" class="bg-background text-foreground">Semua Brand</option>
+                                    <option
+                                        v-for="brandOption in brands"
+                                        :key="brandOption.id"
+                                        :value="brandOption.id"
+                                        class="bg-background text-foreground"
+                                    >
+                                        {{ brandOption.nama }}
                                     </option>
                                 </select>
                             </div>
@@ -785,6 +813,7 @@ onMounted(() => {
                                     }}</span>
                                     <span v-if="label" class="rounded bg-primary/10 px-2 py-1 text-xs text-primary">Label</span>
                                     <span v-if="user" class="rounded bg-primary/10 px-2 py-1 text-xs text-primary">Marketing</span>
+                                    <span v-if="brand" class="rounded bg-primary/10 px-2 py-1 text-xs text-primary">Brand</span>
                                     <span v-if="periodeStart || periodeEnd" class="rounded bg-primary/10 px-2 py-1 text-xs text-primary"
                                         >Periode</span
                                     >
