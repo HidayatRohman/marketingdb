@@ -684,7 +684,7 @@ const breadcrumbs = [
                   <span class="sm:hidden">Nama</span>
                   <span class="hidden sm:inline">Nama Pelanggan</span>
                 </th>
-                <th class="py-2 px-2">No Tlp</th>
+                <th class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">No Tlp</th>
                 <th class="py-2 px-2">Bio Pelanggan</th>
                 <th class="py-2 px-2">Tanggal Join</th>
                 <th class="py-2 px-2">Produk</th>
@@ -699,7 +699,7 @@ const breadcrumbs = [
             <tbody>
               <tr v-for="it in activeRows" :key="it.id" class="border-b">
                 <td class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-border">{{ it.nama_pelanggan }}</td>
-                <td class="py-2 px-2">{{ it.no_tlp }}</td>
+                <td class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">{{ it.no_tlp }}</td>
                 <td class="py-2 px-2">{{ it.bio_pelanggan || '-' }}</td>
                 <td class="py-2 px-2">{{ formatDate(it.join_tanggal || '') }}</td>
                 <td class="py-2 px-2">{{ it.product?.nama || '-' }}</td>
@@ -750,7 +750,7 @@ const breadcrumbs = [
             <thead>
               <tr class="text-left border-b">
                 <th class="py-2 px-2 sticky left-0 z-30 bg-background min-w-[120px] sm:min-w-[200px] border-r border-border">Nama Pelanggan</th>
-                <th class="py-2 px-2">No Tlp</th>
+                <th class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">No Tlp</th>
                 <th class="py-2 px-2">Tanggal Join</th>
                 <th class="py-2 px-2">Produk</th>
                 <th class="py-2 px-2">Kota</th>
@@ -764,7 +764,7 @@ const breadcrumbs = [
             <tbody>
               <tr v-for="it in inactiveRows" :key="mitraKey(it)" class="border-b bg-red-50">
                 <td class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-border">{{ it.nama_pelanggan }}</td>
-                <td class="py-2 px-2">{{ it.no_tlp }}</td>
+                <td class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">{{ it.no_tlp }}</td>
                 <td class="py-2 px-2">{{ formatDate(it.join_tanggal || '') }}</td>
                 <td class="py-2 px-2">{{ it.product?.nama || '-' }}</td>
                 <td class="py-2 px-2">{{ it.kota || '-' }}</td>
@@ -828,7 +828,7 @@ const breadcrumbs = [
                   <span class="sm:hidden">Nama</span>
                   <span class="hidden sm:inline">Nama Pelanggan</span>
                 </th>
-                <th class="py-2 px-2">No Tlp</th>
+                <th class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">No Tlp</th>
                 <th class="py-2 px-2">Tanggal</th>
                 <th class="py-2 px-2">Produk</th>
                 <th class="py-2 px-2">Chat</th>
@@ -842,7 +842,7 @@ const breadcrumbs = [
             <tbody>
               <tr v-for="it in props.items.data" :key="it.id" class="border-b">
                 <td class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-border">{{ it.nama_pelanggan }}</td>
-                <td class="py-2 px-2">{{ it.no_tlp }}</td>
+                <td class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">{{ it.no_tlp }}</td>
                 <td class="py-2 px-2">{{ formatDate(it.tanggal) }}</td>
                 <td class="py-2 px-2">{{ it.product?.nama || '-' }}</td>
                 <td class="py-2 px-2">{{ it.chat || '-' }}</td>
