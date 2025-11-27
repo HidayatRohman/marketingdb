@@ -16,7 +16,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(r, idx) in agg" :key="r.key" class="border-b">
+            <tr v-for="(r, idx) in pagedAgg" :key="r.key" class="border-b">
               <td class="py-2 px-2">
                 <div class="flex items-center gap-2">
                   <div v-if="idx < 3" class="medal-wrap" :class="rankMedalClass(idx)">
@@ -33,7 +33,7 @@
                         <rect class="ribbon-center" x="18" y="24" width="4" height="12" />
                       </g>
                     </svg>
-                    <span class="medal-number">{{ idx + 1 }}</span>
+                    <span class="medal-number">{{ idx + 1 + (currentPage - 1) * perPage }}</span>
                   </div>
                   <span class="font-medium">{{ r.nama }}</span>
                 </div>
@@ -46,6 +46,44 @@
             </tr>
           </tbody>
         </table>
+        <div class="mt-4 flex flex-col items-center justify-between gap-3 rounded-lg bg-muted/20 p-3 sm:flex-row">
+          <div class="text-sm text-foreground/80 dark:text-foreground/90">
+            Menampilkan <span class="font-medium text-foreground">{{ pagedAgg.length }}</span> dari
+            <span class="font-medium text-foreground">{{ agg.length }}</span> pelanggan
+            <span v-if="agg.length > 0" class="text-foreground/70 dark:text-foreground/80">
+              ({{ (currentPage - 1) * perPage + 1 }} - {{ Math.min(currentPage * perPage, agg.length) }})
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              :disabled="currentPage <= 1"
+              @click="prevPage"
+              class="h-9 border-gray-300 bg-gradient-to-r from-gray-100 to-gray-200 px-3 text-gray-800 transition-all duration-200 hover:from-gray-200 hover:to-gray-300 dark:border-gray-600 dark:from-gray-700 dark:to-gray-800 dark:text-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-700"
+            >
+              ← Prev
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              class="h-9 w-9 border-blue-500 bg-gradient-to-r from-blue-500 to-blue-600 p-0 text-white shadow-md"
+              disabled
+            >
+              {{ currentPage }}
+            </Button>
+            <span class="text-sm text-foreground/70">/ {{ totalPages }}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              :disabled="currentPage >= totalPages"
+              @click="nextPage"
+              class="h-9 border-gray-300 bg-gradient-to-r from-gray-100 to-gray-200 px-3 text-gray-800 transition-all duration-200 hover:from-gray-200 hover:to-gray-300 dark:border-gray-600 dark:from-gray-700 dark:to-gray-800 dark:text-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-700"
+            >
+              Next →
+            </Button>
+          </div>
+        </div>
       </div>
     </CardContent>
   </Card>
@@ -213,3 +251,15 @@ watch(() => showChart.value, async (v) => {
 .medal-silver .medal-circle { fill: #b0bec5; stroke: #90a4ae; }
 .medal-bronze .medal-circle { fill: #d27c2c; stroke: #b4651f; }
 </style>
+const perPage = ref(20)
+const currentPage = ref(1)
+const totalPages = computed(() => Math.max(1, Math.ceil(agg.value.length / perPage.value)))
+const pagedAgg = computed(() => {
+  const start = (currentPage.value - 1) * perPage.value
+  const end = start + perPage.value
+  return agg.value.slice(start, end)
+})
+
+const prevPage = () => { if (currentPage.value > 1) currentPage.value -= 1 }
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value += 1 }
+watch(() => props.items, () => { currentPage.value = 1 })
