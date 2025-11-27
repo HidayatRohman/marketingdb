@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class TaskManagementController extends Controller
 {
@@ -84,19 +85,36 @@ class TaskManagementController extends Controller
             'due_time' => 'nullable|date_format:H:i',
             'assigned_to' => 'nullable|exists:users,id',
             'tags' => 'nullable|array',
+            'result_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
+        $description = $request->description;
+
+        $tags = $request->tags ?? [];
+        $uploadedPaths = [];
+        if ($request->hasFile('result_files')) {
+            foreach ((array) $request->file('result_files') as $file) {
+                $path = Storage::disk('public')->put('task-results', $file);
+                if ($path) {
+                    $url = Storage::url($path);
+                    $uploadedPaths[] = $url;
+                }
+            }
+        }
+        foreach ($uploadedPaths as $url) {
+            $tags[] = 'result_file:' . $url;
+        }
 
         TodoList::create([
             'title' => $request->title,
-            'description' => $request->description,
+            'description' => $description,
             'priority' => $request->priority,
-            'status' => 'pending', // Default status for new tasks
+            'status' => 'pending',
             'start_date' => $request->start_date,
             'due_date' => $request->due_date,
             'due_time' => $request->due_time,
             'user_id' => auth()->id(),
             'assigned_to' => $request->assigned_to,
-            'tags' => $request->tags,
+            'tags' => $tags,
         ]);
 
         return redirect()->back()->with('success', 'Task berhasil ditambahkan');
@@ -122,12 +140,36 @@ class TaskManagementController extends Controller
             'due_time' => 'nullable|date_format:H:i',
             'assigned_to' => 'nullable|exists:users,id',
             'tags' => 'nullable|array',
+            'result_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
+        $description = $request->description;
 
-        $todoList->update($request->only([
-            'title', 'description', 'priority', 'status', 'start_date',
-            'due_date', 'due_time', 'assigned_to', 'tags'
-        ]));
+        $tags = $request->tags ?? [];
+        $uploadedPaths = [];
+        if ($request->hasFile('result_files')) {
+            foreach ((array) $request->file('result_files') as $file) {
+                $path = Storage::disk('public')->put('task-results', $file);
+                if ($path) {
+                    $url = Storage::url($path);
+                    $uploadedPaths[] = $url;
+                }
+            }
+        }
+        foreach ($uploadedPaths as $url) {
+            $tags[] = 'result_file:' . $url;
+        }
+
+        $todoList->update([
+            'title' => $request->title,
+            'description' => $description,
+            'priority' => $request->priority,
+            'status' => $request->status,
+            'start_date' => $request->start_date,
+            'due_date' => $request->due_date,
+            'due_time' => $request->due_time,
+            'assigned_to' => $request->assigned_to,
+            'tags' => $tags,
+        ]);
 
         return redirect()->back()->with('success', 'Task berhasil diperbarui');
     }

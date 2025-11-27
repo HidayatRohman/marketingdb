@@ -97,6 +97,11 @@ const summary = ref(props.summary);
 const isDialogOpen = ref(false);
 const editingTask = ref<Task | null>(null);
 const isDragging = ref(false);
+const isAttachmentDialogOpen = ref(false);
+const isDraggingFiles = ref(false);
+const fileInputRef = ref<HTMLInputElement | null>(null);
+const isPreviewDialogOpen = ref(false);
+const selectedTask = ref<Task | null>(null);
 
 // Form data
 const form = ref({
@@ -108,6 +113,7 @@ const form = ref({
     due_time: '',
     assigned_to: null as number | null,
     tags: [] as string[],
+    result_files: [] as File[],
 });
 
 // Reset form
@@ -121,6 +127,7 @@ const resetForm = () => {
         due_time: '',
         assigned_to: null,
         tags: [],
+        result_files: [],
     };
     editingTask.value = null;
 };
@@ -143,6 +150,7 @@ const openEditDialog = (task: Task) => {
         due_time: task.due_time || '',
         assigned_to: task.assigned_to || null,
         tags: task.tags || [],
+        result_files: [],
     };
     isDialogOpen.value = true;
 };
@@ -177,21 +185,29 @@ const submitForm = () => {
         return;
     }
 
-    const data = {
-        title: form.value.title,
-        description: form.value.description,
-        priority: form.value.priority,
-        start_date: form.value.start_date || null,
-        due_date: form.value.due_date || null,
-        due_time: form.value.due_time,
-        assigned_to: form.value.assigned_to,
-        tags: form.value.tags,
-    };
+    const fd = new FormData();
+    fd.append('title', form.value.title);
+    fd.append('description', form.value.description);
+    fd.append('priority', form.value.priority);
+    if (form.value.start_date) fd.append('start_date', form.value.start_date);
+    if (form.value.due_date) fd.append('due_date', form.value.due_date);
+    if (form.value.due_time) fd.append('due_time', form.value.due_time);
+    if (form.value.assigned_to !== null && form.value.assigned_to !== undefined) {
+        fd.append('assigned_to', String(form.value.assigned_to));
+    }
+    for (const t of form.value.tags) fd.append('tags[]', t);
+    for (const f of form.value.result_files) fd.append('result_files[]', f);
 
-    console.log('Submitting data:', data); // Debug log
+    console.log('Submitting FormData with files:', {
+        title: form.value.title,
+        priority: form.value.priority,
+        due_date: form.value.due_date,
+        files_count: form.value.result_files.length,
+    });
 
     if (editingTask.value) {
-        router.put(`/task-management/${editingTask.value.id}`, data, {
+        router.put(`/task-management/${editingTask.value.id}`, fd, {
+            forceFormData: true,
             onSuccess: () => {
                 isDialogOpen.value = false;
                 resetForm();
@@ -203,7 +219,8 @@ const submitForm = () => {
             },
         });
     } else {
-        router.post('/task-management', data, {
+        router.post('/task-management', fd, {
+            forceFormData: true,
             onSuccess: () => {
                 isDialogOpen.value = false;
                 resetForm();
@@ -384,6 +401,45 @@ const canEditTask = (task: Task) => {
 const canDeleteTask = (task: Task) => {
     return props.permissions.canCrud || props.permissions.hasFullAccess || task.user_id === props.currentUser.id;
 };
+
+const addResultFiles = (files: File[]) => {
+    const acceptedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+    const maxSize = 10 * 1024 * 1024;
+    const valid = files.filter((f) => acceptedTypes.includes(f.type) && f.size <= maxSize);
+    form.value.result_files = [...form.value.result_files, ...valid];
+};
+const onDropFiles = (e: DragEvent) => {
+    e.preventDefault();
+    isDraggingFiles.value = false;
+    const files = Array.from(e.dataTransfer?.files || []);
+    addResultFiles(files);
+};
+const triggerFilePicker = () => {
+    fileInputRef.value?.click();
+};
+const onFileInputChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const files = Array.from(target.files || []);
+    addResultFiles(files as File[]);
+};
+const removeResultFile = (index: number) => {
+    form.value.result_files.splice(index, 1);
+};
+const getAttachmentUrls = (task: Task) => {
+    const tags = task.tags || [];
+    return tags.filter((t) => t.startsWith('result_file:')).map((t) => t.replace('result_file:', ''));
+};
+const getAttachmentCount = (task: Task) => getAttachmentUrls(task).length;
+const fileNameFromUrl = (url: string) => {
+    const parts = url.split('/');
+    return parts[parts.length - 1] || 'lampiran';
+};
+const isImageUrl = (url: string) => /\.(png|jpe?g)$/i.test(url.split('?')[0] || '');
+const isPdfUrl = (url: string) => /\.pdf$/i.test(url.split('?')[0] || '');
+const openPreviewDialog = (task: Task) => {
+    selectedTask.value = task;
+    isPreviewDialogOpen.value = true;
+};
 </script>
 
 <template>
@@ -549,7 +605,7 @@ const canDeleteTask = (task: Task) => {
                                         >
                                             <CardContent class="p-4">
                                                 <div class="mb-3 flex items-start justify-between">
-                                                    <h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ task.title }}</h4>
+                                                    <h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100 cursor-pointer hover:underline" @click="openPreviewDialog(task)">{{ task.title }}</h4>
                                                     <div class="flex gap-1">
                                                         <Button
                                                             variant="ghost"
@@ -608,7 +664,7 @@ const canDeleteTask = (task: Task) => {
                                                     </Badge>
                                                 </div>
 
-                                                <div class="space-y-2 text-xs text-slate-500 dark:text-slate-400">
+                                            <div class="space-y-2 text-xs text-slate-500 dark:text-slate-400">
                                                     <div class="flex items-center gap-2">
                                                         <CalendarIcon class="h-3 w-3" />
                                                         <span class="font-medium">{{ formatDate(task.due_date) }}</span>
@@ -625,13 +681,24 @@ const canDeleteTask = (task: Task) => {
                                                             }}</span></span
                                                         >
                                                     </div>
-                                                    <div class="flex items-center gap-2">
-                                                        <User class="h-3 w-3" />
-                                                        <span
-                                                            >Created by: <span class="font-medium">{{ task.user.name }}</span></span
-                                                        >
-                                                    </div>
+                                                <div class="flex items-center gap-2">
+                                                    <User class="h-3 w-3" />
+                                                    <span
+                                                        >Created by: <span class="font-medium">{{ task.user.name }}</span></span
+                                                    >
                                                 </div>
+                                                <div class="mt-2">
+                                                    <div class="flex items-center justify-between">
+                                                        <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Lampiran ({{ getAttachmentCount(task) }})</span>
+                                                    </div>
+                                                    <ul v-if="getAttachmentCount(task) > 0" class="mt-1 space-y-1">
+                                                        <li v-for="url in getAttachmentUrls(task)" :key="url" class="flex items-center gap-2">
+                                                            <svg class="h-3 w-3 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm0 2l6 6h-6z"/></svg>
+                                                            <a :href="url" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">{{ fileNameFromUrl(url) }}</a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
                                             </CardContent>
                                         </Card>
                                     </Draggable>
@@ -662,7 +729,7 @@ const canDeleteTask = (task: Task) => {
                                         >
                                             <CardContent class="p-4">
                                                 <div class="mb-3 flex items-start justify-between">
-                                                    <h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ task.title }}</h4>
+                                                    <h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100 cursor-pointer hover:underline" @click="openPreviewDialog(task)">{{ task.title }}</h4>
                                                     <div class="flex gap-1">
                                                         <Button
                                                             variant="ghost"
@@ -778,7 +845,7 @@ const canDeleteTask = (task: Task) => {
                                         >
                                             <CardContent class="p-4">
                                                 <div class="mb-3 flex items-start justify-between">
-                                                    <h4 class="text-sm font-semibold text-slate-700 line-through dark:text-slate-300">
+                                                    <h4 class="text-sm font-semibold text-slate-700 line-through dark:text-slate-300 cursor-pointer hover:underline" @click="openPreviewDialog(task)">
                                                         {{ task.title }}
                                                     </h4>
                                                     <div class="flex gap-1">
@@ -980,6 +1047,23 @@ const canDeleteTask = (task: Task) => {
                                         class="mt-2 border-slate-300 bg-white text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-blue-400"
                                     />
                                 </div>
+                                
+                                <div class="md:col-span-2">
+                                    <div class="flex items-center justify-between">
+                                        <Label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Lampiran ({{ form.result_files.length }})</Label>
+                                        <Button type="button" @click="isAttachmentDialogOpen = true" class="bg-blue-600 text-white hover:bg-blue-700">Tambah Lampiran</Button>
+                                    </div>
+                                    <div v-if="form.result_files.length" class="mt-3 space-y-2">
+                                        <div v-for="(f, idx) in form.result_files" :key="idx" class="flex items-center justify-between rounded border border-slate-200 p-2 text-sm dark:border-slate-700">
+                                            <div class="flex items-center gap-2">
+                                                <svg class="h-4 w-4 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm0 2l6 6h-6z"/></svg>
+                                                <span class="font-medium">{{ f.name }}</span>
+                                                <span class="text-slate-500">({{ (f.size/1024/1024).toFixed(2) }} MB)</span>
+                                            </div>
+                                            <Button type="button" variant="outline" class="text-red-600 hover:text-red-700" @click="removeResultFile(idx)">Hapus</Button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="flex justify-end gap-3 border-t border-slate-200 pt-6 dark:border-slate-700">
@@ -999,6 +1083,122 @@ const canDeleteTask = (task: Task) => {
                                 </Button>
                             </div>
                         </form>
+                    </DialogContent>
+                </Dialog>
+                <Dialog v-model:open="isPreviewDialogOpen">
+                    <DialogContent class="max-h-[90vh] max-w-2xl overflow-y-auto border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+                        <DialogHeader class="border-b border-slate-200 pb-4 dark:border-slate-700">
+                            <DialogTitle class="text-xl font-bold text-slate-900 dark:text-slate-100">Preview Task</DialogTitle>
+                        </DialogHeader>
+                        <div v-if="selectedTask" class="space-y-4 pt-4">
+                            <div>
+                                <div class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ selectedTask.title }}</div>
+                                <div class="mt-2 flex flex-wrap gap-2">
+                                    <Badge :class="getPriorityColor(selectedTask.priority)" variant="outline" class="text-xs font-medium">
+                                        <component :is="getPriorityIcon(selectedTask.priority)" class="mr-1 h-3 w-3" />
+                                        {{ selectedTask.priority }}
+                                    </Badge>
+                                    <Badge v-if="isOverdue(selectedTask)" variant="destructive" class="bg-red-500 text-xs text-white dark:bg-red-600">Terlambat</Badge>
+                                    <Badge v-if="selectedTask.status === 'in_progress'" class="bg-blue-100 text-xs text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">In Progress</Badge>
+                                    <Badge v-if="selectedTask.status === 'completed'" class="bg-emerald-100 text-xs text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                        <CheckCircle class="mr-1 h-3 w-3" />
+                                        Completed
+                                    </Badge>
+                                </div>
+                            </div>
+
+                            <div v-if="selectedTask.description" class="rounded border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                {{ selectedTask.description }}
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex items-center gap-2"><CalendarIcon class="h-4 w-4" /><span class="font-medium">{{ formatDate(selectedTask.due_date) }}</span><span v-if="selectedTask.due_time" class="rounded bg-slate-100 px-2 py-1 text-xs dark:bg-slate-700">{{ formatTime(selectedTask.due_time) }}</span></div>
+                                    <div v-if="selectedTask.start_date" class="flex items-center gap-2"><CalendarIcon class="h-4 w-4" /><span>Mulai: {{ formatDate(selectedTask.start_date) }}</span></div>
+                                </div>
+                                <div class="space-y-2 text-sm">
+                                    <div v-if="selectedTask.assigned_user" class="flex items-center gap-2"><UserCheck class="h-4 w-4" /><span>Assigned: <span class="font-medium">{{ selectedTask.assigned_user.name }}</span></span></div>
+                                    <div class="flex items-center gap-2"><User class="h-4 w-4" /><span>Created by: <span class="font-medium">{{ selectedTask.user.name }}</span></span></div>
+                                </div>
+                            </div>
+
+                            <div v-if="selectedTask.tags && selectedTask.tags.filter((t) => !t.startsWith('result_file:')).length" class="space-y-2">
+                                <div class="text-sm font-semibold text-slate-700 dark:text-slate-300">Tags</div>
+                                <div class="flex flex-wrap gap-2">
+                                    <Badge v-for="t in selectedTask.tags.filter((t) => !t.startsWith('result_file:'))" :key="t" class="bg-slate-100 text-xs text-slate-800 dark:bg-slate-700 dark:text-slate-200">{{ t }}</Badge>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Lampiran ({{ getAttachmentCount(selectedTask) }})</span>
+                                </div>
+                                <div v-if="getAttachmentCount(selectedTask) > 0" class="mt-2 grid grid-cols-2 gap-3 md:grid-cols-3">
+                                    <div v-for="url in getAttachmentUrls(selectedTask)" :key="url" class="rounded border border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-800">
+                                        <template v-if="isImageUrl(url)">
+                                            <a :href="url" target="_blank" rel="noopener noreferrer">
+                                                <img :src="url" :alt="fileNameFromUrl(url)" class="h-32 w-full rounded object-cover" />
+                                            </a>
+                                        </template>
+                                        <template v-else-if="isPdfUrl(url)">
+                                            <a :href="url" target="_blank" rel="noopener noreferrer">
+                                                <iframe :src="url" class="h-32 w-full rounded" />
+                                            </a>
+                                        </template>
+                                        <template v-else>
+                                            <div class="flex items-center gap-2">
+                                                <svg class="h-4 w-4 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm0 2l6 6h-6z"/></svg>
+                                                <a :href="url" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">{{ fileNameFromUrl(url) }}</a>
+                                            </div>
+                                        </template>
+                                        <a :href="url" target="_blank" rel="noopener noreferrer" class="mt-2 block truncate text-xs text-blue-600 hover:underline dark:text-blue-400">{{ fileNameFromUrl(url) }}</a>
+                                    </div>
+                                </div>
+                                <div v-else class="text-sm text-slate-500 dark:text-slate-400">Tidak ada lampiran</div>
+                            </div>
+
+                            <div class="mt-6 flex justify-end">
+                                <Button type="button" class="bg-blue-600 text-white hover:bg-blue-700" @click="isPreviewDialogOpen = false">Tutup</Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+                <Dialog v-model:open="isAttachmentDialogOpen">
+                    <DialogContent class="max-w-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+                        <DialogHeader class="border-b border-slate-200 pb-4 dark:border-slate-700">
+                            <DialogTitle class="text-lg font-bold text-slate-900 dark:text-slate-100">Tambah Lampiran</DialogTitle>
+                        </DialogHeader>
+                        <div
+                            class="mt-4 flex min-h-[200px] items-center justify-center rounded border-2 border-dashed border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-800"
+                            :class="isDraggingFiles ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-400 dark:border-blue-500' : ''"
+                            @dragover.prevent="isDraggingFiles = true"
+                            @dragleave.prevent="isDraggingFiles = false"
+                            @drop.prevent="onDropFiles($event)"
+                        >
+                            <div class="text-center">
+                                <svg class="mx-auto h-12 w-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.906A5 5 0 1115.9 6.1 5.002 5.002 0 0118 16H7z"/></svg>
+                                <div class="mt-2 font-semibold text-slate-800 dark:text-slate-200">Tambah Lampiran</div>
+                                <div class="text-sm text-slate-600 dark:text-slate-400">klik atau Drag and Drop</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400">Maksimum Ukuran 10 MB</div>
+                                <div class="mt-3">
+                                    <Button type="button" class="bg-blue-600 text-white hover:bg-blue-700" @click="triggerFilePicker">Pilih File</Button>
+                                    <input ref="fileInputRef" type="file" class="hidden" multiple accept=".pdf,.jpg,.jpeg,.png" @change="onFileInputChange" />
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="form.result_files.length" class="mt-4 space-y-2">
+                            <div v-for="(f, idx) in form.result_files" :key="idx" class="flex items-center justify-between rounded border border-slate-200 p-2 text-sm dark:border-slate-700">
+                                <div class="flex items-center gap-2">
+                                    <svg class="h-4 w-4 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm0 2l6 6h-6z"/></svg>
+                                    <span class="font-medium">{{ f.name }}</span>
+                                    <span class="text-slate-500">({{ (f.size/1024/1024).toFixed(2) }} MB)</span>
+                                </div>
+                                <Button type="button" variant="outline" class="text-red-600 hover:text-red-700" @click="removeResultFile(idx)">Hapus</Button>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end">
+                            <Button type="button" class="bg-blue-600 text-white hover:bg-blue-700" @click="isAttachmentDialogOpen = false">Selesai</Button>
+                        </div>
                     </DialogContent>
                 </Dialog>
             </div>
