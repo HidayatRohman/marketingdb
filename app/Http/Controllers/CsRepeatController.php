@@ -139,6 +139,8 @@ class CsRepeatController extends Controller
                 'dailyTransaksi' => $dailyTransaksi,
                 'dailyByProduct' => $dailyByProduct,
             ];
+
+            $allItems = $filterQuery->clone()->select('nama_pelanggan', 'no_tlp', 'bio_pelanggan', 'tanggal', 'transaksi')->get();
         }
         $products = Schema::hasTable('products')
             ? Product::select('id', 'nama')->orderBy('nama')->get()
@@ -147,6 +149,7 @@ class CsRepeatController extends Controller
         return Inertia::render('CS/Repeat/Index', [
             'items' => $items,
             'products' => $products,
+            'allItems' => $allItems ?? collect([]),
             'filters' => [
                 'search' => $request->search,
                 'product_id' => $request->product_id,

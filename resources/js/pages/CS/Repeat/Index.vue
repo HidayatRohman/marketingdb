@@ -33,6 +33,7 @@ interface Item {
 interface Props {
   items: { data: Item[]; current_page: number; last_page: number; per_page: number; total: number; prev_page_url: string | null; next_page_url: string | null }
   products: Array<{ id: number; nama: string }>
+  allItems: Array<{ nama_pelanggan: string; no_tlp: string; bio_pelanggan?: string | null; tanggal?: string; transaksi: number }>
   filters: { search?: string; product_id?: number | string; periode_start?: string; periode_end?: string }
   permissions: { canCrud: boolean }
   charts: { dailyTransaksi: Array<{ date: string; total: number }>; dailyByProduct: Array<{ date: string; products: Record<string, number>; total: number }> }
@@ -403,7 +404,7 @@ const totalNominalOrder = computed(() => timelineEvents.value.reduce((sum, e) =>
       </CardContent>
       </Card>
 
-      <CsRepeatPartnerTransaksiChart :items="items.data.map(i=>({ nama_pelanggan: i.nama_pelanggan, no_tlp: i.no_tlp, transaksi: i.transaksi || 0, tanggal: i.tanggal, bio_pelanggan: i.bio_pelanggan }))" />
+      <CsRepeatPartnerTransaksiChart :items="props.allItems" />
     </div>
 
     <!-- Dialog Create -->
