@@ -453,7 +453,7 @@ const createWhatsAppUrl = (phoneNumber: string, message: string = '') => {
   return `https://wa.me/${formattedNumber}${message ? `?text=${encodedMessage}` : ''}`
 }
 const openWhatsApp = (phoneNumber: string, customerName: string) => {
-  const message = `Halo ${customerName}, saya ingin menindaklanjuti mengenai inquiry Anda.`
+  const message = `Halo ${customerName}, saya ingin menindaklanjuti mengenai ..... Anda.`
   const url = createWhatsAppUrl(phoneNumber, message)
   window.open(url, '_blank')
 }
