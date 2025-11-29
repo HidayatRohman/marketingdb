@@ -9,8 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { DatePicker } from '@/components/ui/datepicker';
-import { TimePicker } from '@/components/ui/timepicker';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import {
@@ -137,6 +135,24 @@ const form = useForm({
     assigned_to: null as number | null,
     tags: [] as string[],
 });
+
+const onDateFocus = (e: Event) => {
+    const input = e.target as HTMLInputElement;
+    if (input && typeof (input as any).showPicker === 'function') {
+        try {
+            (input as any).showPicker();
+        } catch {}
+    }
+};
+
+const onTimeFocus = (e: Event) => {
+    const input = e.target as HTMLInputElement;
+    if (input && typeof (input as any).showPicker === 'function') {
+        try {
+            (input as any).showPicker();
+        } catch {}
+    }
+};
 
 // Indonesian month names
 const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -344,14 +360,6 @@ const calendarDays = computed(() => {
 const changeView = (view: string) => {
     if (view === 'calendar' || view === 'board' || view === 'list') {
         currentView.value = view;
-        router.get(
-            '/todos',
-            {
-                view: view,
-                date: selectedDate.value.toISOString().split('T')[0],
-            },
-            { preserveState: true },
-        );
     }
 };
 
@@ -382,15 +390,6 @@ const navigateWeek = (direction: 'prev' | 'next') => {
         newDate.setDate(newDate.getDate() + 7);
     }
     selectedDate.value = newDate;
-
-    router.get(
-        '/todos',
-        {
-            view: 'board',
-            date: newDate.toISOString().split('T')[0],
-        },
-        { preserveState: true },
-    );
 };
 
 const selectDate = (date: Date) => {
@@ -409,7 +408,7 @@ const selectDate = (date: Date) => {
 
 const openCreateModal = () => {
     form.reset();
-    form.start_date = selectedDate.value.toISOString().split('T')[0];
+    form.start_date = new Date().toISOString().split('T')[0];
     form.due_date = selectedDate.value.toISOString().split('T')[0];
     showCreateModal.value = true;
 };
@@ -1101,24 +1100,22 @@ const getStatusIcon = (status: string) => {
                     </CardHeader>
                 </Card>
 
-                <!-- Kanban Board -->
+                <!-- Kanban Board (Weekly, same data rule as Calendar) -->
                 <div class="grid min-h-[600px] grid-cols-1 gap-4 md:grid-cols-7">
-                    <div v-for="(day, index) in getWeekDays()" :key="index" class="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+                    <div v-for="(date, index) in getWeekDays()" :key="index" class="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
                         <!-- Day Header -->
                         <div class="mb-4">
-                            <h3 class="font-semibold text-gray-900 dark:text-gray-100">
-                                {{ getDayName(day) }}
-                            </h3>
+                            <h3 class="font-semibold text-gray-900 dark:text-gray-100">{{ getDayName(date) }}</h3>
                             <p class="text-sm text-gray-500">
-                                {{ formatDate(day.toISOString().split('T')[0]) }}
+                                {{ formatDate(date.toISOString().split('T')[0]) }}
                             </p>
-                            <div class="mt-1 text-xs text-gray-400">{{ getTodosForWeekDay(day).length }} tugas</div>
+                            <div class="mt-1 text-xs text-gray-400">{{ getTodosForDateRange(date).length }} tugas</div>
                         </div>
 
                         <!-- Todo Cards -->
                         <div class="space-y-3">
                             <div
-                                v-for="todo in getTodosForWeekDay(day)"
+                                v-for="todo in getTodosForDateRange(date)"
                                 :key="todo.id"
                                 class="group relative cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg dark:border-gray-600 dark:bg-gray-700 dark:hover:border-blue-600"
                                 @click="openEditModal(todo)"
@@ -1205,7 +1202,7 @@ const getStatusIcon = (status: string) => {
                             <Button
                                 variant="ghost"
                                 class="w-full justify-start rounded-xl border-2 border-dashed border-gray-300 text-gray-500 transition-all duration-200 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 dark:border-gray-600 dark:text-gray-400 dark:hover:border-blue-500 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
-                                @click="openCreateModalForDay(day)"
+                                @click="openCreateModalForDay(date)"
                             >
                                 <Plus class="mr-2 h-4 w-4" />
                                 Tambah Tugas
@@ -1514,31 +1511,41 @@ const getStatusIcon = (status: string) => {
                             </div>
 
                             <div>
-                                <Label>Tanggal Mulai</Label>
-                                <DatePicker
+                                <Label for="start_date">Tanggal Mulai</Label>
+                                <Input
+                                    id="start_date"
+                                    type="date"
                                     v-model="form.start_date"
-                                    placeholder="Pilih tanggal mulai"
-                                    :max-date="form.due_date || undefined"
+                                    @focus="onDateFocus"
+                                    @click="onDateFocus"
+                                    class="mt-2"
                                 />
                                 <span v-if="form.errors.start_date" class="text-sm text-red-600">{{ form.errors.start_date }}</span>
                             </div>
 
                             <div>
-                                <Label>Tanggal Deadline *</Label>
-                                <DatePicker
+                                <Label for="due_date">Tanggal Deadline *</Label>
+                                <Input
+                                    id="due_date"
+                                    type="date"
                                     v-model="form.due_date"
-                                    placeholder="Pilih tanggal deadline"
-                                    :min-date="form.start_date || undefined"
+                                    required
+                                    @focus="onDateFocus"
+                                    @click="onDateFocus"
+                                    class="mt-2"
                                 />
                                 <span v-if="form.errors.due_date" class="text-sm text-red-600">{{ form.errors.due_date }}</span>
                             </div>
 
                             <div>
-                                <Label>Waktu Deadline</Label>
-                                <TimePicker
+                                <Label for="due_time">Waktu Deadline</Label>
+                                <Input
+                                    id="due_time"
+                                    type="time"
                                     v-model="form.due_time"
-                                    placeholder="Pilih waktu deadline"
-                                    :minute-step="15"
+                                    @focus="onTimeFocus"
+                                    @click="onTimeFocus"
+                                    class="mt-2"
                                 />
                                 <span v-if="form.errors.due_time" class="text-sm text-red-600">{{ form.errors.due_time }}</span>
                             </div>
