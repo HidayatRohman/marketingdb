@@ -8,6 +8,10 @@ import { Input } from '@/components/ui/input'
 import { ref, watch, onMounted, computed } from 'vue'
 import { indonesianProvinces } from '@/lib/indonesianProvinces'
 import { Dialog, DialogHeader, DialogTitle, DialogScrollContent, DialogDescription } from '@/components/ui/dialog'
+import DropdownMenu from '@/components/ui/dropdown-menu/DropdownMenu.vue'
+import DropdownMenuTrigger from '@/components/ui/dropdown-menu/DropdownMenuTrigger.vue'
+import DropdownMenuContent from '@/components/ui/dropdown-menu/DropdownMenuContent.vue'
+import DropdownMenuItem from '@/components/ui/dropdown-menu/DropdownMenuItem.vue'
 import CsMaintenanceDailyChart from '@/components/CsMaintenanceDailyChart.vue'
 import CsMaintenanceCategoryPieChart from '@/components/CsMaintenanceCategoryPieChart.vue'
 
@@ -104,6 +108,20 @@ const kendalaData = ref<Array<{ label: string; count: number; warna?: string }>>
 const solusiData = ref<Array<{ label: string; count: number; warna?: string }>>([])
 const kendalaOptions = ref<string[]>([])
 const solusiOptions = ref<string[]>([])
+
+// Pencarian untuk dropdown di modal Edit Kendala & Solusi (Mitra)
+const mitraKendalaSearch = ref('')
+const mitraSolusiSearch = ref('')
+const filteredKendalasModal = computed(() => {
+  const q = (mitraKendalaSearch.value || '').toLowerCase()
+  return kendalaOptions.value.filter((k) => k.toLowerCase().includes(q))
+})
+const filteredSolusisModal = computed(() => {
+  const q = (mitraSolusiSearch.value || '').toLowerCase()
+  return solusiOptions.value.filter((s) => s.toLowerCase().includes(q))
+})
+const kendalaOpen = ref(false)
+const solusiOpen = ref(false)
 
 type RepeatRow = {
   id?: number
@@ -1329,17 +1347,63 @@ const breadcrumbs = [
             </div>
             <div>
               <label class="block text-sm font-medium mb-1">Kendala</label>
-              <select v-model="mitraEditForm.kendala" class="h-9 rounded border px-2 w-full">
-                <option value="">-- Pilih Kendala --</option>
-                <option v-for="k in kendalaOptions" :key="k" :value="k">{{ k }}</option>
-              </select>
+              <DropdownMenu :open="kendalaOpen" @update:open="(v:boolean)=> kendalaOpen = v">
+                <DropdownMenuTrigger :as-child="true">
+                  <button type="button" class="h-9 rounded border px-2 w-full flex items-center justify-between">
+                    <span class="truncate">{{ mitraEditForm.kendala || '-- Pilih Kendala --' }}</span>
+                    <svg class="h-4 w-4 opacity-60" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.29a.75.75 0 01-.02-1.08z"/></svg>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent class="w-80">
+                  <DropdownMenuItem @click="mitraEditForm.kendala = ''; kendalaOpen = false">-- Pilih Kendala --</DropdownMenuItem>
+                  <div class="px-2 py-1">
+                    <Input
+                      v-model="mitraKendalaSearch"
+                      placeholder="Cari kendala"
+                      @keydown.stop
+                      @keyup.stop
+                      @keypress.stop
+                      @input.stop
+                    />
+                  </div>
+                  <div class="max-h-48 overflow-y-auto">
+                    <DropdownMenuItem v-for="k in filteredKendalasModal" :key="k" @click="mitraEditForm.kendala = k; kendalaOpen = false">
+                      {{ k }}
+                    </DropdownMenuItem>
+                    <div v-if="filteredKendalasModal.length === 0" class="px-3 py-2 text-sm text-gray-500">Tidak ada hasil</div>
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <div>
               <label class="block text-sm font-medium mb-1">Solusi</label>
-              <select v-model="mitraEditForm.solusi" class="h-9 rounded border px-2 w-full">
-                <option value="">-- Pilih Solusi --</option>
-                <option v-for="s in solusiOptions" :key="s" :value="s">{{ s }}</option>
-              </select>
+              <DropdownMenu :open="solusiOpen" @update:open="(v:boolean)=> solusiOpen = v">
+                <DropdownMenuTrigger :as-child="true">
+                  <button type="button" class="h-9 rounded border px-2 w-full flex items-center justify-between">
+                    <span class="truncate">{{ mitraEditForm.solusi || '-- Pilih Solusi --' }}</span>
+                    <svg class="h-4 w-4 opacity-60" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.29a.75.75 0 01-.02-1.08z"/></svg>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent class="w-80">
+                  <DropdownMenuItem @click="mitraEditForm.solusi = ''; solusiOpen = false">-- Pilih Solusi --</DropdownMenuItem>
+                  <div class="px-2 py-1">
+                    <Input
+                      v-model="mitraSolusiSearch"
+                      placeholder="Cari solusi"
+                      @keydown.stop
+                      @keyup.stop
+                      @keypress.stop
+                      @input.stop
+                    />
+                  </div>
+                  <div class="max-h-48 overflow-y-auto">
+                    <DropdownMenuItem v-for="s in filteredSolusisModal" :key="s" @click="mitraEditForm.solusi = s; solusiOpen = false">
+                      {{ s }}
+                    </DropdownMenuItem>
+                    <div v-if="filteredSolusisModal.length === 0" class="px-3 py-2 text-sm text-gray-500">Tidak ada hasil</div>
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
           <div class="flex justify-end gap-2">

@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Head, useForm } from '@inertiajs/vue3'
+import { Head, useForm, usePage } from '@inertiajs/vue3'
 import { indonesianProvinces } from '@/lib/indonesianProvinces'
+import { computed, ref } from 'vue'
 
 interface Item { id: number; nama_pelanggan: string; no_tlp: string; product?: { id: number; nama: string } | null; tanggal?: string; chat?: string; kota?: string; provinsi?: string; kendala?: string; solusi?: string }
 const props = defineProps<{ 
@@ -33,6 +34,68 @@ const form = useForm({
   kendala: props.item.kendala || '',
   solusi: props.item.solusi || '',
 })
+
+const kendalaSearch = ref('')
+const solusiSearch = ref('')
+
+const inertiaPage = usePage() as any
+const inertiaVersion = inertiaPage?.version || ''
+
+const kendalaList = ref<Array<{ id:number; nama:string }>>(props.kendalas || [])
+const solusiList = ref<Array<{ id:number; nama:string }>>(props.solusis || [])
+
+const filteredKendalas = computed(() => {
+  const q = kendalaSearch.value.toLowerCase()
+  return (kendalaList.value || []).filter(k => (k?.nama || '').toLowerCase().includes(q))
+})
+
+const filteredSolusis = computed(() => {
+  const q = solusiSearch.value.toLowerCase()
+  return (solusiList.value || []).filter(s => (s?.nama || '').toLowerCase().includes(q))
+})
+
+const fetchKendalasIfNeeded = async () => {
+  if (kendalaList.value && kendalaList.value.length > 0) return
+  try {
+    const res = await fetch(`/kendalas`, {
+      headers: {
+        'X-Inertia': 'true',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json',
+        'X-Inertia-Partial-Component': 'Kendalas/Index',
+        'X-Inertia-Partial-Data': 'kendalas',
+        ...(inertiaVersion ? { 'X-Inertia-Version': inertiaVersion } : {}),
+      },
+    })
+    if (!res.ok) return
+    const page = await res.json()
+    const list = page?.props?.kendalas ?? page?.kendalas ?? []
+    kendalaList.value = Array.isArray(list) ? list.map((k: any) => ({ id: Number(k?.id || 0), nama: String(k?.nama || '') })) : []
+  } catch {}
+}
+
+const fetchSolusisIfNeeded = async () => {
+  if (solusiList.value && solusiList.value.length > 0) return
+  try {
+    const res = await fetch(`/solusis`, {
+      headers: {
+        'X-Inertia': 'true',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json',
+        'X-Inertia-Partial-Component': 'Solusis/Index',
+        'X-Inertia-Partial-Data': 'solusis',
+        ...(inertiaVersion ? { 'X-Inertia-Version': inertiaVersion } : {}),
+      },
+    })
+    if (!res.ok) return
+    const page = await res.json()
+    const list = page?.props?.solusis ?? page?.solusis ?? []
+    solusiList.value = Array.isArray(list) ? list.map((s: any) => ({ id: Number(s?.id || 0), nama: String(s?.nama || '') })) : []
+  } catch {}
+}
+
+fetchKendalasIfNeeded()
+fetchSolusisIfNeeded()
 
 const submit = () => {
   form.put(`/cs/maintenances/${props.item.id}`)
@@ -106,16 +169,22 @@ const breadcrumbs = [
           <label class="block text-sm font-medium mb-1">Kendala</label>
           <select v-model="form.kendala" class="h-9 rounded border px-2 w-full">
             <option value="">-- Pilih Kendala --</option>
-            <option v-for="k in props.kendalas" :key="k.id" :value="k.nama">{{ k.nama }}</option>
+            <option v-for="k in filteredKendalas" :key="k.id" :value="k.nama">{{ k.nama }}</option>
           </select>
+          <div class="mt-2">
+            <Input v-model="kendalaSearch" placeholder="Cari kendala..." />
+          </div>
           <div v-if="form.errors.kendala" class="text-sm text-red-600 mt-1">{{ form.errors.kendala }}</div>
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Solusi</label>
           <select v-model="form.solusi" class="h-9 rounded border px-2 w-full">
             <option value="">-- Pilih Solusi --</option>
-            <option v-for="s in props.solusis" :key="s.id" :value="s.nama">{{ s.nama }}</option>
+            <option v-for="s in filteredSolusis" :key="s.id" :value="s.nama">{{ s.nama }}</option>
           </select>
+          <div class="mt-2">
+            <Input v-model="solusiSearch" placeholder="Cari solusi..." />
+          </div>
           <div v-if="form.errors.solusi" class="text-sm text-red-600 mt-1">{{ form.errors.solusi }}</div>
         </div>
         <div class="flex justify-end gap-2">
