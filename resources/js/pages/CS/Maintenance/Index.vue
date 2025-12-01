@@ -144,6 +144,8 @@ type RepeatRow = {
   product?: { id: number; nama: string } | null
   kota?: string
   provinsi?: string
+  transaksi?: number
+  keterangan?: string | null
   kendala?: string | null
   solusi?: string | null
   maintenance_tanggal?: string | null
@@ -151,6 +153,80 @@ type RepeatRow = {
 }
 const repeatTableLoading = ref(false)
 const repeatTableRows = ref<RepeatRow[]>([])
+const repeatItems = ref<RepeatRow[]>([])
+const repeatStartDate = ref('')
+const repeatEndDate = ref('')
+const repeatMinTransaksi = ref<string>('')
+const repeatMaxTransaksi = ref<string>('')
+
+const parseRupiahToNumber = (s: string): number => {
+  const digits = String(s || '').replace(/\D/g, '')
+  return digits ? Number(digits) : NaN
+}
+
+const formatRupiah = (n: number): string => {
+  try {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n || 0)
+  } catch {
+    return `Rp ${Math.round(n || 0).toLocaleString('id-ID')}`
+  }
+}
+
+watch(repeatMinTransaksi, (val) => {
+  const digits = String(val || '').replace(/\D/g, '')
+  if (!digits) {
+    if (val === '') return
+    repeatMinTransaksi.value = ''
+    return
+  }
+  const formatted = formatRupiah(Number(digits))
+  if (val !== formatted) repeatMinTransaksi.value = formatted
+})
+
+watch(repeatMaxTransaksi, (val) => {
+  const digits = String(val || '').replace(/\D/g, '')
+  if (!digits) {
+    if (val === '') return
+    repeatMaxTransaksi.value = ''
+    return
+  }
+  const formatted = formatRupiah(Number(digits))
+  if (val !== formatted) repeatMaxTransaksi.value = formatted
+})
+
+const repeatFilteredItems = computed(() => {
+  let list = Array.isArray(repeatItems.value) ? [...repeatItems.value] : []
+  const start = repeatStartDate.value ? new Date(repeatStartDate.value) : null
+  const end = repeatEndDate.value ? new Date(repeatEndDate.value) : null
+  const min = parseRupiahToNumber(repeatMinTransaksi.value)
+  const max = parseRupiahToNumber(repeatMaxTransaksi.value)
+
+  if (start && !isNaN(start.getTime())) {
+    list = list.filter(r => r.tanggal && new Date(r.tanggal).getTime() >= start.getTime())
+  }
+  if (end && !isNaN(end.getTime())) {
+    list = list.filter(r => r.tanggal && new Date(r.tanggal).getTime() <= end.getTime())
+  }
+  if (!isNaN(min)) {
+    list = list.filter(r => (r.transaksi || 0) >= min)
+  }
+  if (!isNaN(max)) {
+    list = list.filter(r => (r.transaksi || 0) <= max)
+  }
+
+  const grouped = new Map<string, RepeatRow>()
+  for (const r of list) {
+    const phoneKey = (r.no_tlp || '').trim()
+    const nameKey = (r.nama_pelanggan || '').trim().toLowerCase()
+    const key = phoneKey || nameKey
+    if (!key) continue
+    const prev = grouped.get(key)
+    const currTime = r.tanggal ? new Date(r.tanggal).getTime() : -1
+    const prevTime = prev?.tanggal ? new Date(prev.tanggal).getTime() : -1
+    if (!prev || currTime >= prevTime) grouped.set(key, r)
+  }
+  return Array.from(grouped.values())
+})
 const mitraKey = (r: RepeatRow) => ((r.no_tlp || '').trim()) || ((r.nama_pelanggan || '').trim().toLowerCase())
 const inactiveSet = ref<Set<string>>(new Set())
 const loadInactive = () => {
@@ -205,6 +281,20 @@ const fetchRepeatTable = async () => {
 
     let rows = await fetchProps('/cs/repeats')
     if (!rows) rows = await fetchProps('/repeats')
+    repeatItems.value = Array.isArray(rows)
+      ? rows.map((n: any) => ({
+          id: Number(n?.id || 0),
+          nama_pelanggan: String(n?.nama_pelanggan ?? n?.nama ?? ''),
+          no_tlp: String(n?.no_tlp ?? ''),
+          bio_pelanggan: n?.bio_pelanggan ?? null,
+          tanggal: String(n?.tanggal ?? n?.created_at ?? ''),
+          product: n?.product ? { id: Number(n.product.id), nama: String(n.product.nama) } : (n?.product_id ? { id: Number(n.product_id), nama: String(n?.product_nama ?? '-') } : null),
+          kota: String(n?.kota ?? ''),
+          provinsi: String(n?.provinsi ?? ''),
+          transaksi: Number(n?.transaksi ?? 0),
+          keterangan: n?.keterangan ?? null,
+        }))
+      : []
 
     // Build latest kendala/solusi map from maintenance items
     const latestMap: Record<string, { kendala?: string; solusi?: string; tanggal?: string }> = {}
@@ -244,6 +334,8 @@ const fetchRepeatTable = async () => {
             product: n?.product ? { id: Number(n.product.id), nama: String(n.product.nama) } : (n?.product_id ? { id: Number(n.product_id), nama: String(n?.product_nama ?? '-') } : null),
             kota: String(n?.kota ?? ''),
             provinsi: String(n?.provinsi ?? ''),
+            transaksi: Number(n?.transaksi ?? 0),
+            keterangan: n?.keterangan ?? null,
             kendala: latest.kendala ?? null,
             solusi: latest.solusi ?? null,
             maintenance_tanggal: latest.tanggal ?? null,
@@ -476,6 +568,14 @@ const formatWhatsAppNumber = (phoneNumber: string) => {
   if (cleaned.startsWith('0')) cleaned = '62' + cleaned.substring(1)
   if (!cleaned.startsWith('62')) cleaned = '62' + cleaned
   return cleaned
+}
+
+const formatCurrency = (value: number) => {
+  try {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value || 0)
+  } catch {
+    return `Rp ${Math.round(value || 0).toLocaleString('id-ID')}`
+  }
 }
 const createWhatsAppUrl = (phoneNumber: string, message: string = '') => {
   const formattedNumber = formatWhatsAppNumber(phoneNumber)
@@ -875,11 +975,79 @@ const breadcrumbs = [
                 <td colspan="10" class="text-center py-6 text-muted-foreground">Tidak ada mitra tidak aktif</td>
               </tr>
             </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
+      </table>
+    </div>
+  </CardContent>
+  </Card>
 
+  <!-- Daftar Repeat Order (disusun seperti di /repeats) -->
+  <Card class="mt-6">
+    <CardHeader class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-indigo-100/50 bg-gradient-to-br from-indigo-50 via-sky-50 to-cyan-50">
+      <CardTitle>Daftar Repeat Order</CardTitle>
+      <div class="flex w-full items-center gap-2 mt-1 sm:mt-0 sm:w-auto sm:justify-end">
+        <div class="relative flex-1 sm:flex-none">
+          <Input v-model="q" placeholder="Cari nama/no tlp" class="w-full sm:w-64" />
+        </div>
+        <input type="date" v-model="repeatStartDate" class="h-9 rounded border px-2" title="Tanggal mulai" />
+        <input type="date" v-model="repeatEndDate" class="h-9 rounded border px-2" title="Tanggal selesai" />
+        <Input v-model="repeatMinTransaksi" placeholder="Min Rp" class="w-28" />
+        <Input v-model="repeatMaxTransaksi" placeholder="Max Rp" class="w-28" />
+      </div>
+    </CardHeader>
+    <CardContent class="pt-4">
+      <div class="overflow-x-auto responsive-table">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="text-left border-b">
+              <th class="py-2 px-2 sticky left-0 z-30 bg-background min-w-[120px] sm:min-w-[200px] border-r border-border">
+                <span class="sm:hidden">Nama</span>
+                <span class="hidden sm:inline">Nama Pelanggan</span>
+              </th>
+              <th class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">No Tlp</th>
+              <th class="py-2 px-2">Bio Pelanggan</th>
+              <th class="py-2 px-2">Tanggal</th>
+              <th class="py-2 px-2">Produk</th>
+              <th class="py-2 px-2">Kota</th>
+              <th class="py-2 px-2">Provinsi</th>
+              <th class="py-2 px-2">Transaksi</th>
+              <th class="py-2 px-2">Keterangan</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="it in repeatFilteredItems" :key="it.id" class="border-b">
+              <td class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-border">{{ it.nama_pelanggan }}</td>
+              <td class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">
+                <div class="flex items-center gap-2">
+                  <div class="rounded bg-green-100 p-1 dark:bg-green-800">
+                    <svg class="h-4 w-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
+                    </svg>
+                  </div>
+                  <button
+                    @click="openWhatsApp(it.no_tlp, it.nama_pelanggan)"
+                    class="font-medium text-green-600 transition-colors duration-200 hover:text-green-800 hover:underline dark:text-green-400 dark:hover:text-green-300"
+                    :title="`Hubungi ${it.nama_pelanggan} via WhatsApp`"
+                  >
+                    {{ it.no_tlp }}
+                  </button>
+                </div>
+              </td>
+              <td class="py-2 px-2">{{ it.bio_pelanggan || '-' }}</td>
+              <td class="py-2 px-2">{{ formatDate(it.tanggal) }}</td>
+              <td class="py-2 px-2">{{ it.product?.nama || '-' }}</td>
+              <td class="py-2 px-2">{{ it.kota || '-' }}</td>
+              <td class="py-2 px-2">{{ it.provinsi || '-' }}</td>
+              <td class="py-2 px-2">{{ formatCurrency(it.transaksi || 0) }}</td>
+              <td class="py-2 px-2">{{ it.keterangan || '-' }}</td>
+            </tr>
+            <tr v-if="repeatItems.length === 0">
+              <td colspan="9" class="text-center py-6 text-muted-foreground">Tidak ada data</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </CardContent>
+  </Card>
     <Card>
       <CardHeader>
         <CardTitle>CS Maintenance</CardTitle>
