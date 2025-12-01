@@ -122,6 +122,18 @@ const filteredSolusisModal = computed(() => {
 })
 const kendalaOpen = ref(false)
 const solusiOpen = ref(false)
+const editKendalaOpen = ref(false)
+const editSolusiOpen = ref(false)
+const editKendalaSearch = ref('')
+const editSolusiSearch = ref('')
+const filteredKendalasEdit = computed(() => {
+  const q = (editKendalaSearch.value || '').toLowerCase()
+  return (kendalaOptions.value || []).filter(k => k.toLowerCase().includes(q))
+})
+const filteredSolusisEdit = computed(() => {
+  const q = (editSolusiSearch.value || '').toLowerCase()
+  return (solusiOptions.value || []).filter(s => s.toLowerCase().includes(q))
+})
 
 type RepeatRow = {
   id?: number
@@ -1148,18 +1160,64 @@ const breadcrumbs = [
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Kendala</label>
-            <select v-model="editForm.kendala" class="h-9 rounded border px-2 w-full">
-              <option value="">-- Pilih Kendala --</option>
-              <option v-for="k in kendalaData" :key="k.label" :value="k.label">{{ k.label }}</option>
-            </select>
+            <DropdownMenu :open="editKendalaOpen" @update:open="(v:boolean)=> editKendalaOpen = v">
+              <DropdownMenuTrigger :as-child="true">
+                <button type="button" class="h-9 rounded border px-2 w-full flex items-center justify-between">
+                  <span class="truncate">{{ editForm.kendala || '-- Pilih Kendala --' }}</span>
+                  <svg class="h-4 w-4 opacity-60" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.29a.75.75 0 01-.02-1.08z"/></svg>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent class="w-80">
+                <DropdownMenuItem @click="editForm.kendala = ''; editKendalaOpen = false">-- Pilih Kendala --</DropdownMenuItem>
+                <div class="px-2 py-1">
+                  <Input
+                    v-model="editKendalaSearch"
+                    placeholder="Cari kendala"
+                    @keydown.stop
+                    @keyup.stop
+                    @keypress.stop
+                    @input.stop
+                  />
+                </div>
+                <div class="max-h-48 overflow-y-auto">
+                  <DropdownMenuItem v-for="k in filteredKendalasEdit" :key="k" @click="editForm.kendala = k; editKendalaOpen = false">
+                    {{ k }}
+                  </DropdownMenuItem>
+                  <div v-if="filteredKendalasEdit.length === 0" class="px-3 py-2 text-sm text-gray-500">Tidak ada hasil</div>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <div v-if="editForm.errors.kendala" class="text-sm text-red-600 mt-1">{{ editForm.errors.kendala }}</div>
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Solusi</label>
-            <select v-model="editForm.solusi" class="h-9 rounded border px-2 w-full">
-              <option value="">-- Pilih Solusi --</option>
-              <option v-for="s in solusiData" :key="s.label" :value="s.label">{{ s.label }}</option>
-            </select>
+            <DropdownMenu :open="editSolusiOpen" @update:open="(v:boolean)=> editSolusiOpen = v">
+              <DropdownMenuTrigger :as-child="true">
+                <button type="button" class="h-9 rounded border px-2 w-full flex items-center justify-between">
+                  <span class="truncate">{{ editForm.solusi || '-- Pilih Solusi --' }}</span>
+                  <svg class="h-4 w-4 opacity-60" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.29a.75.75 0 01-.02-1.08z"/></svg>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent class="w-80">
+                <DropdownMenuItem @click="editForm.solusi = ''; editSolusiOpen = false">-- Pilih Solusi --</DropdownMenuItem>
+                <div class="px-2 py-1">
+                  <Input
+                    v-model="editSolusiSearch"
+                    placeholder="Cari solusi"
+                    @keydown.stop
+                    @keyup.stop
+                    @keypress.stop
+                    @input.stop
+                  />
+                </div>
+                <div class="max-h-48 overflow-y-auto">
+                  <DropdownMenuItem v-for="s in filteredSolusisEdit" :key="s" @click="editForm.solusi = s; editSolusiOpen = false">
+                    {{ s }}
+                  </DropdownMenuItem>
+                  <div v-if="filteredSolusisEdit.length === 0" class="px-3 py-2 text-sm text-gray-500">Tidak ada hasil</div>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <div v-if="editForm.errors.solusi" class="text-sm text-red-600 mt-1">{{ editForm.errors.solusi }}</div>
           </div>
           <div class="flex justify-end gap-2">
