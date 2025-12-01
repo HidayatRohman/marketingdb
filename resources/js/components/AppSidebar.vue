@@ -63,23 +63,19 @@ const mainNavItems = computed<NavItem[]>(() => {
         });
     }
 
-    // Task Management - hide for CS (only show CS-specific menus)
-    if (permissions.value.role !== 'cs') {
-        items.push({
-            title: 'Task Management',
-            href: '/task-management',
-            icon: Kanban,
-        });
-    }
+    // Task Management - tampilkan untuk semua role termasuk CS
+    items.push({
+        title: 'Task Management',
+        href: '/task-management',
+        icon: Kanban,
+    });
 
-    // To Do List - hide for CS (only show CS-specific menus)
-    if (permissions.value.role !== 'cs') {
-        items.push({
-            title: 'To Do List',
-            href: '/todos',
-            icon: Calendar,
-        });
-    }
+    // To Do List - tampilkan untuk semua role termasuk CS
+    items.push({
+        title: 'To Do List',
+        href: '/todos',
+        icon: Calendar,
+    });
 
     // Users - only Super Admin and Admin can access
     if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess) {
