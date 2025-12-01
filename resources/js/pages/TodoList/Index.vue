@@ -360,8 +360,29 @@ const calendarDays = computed(() => {
 const changeView = (view: string) => {
     if (view === 'calendar' || view === 'board' || view === 'list') {
         currentView.value = view;
+        router.get(
+            '/todos',
+            {
+                view: view,
+                date: selectedDate.value.toISOString().split('T')[0],
+            },
+            { preserveState: true, preserveScroll: true, replace: true, only: ['todos', 'stats', 'selectedDate', 'view'] },
+        );
     }
 };
+
+watch(currentView, (view) => {
+    if (view === 'calendar' || view === 'board' || view === 'list') {
+        router.get(
+            '/todos',
+            {
+                view: view,
+                date: selectedDate.value.toISOString().split('T')[0],
+            },
+            { preserveState: true, preserveScroll: true, replace: true, only: ['todos', 'stats', 'selectedDate', 'view'] },
+        );
+    }
+});
 
 const navigateMonth = (direction: 'prev' | 'next') => {
     const newDate = new Date(currentDate.value);
@@ -390,6 +411,14 @@ const navigateWeek = (direction: 'prev' | 'next') => {
         newDate.setDate(newDate.getDate() + 7);
     }
     selectedDate.value = newDate;
+    router.get(
+        '/todos',
+        {
+            view: 'board',
+            date: newDate.toISOString().split('T')[0],
+        },
+        { preserveState: true, preserveScroll: true, replace: true, only: ['todos', 'stats', 'selectedDate', 'view'] },
+    );
 };
 
 const selectDate = (date: Date) => {
@@ -704,7 +733,7 @@ const getStatusIcon = (status: string) => {
                     </div>
 
                     <div class="flex items-center gap-3">
-                        <Tabs :default-value="currentView" @update:model-value="changeView">
+                        <Tabs v-model="currentView">
                             <TabsList
                                 class="border border-white/20 bg-white/70 shadow-lg backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-800/70"
                             >
@@ -1076,19 +1105,19 @@ const getStatusIcon = (status: string) => {
                 <!-- Board Header -->
                 <Card>
                     <CardHeader class="pb-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <CardTitle class="flex items-center gap-2">
-                                    <Columns3 class="h-5 w-5" />
-                                    Board View - Weekly Planning
-                                </CardTitle>
-                                <p class="mt-1 text-sm text-gray-600">Kelola tugas berdasarkan hari dalam minggu</p>
+                        <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between md:flex-nowrap">
+                            <div class="flex items-start gap-2 min-w-0">
+                                <Columns3 class="h-5 w-5" />
+                                <div class="min-w-0">
+                                    <CardTitle class="text-base sm:text-lg break-words">Board View - Weekly Planning</CardTitle>
+                                    <p class="mt-1 text-xs text-gray-600 sm:text-sm break-words">Kelola tugas berdasarkan hari dalam minggu</p>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 mt-2 sm:mt-0">
                                 <Button variant="outline" size="sm" @click="navigateWeek('prev')">
                                     <ArrowLeft class="h-4 w-4" />
                                 </Button>
-                                <span class="px-3 text-sm font-medium">
+                                <span class="px-3 text-xs font-medium sm:text-sm">
                                     {{ formatDate(getWeekDays()[0].toISOString().split('T')[0]) }} -
                                     {{ formatDate(getWeekDays()[6].toISOString().split('T')[0]) }}
                                 </span>

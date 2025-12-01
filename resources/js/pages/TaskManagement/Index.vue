@@ -1050,8 +1050,32 @@ const openPreviewDialog = (task: Task) => {
                                 
                                 <div class="md:col-span-2">
                                     <div class="flex items-center justify-between">
-                                        <Label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Lampiran ({{ form.result_files.length }})</Label>
+                                        <Label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Lampiran</Label>
                                         <Button type="button" @click="isAttachmentDialogOpen = true" class="bg-blue-600 text-white hover:bg-blue-700">Tambah Lampiran</Button>
+                                    </div>
+                                    <div v-if="editingTask && getAttachmentCount(editingTask) > 0" class="mt-3">
+                                        <div class="text-sm font-semibold text-slate-700 dark:text-slate-300">Lampiran saat ini ({{ getAttachmentCount(editingTask) }})</div>
+                                        <div class="mt-2 grid grid-cols-2 gap-3 md:grid-cols-3">
+                                            <div v-for="url in getAttachmentUrls(editingTask)" :key="url" class="rounded border border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-800">
+                                                <template v-if="isImageUrl(url)">
+                                                    <a :href="url" target="_blank" rel="noopener noreferrer">
+                                                        <img :src="url" :alt="fileNameFromUrl(url)" class="h-32 w-full rounded object-cover" />
+                                                    </a>
+                                                </template>
+                                                <template v-else-if="isPdfUrl(url)">
+                                                    <a :href="url" target="_blank" rel="noopener noreferrer">
+                                                        <iframe :src="url" class="h-32 w-full rounded" />
+                                                    </a>
+                                                </template>
+                                                <template v-else>
+                                                    <div class="flex items-center gap-2">
+                                                        <svg class="h-4 w-4 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm0 2l6 6h-6z"/></svg>
+                                                        <a :href="url" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">{{ fileNameFromUrl(url) }}</a>
+                                                    </div>
+                                                </template>
+                                                <a :href="url" target="_blank" rel="noopener noreferrer" class="mt-2 block truncate text-xs text-blue-600 hover:underline dark:text-blue-400">{{ fileNameFromUrl(url) }}</a>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div v-if="form.result_files.length" class="mt-3 space-y-2">
                                         <div v-for="(f, idx) in form.result_files" :key="idx" class="flex items-center justify-between rounded border border-slate-200 p-2 text-sm dark:border-slate-700">
