@@ -795,6 +795,10 @@ const openPreviewDialog = (task: Task) => {
                                                             <a :href="url" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">{{ fileNameFromUrl(url) }}</a>
                                                         </li>
                                                     </ul>
+                                                    <div class="mt-1 flex items-center gap-2">
+                                                        <MessageSquare class="h-3 w-3" />
+                                                        <span>Komentar ({{ getComments(task).length }})</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             </CardContent>
@@ -911,6 +915,10 @@ const openPreviewDialog = (task: Task) => {
                                                         <span
                                                             >Created by: <span class="font-medium">{{ task.user.name }}</span></span
                                                         >
+                                                    </div>
+                                                    <div class="mt-1 flex items-center gap-2">
+                                                        <MessageSquare class="h-3 w-3" />
+                                                        <span>Komentar ({{ getComments(task).length }})</span>
                                                     </div>
                                                 </div>
                                             </CardContent>
@@ -1032,6 +1040,10 @@ const openPreviewDialog = (task: Task) => {
                                                         <span
                                                             >Created by: <span class="font-medium">{{ task.user.name }}</span></span
                                                         >
+                                                    </div>
+                                                    <div class="mt-1 flex items-center gap-2">
+                                                        <MessageSquare class="h-3 w-3" />
+                                                        <span>Komentar ({{ getComments(task).length }})</span>
                                                     </div>
                                                 </div>
                                             </CardContent>
