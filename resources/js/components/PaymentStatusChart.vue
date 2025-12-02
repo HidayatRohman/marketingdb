@@ -230,44 +230,41 @@ const chartData = computed(() => {
   const tambahanData = labels.map(d => rows[d]?.tambahan_dp ?? 0);
   const pelunasanData = labels.map(d => rows[d]?.pelunasan ?? 0);
 
-  const barDatasets = [
+  const lineDatasets = [
     {
-      type: 'bar',
+      type: 'line',
       label: 'DP/TJ',
       data: dpData,
-      backgroundColor: 'rgba(59, 130, 246, 0.7)',
-      hoverBackgroundColor: 'rgba(59, 130, 246, 0.9)',
       borderColor: 'rgba(59, 130, 246, 1)',
-      borderWidth: 0,
-      borderRadius: 4,
-      barPercentage: 0.9,
-      categoryPercentage: 0.7,
+      backgroundColor: 'rgba(59, 130, 246, 0.25)',
+      tension: 0.3,
+      fill: 'origin',
+      pointRadius: 3,
+      pointHoverRadius: 4,
       order: 1,
     },
     {
-      type: 'bar',
+      type: 'line',
       label: 'Tambahan DP',
       data: tambahanData,
-      backgroundColor: 'rgba(245, 158, 11, 0.7)',
-      hoverBackgroundColor: 'rgba(245, 158, 11, 0.9)',
       borderColor: 'rgba(245, 158, 11, 1)',
-      borderWidth: 0,
-      borderRadius: 4,
-      barPercentage: 0.9,
-      categoryPercentage: 0.7,
+      backgroundColor: 'rgba(245, 158, 11, 0.25)',
+      tension: 0.3,
+      fill: 'origin',
+      pointRadius: 3,
+      pointHoverRadius: 4,
       order: 2,
     },
     {
-      type: 'bar',
+      type: 'line',
       label: 'Pelunasan',
       data: pelunasanData,
-      backgroundColor: 'rgba(16, 185, 129, 0.7)',
-      hoverBackgroundColor: 'rgba(16, 185, 129, 0.9)',
       borderColor: 'rgba(16, 185, 129, 1)',
-      borderWidth: 0,
-      borderRadius: 4,
-      barPercentage: 0.9,
-      categoryPercentage: 0.7,
+      backgroundColor: 'rgba(16, 185, 129, 0.25)',
+      tension: 0.3,
+      fill: 'origin',
+      pointRadius: 3,
+      pointHoverRadius: 4,
       order: 3,
     },
   ];
@@ -309,15 +306,14 @@ const chartData = computed(() => {
     return lanes
   }
 
-  // Gunakan hanya batang (bar) tanpa garis overlay
   return {
     labels,
-    datasets: barDatasets,
-  } as ChartData<'bar'>;
+    datasets: lineDatasets,
+  } as ChartData<'line'>;
 });
 
 // Chart options
-const chartOptions = computed<ChartOptions<'bar'>>(() => ({
+const chartOptions = computed<ChartOptions<'line'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
   interaction: {
@@ -361,32 +357,13 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
   },
   scales: {
     x: {
-      stacked: false,
-      grid: {
-        display: false,
-      },
-      ticks: {
-        color: '#6b7280',
-        font: {
-          size: 11,
-        },
-      },
+      grid: { display: false },
+      ticks: { color: '#6b7280', font: { size: 11 } },
     },
     y: {
       beginAtZero: true,
-      stacked: false,
-      grid: {
-        color: 'rgba(107, 114, 128, 0.1)',
-      },
-      ticks: {
-        color: '#6b7280',
-        font: {
-          size: 11,
-        },
-        callback: function(value) {
-          return Number.isInteger(value) ? value : '';
-        },
-      },
+      grid: { color: 'rgba(107, 114, 128, 0.1)' },
+      ticks: { color: '#6b7280', font: { size: 11 } },
     },
   },
 }));
@@ -439,7 +416,7 @@ const createChart = async () => {
   if (!ctx) return;
   
   chartInstance.value = new ChartJS(ctx, {
-    type: 'bar',
+    type: 'line',
     data: chartData.value,
     options: chartOptions.value,
   });
