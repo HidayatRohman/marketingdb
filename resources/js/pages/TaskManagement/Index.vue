@@ -1243,12 +1243,7 @@ const openPreviewDialog = (task: Task) => {
                                 </div>
                             </div>
 
-                            <div v-if="selectedTask.tags && selectedTask.tags.filter((t) => !t.startsWith('result_file:')).length" class="space-y-2">
-                                <div class="text-sm font-semibold text-slate-700 dark:text-slate-300">Tags</div>
-                                <div class="flex flex-wrap gap-2">
-                                    <Badge v-for="t in selectedTask.tags.filter((t) => !t.startsWith('result_file:'))" :key="t" class="bg-slate-100 text-xs text-slate-800 dark:bg-slate-700 dark:text-slate-200">{{ t }}</Badge>
-                                </div>
-                            </div>
+                            
 
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between">
