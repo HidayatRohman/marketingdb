@@ -16,6 +16,7 @@ import {
     CalendarIcon,
     CheckCircle,
     Clock,
+    MessageSquare,
     Edit,
     MoveRight,
     Plus,
@@ -1271,6 +1272,11 @@ const openPreviewDialog = (task: Task) => {
                                     </div>
                                 </div>
                                 <div v-else class="text-sm text-slate-500 dark:text-slate-400">Tidak ada lampiran</div>
+                            </div>
+
+                            <div class="mt-2 flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                                <MessageSquare class="h-4 w-4" />
+                                <span>Komentar: <span class="font-semibold">{{ getComments(selectedTask).length }}</span></span>
                             </div>
 
                             <div class="space-y-2">
