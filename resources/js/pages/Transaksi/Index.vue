@@ -115,7 +115,7 @@ const showFilters = ref(false);
 const transaksiData = computed(() => props.transaksis);
 
 // Tabs untuk Status Pembayaran
-const selectedPaymentStatus = ref<'semua' | 'dp_tj' | 'tambahan_dp' | 'pelunasan'>('dp_tj');
+const selectedPaymentStatus = ref<'semua' | 'dp_tj' | 'tambahan_dp' | 'pelunasan'>('semua');
 
 const countDpTj = computed(() => (transaksiData.value?.data || []).filter(t => t.status_pembayaran === 'Dp / TJ').length);
 const countTambahanDp = computed(() => (transaksiData.value?.data || []).filter(t => t.status_pembayaran === 'Tambahan Dp').length);
