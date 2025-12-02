@@ -16,7 +16,7 @@ import TableRow from '@/components/ui/table/TableRow.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { CreditCard, Calendar, ChevronDown, ChevronUp, Edit, Eye, Filter, Plus, Search, Trash2, User, X, DollarSign, Phone, Download } from 'lucide-vue-next';
-import { ref, computed, watch, onMounted, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, nextTick, watchEffect } from 'vue';
 import { debounce } from 'lodash';
 import PaymentStatusChart from '@/Components/PaymentStatusChart.vue';
 import SourceAnalyticsChart from '@/components/SourceAnalyticsChart.vue';
@@ -100,6 +100,7 @@ interface Props {
         canOnlyViewOwn: boolean;
     };
     totalNominal?: number;
+    statusCounts?: { all: number; dp_tj: number; tambahan_dp: number; pelunasan: number };
 }
 
 const props = defineProps<Props>();
@@ -117,10 +118,19 @@ const transaksiData = computed(() => props.transaksis);
 // Tabs untuk Status Pembayaran
 const selectedPaymentStatus = ref<'semua' | 'dp_tj' | 'tambahan_dp' | 'pelunasan'>('semua');
 
-const countDpTj = computed(() => (transaksiData.value?.data || []).filter(t => t.status_pembayaran === 'Dp / TJ').length);
-const countTambahanDp = computed(() => (transaksiData.value?.data || []).filter(t => t.status_pembayaran === 'Tambahan Dp').length);
-const countPelunasan = computed(() => (transaksiData.value?.data || []).filter(t => t.status_pembayaran === 'Pelunasan').length);
-const countAll = computed(() => (transaksiData.value?.data || []).length);
+const statusCountsLocal = ref<{ all: number; dp_tj: number; tambahan_dp: number; pelunasan: number }>(
+    props.statusCounts ?? { all: transaksiData.value?.total || 0, dp_tj: 0, tambahan_dp: 0, pelunasan: 0 },
+);
+watchEffect(() => {
+    if (props.statusCounts) {
+        statusCountsLocal.value = props.statusCounts;
+    }
+});
+
+const countDpTj = computed(() => statusCountsLocal.value.dp_tj);
+const countTambahanDp = computed(() => statusCountsLocal.value.tambahan_dp);
+const countPelunasan = computed(() => statusCountsLocal.value.pelunasan);
+const countAll = computed(() => statusCountsLocal.value.all);
 
 const filteredTransaksiRows = computed(() => {
     const rows = transaksiData.value?.data || [];
@@ -1133,8 +1143,8 @@ const handleExport = async () => {
 
                             <!-- Previous Page -->
                             <Button
-                                v-if="transaksiData.prev_page_url"
-                                @click="router.get(transaksiData.prev_page_url)"
+                                v-if="transaksiData.current_page > 1"
+                                @click="router.get('/transaksis', { ...getFilterParams(), page: transaksiData.current_page - 1 })"
                                 class="h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 px-4 text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl dark:from-emerald-600 dark:to-emerald-700"
                             >
                                 ← Prev
@@ -1149,8 +1159,8 @@ const handleExport = async () => {
 
                             <!-- Next Page -->
                             <Button
-                                v-if="transaksiData.next_page_url"
-                                @click="router.get(transaksiData.next_page_url)"
+                                v-if="transaksiData.current_page < transaksiData.last_page"
+                                @click="router.get('/transaksis', { ...getFilterParams(), page: transaksiData.current_page + 1 })"
                                 class="h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 px-4 text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl dark:from-emerald-600 dark:to-emerald-700"
                             >
                                 Next →

@@ -61,6 +61,13 @@ class TransaksiController extends Controller
         $perPage = $request->get('per_page', 10);
         $transaksis = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
+        $statusCounts = [
+            'all' => (clone $query)->count(),
+            'dp_tj' => (clone $query)->where('status_pembayaran', 'Dp / TJ')->count(),
+            'tambahan_dp' => (clone $query)->where('status_pembayaran', 'Tambahan Dp')->count(),
+            'pelunasan' => (clone $query)->where('status_pembayaran', 'Pelunasan')->count(),
+        ];
+
         // Total nominal over filtered dataset (not limited by pagination)
         $totalNominal = (clone $query)->sum('nominal_masuk');
 
@@ -92,6 +99,7 @@ class TransaksiController extends Controller
                 'canOnlyViewOwn' => $user->canOnlyViewOwn(),
             ],
             'totalNominal' => (float) $totalNominal,
+            'statusCounts' => $statusCounts,
         ]);
     }
 
