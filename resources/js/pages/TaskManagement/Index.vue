@@ -789,12 +789,27 @@ const openPreviewDialog = (task: Task) => {
                                                     <div class="flex items-center justify-between">
                                                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Lampiran ({{ getAttachmentCount(task) }})</span>
                                                     </div>
-                                                    <ul v-if="getAttachmentCount(task) > 0" class="mt-1 space-y-1">
-                                                        <li v-for="url in getAttachmentUrls(task)" :key="url" class="flex items-center gap-2">
-                                                            <svg class="h-3 w-3 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm0 2l6 6h-6z"/></svg>
-                                                            <a :href="url" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">{{ fileNameFromUrl(url) }}</a>
-                                                        </li>
-                                                    </ul>
+                                                    <div v-if="getAttachmentCount(task) > 0" class="mt-1 grid grid-cols-2 gap-2">
+                                                        <div v-for="url in getAttachmentUrls(task)" :key="url" class="rounded border border-slate-200 p-1 dark:border-slate-700">
+                                                            <template v-if="isImageUrl(url)">
+                                                                <a :href="url" target="_blank" class="block">
+                                                                    <img :src="url" :alt="fileNameFromUrl(url)" class="h-16 w-full rounded object-cover" />
+                                                                </a>
+                                                            </template>
+                                                            <template v-else-if="isPdfUrl(url)">
+                                                                <a :href="url" target="_blank" class="block">
+                                                                    <iframe :src="url" class="h-16 w-full rounded"></iframe>
+                                                                </a>
+                                                            </template>
+                                                            <template v-else>
+                                                                <div class="flex items-center gap-2">
+                                                                    <svg class="h-3 w-3 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm0 2l6 6h-6z"/></svg>
+                                                                    <a :href="url" target="_blank" class="truncate text-blue-600 hover:underline dark:text-blue-400">{{ fileNameFromUrl(url) }}</a>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                    <div v-else class="mt-1 text-xs text-slate-500 dark:text-slate-400">Tidak ada lampiran</div>
                                                     <div class="mt-1 flex items-center gap-2">
                                                         <MessageSquare class="h-3 w-3" />
                                                         <span>Komentar ({{ getComments(task).length }})</span>
@@ -915,6 +930,32 @@ const openPreviewDialog = (task: Task) => {
                                                         <span
                                                             >Created by: <span class="font-medium">{{ task.user.name }}</span></span
                                                         >
+                                                    </div>
+                                                    <div class="mt-1">
+                                                        <div class="flex items-center justify-between">
+                                                            <span class="font-semibold">Lampiran ({{ getAttachmentCount(task) }})</span>
+                                                        </div>
+                                                        <div v-if="getAttachmentCount(task) > 0" class="mt-1 grid grid-cols-2 gap-2">
+                                                            <div v-for="url in getAttachmentUrls(task)" :key="url" class="rounded border border-slate-200 p-1 dark:border-slate-700">
+                                                                <template v-if="isImageUrl(url)">
+                                                                    <a :href="url" target="_blank" class="block">
+                                                                        <img :src="url" :alt="fileNameFromUrl(url)" class="h-16 w-full rounded object-cover" />
+                                                                    </a>
+                                                                </template>
+                                                                <template v-else-if="isPdfUrl(url)">
+                                                                    <a :href="url" target="_blank" class="block">
+                                                                        <iframe :src="url" class="h-16 w-full rounded"></iframe>
+                                                                    </a>
+                                                                </template>
+                                                                <template v-else>
+                                                                    <div class="flex items-center gap-2">
+                                                                        <svg class="h-3 w-3 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm0 2l6 6h-6z"/></svg>
+                                                                        <a :href="url" target="_blank" class="truncate text-blue-600 hover:underline dark:text-blue-400">{{ fileNameFromUrl(url) }}</a>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                        <div v-else class="mt-1 text-xs">Tidak ada lampiran</div>
                                                     </div>
                                                     <div class="mt-1 flex items-center gap-2">
                                                         <MessageSquare class="h-3 w-3" />
@@ -1040,6 +1081,32 @@ const openPreviewDialog = (task: Task) => {
                                                         <span
                                                             >Created by: <span class="font-medium">{{ task.user.name }}</span></span
                                                         >
+                                                    </div>
+                                                    <div class="mt-1">
+                                                        <div class="flex items-center justify-between">
+                                                            <span class="font-semibold">Lampiran ({{ getAttachmentCount(task) }})</span>
+                                                        </div>
+                                                        <div v-if="getAttachmentCount(task) > 0" class="mt-1 grid grid-cols-2 gap-2">
+                                                            <div v-for="url in getAttachmentUrls(task)" :key="url" class="rounded border border-slate-200 p-1 dark:border-slate-700">
+                                                                <template v-if="isImageUrl(url)">
+                                                                    <a :href="url" target="_blank" class="block">
+                                                                        <img :src="url" :alt="fileNameFromUrl(url)" class="h-16 w-full rounded object-cover" />
+                                                                    </a>
+                                                                </template>
+                                                                <template v-else-if="isPdfUrl(url)">
+                                                                    <a :href="url" target="_blank" class="block">
+                                                                        <iframe :src="url" class="h-16 w-full rounded"></iframe>
+                                                                    </a>
+                                                                </template>
+                                                                <template v-else>
+                                                                    <div class="flex items-center gap-2">
+                                                                        <svg class="h-3 w-3 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm0 2l6 6h-6z"/></svg>
+                                                                        <a :href="url" target="_blank" class="truncate text-blue-600 hover:underline dark:text-blue-400">{{ fileNameFromUrl(url) }}</a>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                        <div v-else class="mt-1 text-xs">Tidak ada lampiran</div>
                                                     </div>
                                                     <div class="mt-1 flex items-center gap-2">
                                                         <MessageSquare class="h-3 w-3" />
