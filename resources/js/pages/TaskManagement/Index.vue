@@ -103,11 +103,41 @@ const fileInputRef = ref<HTMLInputElement | null>(null);
 const isPreviewDialogOpen = ref(false);
 const selectedTask = ref<Task | null>(null);
 
+// Komentar pada task (disimpan di tags dengan prefix 'comment|')
+const editCommentText = ref('')
+
+const serializeCommentTag = (text: string, userId: number) => {
+  const ts = Math.floor(Date.now() / 1000)
+  const safe = encodeURIComponent(text || '')
+  return `comment|${ts}|${userId}|${safe}`
+}
+
+const parseCommentTag = (t: string) => {
+  if (!t || !t.startsWith('comment|')) return null
+  const parts = t.split('|')
+  if (parts.length < 4) return null
+  const ts = Number(parts[1])
+  const uid = Number(parts[2])
+  const text = decodeURIComponent(parts.slice(3).join('|'))
+  const user = (props.users || []).find((u) => u.id === uid) || null
+  return { ts, uid, text, user }
+}
+
+const getComments = (task: Task | null) => {
+  if (!task || !Array.isArray(task.tags)) return []
+  const arr = task.tags
+    .map(parseCommentTag)
+    .filter((c: any) => !!c)
+    .sort((a: any, b: any) => (a.ts || 0) - (b.ts || 0))
+  return arr as Array<{ ts: number; uid: number; text: string; user: { id: number; name: string; email: string } | null }>
+}
+
 // Form data
 const form = ref({
     title: '',
     description: '',
     priority: 'medium' as 'low' | 'medium' | 'high',
+    status: 'pending' as 'pending' | 'in_progress' | 'completed',
     start_date: '' as string,
     due_date: '' as string,
     due_time: '',
@@ -122,6 +152,7 @@ const resetForm = () => {
         title: '',
         description: '',
         priority: 'medium',
+        status: 'pending',
         start_date: '',
         due_date: '',
         due_time: '',
@@ -130,6 +161,7 @@ const resetForm = () => {
         result_files: [],
     };
     editingTask.value = null;
+    editCommentText.value = '';
 };
 
 // Open create dialog
@@ -145,6 +177,7 @@ const openEditDialog = (task: Task) => {
         title: task.title,
         description: task.description || '',
         priority: task.priority,
+        status: task.status,
         start_date: task.start_date || '',
         due_date: task.due_date,
         due_time: task.due_time || '',
@@ -189,8 +222,9 @@ const submitForm = () => {
     fd.append('title', form.value.title);
     fd.append('description', form.value.description);
     fd.append('priority', form.value.priority);
+    fd.append('status', form.value.status);
     if (form.value.start_date) fd.append('start_date', form.value.start_date);
-    if (form.value.due_date) fd.append('due_date', form.value.due_date);
+    fd.append('due_date', form.value.due_date);
     if (form.value.due_time) fd.append('due_time', form.value.due_time);
     if (form.value.assigned_to !== null && form.value.assigned_to !== undefined) {
         fd.append('assigned_to', String(form.value.assigned_to));
@@ -206,7 +240,8 @@ const submitForm = () => {
     });
 
     if (editingTask.value) {
-        router.put(`/task-management/${editingTask.value.id}`, fd, {
+        fd.append('_method', 'PUT')
+        router.post(`/task-management/${editingTask.value.id}`, fd, {
             forceFormData: true,
             onSuccess: () => {
                 isDialogOpen.value = false;
@@ -233,6 +268,67 @@ const submitForm = () => {
         });
     }
 };
+
+// Kirim komentar via endpoint khusus (tanpa batasan pemilik/assigned)
+const submitComment = async (task: Task | null) => {
+  if (!task || !editCommentText.value.trim()) return
+  const txt = editCommentText.value.trim()
+  try {
+    const resp = await fetch('/task-management/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task_id: task.id, text: txt }),
+    })
+    if (resp.ok) {
+      editCommentText.value = ''
+      router.reload({ only: ['tasks', 'summary'] })
+      const added = serializeCommentTag(txt, props.currentUser.id)
+      if (editingTask.value && editingTask.value.id === task.id) {
+        editingTask.value = { ...editingTask.value, tags: [...(editingTask.value.tags || []), added] }
+      }
+      if (selectedTask.value && selectedTask.value.id === task.id) {
+        selectedTask.value = { ...selectedTask.value, tags: [...(selectedTask.value.tags || []), added] }
+      }
+      return
+    }
+
+    const existing = Array.isArray(task.tags) ? [...task.tags] : []
+    const added = serializeCommentTag(txt, props.currentUser.id)
+    existing.push(added)
+    const fd = new FormData()
+    fd.append('title', task.title)
+    fd.append('description', task.description || '')
+    fd.append('priority', task.priority)
+    fd.append('status', task.status)
+    if (task.start_date) fd.append('start_date', task.start_date)
+    fd.append('due_date', task.due_date)
+    if (task.due_time) fd.append('due_time', task.due_time)
+    if (task.assigned_to !== null && task.assigned_to !== undefined) {
+      fd.append('assigned_to', String(task.assigned_to))
+    }
+    for (const t of existing) fd.append('tags[]', t)
+    fd.append('_method', 'PUT')
+
+    router.post(`/task-management/${task.id}`, fd, {
+      forceFormData: true,
+      onSuccess: () => {
+        editCommentText.value = ''
+        router.reload({ only: ['tasks', 'summary'] })
+        if (editingTask.value && editingTask.value.id === task.id) {
+          editingTask.value = { ...editingTask.value, tags: existing }
+        }
+        if (selectedTask.value && selectedTask.value.id === task.id) {
+          selectedTask.value = { ...selectedTask.value, tags: existing }
+        }
+      },
+      onError: () => {
+        alert('Gagal mengirim komentar')
+      },
+    })
+  } catch {
+    alert('Gagal mengirim komentar')
+  }
+}
 
 // Delete task
 const deleteTask = (task: Task) => {
@@ -440,6 +536,7 @@ const openPreviewDialog = (task: Task) => {
     selectedTask.value = task;
     isPreviewDialogOpen.value = true;
 };
+
 </script>
 
 <template>
@@ -634,17 +731,17 @@ const openPreviewDialog = (task: Task) => {
                                                         >
                                                             <Edit class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                                         </Button>
-                                                        <Button
-                                                            v-if="canDeleteTask(task)"
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            @click="deleteTask(task)"
-                                                            class="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900/30"
-                                                        >
-                                                            <Trash2 class="h-3 w-3 text-red-600 dark:text-red-400" />
-                                                        </Button>
-                                                    </div>
+                                                    <Button
+                                                        v-if="canDeleteTask(task)"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        @click="deleteTask(task)"
+                                                        class="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900/30"
+                                                    >
+                                                        <Trash2 class="h-3 w-3 text-red-600 dark:text-red-400" />
+                                                    </Button>
                                                 </div>
+                                            </div>
 
                                                 <p v-if="task.description" class="mb-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                                                     {{ task.description.substring(0, 100) }}{{ task.description.length > 100 ? '...' : '' }}
@@ -1077,17 +1174,17 @@ const openPreviewDialog = (task: Task) => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div v-if="form.result_files.length" class="mt-3 space-y-2">
-                                        <div v-for="(f, idx) in form.result_files" :key="idx" class="flex items-center justify-between rounded border border-slate-200 p-2 text-sm dark:border-slate-700">
-                                            <div class="flex items-center gap-2">
-                                                <svg class="h-4 w-4 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm0 2l6 6h-6z"/></svg>
-                                                <span class="font-medium">{{ f.name }}</span>
-                                                <span class="text-slate-500">({{ (f.size/1024/1024).toFixed(2) }} MB)</span>
-                                            </div>
-                                            <Button type="button" variant="outline" class="text-red-600 hover:text-red-700" @click="removeResultFile(idx)">Hapus</Button>
+                                <div v-if="form.result_files.length" class="mt-3 space-y-2">
+                                    <div v-for="(f, idx) in form.result_files" :key="idx" class="flex items-center justify-between rounded border border-slate-200 p-2 text-sm dark:border-slate-700">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="h-4 w-4 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm0 2l6 6h-6z"/></svg>
+                                            <span class="font-medium">{{ f.name }}</span>
+                                            <span class="text-slate-500">({{ (f.size/1024/1024).toFixed(2) }} MB)</span>
                                         </div>
+                                        <Button type="button" variant="outline" class="text-red-600 hover:text-red-700" @click="removeResultFile(idx)">Hapus</Button>
                                     </div>
                                 </div>
+                            </div>
                             </div>
 
                             <div class="flex justify-end gap-3 border-t border-slate-200 pt-6 dark:border-slate-700">
@@ -1179,6 +1276,29 @@ const openPreviewDialog = (task: Task) => {
                                     </div>
                                 </div>
                                 <div v-else class="text-sm text-slate-500 dark:text-slate-400">Tidak ada lampiran</div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <div class="text-sm font-semibold text-slate-700 dark:text-slate-300">Komentar</div>
+                                <div class="max-h-40 overflow-y-auto space-y-2">
+                                    <div v-for="comment in getComments(selectedTask)" :key="comment.ts" class="flex gap-2">
+                                        <div class="rounded-full bg-slate-200 p-2 dark:bg-slate-700">
+                                            <User class="h-4 w-4 text-slate-500 dark:text-slate-300" />
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                                                <span class="font-medium">{{ comment.user?.name || 'Unknown User' }}</span>
+                                                <span>{{ new Date(comment.ts * 1000).toLocaleString() }}</span>
+                                            </div>
+                                            <p class="mt-1 text-sm text-slate-700 dark:text-slate-300">{{ comment.text }}</p>
+                                        </div>
+                                    </div>
+                                    <div v-if="getComments(selectedTask).length === 0" class="text-sm text-slate-500 dark:text-slate-400">Belum ada komentar</div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <Textarea v-model="editCommentText" placeholder="Tambahkan komentar..." class="flex-1 border-slate-300 bg-white text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-blue-400" />
+                                    <Button type="button" @click="submitComment(selectedTask)" class="bg-blue-600 text-white hover:bg-blue-700">Kirim</Button>
+                                </div>
                             </div>
 
                             <div class="mt-6 flex justify-end">

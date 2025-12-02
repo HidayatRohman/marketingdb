@@ -34,5 +34,20 @@ export default defineConfig(({ mode }) => {
                 '@': path.resolve(__dirname, './resources/js'),
             },
         },
+        server: {
+            host: 'localhost',
+            port: 5173,
+            strictPort: false,
+            cors: true,
+            hmr: {
+                host: 'localhost',
+            },
+            proxy: {
+                '/task-management': {
+                    target: 'http://localhost:8000',
+                    changeOrigin: false,
+                },
+            },
+        },
     };
 });

@@ -264,4 +264,68 @@ class TaskManagementController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Add a comment to a task (allow all authenticated users)
+     */
+    public function addComment(Request $request, $todoList)
+    {
+        $request->validate([
+            'text' => 'required|string'
+        ]);
+        $model = TodoList::query()->findOrFail($todoList);
+
+        $tags = $model->tags ?? [];
+        if (!is_array($tags)) {
+            $tags = [];
+        }
+
+        $timestamp = time();
+        $userId = auth()->id();
+        $safeText = urlencode($request->text ?? '');
+        $tags[] = 'comment|' . $timestamp . '|' . $userId . '|' . $safeText;
+
+        $model->update([
+            'tags' => $tags,
+        ]);
+
+        if ($request->header('X-Inertia')) {
+            return redirect()->back()->with('success', 'Komentar berhasil ditambahkan');
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Add a comment using explicit task_id to avoid dynamic route issues
+     */
+    public function addCommentById(Request $request)
+    {
+        $request->validate([
+            'task_id' => 'required|integer',
+            'text' => 'required|string'
+        ]);
+
+        $model = TodoList::query()->findOrFail($request->task_id);
+
+        $tags = $model->tags ?? [];
+        if (!is_array($tags)) {
+            $tags = [];
+        }
+
+        $timestamp = time();
+        $userId = auth()->id();
+        $safeText = urlencode($request->text ?? '');
+        $tags[] = 'comment|' . $timestamp . '|' . $userId . '|' . $safeText;
+
+        $model->update([
+            'tags' => $tags,
+        ]);
+
+        if ($request->header('X-Inertia')) {
+            return redirect()->back()->with('success', 'Komentar berhasil ditambahkan');
+        }
+
+        return response()->json(['success' => true]);
+    }
 }

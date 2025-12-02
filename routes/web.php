@@ -317,6 +317,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('task-management')->name('task-management.')->group(function () {
         Route::get('/', [TaskManagementController::class, 'index'])->name('index');
         Route::post('/', [TaskManagementController::class, 'store'])->name('store');
+        Route::post('/comments', [TaskManagementController::class, 'addCommentById'])->name('addCommentById');
+        // Place comments route before dynamic update/delete to avoid any matching ambiguity
+        Route::post('/{todoList}/comments', [TaskManagementController::class, 'addComment'])->name('addComment');
         Route::put('/{todoList}', [TaskManagementController::class, 'update'])->name('update');
         Route::delete('/{todoList}', [TaskManagementController::class, 'destroy'])->name('destroy');
         Route::patch('/{todoList}/status', [TaskManagementController::class, 'updateStatus'])->name('updateStatus');
