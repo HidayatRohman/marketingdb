@@ -895,14 +895,15 @@ const handleExport = async () => {
                                 type="button"
                                 @click="selectedPaymentStatus = 'semua'"
                                 :class="[
-                                    'flex items-center rounded-md px-3.5 py-1.5 transition-colors text-xs sm:text-sm',
+                                    'flex items-center rounded-md px-3.5 py-1.5 transition-colors text-[11px] sm:text-sm',
                                     selectedPaymentStatus === 'semua'
                                         ? 'bg-white shadow-xs dark:bg-neutral-800 dark:text-neutral-100'
                                         : 'text-neutral-700 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-300 dark:hover:bg-neutral-700/60',
                                 ]"
                             >
-                                <span class="mr-2">Semua</span>
-                                <span class="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+                                <span class="mr-2 sm:hidden">All</span>
+                                <span class="mr-2 hidden sm:inline">Semua</span>
+                                <span class="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
                                     {{ countAll }}
                                 </span>
                             </button>
@@ -910,14 +911,15 @@ const handleExport = async () => {
                                 type="button"
                                 @click="selectedPaymentStatus = 'dp_tj'"
                                 :class="[
-                                    'flex items-center rounded-md px-3.5 py-1.5 transition-colors text-xs sm:text-sm',
+                                    'flex items-center rounded-md px-3.5 py-1.5 transition-colors text-[11px] sm:text-sm',
                                     selectedPaymentStatus === 'dp_tj'
                                         ? 'bg-white shadow-xs dark:bg-neutral-800 dark:text-neutral-100'
                                         : 'text-neutral-700 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-300 dark:hover:bg-neutral-700/60',
                                 ]"
                             >
-                                <span class="mr-2">DP/TJ</span>
-                                <span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                <span class="mr-2 sm:hidden">DP</span>
+                                <span class="mr-2 hidden sm:inline">DP/TJ</span>
+                                <span class="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
                                     {{ countDpTj }}
                                 </span>
                             </button>
@@ -925,14 +927,15 @@ const handleExport = async () => {
                                 type="button"
                                 @click="selectedPaymentStatus = 'tambahan_dp'"
                                 :class="[
-                                    'flex items-center rounded-md px-3.5 py-1.5 transition-colors text-xs sm:text-sm',
+                                    'flex items-center rounded-md px-3.5 py-1.5 transition-colors text-[11px] sm:text-sm',
                                     selectedPaymentStatus === 'tambahan_dp'
                                         ? 'bg-white shadow-xs dark:bg-neutral-800 dark:text-neutral-100'
                                         : 'text-neutral-700 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-300 dark:hover:bg-neutral-700/60',
                                 ]"
                             >
-                                <span class="mr-2">Tambahan DP</span>
-                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                                <span class="mr-2 sm:hidden">+ DP</span>
+                                <span class="mr-2 hidden sm:inline">Tambahan DP</span>
+                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
                                     {{ countTambahanDp }}
                                 </span>
                             </button>
@@ -940,19 +943,20 @@ const handleExport = async () => {
                                 type="button"
                                 @click="selectedPaymentStatus = 'pelunasan'"
                                 :class="[
-                                    'flex items-center rounded-md px-3.5 py-1.5 transition-colors text-xs sm:text-sm',
+                                    'flex items-center rounded-md px-3.5 py-1.5 transition-colors text-[11px] sm:text-sm',
                                     selectedPaymentStatus === 'pelunasan'
                                         ? 'bg-white shadow-xs dark:bg-neutral-800 dark:text-neutral-100'
                                         : 'text-neutral-700 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-300 dark:hover:bg-neutral-700/60',
                                 ]"
                             >
-                                <span class="mr-2">Pelunasan</span>
-                                <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                <span class="mr-2 sm:hidden">Lunas</span>
+                                <span class="mr-2 hidden sm:inline">Pelunasan</span>
+                                <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                                     {{ countPelunasan }}
                                 </span>
                             </button>
                         </div>
-                        <div class="flex items-center space-x-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                        <div class="flex items-center space-x-2 text-[11px] sm:text-sm text-gray-600 dark:text-gray-400">
                             <span class="rounded-full bg-neutral-100 px-3 py-1 font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
                                 Status dipilih: {{ selectedPaymentStatus === 'semua' ? 'Semua' : selectedPaymentStatus === 'dp_tj' ? 'DP/TJ' : selectedPaymentStatus === 'tambahan_dp' ? 'Tambahan DP' : 'Pelunasan' }}
                             </span>
