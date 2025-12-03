@@ -636,7 +636,7 @@ const handleExport = async () => {
                         <div class="flex items-center justify-between">
                             <div class="flex-1 pr-4 sm:pr-6">
                                 <p class="text-xs sm:text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">Total Transaksi</p>
-                                <p class="text-lg sm:text-2xl leading-tight break-words font-bold text-blue-900 dark:text-blue-100">{{ transaksiData.total }}</p>
+                                <p class="text-base sm:text-2xl leading-tight break-words font-bold text-blue-900 dark:text-blue-100">{{ transaksiData.total }}</p>
                                 <div class="mt-2 h-1 w-full bg-blue-200 dark:bg-blue-800 rounded-full">
                                     <div class="h-full w-3/4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000"></div>
                                 </div>
@@ -653,7 +653,7 @@ const handleExport = async () => {
                         <div class="flex items-center justify-between">
                             <div class="flex-1 pr-4 sm:pr-6">
                                 <p class="text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 mb-2">Total Nominal</p>
-                                <p class="text-lg sm:text-xl leading-tight break-words font-bold text-emerald-900 dark:text-emerald-100">
+                                <p class="text-base sm:text-xl leading-tight break-words font-bold text-emerald-900 dark:text-emerald-100">
                                     {{ formatCurrency((props.totalNominal ?? 0)) }}
                                 </p>
                                 <div class="mt-2 h-1 w-full bg-emerald-200 dark:bg-emerald-800 rounded-full">
@@ -672,7 +672,7 @@ const handleExport = async () => {
                         <div class="flex items-center justify-between">
                             <div class="flex-1 pr-4 sm:pr-6">
                                 <p class="text-xs sm:text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2">Total Pelunasan</p>
-                                <p class="text-lg sm:text-xl leading-tight break-words font-bold text-purple-900 dark:text-purple-100">
+                                <p class="text-base sm:text-xl leading-tight break-words font-bold text-purple-900 dark:text-purple-100">
                                     {{ formatCurrency((props.pelunasanTotal ?? 0)) }}
                                 </p>
                                 <div class="mt-2 h-1 w-full bg-purple-200 dark:bg-purple-800 rounded-full">
@@ -691,7 +691,7 @@ const handleExport = async () => {
                         <div class="flex items-center justify-between">
                             <div class="flex-1 pr-4 sm:pr-6">
                                 <p class="text-xs sm:text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">Total DP/TJ</p>
-                                <p class="text-lg sm:text-xl leading-tight break-words font-bold text-blue-900 dark:text-blue-100">
+                                <p class="text-base sm:text-xl leading-tight break-words font-bold text-blue-900 dark:text-blue-100">
                                     {{ formatCurrency((props.dpTotal ?? 0)) }}
                                 </p>
                                 <div class="mt-2 h-1 w-full bg-blue-200 dark:bg-blue-800 rounded-full">
@@ -710,7 +710,7 @@ const handleExport = async () => {
                         <div class="flex items-center justify-between">
                             <div class="flex-1 pr-4 sm:pr-6">
                                 <p class="text-xs sm:text-sm font-semibold text-amber-700 dark:text-amber-300 mb-2">Total Tambahan DP</p>
-                                <p class="text-lg sm:text-xl leading-tight break-words font-bold text-amber-900 dark:text-amber-100">
+                                <p class="text-base sm:text-xl leading-tight break-words font-bold text-amber-900 dark:text-amber-100">
                                     {{ formatCurrency((props.tambahanDpTotal ?? 0)) }}
                                 </p>
                                 <div class="mt-2 h-1 w-full bg-amber-200 dark:bg-amber-800 rounded-full">
@@ -729,7 +729,7 @@ const handleExport = async () => {
                         <div class="flex items-center justify-between">
                             <div class="flex-1 pr-4 sm:pr-6">
                                 <p class="text-xs sm:text-sm font-semibold text-amber-700 dark:text-amber-300 mb-2">Rata-rata</p>
-                                <p class="text-lg sm:text-xl leading-tight break-words font-bold text-amber-900 dark:text-amber-100">
+                                <p class="text-base sm:text-xl leading-tight break-words font-bold text-amber-900 dark:text-amber-100">
                                     {{ transaksiData.total > 0 ? formatCurrency(transaksiData.data.reduce((sum, t) => sum + t.nominal_masuk, 0) / transaksiData.total) : formatCurrency(0) }}
                                 </p>
                                 <div class="mt-2 h-1 w-full bg-amber-200 dark:bg-amber-800 rounded-full">
