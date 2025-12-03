@@ -6,8 +6,8 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Calendar, CreditCard, Handshake, Kanban, LayoutGrid, Tag, TrendingUp, Users, Zap, Globe, Briefcase, Settings, BarChart3, MessageSquare, History, Wrench, Package, AlertTriangle, Lightbulb } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { Calendar, CreditCard, Handshake, Kanban, LayoutGrid, Tag, TrendingUp, Users, Zap, Globe, Briefcase, Settings, BarChart3, MessageSquare, History, Wrench, Package, AlertTriangle, Lightbulb, ChevronDown } from 'lucide-vue-next';
+import { ref, computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
 const page = usePage();
@@ -86,41 +86,7 @@ const mainNavItems = computed<NavItem[]>(() => {
         });
     }
 
-    // Brands - only Super Admin and Admin can access
-    if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess) {
-        items.push({
-            title: 'Brand',
-            href: '/brands',
-            icon: Zap,
-        });
-    }
-
-    // Labels - only Super Admin and Admin can access
-    if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess) {
-        items.push({
-            title: 'Label',
-            href: '/labels',
-            icon: Tag,
-        });
-    }
-
-    // Sumber - only Super Admin and Admin can access
-    if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess) {
-        items.push({
-            title: 'Sumber',
-            href: '/sumbers',
-            icon: Globe,
-        });
-    }
-
-    // Pekerjaan - only Super Admin and Admin can access
-    if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess) {
-        items.push({
-            title: 'Pekerjaan',
-            href: '/pekerjaans',
-            icon: Briefcase,
-        });
-    }
+    // Brands/Labels/Sumber/Pekerjaan dipindahkan ke grup Pengaturan (lihat di bawah)
 
     // Analisa Bisnis - accessible by all roles but with different permissions
     if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess || permissions.value.hasLimitedAccess) {
@@ -131,17 +97,21 @@ const mainNavItems = computed<NavItem[]>(() => {
         });
     }
 
-    // Pengaturan - hanya untuk Super Admin (akses penuh)
-    if (permissions.value.hasFullAccess) {
-        items.push({
-            title: 'Pengaturan',
-            href: '/settings/site',
-            icon: Settings,
-        });
-    }
-
+    // Pengaturan - ditampilkan sebagai grup terpisah di bawah
+    
     return items;
 });
+
+// Settings group expand control: closed by default, opens on click or when active route
+const settingsOpen = ref(false);
+const isSettingsOpen = computed(() =>
+    settingsOpen.value ||
+    page.url.startsWith('/settings') ||
+    page.url.startsWith('/brands') ||
+    page.url.startsWith('/labels') ||
+    page.url.startsWith('/sumbers') ||
+    page.url.startsWith('/pekerjaans')
+);
 
 // Footer navigation items removed - Github Repo and Documentation links hidden for all users
 // const footerNavItems: NavItem[] = [
@@ -174,6 +144,62 @@ const mainNavItems = computed<NavItem[]>(() => {
 
         <SidebarContent>
             <NavMain :items="mainNavItems" />
+            <!-- Settings Group: menampung Brand, Label, Sumber, Pekerjaan, dan link Pengaturan -->
+            <SidebarGroup v-if="permissions.hasFullAccess || permissions.hasReadOnlyAccess" class="px-2 py-0 mt-2">
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton as-child tooltip="Pengaturan">
+                            <div class="flex items-center gap-2 w-full" @click="settingsOpen = !settingsOpen">
+                                <Settings />
+                                <span>Pengaturan</span>
+                                <ChevronDown class="h-4 w-4 ml-auto transition-transform" :class="isSettingsOpen ? 'rotate-180' : 'rotate-0'" />
+                            </div>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+                <SidebarMenuSub v-if="isSettingsOpen">
+                    <SidebarMenuSubItem v-if="permissions.hasFullAccess">
+                        <SidebarMenuSubButton as-child :is-active="page.url.startsWith('/settings')">
+                            <Link href="/settings/site">
+                                <Settings />
+                                <span>Pengaturan Situs</span>
+                            </Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton as-child :is-active="page.url.startsWith('/brands')">
+                            <Link href="/brands">
+                                <Zap />
+                                <span>Brand</span>
+                            </Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton as-child :is-active="page.url.startsWith('/labels')">
+                            <Link href="/labels">
+                                <Tag />
+                                <span>Label</span>
+                            </Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton as-child :is-active="page.url.startsWith('/sumbers')">
+                            <Link href="/sumbers">
+                                <Globe />
+                                <span>Sumber</span>
+                            </Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton as-child :is-active="page.url.startsWith('/pekerjaans')">
+                            <Link href="/pekerjaans">
+                                <Briefcase />
+                                <span>Pekerjaan</span>
+                            </Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                </SidebarMenuSub>
+            </SidebarGroup>
             <!-- CS Menu Group: tampil untuk CS, Super Admin, Admin, dan Advertiser -->
             <SidebarGroup v-if="permissions.hasFullAccess || permissions.hasReadOnlyAccess || permissions.role === 'cs'" class="px-2 py-0 mt-2">
                 <SidebarMenu>
