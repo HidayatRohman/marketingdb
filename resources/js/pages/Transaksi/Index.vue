@@ -630,7 +630,7 @@ const handleExport = async () => {
             </div>
 
             <!-- Statistics Bar -->
-            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+            <div class="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
                 <Card class="group relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 dark:from-blue-900/20 dark:to-blue-800/20 dark:border dark:border-blue-700/30">
                     <CardContent class="p-4 sm:p-6">
                         <div class="flex items-center justify-between">
