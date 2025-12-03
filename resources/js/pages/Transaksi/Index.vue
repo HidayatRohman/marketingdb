@@ -101,6 +101,7 @@ interface Props {
     };
     totalNominal?: number;
     statusCounts?: { all: number; dp_tj: number; tambahan_dp: number; pelunasan: number };
+    pelunasanTotal?: number;
 }
 
 const props = defineProps<Props>();
@@ -668,9 +669,9 @@ const handleExport = async () => {
                     <CardContent class="p-6">
                         <div class="flex items-center justify-between">
                             <div class="flex-1 pr-6">
-                                <p class="text-xs sm:text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2">Bulan Ini</p>
-                                <p class="text-xl sm:text-2xl leading-tight font-bold text-purple-900 dark:text-purple-100">
-                                    {{ transaksiData.data.filter(t => new Date(t.tanggal_tf).getMonth() === new Date().getMonth()).length }}
+                                <p class="text-xs sm:text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2">Total Pelunasan</p>
+                                <p class="text-lg sm:text-xl leading-tight break-words font-bold text-purple-900 dark:text-purple-100">
+                                    {{ formatCurrency((props.pelunasanTotal ?? 0)) }}
                                 </p>
                                 <div class="mt-2 h-1 w-full bg-purple-200 dark:bg-purple-800 rounded-full">
                                     <div class="h-full w-2/3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-1000"></div>
