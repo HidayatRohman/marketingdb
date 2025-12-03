@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { dashboard, login, register } from '@/routes';
-import { Head, Link } from '@inertiajs/vue3';
-import { Briefcase, Building2, ChevronLeft, ChevronRight, Menu, Play, TrendingUp, Users, X } from 'lucide-vue-next';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Briefcase, Building2, ChevronLeft, ChevronRight, Menu, TrendingUp, Users, X } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useSiteSettings } from '@/composables/useSiteSettings';
+import { getInitials } from '@/composables/useInitials';
 
 interface Brand {
     id: number;
@@ -23,6 +24,12 @@ const isMobileMenuOpen = ref(false);
 
 // Site settings
 const { siteDescription, siteLogo, siteTitle } = useSiteSettings();
+
+// User info for badge
+const page = usePage();
+const auth = computed(() => page.props.auth);
+const userName = computed(() => auth.value?.user?.username || auth.value?.user?.name || 'User');
+const initials = computed(() => getInitials(userName.value));
 
 // Brand slider state
 const currentSlide = ref(0);
@@ -225,9 +232,9 @@ onUnmounted(() => {
                     <!-- David Badge -->
                     <div class="inline-flex items-center space-x-2 rounded-full border border-blue-300/30 bg-blue-400/20 px-4 py-2 backdrop-blur-sm">
                         <div class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-400">
-                            <span class="text-xs font-medium text-white">H</span>
+                            <span class="text-xs font-medium text-white">{{ initials }}</span>
                         </div>
-                        <span class="text-sm font-medium text-gray-700">Hidayat</span>
+                        <span class="text-sm font-medium text-gray-700">{{ userName }}</span>
                     </div>
 
                     <div class="space-y-6">
@@ -235,14 +242,7 @@ onUnmounted(() => {
                             {{ siteDescription }}
                         </h1>
 
-                        <div class="flex items-center justify-center space-x-4 pt-4 md:justify-start">
-                            <button
-                                class="flex items-center space-x-2 rounded-full border border-white/20 bg-black/20 px-8 py-3 font-medium text-gray-700 backdrop-blur-sm transition-all duration-300 hover:bg-black/30"
-                            >
-                                <Play class="h-5 w-5" />
-                                <span>Start Project</span>
-                            </button>
-                        </div>
+                        
                     </div>
                 </div>
 
