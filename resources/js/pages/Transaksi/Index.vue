@@ -127,9 +127,10 @@ watchEffect(() => {
     }
 });
 
-const countDpTj = computed(() => statusCountsLocal.value.dp_tj);
-const countTambahanDp = computed(() => statusCountsLocal.value.tambahan_dp);
-const countPelunasan = computed(() => statusCountsLocal.value.pelunasan);
+const pageRows = computed(() => transaksiData.value?.data || []);
+const countDpTj = computed(() => pageRows.value.filter(t => t.status_pembayaran === 'Dp / TJ').length);
+const countTambahanDp = computed(() => pageRows.value.filter(t => t.status_pembayaran === 'Tambahan Dp').length);
+const countPelunasan = computed(() => pageRows.value.filter(t => t.status_pembayaran === 'Pelunasan').length);
 const countAll = computed(() => statusCountsLocal.value.all);
 
 const filteredTransaksiRows = computed(() => {
