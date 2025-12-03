@@ -68,9 +68,15 @@ class TransaksiController extends Controller
 
         // Total nominal over filtered dataset (not limited by pagination)
         $totalNominal = (clone $baseQuery)->sum('nominal_masuk');
-        // Total nominal pelunasan sesuai filter
+        // Total nominal per status sesuai filter
         $pelunasanTotal = (clone $baseQuery)
             ->where('status_pembayaran', 'Pelunasan')
+            ->sum('nominal_masuk');
+        $dpTotal = (clone $baseQuery)
+            ->where('status_pembayaran', 'Dp / TJ')
+            ->sum('nominal_masuk');
+        $tambahanDpTotal = (clone $baseQuery)
+            ->where('status_pembayaran', 'Tambahan Dp')
             ->sum('nominal_masuk');
 
         // Get data for filters
@@ -103,6 +109,8 @@ class TransaksiController extends Controller
             'totalNominal' => (float) $totalNominal,
             'statusCounts' => $statusCounts,
             'pelunasanTotal' => (float) $pelunasanTotal,
+            'dpTotal' => (float) $dpTotal,
+            'tambahanDpTotal' => (float) $tambahanDpTotal,
         ]);
     }
 

@@ -15,7 +15,7 @@ import TableHeader from '@/components/ui/table/TableHeader.vue';
 import TableRow from '@/components/ui/table/TableRow.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { CreditCard, Calendar, ChevronDown, ChevronUp, Edit, Eye, Filter, Plus, Search, Trash2, User, X, DollarSign, Phone, Download } from 'lucide-vue-next';
+import { CreditCard, ChevronDown, ChevronUp, Edit, Eye, Filter, Plus, Search, Trash2, User, X, DollarSign, Phone, Download } from 'lucide-vue-next';
 import { ref, computed, watch, onMounted, nextTick, watchEffect } from 'vue';
 import { debounce } from 'lodash';
 import PaymentStatusChart from '@/Components/PaymentStatusChart.vue';
@@ -102,6 +102,8 @@ interface Props {
     totalNominal?: number;
     statusCounts?: { all: number; dp_tj: number; tambahan_dp: number; pelunasan: number };
     pelunasanTotal?: number;
+    dpTotal?: number;
+    tambahanDpTotal?: number;
 }
 
 const props = defineProps<Props>();
@@ -628,13 +630,13 @@ const handleExport = async () => {
             </div>
 
             <!-- Statistics Bar -->
-            <div class="grid grid-cols-[2fr_3fr] gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
                 <Card class="group relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 dark:from-blue-900/20 dark:to-blue-800/20 dark:border dark:border-blue-700/30">
-                    <CardContent class="p-6">
+                    <CardContent class="p-4 sm:p-6">
                         <div class="flex items-center justify-between">
-                            <div class="flex-1 pr-6">
+                            <div class="flex-1 pr-4 sm:pr-6">
                                 <p class="text-xs sm:text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">Total Transaksi</p>
-                                <p class="text-xl sm:text-2xl leading-tight break-words font-bold text-blue-900 dark:text-blue-100">{{ transaksiData.total }}</p>
+                                <p class="text-lg sm:text-2xl leading-tight break-words font-bold text-blue-900 dark:text-blue-100">{{ transaksiData.total }}</p>
                                 <div class="mt-2 h-1 w-full bg-blue-200 dark:bg-blue-800 rounded-full">
                                     <div class="h-full w-3/4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000"></div>
                                 </div>
@@ -647,9 +649,9 @@ const handleExport = async () => {
                 </Card>
 
                 <Card class="group relative overflow-hidden border-0 bg-gradient-to-br from-emerald-50 to-emerald-100 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 dark:from-emerald-900/20 dark:to-emerald-800/20 dark:border dark:border-emerald-700/30">
-                    <CardContent class="p-6">
+                    <CardContent class="p-4 sm:p-6">
                         <div class="flex items-center justify-between">
-                            <div class="flex-1 pr-6">
+                            <div class="flex-1 pr-4 sm:pr-6">
                                 <p class="text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 mb-2">Total Nominal</p>
                                 <p class="text-lg sm:text-xl leading-tight break-words font-bold text-emerald-900 dark:text-emerald-100">
                                     {{ formatCurrency((props.totalNominal ?? 0)) }}
@@ -666,9 +668,9 @@ const handleExport = async () => {
                 </Card>
 
                 <Card class="group relative overflow-hidden border-0 bg-gradient-to-br from-purple-50 to-purple-100 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 dark:from-purple-900/20 dark:to-purple-800/20 dark:border dark:border-purple-700/30">
-                    <CardContent class="p-6">
+                    <CardContent class="p-4 sm:p-6">
                         <div class="flex items-center justify-between">
-                            <div class="flex-1 pr-6">
+                            <div class="flex-1 pr-4 sm:pr-6">
                                 <p class="text-xs sm:text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2">Total Pelunasan</p>
                                 <p class="text-lg sm:text-xl leading-tight break-words font-bold text-purple-900 dark:text-purple-100">
                                     {{ formatCurrency((props.pelunasanTotal ?? 0)) }}
@@ -678,16 +680,54 @@ const handleExport = async () => {
                                 </div>
                             </div>
                             <div class="absolute top-2 right-2 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 p-1.5 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <Calendar class="h-4 w-4 text-white" />
+                                <DollarSign class="h-4 w-4 text-white" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card class="group relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 dark:from-blue-900/20 dark:to-blue-800/20 dark:border dark:border-blue-700/30">
+                    <CardContent class="p-4 sm:p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1 pr-4 sm:pr-6">
+                                <p class="text-xs sm:text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">Total DP/TJ</p>
+                                <p class="text-lg sm:text-xl leading-tight break-words font-bold text-blue-900 dark:text-blue-100">
+                                    {{ formatCurrency((props.dpTotal ?? 0)) }}
+                                </p>
+                                <div class="mt-2 h-1 w-full bg-blue-200 dark:bg-blue-800 rounded-full">
+                                    <div class="h-full w-2/3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000"></div>
+                                </div>
+                            </div>
+                            <div class="absolute top-2 right-2 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-1.5 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <CreditCard class="h-4 w-4 text-white" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card class="group relative overflow-hidden border-0 bg-gradient-to-br from-amber-50 to-amber-100 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 dark:from-amber-900/20 dark:to-amber-800/20 dark:border dark:border-amber-700/30">
-                    <CardContent class="p-6">
+                    <CardContent class="p-4 sm:p-6">
                         <div class="flex items-center justify-between">
-                            <div class="flex-1 pr-6">
+                            <div class="flex-1 pr-4 sm:pr-6">
+                                <p class="text-xs sm:text-sm font-semibold text-amber-700 dark:text-amber-300 mb-2">Total Tambahan DP</p>
+                                <p class="text-lg sm:text-xl leading-tight break-words font-bold text-amber-900 dark:text-amber-100">
+                                    {{ formatCurrency((props.tambahanDpTotal ?? 0)) }}
+                                </p>
+                                <div class="mt-2 h-1 w-full bg-amber-200 dark:bg-amber-800 rounded-full">
+                                    <div class="h-full w-2/3 bg-gradient-to-r from-amber-500 to-amber-600 rounded-full transition-all duration-1000"></div>
+                                </div>
+                            </div>
+                            <div class="absolute top-2 right-2 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-1.5 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <DollarSign class="h-4 w-4 text-white" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card class="group relative overflow-hidden border-0 bg-gradient-to-br from-amber-50 to-amber-100 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 dark:from-amber-900/20 dark:to-amber-800/20 dark:border dark:border-amber-700/30">
+                    <CardContent class="p-4 sm:p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1 pr-4 sm:pr-6">
                                 <p class="text-xs sm:text-sm font-semibold text-amber-700 dark:text-amber-300 mb-2">Rata-rata</p>
                                 <p class="text-lg sm:text-xl leading-tight break-words font-bold text-amber-900 dark:text-amber-100">
                                     {{ transaksiData.total > 0 ? formatCurrency(transaksiData.data.reduce((sum, t) => sum + t.nominal_masuk, 0) / transaksiData.total) : formatCurrency(0) }}
@@ -697,7 +737,7 @@ const handleExport = async () => {
                                 </div>
                             </div>
                             <div class="absolute top-2 right-2 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-1.5 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <User class="h-4 w-4 text-white" />
+                                <DollarSign class="h-4 w-4 text-white" />
                             </div>
                         </div>
                     </CardContent>
