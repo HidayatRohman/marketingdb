@@ -424,8 +424,7 @@ const closeDeleteModal = () => {
 };
 
 const handleModalSuccess = () => {
-    // Refresh the page data
-    router.reload({ only: ['transaksis'] });
+    router.reload({ only: ['transaksis', 'statusCounts'] });
 };
 
 const formatDate = (dateString: string) => {

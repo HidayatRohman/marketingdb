@@ -22,15 +22,16 @@ class TransaksiController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Transaksi::with(['user', 'paketBrand', 'leadAwalBrand', 'sumberRef', 'pekerjaan']);
+        // Build base query once for consistent aggregates across pagination
+        $baseQuery = Transaksi::with(['user', 'paketBrand', 'leadAwalBrand', 'sumberRef', 'pekerjaan']);
 
         // Apply role-based filtering
-        $query = $user->applyRoleFilter($query, 'user_id');
+        $baseQuery = $user->applyRoleFilter($baseQuery, 'user_id');
 
         // Apply search filter
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
+            $baseQuery->where(function ($q) use ($search) {
                 $q->where('nama_paket', 'like', "%{$search}%")
                   ->orWhere('kabupaten', 'like', "%{$search}%")
                   ->orWhere('provinsi', 'like', "%{$search}%")
@@ -46,30 +47,30 @@ class TransaksiController extends Controller
 
         // Apply periode filter
         if ($request->has('periode_start') && $request->periode_start) {
-            $query->whereDate('tanggal_tf', '>=', $request->periode_start);
+            $baseQuery->whereDate('tanggal_tf', '>=', $request->periode_start);
         }
 
         if ($request->has('periode_end') && $request->periode_end) {
-            $query->whereDate('tanggal_tf', '<=', $request->periode_end);
+            $baseQuery->whereDate('tanggal_tf', '<=', $request->periode_end);
         }
 
         // Apply brand filter
         if ($request->has('brand_id') && $request->brand_id) {
-            $query->where('paket_brand_id', $request->brand_id);
+            $baseQuery->where('paket_brand_id', $request->brand_id);
         }
 
         $perPage = $request->get('per_page', 10);
-        $transaksis = $query->orderBy('created_at', 'desc')->paginate($perPage);
+        $transaksis = (clone $baseQuery)->orderBy('created_at', 'desc')->paginate($perPage);
 
         $statusCounts = [
-            'all' => (clone $query)->count(),
-            'dp_tj' => (clone $query)->where('status_pembayaran', 'Dp / TJ')->count(),
-            'tambahan_dp' => (clone $query)->where('status_pembayaran', 'Tambahan Dp')->count(),
-            'pelunasan' => (clone $query)->where('status_pembayaran', 'Pelunasan')->count(),
+            'all' => (clone $baseQuery)->count(),
+            'dp_tj' => (clone $baseQuery)->where('status_pembayaran', 'Dp / TJ')->count(),
+            'tambahan_dp' => (clone $baseQuery)->where('status_pembayaran', 'Tambahan Dp')->count(),
+            'pelunasan' => (clone $baseQuery)->where('status_pembayaran', 'Pelunasan')->count(),
         ];
 
         // Total nominal over filtered dataset (not limited by pagination)
-        $totalNominal = (clone $query)->sum('nominal_masuk');
+        $totalNominal = (clone $baseQuery)->sum('nominal_masuk');
 
         // Get data for filters
         $brands = Brand::select('id', 'nama')->get();
