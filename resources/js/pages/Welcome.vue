@@ -3,6 +3,7 @@ import { dashboard, login, register } from '@/routes';
 import { Head, Link } from '@inertiajs/vue3';
 import { Briefcase, Building2, ChevronLeft, ChevronRight, Menu, Play, TrendingUp, Users, X } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useSiteSettings } from '@/composables/useSiteSettings';
 
 interface Brand {
     id: number;
@@ -19,6 +20,9 @@ const props = defineProps<Props>();
 
 // Mobile menu state
 const isMobileMenuOpen = ref(false);
+
+// Site settings
+const { siteDescription } = useSiteSettings();
 
 // Brand slider state
 const currentSlide = ref(0);
@@ -227,13 +231,7 @@ onUnmounted(() => {
 
                     <div class="space-y-6">
                         <h1 class="text-4xl leading-tight font-bold text-gray-800 sm:text-5xl lg:text-6xl">
-                            Sistem<br />
-                            Pencatatan<br />
-                            Database<br />
-                            <span class="text-orange-400"
-                                >CV Partner<br />
-                                Bisnismu</span
-                            >
+                            {{ siteDescription }}
                         </h1>
 
                         <div class="flex items-center justify-center space-x-4 pt-4 md:justify-start">
