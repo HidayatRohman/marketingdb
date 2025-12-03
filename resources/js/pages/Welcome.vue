@@ -22,7 +22,7 @@ const props = defineProps<Props>();
 const isMobileMenuOpen = ref(false);
 
 // Site settings
-const { siteDescription } = useSiteSettings();
+const { siteDescription, siteLogo, siteTitle } = useSiteSettings();
 
 // Brand slider state
 const currentSlide = ref(0);
@@ -128,11 +128,12 @@ onUnmounted(() => {
                     <!-- Kolom Kiri - Logo (standard spacing) -->
                     <div class="flex items-center space-x-3">
                         <div class="flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 bg-white/15 p-1 backdrop-blur-sm">
-                            <img src="/images/partner-bisnismu-logo.png" alt="Partner Bisnismu" class="h-full w-full object-contain" />
+                            <img v-if="siteLogo" :src="siteLogo" :alt="siteTitle" class="h-full w-full object-contain" />
+                            <img v-else src="/images/partner-bisnismu-logo.png" alt="Partner Bisnismu" class="h-full w-full object-contain" />
                         </div>
                         <!-- Hide text on mobile, show on desktop -->
                         <div class="mobile-logo-text">
-                            <h1 class="text-xl font-bold text-gray-700">Partner Bisnismu</h1>
+                            <h1 class="text-xl font-bold text-gray-700">{{ siteTitle }}</h1>
                         </div>
                     </div>
 
