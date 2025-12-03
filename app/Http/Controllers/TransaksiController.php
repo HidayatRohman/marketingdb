@@ -45,14 +45,11 @@ class TransaksiController extends Controller
             });
         }
 
-        // Apply periode filter
-        if ($request->has('periode_start') && $request->periode_start) {
-            $baseQuery->whereDate('tanggal_tf', '>=', $request->periode_start);
-        }
-
-        if ($request->has('periode_end') && $request->periode_end) {
-            $baseQuery->whereDate('tanggal_tf', '<=', $request->periode_end);
-        }
+        // Apply periode filter with defaults: current month
+        $startDate = $request->get('periode_start', now()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->get('periode_end', now()->endOfMonth()->format('Y-m-d'));
+        $baseQuery->whereDate('tanggal_tf', '>=', $startDate);
+        $baseQuery->whereDate('tanggal_tf', '<=', $endDate);
 
         // Apply brand filter
         if ($request->has('brand_id') && $request->brand_id) {
@@ -90,8 +87,8 @@ class TransaksiController extends Controller
             'filters' => [
                 'search' => $request->search,
                 'brand_id' => $request->brand_id,
-                'periode_start' => $request->periode_start,
-                'periode_end' => $request->periode_end,
+                'periode_start' => $startDate,
+                'periode_end' => $endDate,
                 'per_page' => $perPage,
             ],
             'permissions' => [
