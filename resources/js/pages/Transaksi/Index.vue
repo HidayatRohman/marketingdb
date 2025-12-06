@@ -90,6 +90,7 @@ interface Props {
     filters: {
         search?: string;
         brand_id?: string;
+        lead_awal_id?: string;
         periode_start?: string;
         periode_end?: string;
         per_page?: number;
@@ -110,6 +111,7 @@ const props = defineProps<Props>();
 
 const search = ref(props.filters.search || '');
 const selectedBrand = ref(props.filters.brand_id || '');
+const selectedLeadAwal = ref(props.filters.lead_awal_id || '');
 const periodeStart = ref(props.filters.periode_start || '');
 const periodeEnd = ref(props.filters.periode_end || '');
 const perPage = ref(props.filters.per_page || 10);
@@ -231,6 +233,7 @@ const debouncedSearch = debounce(() => {
         {
             search: search.value || undefined,
             brand_id: selectedBrand.value || undefined,
+            lead_awal_id: selectedLeadAwal.value || undefined,
             periode_start: periodeStart.value || undefined,
             periode_end: periodeEnd.value || undefined,
             per_page: perPage.value || 10,
@@ -243,7 +246,7 @@ const debouncedSearch = debounce(() => {
 }, 300);
 
 // Watch for filter changes
-watch([search, selectedBrand, periodeStart, periodeEnd, perPage], () => {
+watch([search, selectedBrand, selectedLeadAwal, periodeStart, periodeEnd, perPage], () => {
     debouncedSearch();
 });
 
@@ -482,6 +485,7 @@ const getStatusBadgeVariant = (status: string) => {
 const clearFilters = () => {
     search.value = '';
     selectedBrand.value = '';
+    selectedLeadAwal.value = '';
     periodeStart.value = '';
     periodeEnd.value = '';
     perPage.value = 10;
@@ -496,6 +500,7 @@ const getFilterParams = () => {
     return {
         search: search.value || undefined,
         brand_id: selectedBrand.value || undefined,
+        lead_awal_id: selectedLeadAwal.value || undefined,
         periode_start: periodeStart.value || undefined,
         periode_end: periodeEnd.value || undefined,
         per_page: perPage.value || 10,
@@ -812,6 +817,25 @@ const handleExport = async () => {
                                                 class="w-full h-10 px-3 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-400 dark:bg-gray-800 dark:text-gray-200"
                                             >
                                                 <option value="">Semua Brand</option>
+                                                <option 
+                                                    v-for="brand in brands" 
+                                                    :key="brand.id" 
+                                                    :value="String(brand.id)"
+                                                >
+                                                    {{ brand.nama }}
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Lead Awal
+                                            </label>
+                                            <select 
+                                                v-model="selectedLeadAwal"
+                                                class="w-full h-10 px-3 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-400 dark:bg-gray-800 dark:text-gray-200"
+                                            >
+                                                <option value="">Semua Lead Awal</option>
                                                 <option 
                                                     v-for="brand in brands" 
                                                     :key="brand.id" 

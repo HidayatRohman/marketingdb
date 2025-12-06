@@ -51,9 +51,11 @@ class TransaksiController extends Controller
         $baseQuery->whereDate('tanggal_tf', '>=', $startDate);
         $baseQuery->whereDate('tanggal_tf', '<=', $endDate);
 
-        // Apply brand filter
         if ($request->has('brand_id') && $request->brand_id) {
             $baseQuery->where('paket_brand_id', $request->brand_id);
+        }
+        if ($request->has('lead_awal_id') && $request->lead_awal_id) {
+            $baseQuery->where('lead_awal_brand_id', $request->lead_awal_id);
         }
 
         $perPage = $request->get('per_page', 10);
@@ -97,6 +99,7 @@ class TransaksiController extends Controller
             'filters' => [
                 'search' => $request->search,
                 'brand_id' => $request->brand_id,
+                'lead_awal_id' => $request->lead_awal_id,
                 'periode_start' => $startDate,
                 'periode_end' => $endDate,
                 'per_page' => $perPage,
