@@ -8,10 +8,13 @@ import { Label } from '@/components/ui/label';
 import { home, login } from '@/routes';
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
+import { useSiteSettings } from '@/composables/useSiteSettings';
+
+const { siteTitle, siteLogo } = useSiteSettings();
 </script>
 
 <template>
-    <Head title="Register - Partner Bisnismu" />
+    <Head :title="`Register - ${siteTitle}`" />
 
     <!-- Background with Soft Blue-Orange Gradient -->
     <div class="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-300 via-blue-200 to-orange-300">
@@ -39,12 +42,13 @@ import { LoaderCircle } from 'lucide-vue-next';
                         <div
                             class="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/20 bg-white/15 p-2 shadow-lg backdrop-blur-sm transition-all duration-300 group-hover:bg-white/25"
                         >
-                            <img src="/images/partner-bisnismu-logo.png" alt="Partner Bisnismu" class="h-full w-full object-contain" />
+                            <img v-if="siteLogo" :src="siteLogo" :alt="siteTitle" class="h-full w-full object-contain" />
+                            <img v-else src="/images/partner-bisnismu-logo.png" alt="Partner Bisnismu" class="h-full w-full object-contain" />
                         </div>
 
                         <!-- Company Name -->
                         <div class="text-center">
-                            <h1 class="mb-1 text-2xl font-bold text-gray-700">Partner Bisnismu</h1>
+                            <h1 class="mb-1 text-2xl font-bold text-gray-700">{{ siteTitle }}</h1>
                             <p class="text-sm text-gray-600">Sistem Pencatatan Database</p>
                         </div>
                     </Link>
@@ -155,7 +159,7 @@ import { LoaderCircle } from 'lucide-vue-next';
 
                 <!-- Footer -->
                 <div class="mt-8 text-center">
-                    <p class="text-xs text-gray-500">&copy; 2024 Partner Bisnismu. All rights reserved.</p>
+                    <p class="text-xs text-gray-500">&copy; 2024 {{ siteTitle }}. All rights reserved.</p>
                 </div>
             </div>
         </div>
