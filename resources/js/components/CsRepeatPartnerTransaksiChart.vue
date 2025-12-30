@@ -138,14 +138,26 @@ const props = defineProps<{ items?: Item[] }>()
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)
 
 type AggRow = { key: string; nama: string; no_tlp: string; total: number }
+const toNumber = (x: unknown): number => {
+  if (typeof x === 'number') return x || 0
+  if (typeof x === 'string') {
+    const n = parseInt(x.replace(/[^0-9]/g, ''))
+    return isNaN(n) ? 0 : n
+  }
+  return 0
+}
+const normalizePhone = (s: unknown): string => String(s || '').replace(/\D/g, '')
+const normalizeName = (s: unknown): string => String(s || '').trim().toLowerCase()
 const agg = computed<AggRow[]>(() => {
   const map = new Map<string, AggRow>()
   const arr = Array.isArray(props.items) ? props.items : []
   for (const it of arr) {
-    const key = (it.no_tlp || it.nama_pelanggan || '').trim()
+    const phoneKey = normalizePhone(it.no_tlp)
+    const nameKey = normalizeName(it.nama_pelanggan)
+    const key = phoneKey || nameKey
     if (!key) continue
     const exist = map.get(key)
-    const total = (it.transaksi || 0) + (exist?.total || 0)
+    const total = toNumber(it.transaksi) + (exist?.total || 0)
     map.set(key, { key, nama: it.nama_pelanggan || '-', no_tlp: it.no_tlp || '-', total })
   }
   return Array.from(map.values()).sort((a, b) => b.total - a.total)
@@ -182,8 +194,8 @@ const selectedBio = computed(() => {
   if (!selected.value) return null
   const arr = Array.isArray(props.items) ? props.items : []
   const match = arr.find(it => {
-    const samePhone = (it.no_tlp || '').trim() === (selected.value!.no_tlp || '').trim()
-    const sameName = (it.nama_pelanggan || '').trim().toLowerCase() === selected.value!.nama.trim().toLowerCase()
+    const samePhone = normalizePhone(it.no_tlp) === normalizePhone(selected.value!.no_tlp)
+    const sameName = normalizeName(it.nama_pelanggan) === normalizeName(selected.value!.nama)
     return samePhone || sameName
   })
   return match?.bio_pelanggan ?? null
@@ -191,14 +203,14 @@ const selectedBio = computed(() => {
 
 const filteredBySelected = computed(() => {
   if (!selected.value) return [] as Item[]
-  const key = selected.value.no_tlp?.trim() || selected.value.nama?.trim().toLowerCase()
   const arr = Array.isArray(props.items) ? props.items : []
   return arr
     .filter(it => {
-      const samePhone = (it.no_tlp || '').trim() === (selected.value!.no_tlp || '').trim()
-      const sameName = (it.nama_pelanggan || '').trim().toLowerCase() === selected.value!.nama.trim().toLowerCase()
+      const samePhone = normalizePhone(it.no_tlp) === normalizePhone(selected.value!.no_tlp)
+      const sameName = normalizeName(it.nama_pelanggan) === normalizeName(selected.value!.nama)
       return samePhone || sameName
     })
+    .map(it => ({ ...it, transaksi: toNumber(it.transaksi) }))
     .sort((a, b) => new Date(a.tanggal || '').getTime() - new Date(b.tanggal || '').getTime())
 })
 
