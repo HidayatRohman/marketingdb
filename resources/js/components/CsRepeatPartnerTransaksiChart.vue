@@ -141,6 +141,10 @@ type AggRow = { key: string; nama: string; no_tlp: string; total: number }
 const toNumber = (x: unknown): number => {
   if (typeof x === 'number') return x || 0
   if (typeof x === 'string') {
+    // Handle decimal strings from DB (e.g. "150000.00")
+    if (x.includes('.')) {
+      return parseFloat(x) || 0
+    }
     const n = parseInt(x.replace(/[^0-9]/g, ''))
     return isNaN(n) ? 0 : n
   }
