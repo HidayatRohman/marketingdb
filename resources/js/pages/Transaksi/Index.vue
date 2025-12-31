@@ -18,6 +18,7 @@ import { Head, router } from '@inertiajs/vue3';
 import { CreditCard, ChevronDown, ChevronUp, Edit, Eye, Filter, Plus, Search, Trash2, User, X, DollarSign, Phone, Download } from 'lucide-vue-next';
 import { ref, computed, watch, onMounted, nextTick, watchEffect } from 'vue';
 import { debounce } from 'lodash';
+import { toLocalDateString } from '@/lib/utils';
 import PaymentStatusChart from '@/Components/PaymentStatusChart.vue';
 import SourceAnalyticsChart from '@/components/SourceAnalyticsChart.vue';
 import AgeAnalyticsChart from '@/components/AgeAnalyticsChart.vue';
@@ -255,8 +256,8 @@ const fetchChartData = async () => {
     chartLoading.value = true;
     try {
         const response = await fetch('/transaksis/analytics/payment-status?' + new URLSearchParams({
-            start_date: periodeStart.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-            end_date: periodeEnd.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+            start_date: periodeStart.value || toLocalDateString(new Date(new Date().getFullYear(), 0, 1)),
+            end_date: periodeEnd.value || toLocalDateString(new Date(new Date().getFullYear(), 11, 31)),
         }));
         
         if (response.ok) {
@@ -279,8 +280,8 @@ const fetchSourceChartData = async () => {
     sourceChartLoading.value = true;
     try {
         const response = await fetch('/transaksis/analytics/sumber?' + new URLSearchParams({
-            start_date: periodeStart.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-            end_date: periodeEnd.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+            start_date: periodeStart.value || toLocalDateString(new Date(new Date().getFullYear(), 0, 1)),
+            end_date: periodeEnd.value || toLocalDateString(new Date(new Date().getFullYear(), 11, 31)),
         }));
 
         if (response.ok) {

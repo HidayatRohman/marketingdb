@@ -47,6 +47,7 @@ import {
     DollarSign,
 } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, Teleport, watch } from 'vue';
+import { toLocalDateString } from '@/lib/utils';
 
 interface UserStats {
     total: number;
@@ -340,8 +341,8 @@ const fetchCsRepeatSummary = async () => {
     csRepeatLoading.value.summary = true;
     try {
         const params = new URLSearchParams({
-            start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-            end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+            start_date: startDate.value || toLocalDateString(new Date(new Date().getFullYear(), 0, 1)),
+            end_date: endDate.value || toLocalDateString(new Date(new Date().getFullYear(), 11, 31)),
         });
         if (selectedBrand.value && selectedBrand.value !== 'all') params.append('brand', String(selectedBrand.value));
         if (selectedMarketing.value && selectedMarketing.value !== 'all') params.append('marketing', String(selectedMarketing.value));
@@ -363,8 +364,8 @@ const fetchCsRepeatDailyTransaksi = async () => {
     csRepeatLoading.value.dailyTransaksi = true;
     try {
         const params = new URLSearchParams({
-            start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-            end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+            start_date: startDate.value || toLocalDateString(new Date(new Date().getFullYear(), 0, 1)),
+            end_date: endDate.value || toLocalDateString(new Date(new Date().getFullYear(), 11, 31)),
         });
         if (selectedBrand.value && selectedBrand.value !== 'all') params.append('brand', String(selectedBrand.value));
         if (selectedMarketing.value && selectedMarketing.value !== 'all') params.append('marketing', String(selectedMarketing.value));
@@ -386,8 +387,8 @@ const fetchCsRepeatDailyByProduct = async () => {
     csRepeatLoading.value.dailyProduct = true;
     try {
         const params = new URLSearchParams({
-            start_date: startDate.value || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-            end_date: endDate.value || new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+            start_date: startDate.value || toLocalDateString(new Date(new Date().getFullYear(), 0, 1)),
+            end_date: endDate.value || toLocalDateString(new Date(new Date().getFullYear(), 11, 31)),
         });
         if (selectedBrand.value && selectedBrand.value !== 'all') params.append('brand', String(selectedBrand.value));
         if (selectedMarketing.value && selectedMarketing.value !== 'all') params.append('marketing', String(selectedMarketing.value));
@@ -456,34 +457,34 @@ const applyQuickDateFilter = (range: string) => {
 
     switch (range) {
         case 'today':
-            start = end = now.toISOString().split('T')[0];
+            start = end = toLocalDateString(now);
             break;
         case 'yesterday':
             const yesterday = new Date(now);
             yesterday.setDate(yesterday.getDate() - 1);
-            start = end = yesterday.toISOString().split('T')[0];
+            start = end = toLocalDateString(yesterday);
             break;
         case 'this_week':
             const startOfWeek = new Date(now);
             startOfWeek.setDate(now.getDate() - now.getDay());
-            start = startOfWeek.toISOString().split('T')[0];
-            end = now.toISOString().split('T')[0];
+            start = toLocalDateString(startOfWeek);
+            end = toLocalDateString(now);
             break;
         case 'last_week':
             const startOfLastWeek = new Date(now);
             startOfLastWeek.setDate(now.getDate() - now.getDay() - 7);
             const endOfLastWeek = new Date(startOfLastWeek);
             endOfLastWeek.setDate(startOfLastWeek.getDate() + 6);
-            start = startOfLastWeek.toISOString().split('T')[0];
-            end = endOfLastWeek.toISOString().split('T')[0];
+            start = toLocalDateString(startOfLastWeek);
+            end = toLocalDateString(endOfLastWeek);
             break;
         case 'this_month':
-            start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-            end = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+            start = toLocalDateString(new Date(now.getFullYear(), now.getMonth(), 1));
+            end = toLocalDateString(new Date(now.getFullYear(), now.getMonth() + 1, 0));
             break;
         case 'last_month':
-            start = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
-            end = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0];
+            start = toLocalDateString(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+            end = toLocalDateString(new Date(now.getFullYear(), now.getMonth(), 0));
             break;
         default:
             return;
@@ -638,7 +639,7 @@ const filterByMonthYear = () => {
         if (month) {
             // Filter by specific month and year
             const startOfMonth = `${year}-${selectedMonth.value.padStart(2, '0')}-01`;
-            const endOfMonth = new Date(year, month, 0).toISOString().split('T')[0];
+            const endOfMonth = toLocalDateString(new Date(year, month, 0));
             
             params.start_date = startOfMonth;
             params.end_date = endOfMonth;
@@ -666,8 +667,8 @@ const filterByMonthYear = () => {
 onMounted(() => {
     // Set default date range to current month
     const now = new Date();
-    startDate.value = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-    endDate.value = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+    startDate.value = toLocalDateString(new Date(now.getFullYear(), now.getMonth(), 1));
+    endDate.value = toLocalDateString(new Date(now.getFullYear(), now.getMonth() + 1, 0));
     selectedDateRange.value = 'this_month';
 
     // Close dropdowns when clicking outside

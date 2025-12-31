@@ -31,6 +31,7 @@ import {
     XCircle,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import { toLocalDateString } from '@/lib/utils';
 
 interface Todo {
     id: number;
@@ -207,7 +208,7 @@ const todosGroupedByDate = computed(() => {
 const todosForSelectedDate = computed(() => {
     // For calendar view, always show todos for selected date without filters
     if (currentView.value === 'calendar') {
-        const dateKey = selectedDate.value.toISOString().split('T')[0];
+        const dateKey = toLocalDateString(selectedDate.value);
         return todosGroupedByDate.value[dateKey] || [];
     }
 
@@ -229,8 +230,8 @@ const todosForSelectedDate = computed(() => {
         // Get current date and 7 days ahead
         const today = new Date();
         const weekAhead = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-        const todayKey = today.toISOString().split('T')[0];
-        const weekAheadKey = weekAhead.toISOString().split('T')[0];
+        const todayKey = toLocalDateString(today);
+        const weekAheadKey = toLocalDateString(weekAhead);
 
         // Collect todos from today to 1 week ahead
         const weekTodos: Todo[] = [];
@@ -243,7 +244,7 @@ const todosForSelectedDate = computed(() => {
     }
 
     // For filtered cases, show todos for selected date
-    const dateKey = selectedDate.value.toISOString().split('T')[0];
+    const dateKey = toLocalDateString(selectedDate.value);
     const todosForDate = todosGroupedByDate.value[dateKey] || [];
 
     // Apply filters to todos for the selected date
@@ -364,7 +365,7 @@ const changeView = (view: string) => {
             '/todos',
             {
                 view: view,
-                date: selectedDate.value.toISOString().split('T')[0],
+                date: toLocalDateString(selectedDate.value),
             },
             { preserveState: true, preserveScroll: true, replace: true, only: ['todos', 'stats', 'selectedDate', 'view'] },
         );
@@ -377,7 +378,7 @@ watch(currentView, (view) => {
             '/todos',
             {
                 view: view,
-                date: selectedDate.value.toISOString().split('T')[0],
+                date: toLocalDateString(selectedDate.value),
             },
             { preserveState: true, preserveScroll: true, replace: true, only: ['todos', 'stats', 'selectedDate', 'view'] },
         );
@@ -397,7 +398,7 @@ const navigateMonth = (direction: 'prev' | 'next') => {
         '/todos',
         {
             view: currentView.value,
-            date: newDate.toISOString().split('T')[0],
+            date: toLocalDateString(newDate),
         },
         { preserveState: true },
     );
@@ -415,7 +416,7 @@ const navigateWeek = (direction: 'prev' | 'next') => {
         '/todos',
         {
             view: 'board',
-            date: newDate.toISOString().split('T')[0],
+            date: toLocalDateString(newDate),
         },
         { preserveState: true, preserveScroll: true, replace: true, only: ['todos', 'stats', 'selectedDate', 'view'] },
     );
@@ -428,7 +429,7 @@ const selectDate = (date: Date) => {
             '/todos',
             {
                 view: 'list',
-                date: date.toISOString().split('T')[0],
+                date: toLocalDateString(date),
             },
             { preserveState: true },
         );
@@ -437,14 +438,14 @@ const selectDate = (date: Date) => {
 
 const openCreateModal = () => {
     form.reset();
-    form.start_date = new Date().toISOString().split('T')[0];
-    form.due_date = selectedDate.value.toISOString().split('T')[0];
+    form.start_date = toLocalDateString(new Date());
+    form.due_date = toLocalDateString(selectedDate.value);
     showCreateModal.value = true;
 };
 
 const openCreateModalForDay = (date: Date) => {
     form.reset();
-    const dateString = date.toISOString().split('T')[0];
+    const dateString = toLocalDateString(date);
     form.start_date = dateString;
     form.due_date = dateString;
     showCreateModal.value = true;
@@ -507,7 +508,7 @@ const clearFilters = () => {
 const applyFilters = () => {
     const params = new URLSearchParams();
     params.set('view', currentView.value);
-    params.set('date', selectedDate.value.toISOString().split('T')[0]);
+    params.set('date', toLocalDateString(selectedDate.value));
 
     if (filters.value.status !== 'all') params.set('status', filters.value.status);
     if (filters.value.priority !== 'all') params.set('priority', filters.value.priority);
@@ -566,7 +567,7 @@ const updateStatus = (todo: Todo, checked: boolean) => {
 };
 
 const getDayTodos = (date: Date) => {
-    const dateKey = date.toISOString().split('T')[0];
+    const dateKey = toLocalDateString(date);
     const todos = todosGroupedByDate.value[dateKey] || [];
 
     // Sort todos by priority and time for better display
@@ -588,7 +589,7 @@ const getDayTodos = (date: Date) => {
 
 // Get todos that span across date ranges (for bar visualization)
 const getTodosForDateRange = (date: Date) => {
-    const dateKey = date.toISOString().split('T')[0];
+    const dateKey = toLocalDateString(date);
 
     return props.todos
         .filter((todo) => {
@@ -616,7 +617,7 @@ const getTodosForDateRange = (date: Date) => {
 const getTodoBarPosition = (todo: Todo, date: Date) => {
     if (!todo.start_date) return 'full';
 
-    const dateKey = date.toISOString().split('T')[0];
+    const dateKey = toLocalDateString(date);
     const startDate = todo.start_date;
     const endDate = todo.due_date;
 
@@ -661,7 +662,7 @@ const getWeekDays = () => {
 };
 
 const getTodosForWeekDay = (date: Date) => {
-    const dateKey = date.toISOString().split('T')[0];
+    const dateKey = toLocalDateString(date);
 
     return props.todos
         .filter((todo) => {
@@ -926,7 +927,7 @@ const getStatusIcon = (status: string) => {
                                     {
                                         'bg-blue-50 dark:bg-blue-900/20': isSameDate(date, selectedDate),
                                         'text-gray-400 dark:text-gray-600': !isCurrentMonth(date),
-                                        'bg-yellow-50 dark:bg-yellow-900/20': isToday(date.toISOString().split('T')[0]),
+                                        'bg-yellow-50 dark:bg-yellow-900/20': isToday(toLocalDateString(date)),
                                         'ring-2 ring-blue-500': isSameDate(date, selectedDate),
                                     },
                                 ]"
@@ -1006,7 +1007,7 @@ const getStatusIcon = (status: string) => {
                 <!-- Selected Date Todos -->
                 <Card v-if="todosForSelectedDate.length > 0">
                     <CardHeader>
-                        <CardTitle> Tugas untuk {{ formatDate(selectedDate.toISOString().split('T')[0]) }} </CardTitle>
+                        <CardTitle> Tugas untuk {{ formatDate(toLocalDateString(selectedDate)) }} </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div class="space-y-4">
@@ -1118,8 +1119,8 @@ const getStatusIcon = (status: string) => {
                                     <ArrowLeft class="h-4 w-4" />
                                 </Button>
                                 <span class="px-3 text-xs font-medium sm:text-sm">
-                                    {{ formatDate(getWeekDays()[0].toISOString().split('T')[0]) }} -
-                                    {{ formatDate(getWeekDays()[6].toISOString().split('T')[0]) }}
+                                    {{ formatDate(toLocalDateString(getWeekDays()[0])) }} -
+                                    {{ formatDate(toLocalDateString(getWeekDays()[6])) }}
                                 </span>
                                 <Button variant="outline" size="sm" @click="navigateWeek('next')">
                                     <ArrowRight class="h-4 w-4" />
@@ -1136,7 +1137,7 @@ const getStatusIcon = (status: string) => {
                         <div class="mb-4">
                             <h3 class="font-semibold text-gray-900 dark:text-gray-100">{{ getDayName(date) }}</h3>
                             <p class="text-sm text-gray-500">
-                                {{ formatDate(date.toISOString().split('T')[0]) }}
+                                {{ formatDate(toLocalDateString(date)) }}
                             </p>
                             <div class="mt-1 text-xs text-gray-400">{{ getTodosForDateRange(date).length }} tugas</div>
                         </div>
@@ -1257,7 +1258,7 @@ const getStatusIcon = (status: string) => {
                             <div>
                                 <Label>Tanggal</Label>
                                 <DatePicker
-                                    :model-value="selectedDate.toISOString().split('T')[0]"
+                                    :model-value="toLocalDateString(selectedDate)"
                                     @update:model-value="(value: string) => selectDate(new Date(value))"
                                     placeholder="Pilih tanggal"
                                 />
@@ -1346,8 +1347,8 @@ const getStatusIcon = (status: string) => {
                                         !filters.search
                                     "
                                 >
-                                    Tugas 1 Minggu ke Depan ({{ formatDate(new Date().toISOString().split('T')[0]) }} -
-                                    {{ formatDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]) }})
+                                    Tugas 1 Minggu ke Depan ({{ formatDate(toLocalDateString(new Date())) }} -
+                                    {{ formatDate(toLocalDateString(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))) }})
                                 </span>
                                 <span v-else> Hasil Filter Tugas </span>
                                 <span v-if="todosForSelectedDate.length !== props.todos.length" class="ml-2 text-sm font-normal text-gray-500">
