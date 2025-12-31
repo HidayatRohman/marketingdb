@@ -334,9 +334,22 @@ const isSameDay = (date1: Date, date2: Date): boolean => {
          date1.getFullYear() === date2.getFullYear();
 };
 
+// Parse YYYY-MM-DD safely into a local Date (midnight) to avoid timezone shifts
+const parseLocalDate = (s?: string | null): Date | null => {
+  if (!s) return null;
+  const parts = String(s).split('-');
+  const y = Number(parts[0]);
+  const m = Number(parts[1]);
+  const d = Number(parts[2]);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d);
+};
+
 const isDateDisabled = (date: Date): boolean => {
-  if (props.minDate && date < new Date(props.minDate)) return true;
-  if (props.maxDate && date > new Date(props.maxDate)) return true;
+  const min = parseLocalDate(props.minDate);
+  const max = parseLocalDate(props.maxDate);
+  if (min && date.getTime() < min.getTime()) return true;
+  if (max && date.getTime() > max.getTime()) return true;
   return false;
 };
 
