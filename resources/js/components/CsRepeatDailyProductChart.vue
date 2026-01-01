@@ -83,8 +83,8 @@ const options: ChartOptions<'line'> = {
 }
 
 const renderChart = async () => {
-  if (!chartCanvas.value) return
   await nextTick()
+  if (!chartCanvas.value) return
   if (chartInstance.value) {
     chartInstance.value.destroy()
     chartInstance.value = null
