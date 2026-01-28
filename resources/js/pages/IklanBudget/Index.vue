@@ -531,6 +531,12 @@
                     />
                 </CardContent>
             </Card>
+
+            <!-- Grafik Perbandingan Tahunan -->
+            <YearlyComparisonChart 
+                :brands="brands"
+                :initial-brand-id="filters.brand_id"
+            />
         </div>
 
         <!-- Modal Components -->
@@ -571,6 +577,7 @@ import TableHeader from '@/components/ui/table/TableHeader.vue'
 import TableRow from '@/components/ui/table/TableRow.vue'
 import MonthlySpentChart from '@/components/MonthlySpentChart.vue'
 import MonthlyLeadsChart from '@/components/MonthlyLeadsChart.vue'
+import YearlyComparisonChart from '@/components/YearlyComparisonChart.vue'
 
 import { TrendingUp, Plus, Filter, Search, Edit, Trash2, RotateCcw, BarChart3, Target, Users, Award, DollarSign } from 'lucide-vue-next'
 

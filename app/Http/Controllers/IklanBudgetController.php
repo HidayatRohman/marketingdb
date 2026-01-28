@@ -728,4 +728,67 @@ class IklanBudgetController extends Controller
             }
         }
     }
+
+    public function getYearlyComparison(Request $request)
+    {
+        $years = $request->input('years', [date('Y'), date('Y') - 1]);
+        $brandId = $request->input('brand_id');
+        
+        $data = [];
+        
+        foreach ($years as $year) {
+            // Initialize arrays for 12 months
+            $monthlySpent = array_fill(1, 12, 0);
+            $monthlyLeads = array_fill(1, 12, 0);
+            $monthlyOmset = array_fill(1, 12, 0);
+
+            // 1. Spent from IklanBudget
+            $spentQuery = IklanBudget::whereYear('tanggal', $year);
+            if ($brandId) {
+                $spentQuery->where('brand_id', $brandId);
+            }
+            $spentRecords = $spentQuery->get(['tanggal', 'spent_amount']);
+            
+            foreach ($spentRecords as $record) {
+                $month = (int) $record->tanggal->format('n');
+                $monthlySpent[$month] += $record->spent_amount;
+            }
+
+            // 2. Leads from Mitra
+            $leadsQuery = \App\Models\Mitra::whereYear('tanggal_lead', $year);
+            if ($brandId) {
+                $leadsQuery->where('brand_id', $brandId);
+            }
+            $leadsRecords = $leadsQuery->get(['tanggal_lead']);
+            
+            foreach ($leadsRecords as $record) {
+                if ($record->tanggal_lead) {
+                    $month = (int) $record->tanggal_lead->format('n');
+                    $monthlyLeads[$month]++;
+                }
+            }
+
+            // 3. Omset from Transaksi
+            $omsetQuery = \App\Models\Transaksi::whereYear('tanggal_tf', $year);
+            if ($brandId) {
+                $omsetQuery->where('lead_awal_brand_id', $brandId);
+            }
+            $omsetRecords = $omsetQuery->get(['tanggal_tf', 'nominal_masuk']);
+            
+            foreach ($omsetRecords as $record) {
+                if ($record->tanggal_tf) {
+                    $month = (int) $record->tanggal_tf->format('n');
+                    $monthlyOmset[$month] += $record->nominal_masuk;
+                }
+            }
+            
+            $data[$year] = [
+                'spent' => array_values($monthlySpent),
+                'leads' => array_values($monthlyLeads),
+                'omset' => array_values($monthlyOmset),
+            ];
+        }
+        
+        return response()->json($data);
+    }
 }
