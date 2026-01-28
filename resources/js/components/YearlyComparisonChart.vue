@@ -85,6 +85,16 @@
         </div>
       </div>
 
+      <!-- Error State -->
+      <div v-else-if="error" class="flex flex-col items-center justify-center py-12 text-center">
+        <div class="rounded-full bg-red-100 dark:bg-red-900/20 p-3 mb-3">
+            <AlertCircle class="h-6 w-6 text-red-600 dark:text-red-400" />
+        </div>
+        <h3 class="text-base font-medium text-red-900 dark:text-red-200 mb-2">Terjadi Kesalahan</h3>
+        <p class="text-sm text-red-500 dark:text-red-400 max-w-xs mb-4">{{ error }}</p>
+        <Button variant="outline" size="sm" @click="fetchData">Coba Lagi</Button>
+      </div>
+
       <!-- Chart Container -->
       <div v-else-if="hasData" class="relative">
         <div class="h-80 w-full">
@@ -112,7 +122,7 @@
 import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BarChart3, RefreshCw, Check } from 'lucide-vue-next';
+import { BarChart3, RefreshCw, Check, AlertCircle } from 'lucide-vue-next';
 import axios from 'axios';
 import {
   Chart as ChartJS,
@@ -143,6 +153,7 @@ const props = defineProps<{
 }>();
 
 const loading = ref(false);
+const error = ref<string | null>(null);
 const chartCanvas = ref<HTMLCanvasElement | null>(null);
 const chartInstance = ref<ChartJS | null>(null);
 
@@ -179,20 +190,24 @@ const fetchData = async () => {
     }
 
     loading.value = true;
-    try {
-        const response = await axios.get('/iklan-budgets/yearly-comparison', {
-            params: {
-                years: selectedYears.value,
-                brand_id: selectedBrand.value
-            }
-        });
-        apiData.value = response.data;
-        updateChart();
-    } catch (error) {
-        console.error('Failed to fetch comparison data:', error);
-    } finally {
-        loading.value = false;
-    }
+  error.value = null;
+  
+  try {
+    const response = await axios.get('/iklan-budgets/yearly-comparison', {
+      params: {
+        years: selectedYears.value,
+        brand_id: selectedBrand.value
+      }
+    });
+    
+    apiData.value = response.data;
+    updateChart();
+  } catch (err) {
+    console.error('Failed to fetch comparison data:', err);
+    error.value = 'Gagal memuat data. Pastikan Anda terhubung ke internet atau coba refresh halaman.';
+  } finally {
+    loading.value = false;
+  }
 };
 
 const formatCurrency = (value: number) => {
