@@ -534,8 +534,8 @@
 
             <!-- Grafik Perbandingan Tahunan -->
             <YearlyComparisonChart 
-                :brands="brands"
-                :initial-brand-id="filters.brand_id"
+                :brands="props.brands"
+                :initial-brand-id="props.filters.brand_id"
             />
         </div>
 

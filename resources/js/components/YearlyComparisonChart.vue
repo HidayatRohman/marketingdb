@@ -53,23 +53,9 @@
                     @change="fetchData"
                 >
                     <option :value="null">Semua Brand</option>
-                    <option v-for="brand in brands" :key="brand.id" :value="brand.id">
+                    <option v-for="brand in props.brands" :key="brand.id" :value="brand.id">
                         {{ brand.nama }}
                     </option>
-                </select>
-            </div>
-
-            <!-- Metric Filter -->
-            <div class="w-full sm:w-48">
-                <label class="text-xs font-medium text-gray-500 mb-1 block">Metrik</label>
-                <select 
-                    v-model="selectedMetric" 
-                    class="w-full h-9 rounded-md border border-gray-300 bg-white px-3 py-1 text-sm shadow-sm transition-colors focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 dark:border-gray-700 dark:bg-gray-800"
-                    @change="updateChart"
-                >
-                    <option value="spent">Spent Bulanan</option>
-                    <option value="leads">Total Leads</option>
-                    <option value="omset">Total Omset</option>
                 </select>
             </div>
         </div>
@@ -95,10 +81,15 @@
         <Button variant="outline" size="sm" @click="fetchData">Coba Lagi</Button>
       </div>
 
-      <!-- Chart Container -->
-      <div v-else-if="hasData" class="relative">
-        <div class="h-80 w-full">
-          <canvas ref="chartCanvas"></canvas>
+      <!-- Charts Container -->
+      <div v-else-if="hasData" class="space-y-8">
+        <div v-for="metric in metricConfigs" :key="metric.key" class="border rounded-lg p-4 bg-white dark:bg-gray-900 shadow-sm">
+            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-4 border-b pb-2">
+                {{ metric.label }}
+            </h3>
+            <div class="h-72 w-full relative">
+                <canvas :ref="(el) => setCanvasRef(el, metric.key)"></canvas>
+            </div>
         </div>
       </div>
 
@@ -119,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, nextTick } from 'vue';
+import { ref, onMounted, computed, watch, nextTick, onUnmounted } from 'vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BarChart3, RefreshCw, Check, AlertCircle } from 'lucide-vue-next';
@@ -154,18 +145,32 @@ const props = defineProps<{
 
 const loading = ref(false);
 const error = ref<string | null>(null);
-const chartCanvas = ref<HTMLCanvasElement | null>(null);
-const chartInstance = ref<ChartJS | null>(null);
+
+// Store refs for multiple canvases
+const chartRefs = ref<Record<string, HTMLCanvasElement | any>>({});
+const chartInstances = ref<Record<string, ChartJS | null>>({});
+
+const setCanvasRef = (el: any, key: string) => {
+    if (el) {
+        chartRefs.value[key] = el;
+    }
+};
 
 const currentYear = new Date().getFullYear();
 const availableYears = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1];
-const selectedYears = ref<number[]>([currentYear - 1, currentYear]);
+// Default to Current Year and Previous Year
+const selectedYears = ref<number[]>([currentYear, currentYear - 1]);
 const selectedBrand = ref<number | null>(props.initialBrandId ? Number(props.initialBrandId) : null);
-const selectedMetric = ref<'spent' | 'leads' | 'omset'>('spent');
 
 const apiData = ref<Record<number, { spent: number[], leads: number[], omset: number[] }>>({});
 
-const hasData = computed(() => Object.keys(apiData.value).length > 0 && selectedYears.value.length > 0);
+const hasData = computed(() => selectedYears.value.length > 0);
+
+const metricConfigs = [
+    { key: 'spent', label: 'Spent Bulanan', format: 'currency' },
+    { key: 'leads', label: 'Total Leads', format: 'number' },
+    { key: 'omset', label: 'Total Omset', format: 'currency' }
+];
 
 // Colors for different years
 const colors = [
@@ -176,12 +181,15 @@ const colors = [
 ];
 
 const handleYearChange = () => {
-    // Ensure at least one year is selected if user unchecks all (optional, or let it show empty)
-    if (selectedYears.value.length === 0) {
-        // Maybe warn or just let it be empty
-    }
     fetchData();
 };
+
+watch(() => props.initialBrandId, (newVal) => {
+    if (newVal !== undefined) {
+        selectedBrand.value = Number(newVal);
+        fetchData();
+    }
+});
 
 const fetchData = async () => {
     if (selectedYears.value.length === 0) {
@@ -190,24 +198,27 @@ const fetchData = async () => {
     }
 
     loading.value = true;
-  error.value = null;
+    error.value = null;
   
-  try {
-    const response = await axios.get('/iklan-budgets/yearly-comparison', {
-      params: {
-        years: selectedYears.value,
-        brand_id: selectedBrand.value
-      }
-    });
-    
-    apiData.value = response.data;
-    updateChart();
-  } catch (err) {
-    console.error('Failed to fetch comparison data:', err);
-    error.value = 'Gagal memuat data. Pastikan Anda terhubung ke internet atau coba refresh halaman.';
-  } finally {
-    loading.value = false;
-  }
+    try {
+        const response = await axios.get('/iklan-budgets/yearly-comparison', {
+            params: {
+                years: selectedYears.value,
+                brand_id: selectedBrand.value
+            }
+        });
+        
+        apiData.value = response.data;
+        // Use setTimeout to ensure DOM is fully updated and layout is stable
+        setTimeout(() => {
+            updateCharts();
+        }, 100);
+    } catch (err) {
+        console.error('Failed to fetch comparison data:', err);
+        error.value = 'Gagal memuat data. Pastikan Anda terhubung ke internet atau coba refresh halaman.';
+    } finally {
+        loading.value = false;
+    }
 };
 
 const formatCurrency = (value: number) => {
@@ -223,136 +234,151 @@ const formatNumber = (value: number) => {
     return new Intl.NumberFormat('id-ID').format(value);
 };
 
-const updateChart = () => {
-    if (!chartCanvas.value || !hasData.value) return;
+const updateCharts = () => {
+    if (!hasData.value) return;
 
-    if (chartInstance.value) {
-        chartInstance.value.destroy();
-    }
+    // Cleanup existing instances
+    Object.values(chartInstances.value).forEach(instance => {
+        if (instance) instance.destroy();
+    });
+    chartInstances.value = {};
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
-    
-    const datasets = selectedYears.value.map((year, index) => {
-        const yearData = apiData.value[year];
-        const color = colors[index % colors.length];
+
+    metricConfigs.forEach(metric => {
+        const canvas = chartRefs.value[metric.key];
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const datasets = selectedYears.value.map((year, index) => {
+            const yearData = apiData.value[year] || apiData.value[String(year)];
+            const color = colors[index % colors.length];
+            
+            const metricKey = metric.key as 'spent' | 'leads' | 'omset';
+            
+            return {
+                label: `Tahun ${year}`,
+                data: yearData ? yearData[metricKey] : Array(12).fill(0),
+                backgroundColor: color.bg,
+                borderColor: color.border,
+                borderWidth: 1,
+                borderRadius: 4,
+                barPercentage: 0.7,
+                categoryPercentage: 0.8
+            };
+        }).sort((a, b) => {
+            return b.label.localeCompare(a.label); // Sort Descending (Newer year first) or Ascending? Usually Ascending is better for comparison left-to-right. Let's stick to user preference.
+            // Actually let's just sort by year numeric value.
+            // "Tahun 2025", "Tahun 2024"
+        });
         
-        return {
-            label: `Tahun ${year}`,
-            data: yearData ? yearData[selectedMetric.value] : Array(12).fill(0),
-            backgroundColor: color.bg,
-            borderColor: color.border,
-            borderWidth: 1,
-            borderRadius: 4,
-            barPercentage: 0.7,
-            categoryPercentage: 0.8
-        };
-    }).sort((a, b) => {
-        // Sort datasets by year label to keep order consistent
-        return a.label.localeCompare(b.label);
-    });
+        // Let's sort datasets by Year ascending (2024, 2025) so bars are ordered chronologically
+        datasets.sort((a, b) => {
+             const yearA = parseInt(a.label.replace('Tahun ', ''));
+             const yearB = parseInt(b.label.replace('Tahun ', ''));
+             return yearA - yearB;
+        });
 
-    const ctx = chartCanvas.value.getContext('2d');
-    if (!ctx) return;
-
-    chartInstance.value = new ChartJS(ctx, {
-        type: 'bar',
-        data: {
-            labels: months,
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false,
+        chartInstances.value[metric.key] = new ChartJS(ctx, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: datasets
             },
-            plugins: {
-                legend: {
-                    position: 'top',
-                    align: 'end',
-                    labels: {
-                        usePointStyle: true,
-                        boxWidth: 8,
-                        padding: 20,
-                        font: {
-                            family: "'Inter', sans-serif",
-                            size: 12
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8,
+                            padding: 10,
+                            font: {
+                                family: "'Inter', sans-serif",
+                                size: 11
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        titleColor: '#1e293b',
+                        bodyColor: '#475569',
+                        borderColor: '#e2e8f0',
+                        borderWidth: 1,
+                        padding: 10,
+                        boxPadding: 4,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    if (metric.format === 'currency') {
+                                        label += formatCurrency(context.parsed.y);
+                                    } else {
+                                        label += formatNumber(context.parsed.y);
+                                    }
+                                }
+                                return label;
+                            }
                         }
                     }
                 },
-                tooltip: {
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    titleColor: '#1e293b',
-                    bodyColor: '#475569',
-                    borderColor: '#e2e8f0',
-                    borderWidth: 1,
-                    padding: 10,
-                    boxPadding: 4,
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            if (context.parsed.y !== null) {
-                                if (selectedMetric.value === 'spent' || selectedMetric.value === 'omset') {
-                                    label += formatCurrency(context.parsed.y);
-                                } else {
-                                    label += formatNumber(context.parsed.y);
-                                }
-                            }
-                            return label;
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)',
-                    },
-                    ticks: {
-                        font: {
-                            size: 11
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
                         },
-                        callback: function(value) {
-                            if (typeof value === 'number') {
-                                if (selectedMetric.value === 'spent' || selectedMetric.value === 'omset') {
-                                    // Shorten large numbers
-                                    if (value >= 1000000000) return (value / 1000000000).toFixed(1) + 'M';
-                                    if (value >= 1000000) return (value / 1000000).toFixed(0) + 'jt';
-                                    if (value >= 1000) return (value / 1000).toFixed(0) + 'rb';
+                        ticks: {
+                            font: {
+                                size: 10
+                            },
+                            callback: function(value) {
+                                if (typeof value === 'number') {
+                                    if (metric.format === 'currency') {
+                                        if (value >= 1000000000) return (value / 1000000000).toFixed(1) + 'M';
+                                        if (value >= 1000000) return (value / 1000000).toFixed(0) + 'jt';
+                                        if (value >= 1000) return (value / 1000).toFixed(0) + 'rb';
+                                    }
                                 }
+                                return value;
                             }
-                            return value;
                         }
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
                     },
-                    ticks: {
-                        font: {
-                            size: 11
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
                         }
                     }
                 }
             }
-        }
+        });
     });
 };
 
-watch(() => props.initialBrandId, (newVal) => {
-    if (newVal) {
-        selectedBrand.value = Number(newVal);
-        fetchData();
-    }
-});
-
 onMounted(() => {
     fetchData();
+});
+
+onUnmounted(() => {
+    Object.values(chartInstances.value).forEach(instance => {
+        if (instance) instance.destroy();
+    });
 });
 </script>
