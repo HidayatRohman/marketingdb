@@ -155,7 +155,7 @@ class IklanBudget extends Model
         if ($brandId) {
             $totalClosingQuery->where('lead_awal_brand_id', $brandId);
         }
-        $totalClosing = $totalClosingQuery->count();
+        $totalClosing = $totalClosingQuery->where('status_pembayaran', 'Dp / TJ')->count();
 
         $avgCostPerLead = $totalLeads > 0 ? 0 : 0; // Will be calculated in controller
         
@@ -202,7 +202,7 @@ class IklanBudget extends Model
                 $query->where('lead_awal_brand_id', $brandId);
             }
 
-            return $query->count();
+            return $query->where('status_pembayaran', 'Dp / TJ')->count();
         } catch (\Exception $e) {
             // Handle case where transaksis table doesn't exist or has issues
             \Log::warning('Failed to calculate closing for date: ' . $date . ', error: ' . $e->getMessage());

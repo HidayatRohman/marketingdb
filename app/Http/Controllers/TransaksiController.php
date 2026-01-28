@@ -58,7 +58,7 @@ class TransaksiController extends Controller
             $baseQuery->where('lead_awal_brand_id', $request->lead_awal_id);
         }
 
-        $perPage = $request->get('per_page', 10);
+        $perPage = $request->get('per_page', 30);
         $transaksis = (clone $baseQuery)->orderBy('created_at', 'desc')->paginate($perPage);
 
         $statusCounts = [

@@ -115,7 +115,7 @@ const selectedBrand = ref(props.filters.brand_id || '');
 const selectedLeadAwal = ref(props.filters.lead_awal_id || '');
 const periodeStart = ref(props.filters.periode_start || '');
 const periodeEnd = ref(props.filters.periode_end || '');
-const perPage = ref(props.filters.per_page || 10);
+const perPage = ref(props.filters.per_page || 30);
 const showFilters = ref(false);
 
 // Computed property untuk memastikan data transaksis reactive (dideklarasikan lebih awal)
@@ -237,7 +237,7 @@ const debouncedSearch = debounce(() => {
             lead_awal_id: selectedLeadAwal.value || undefined,
             periode_start: periodeStart.value || undefined,
             periode_end: periodeEnd.value || undefined,
-            per_page: perPage.value || 10,
+            per_page: perPage.value || 30,
         },
         {
             preserveState: true,
@@ -489,7 +489,7 @@ const clearFilters = () => {
     selectedLeadAwal.value = '';
     periodeStart.value = '';
     periodeEnd.value = '';
-    perPage.value = 10;
+    perPage.value = 30;
     showFilters.value = false;
 };
 
@@ -504,7 +504,7 @@ const getFilterParams = () => {
         lead_awal_id: selectedLeadAwal.value || undefined,
         periode_start: periodeStart.value || undefined,
         periode_end: periodeEnd.value || undefined,
-        per_page: perPage.value || 10,
+        per_page: perPage.value || 30,
     };
 };
 
@@ -519,8 +519,11 @@ const statusOptions = [
 const perPageOptions = [
     { value: 10, label: '10' },
     { value: 25, label: '25' },
+    { value: 30, label: '30' },
     { value: 50, label: '50' },
     { value: 100, label: '100' },
+    { value: 200, label: '200' },
+    { value: 500, label: '500' },
 ];
 
 // Computed property untuk brands

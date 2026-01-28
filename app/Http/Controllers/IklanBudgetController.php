@@ -88,7 +88,7 @@ class IklanBudgetController extends Controller
         // Build expressions dengan periode aktif
         $spentExpr = 'COALESCE(SUM(CASE WHEN iklan_budgets.tanggal BETWEEN "' . $startDate . '" AND "' . $endDate . '" THEN iklan_budgets.spent_amount END), 0)';
         $leadSub = 'SELECT COUNT(*) FROM mitras WHERE mitras.brand_id = brands.id AND mitras.tanggal_lead BETWEEN "' . $startDate . '" AND "' . $endDate . '"';
-        $closingSub = 'SELECT COUNT(*) FROM transaksis WHERE transaksis.lead_awal_brand_id = brands.id AND transaksis.tanggal_tf BETWEEN "' . $startDate . '" AND "' . $endDate . '"';
+        $closingSub = 'SELECT COUNT(*) FROM transaksis WHERE transaksis.lead_awal_brand_id = brands.id AND transaksis.tanggal_tf BETWEEN "' . $startDate . '" AND "' . $endDate . '" AND transaksis.status_pembayaran = "Dp / TJ"';
         $omsetSub = 'SELECT COALESCE(SUM(transaksis.nominal_masuk), 0) FROM transaksis WHERE transaksis.lead_awal_brand_id = brands.id AND transaksis.tanggal_tf BETWEEN "' . $startDate . '" AND "' . $endDate . '"';
 
         $reportQuery = Brand::select(

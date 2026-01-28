@@ -848,6 +848,7 @@ class DashboardController extends Controller
                 FROM transaksis 
                 WHERE transaksis.lead_awal_brand_id = brands.id 
                 AND transaksis.tanggal_tf BETWEEN "' . $startDate . '" AND "' . $endDate . '"
+                AND transaksis.status_pembayaran = "Dp / TJ"
                 ' . $marketingFilter . '
                 ' . $userAccessFilter . '
             ) as closing'),
