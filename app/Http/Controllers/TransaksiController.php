@@ -710,6 +710,21 @@ class TransaksiController extends Controller
             'nama_paket' => $validated['nama_paket'],
         ]);
 
+        // Auto-update Mitra Label to 'Closing' (8) if status is 'Dp / TJ'
+        if ($validated['status_pembayaran'] === 'Dp / TJ') {
+            $cleanPhone = preg_replace('/[^0-9]/', '', (string)$validated['no_wa']);
+            if ($cleanPhone) {
+                // Find matching mitra
+                $mitra = Mitra::where('no_telp', $validated['no_wa'])
+                    ->orWhere('no_telp', 'like', "%{$cleanPhone}%")
+                    ->first();
+                
+                if ($mitra) {
+                    $mitra->update(['label_id' => 8]);
+                }
+            }
+        }
+
         if ($request->expectsJson()) {
             return response()->json(['message' => 'Transaksi berhasil diperbarui.']);
         }

@@ -71,9 +71,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Mitras Management - Role-based access with data filtering
+    Route::get('mitras/search-by-phone', [MitraController::class, 'searchByPhone'])->name('mitras.searchByPhone');
+    
     Route::middleware('role.access:view')->group(function () {
         Route::get('mitras', [MitraController::class, 'index'])->name('mitras.index');
-        Route::get('mitras/search-by-phone', [MitraController::class, 'searchByPhone'])->name('mitras.searchByPhone');
     });
     
     // Dynamic routes MUST be at the end to prevent conflicts

@@ -100,7 +100,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Clock, Palette } from 'lucide-vue-next';
+import { Clock, Palette, RefreshCw, TrendingUp } from 'lucide-vue-next';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import {
   Chart as ChartJS,

@@ -6,8 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DatePicker from '@/components/ui/datepicker/DatePicker.vue';
 import { useForm, usePage } from '@inertiajs/vue3';
-import { computed, watch, onMounted, nextTick } from 'vue';
-import { Calendar, User, CreditCard, MapPin, Phone, DollarSign } from 'lucide-vue-next';
+import { computed, watch, onMounted, nextTick, ref } from 'vue';
+import { Calendar, User, CreditCard, MapPin, Phone, DollarSign, Loader2, CheckCircle, XCircle } from 'lucide-vue-next';
 import { useDebounceFn } from '@vueuse/core';
 import axios from 'axios';
 
@@ -391,30 +391,66 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
     form[field] = numericValue;
 };
 
+const searchStatus = ref<'idle' | 'searching' | 'found' | 'not-found' | 'error'>('idle');
+const searchMessage = ref('');
+
 // Auto-fill Mitra Name based on WhatsApp Number
 const searchMitraByPhone = useDebounceFn(async (phone: string) => {
-    if (!phone || phone.length < 10) return;
+    // Reset status if empty
+    if (!phone) {
+        searchStatus.value = 'idle';
+        searchMessage.value = '';
+        return;
+    }
+
+    // Min length check
+    if (phone.length < 10) {
+        searchStatus.value = 'idle';
+        return;
+    }
     
     // Only auto-fill in Create mode or if name is empty
     if (!isCreateMode.value && form.nama_mitra) return;
 
+    searchStatus.value = 'searching';
+    searchMessage.value = 'Mencari data mitra...';
+
     try {
-        const response = await axios.get(route('mitras.searchByPhone'), {
+        console.log('Searching mitra by phone:', phone);
+        // Use direct URL to avoid dependency on route helper
+        const response = await axios.get('/mitras/search-by-phone', {
             params: { phone }
         });
 
+        console.log('Search result:', response.data);
+
         if (response.data.found && response.data.mitra) {
             console.log('Mitra found:', response.data.mitra);
+            // Auto-fill nama mitra
             form.nama_mitra = response.data.mitra.nama;
+            
+            searchStatus.value = 'found';
+            searchMessage.value = `Ditemukan: ${response.data.mitra.nama}`;
+
+            // Optional: You could also auto-fill other fields if needed
+            // if (response.data.mitra.brand_id) form.paket_brand_id = response.data.mitra.brand_id;
+        } else {
+            searchStatus.value = 'not-found';
+            searchMessage.value = 'Mitra tidak ditemukan, silakan input manual';
         }
     } catch (error) {
         console.error('Error searching mitra:', error);
+        searchStatus.value = 'error';
+        searchMessage.value = 'Gagal mencari mitra';
     }
 }, 500);
 
 watch(() => form.no_wa, (newVal) => {
     if (newVal) {
         searchMitraByPhone(newVal);
+    } else {
+        searchStatus.value = 'idle';
+        searchMessage.value = '';
     }
 });
 </script>
@@ -489,6 +525,19 @@ watch(() => form.no_wa, (newVal) => {
                                 placeholder="Masukkan nomor WhatsApp"
                                 class="h-12 rounded-lg border border-gray-300 bg-gray-50 px-4 text-base transition-all duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             />
+                            
+                            <!-- Search Status Indicator -->
+                            <div v-if="searchStatus !== 'idle'" class="flex items-center gap-2 text-sm mt-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                                <Loader2 v-if="searchStatus === 'searching'" class="h-4 w-4 animate-spin text-blue-500" />
+                                <CheckCircle v-else-if="searchStatus === 'found'" class="h-4 w-4 text-green-500" />
+                                <XCircle v-else class="h-4 w-4 text-red-500" />
+                                <span :class="{
+                                    'text-blue-600 dark:text-blue-400': searchStatus === 'searching',
+                                    'text-green-600 dark:text-green-400': searchStatus === 'found',
+                                    'text-red-600 dark:text-red-400': searchStatus === 'not-found' || searchStatus === 'error'
+                                }">{{ searchMessage }}</span>
+                            </div>
+
                             <div v-if="form.errors.no_wa" class="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
                                 {{ form.errors.no_wa }}
                             </div>

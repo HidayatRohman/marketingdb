@@ -548,13 +548,18 @@ class MitraController extends Controller
             return response()->json(['error' => 'Phone number required'], 400);
         }
 
-        // Try to find exact match or match with common variations
-        // Remove non-numeric characters for comparison
+        // Clean phone number
         $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
         
-        // Basic query
-        $mitra = Mitra::where('no_telp', $phone)
-            ->orWhere('no_telp', 'like', "%{$cleanPhone}%")
+        // Take the last 10 digits to be robust against 0 vs 62 prefixes
+        $searchStr = strlen($cleanPhone) > 9 ? substr($cleanPhone, -10) : $cleanPhone;
+
+        // Use raw SQL to clean the database column before comparing to handle formatted numbers
+        // e.g. "0857-5555-5555" in DB vs "085755555555" in search
+        $mitra = Mitra::whereRaw(
+            "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_telp, ' ', ''), '-', ''), '+', ''), '(', ''), ')', '') LIKE ?", 
+            ["%{$searchStr}%"]
+        )
             ->select('id', 'nama', 'no_telp')
             ->first();
 
