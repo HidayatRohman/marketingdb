@@ -141,6 +141,7 @@ const datePresets = [
     { key: '7days', label: '7 Hari', value: '7days', days: 7 },
     { key: '2weeks', label: '2 Minggu', value: '2weeks', days: 14 },
     { key: '1month', label: '1 Bulan', value: '1month', days: 30 },
+    { key: 'this_month', label: 'Bulan Ini', value: 'this_month', days: null },
     { key: 'custom', label: 'Custom', value: 'custom', days: null },
 ];
 
@@ -149,11 +150,20 @@ const selectedPreset = ref('');
 // Chart data management
 const chartData = ref<HourlyAnalysisData[]>(props.hourlyAnalysis || []);
 
+// Helper for local date string (YYYY-MM-DD)
+const toLocalDateString = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 // Set date range based on preset
 const setDatePreset = (preset: string) => {
     selectedPreset.value = preset;
     const today = new Date();
-    const endDate = new Date().toISOString().split('T')[0];
+    // Use local date for today/end date to avoid timezone issues
+    const endDate = toLocalDateString(today);
 
     if (preset === 'today') {
         periodeStart.value = endDate;
@@ -161,9 +171,14 @@ const setDatePreset = (preset: string) => {
     } else if (preset === 'yesterday') {
         const yesterday = new Date();
         yesterday.setDate(today.getDate() - 1);
-        const yesterdayDate = yesterday.toISOString().split('T')[0];
+        const yesterdayDate = toLocalDateString(yesterday);
         periodeStart.value = yesterdayDate;
         periodeEnd.value = yesterdayDate;
+    } else if (preset === 'this_month') {
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        periodeStart.value = toLocalDateString(firstDay);
+        periodeEnd.value = toLocalDateString(lastDay);
     } else if (preset === 'custom') {
         // Don't change dates, let user set manually
         return;
@@ -172,7 +187,7 @@ const setDatePreset = (preset: string) => {
         if (presetData && presetData.days !== null) {
             const startDate = new Date();
             startDate.setDate(today.getDate() - presetData.days);
-            periodeStart.value = startDate.toISOString().split('T')[0];
+            periodeStart.value = toLocalDateString(startDate);
             periodeEnd.value = endDate;
         }
     }
@@ -192,19 +207,28 @@ watch([periodeStart, periodeEnd], () => {
         return;
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    const todayObj = new Date();
+    const today = toLocalDateString(todayObj);
 
     // Check if current dates match any preset
     let matchingPreset = 'custom';
 
-    if (periodeStart.value === today && periodeEnd.value === today) {
+    // Check This Month
+    const firstDay = new Date(todayObj.getFullYear(), todayObj.getMonth(), 1);
+    const lastDay = new Date(todayObj.getFullYear(), todayObj.getMonth() + 1, 0);
+    const thisMonthStart = toLocalDateString(firstDay);
+    const thisMonthEnd = toLocalDateString(lastDay);
+
+    if (periodeStart.value === thisMonthStart && periodeEnd.value === thisMonthEnd) {
+        matchingPreset = 'this_month';
+    } else if (periodeStart.value === today && periodeEnd.value === today) {
         matchingPreset = 'today';
     } else {
         for (const preset of datePresets) {
             if (preset.days !== null && preset.key !== 'today') {
                 const startDate = new Date();
                 startDate.setDate(startDate.getDate() - preset.days);
-                const expectedStart = startDate.toISOString().split('T')[0];
+                const expectedStart = toLocalDateString(startDate);
 
                 if (periodeStart.value === expectedStart && periodeEnd.value === today) {
                     matchingPreset = preset.key;
@@ -442,6 +466,11 @@ watch(() => props.hourlyAnalysis, (newHourlyAnalysis) => {
 
 // Debug initial data on component mount
 onMounted(() => {
+    // Set default filter to 'this_month' if no period filter is present
+    if (!props.filters.periode_start && !props.filters.periode_end) {
+        setDatePreset('this_month');
+    }
+
     console.log('Component Mounted - Initial Data Debug:', {
         mitras_total: props.mitras.total,
         mitras_count: props.mitras.data?.length,
