@@ -12,7 +12,6 @@ import UserMenuContent from '@/components/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
 import { useSiteSettings } from '@/composables/useSiteSettings';
 import { toUrl, urlIsActive } from '@/lib/utils';
-import { dashboard } from '@/routes';
 import type { BreadcrumbItem, NavItem } from '@/types';
 import { InertiaLinkProps, Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-vue-next';
@@ -40,7 +39,7 @@ const activeItemStyles = computed(
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: dashboard(),
+        href: '/dashboard',
         icon: LayoutGrid,
     },
 ];
@@ -120,7 +119,7 @@ const rightNavItems: NavItem[] = [
                 </Sheet>
 
                 <!-- Mobile Logo - Right (small icon) -->
-                <Link :href="dashboard()" class="flex items-center gap-x-2">
+                <Link href="/dashboard" class="flex items-center gap-x-2">
                     <div class="flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/15 p-1 backdrop-blur-sm">
                         <img v-if="siteLogo" :src="siteLogo" :alt="siteTitle" class="size-7 rounded object-contain" />
                         <AppLogoIcon v-else class="size-7 fill-current text-black dark:text-white" />
@@ -135,7 +134,7 @@ const rightNavItems: NavItem[] = [
                     <div class="mx-auto flex w-full max-w-7xl items-center justify-between">
                         <!-- Left side - Logo -->
                         <div class="flex items-center gap-x-2">
-                            <Link :href="dashboard()" class="flex items-center gap-x-2">
+                            <Link href="/dashboard" class="flex items-center gap-x-2">
                                 <AppLogo />
                             </Link>
                         </div>

@@ -537,5 +537,34 @@ class MitraController extends Controller
         return array_values($hourlyData);
     }
 
+    /**
+     * Search mitra by phone number (JSON)
+     */
+    public function searchByPhone(Request $request)
+    {
+        $phone = $request->query('phone');
+        
+        if (!$phone) {
+            return response()->json(['error' => 'Phone number required'], 400);
+        }
 
+        // Try to find exact match or match with common variations
+        // Remove non-numeric characters for comparison
+        $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
+        
+        // Basic query
+        $mitra = Mitra::where('no_telp', $phone)
+            ->orWhere('no_telp', 'like', "%{$cleanPhone}%")
+            ->select('id', 'nama', 'no_telp')
+            ->first();
+
+        if ($mitra) {
+            return response()->json([
+                'found' => true,
+                'mitra' => $mitra
+            ]);
+        }
+
+        return response()->json(['found' => false]);
+    }
 }

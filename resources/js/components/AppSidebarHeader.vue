@@ -4,7 +4,6 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItemType } from '@/types';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { Link } from '@inertiajs/vue3';
-import { dashboard } from '@/routes';
 import { useSiteSettings } from '@/composables/useSiteSettings';
 
 withDefaults(
@@ -31,7 +30,7 @@ const { siteLogo, siteTitle } = useSiteSettings();
         </div>
         <!-- Mobile logo on the right -->
         <div class="ml-auto lg:hidden">
-            <Link :href="dashboard()" class="flex items-center gap-x-2">
+            <Link href="/dashboard" class="flex items-center gap-x-2">
                 <div class="flex h-9 w-9 items-center justify-center rounded-lg border border-sidebar-border/60 bg-muted/40 p-1">
                     <img v-if="siteLogo" :src="siteLogo" :alt="siteTitle" class="size-7 rounded object-contain" />
                     <AppLogoIcon v-else class="size-7 fill-current text-black dark:text-white" />

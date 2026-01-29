@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { dashboard, login, register } from '@/routes';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Briefcase, Building2, ChevronLeft, ChevronRight, Menu, TrendingUp, Users, X } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
@@ -150,17 +149,17 @@ onUnmounted(() => {
                         <div class="desktop-buttons items-center space-x-4">
                             <Link
                                 v-if="$page.props.auth.user"
-                                :href="dashboard()"
+                                href="/dashboard"
                                 class="rounded-full border border-white/20 bg-white/15 px-6 py-2 font-medium text-gray-700 backdrop-blur-sm transition-all duration-300 hover:bg-white/25"
                             >
                                 Dashboard
                             </Link>
                             <template v-else>
-                                <Link :href="login()" class="font-medium text-gray-600 transition-colors hover:text-gray-800">
+                                <Link href="/login" class="font-medium text-gray-600 transition-colors hover:text-gray-800">
                                     Log In
                                 </Link>
                                 <Link
-                                    :href="register()"
+                                    href="/register"
                                     class="rounded-full border border-white/20 bg-white/15 px-6 py-2 font-medium text-gray-700 backdrop-blur-sm transition-all duration-300 hover:bg-white/25"
                                 >
                                     Join Now
@@ -197,7 +196,7 @@ onUnmounted(() => {
                     <div class="px-4 py-4 space-y-3">
                         <Link
                             v-if="$page.props.auth.user"
-                            :href="dashboard()"
+                            href="/dashboard"
                             @click="isMobileMenuOpen = false"
                             class="block w-full text-center rounded-lg border border-blue-200 bg-blue-50 px-6 py-3 font-medium text-blue-700 transition-all duration-300 hover:bg-blue-100"
                         >
@@ -205,14 +204,14 @@ onUnmounted(() => {
                         </Link>
                         <template v-else>
                             <Link 
-                                :href="login()" 
+                                href="/login" 
                                 @click="isMobileMenuOpen = false"
                                 class="block w-full text-center rounded-lg border border-gray-200 bg-gray-50 px-6 py-3 font-medium text-gray-700 transition-all duration-300 hover:bg-gray-100"
                             >
                                 Log In
                             </Link>
                             <Link
-                                :href="register()"
+                                href="/register"
                                 @click="isMobileMenuOpen = false"
                                 class="block w-full text-center rounded-lg border border-orange-200 bg-gradient-to-r from-orange-50 to-orange-100 px-6 py-3 font-medium text-orange-700 transition-all duration-300 hover:from-orange-100 hover:to-orange-200"
                             >

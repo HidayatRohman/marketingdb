@@ -8,6 +8,8 @@ import DatePicker from '@/components/ui/datepicker/DatePicker.vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { computed, watch, onMounted, nextTick } from 'vue';
 import { Calendar, User, CreditCard, MapPin, Phone, DollarSign } from 'lucide-vue-next';
+import { useDebounceFn } from '@vueuse/core';
+import axios from 'axios';
 
 interface Brand {
     id: number;
@@ -388,6 +390,33 @@ const handleCurrencyInput = (field: 'nominal_masuk' | 'harga_paket', event: Even
     const numericValue = numericOnly ? parseInt(numericOnly) : null;
     form[field] = numericValue;
 };
+
+// Auto-fill Mitra Name based on WhatsApp Number
+const searchMitraByPhone = useDebounceFn(async (phone: string) => {
+    if (!phone || phone.length < 10) return;
+    
+    // Only auto-fill in Create mode or if name is empty
+    if (!isCreateMode.value && form.nama_mitra) return;
+
+    try {
+        const response = await axios.get(route('mitras.searchByPhone'), {
+            params: { phone }
+        });
+
+        if (response.data.found && response.data.mitra) {
+            console.log('Mitra found:', response.data.mitra);
+            form.nama_mitra = response.data.mitra.nama;
+        }
+    } catch (error) {
+        console.error('Error searching mitra:', error);
+    }
+}, 500);
+
+watch(() => form.no_wa, (newVal) => {
+    if (newVal) {
+        searchMitraByPhone(newVal);
+    }
+});
 </script>
 
 <template>
