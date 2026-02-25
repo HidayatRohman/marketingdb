@@ -35,6 +35,9 @@ class CsMaintenanceController extends Controller
             if ($request->has('product_id') && $request->product_id) {
                 $query->where('product_id', $request->product_id);
             }
+            if ($request->has('provinsi') && $request->provinsi) {
+                $query->where('provinsi', $request->provinsi);
+            }
             $items = $query->latest()->paginate(10)->withQueryString();
         }
         $products = Schema::hasTable('products')
@@ -47,6 +50,7 @@ class CsMaintenanceController extends Controller
             'filters' => [
                 'search' => $request->search,
                 'product_id' => $request->product_id,
+                'provinsi' => $request->provinsi,
             ],
             'permissions' => [
                 'canCrud' => $currentUser->canCrud(),
@@ -156,6 +160,10 @@ class CsMaintenanceController extends Controller
             $baseQuery->where('product_id', $request->product_id);
         }
 
+        if ($request->filled('provinsi')) {
+            $baseQuery->where('provinsi', $request->provinsi);
+        }
+
         $dailyCounts = $baseQuery->clone()
             ->selectRaw('DATE(tanggal) as d, COUNT(*) as cnt')
             ->groupBy('d')
@@ -204,6 +212,10 @@ class CsMaintenanceController extends Controller
             $query->where('product_id', $request->product_id);
         }
 
+        if ($request->filled('provinsi')) {
+            $query->where('provinsi', $request->provinsi);
+        }
+
         // Join ke tabel kendalas berdasarkan nama untuk mengambil warna jika tersedia
         $data = $query
             ->leftJoin('kendalas', function ($join) {
@@ -240,6 +252,10 @@ class CsMaintenanceController extends Controller
 
         if ($request->filled('product_id')) {
             $query->where('product_id', $request->product_id);
+        }
+
+        if ($request->filled('provinsi')) {
+            $query->where('provinsi', $request->provinsi);
         }
 
         // Join ke tabel solusis berdasarkan nama untuk mengambil warna jika tersedia

@@ -39,7 +39,7 @@ const props = defineProps<{
     next_page_url?: string | null
     links?: Array<{ url: string | null; label: string; active: boolean }>
   }
-  filters: { q?: string | null; product_id?: number | string | null }
+  filters: { q?: string | null; product_id?: number | string | null; provinsi?: string | null }
   products: Array<{ id: number; nama: string }>
 }>()
 
@@ -48,6 +48,7 @@ const inertiaVersion = inertiaPage?.version || ''
 
 const q = ref(props.filters.q || '')
 const productId = ref(props.filters.product_id || '')
+const provinsi = ref(props.filters.provinsi || '')
 
 const pageLinks = computed(() => {
   const links = (props.items as any)?.links || []
@@ -68,6 +69,7 @@ const goToPage = (page: number) => {
   const params: Record<string, any> = {}
   if (q.value) params.q = q.value
   if (productId.value) params.product_id = productId.value
+  if (provinsi.value) params.provinsi = provinsi.value
   params.page = page
   router.get('/cs/maintenances', params, { preserveState: true, preserveScroll: true })
 }
@@ -87,7 +89,8 @@ const fetchDaily = async () => {
     const params = new URLSearchParams({
       start_date: startDate.value,
       end_date: endDate.value,
-      product_id: productId.value ? String(productId.value) : ''
+      product_id: productId.value ? String(productId.value) : '',
+      provinsi: provinsi.value || ''
     })
     const res = await fetch(`/cs/maintenances/analytics/daily-count?${params}`)
     if (res.ok) {
@@ -258,6 +261,7 @@ const fetchRepeatTable = async () => {
     const params = new URLSearchParams()
     if (productId.value) params.append('product_id', String(productId.value))
     if (q.value) params.append('search', q.value)
+    if (provinsi.value) params.append('provinsi', provinsi.value)
 
     const fetchProps = async (url: string) => {
       const res = await fetch(`${url}?${params.toString()}`, {
@@ -446,7 +450,8 @@ const fetchKendala = async () => {
     const params = new URLSearchParams({
       start_date: startDate.value,
       end_date: endDate.value,
-      product_id: productId.value ? String(productId.value) : ''
+      product_id: productId.value ? String(productId.value) : '',
+      provinsi: provinsi.value || ''
     })
     const res = await fetch(`/cs/maintenances/analytics/kendala?${params}`)
     if (res.ok) {
@@ -466,7 +471,8 @@ const fetchSolusi = async () => {
     const params = new URLSearchParams({
       start_date: startDate.value,
       end_date: endDate.value,
-      product_id: productId.value ? String(productId.value) : ''
+      product_id: productId.value ? String(productId.value) : '',
+      provinsi: provinsi.value || ''
     })
     const res = await fetch(`/cs/maintenances/analytics/solusi?${params}`)
     if (res.ok) {
@@ -518,16 +524,17 @@ const fetchSolusiOptions = async () => {
   } catch {}
 }
 
-watch([q, productId], () => {
+watch([q, productId, provinsi], () => {
   const params: Record<string, any> = {}
   if (q.value) params.q = q.value
   if (productId.value) params.product_id = productId.value
+  if (provinsi.value) params.provinsi = provinsi.value
   router.get('/cs/maintenances', params, { preserveState: true, preserveScroll: true })
   fetchRepeatTable()
   setTimeout(() => fillRepeatJoinDates(), 0)
 })
 
-watch([startDate, endDate, productId], () => {
+watch([startDate, endDate, productId, provinsi], () => {
   fetchDaily()
   fetchKendala()
   fetchSolusi()
@@ -821,6 +828,10 @@ const breadcrumbs = [
             <select v-model="productId" class="h-9 rounded border px-2 bg-background border-input dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
               <option value="">Semua Produk</option>
               <option v-for="p in props.products" :key="p.id" :value="p.id">{{ p.nama }}</option>
+            </select>
+            <select v-model="provinsi" class="h-9 rounded border px-2 bg-background border-input dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 max-w-[150px]">
+              <option value="">Semua Provinsi</option>
+              <option v-for="p in indonesianProvinces" :key="p" :value="p">{{ p }}</option>
             </select>
           </div>
         </div>
