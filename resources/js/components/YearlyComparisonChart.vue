@@ -1,6 +1,6 @@
 <template>
-  <Card class="w-full mt-6">
-    <CardHeader class="pb-3 bg-gradient-to-r from-purple-50 via-pink-50 to-red-50 dark:from-purple-900 dark:via-pink-900 dark:to-red-900 rounded-t-lg border-b border-purple-100 dark:border-purple-800">
+  <Card class="w-full mt-6 dark:bg-gray-800 dark:border-gray-700">
+    <CardHeader class="pb-3 bg-gradient-to-r from-purple-50 via-pink-50 to-red-50 dark:from-purple-900/50 dark:via-pink-900/50 dark:to-red-900/50 rounded-t-lg border-b border-purple-100 dark:border-purple-800">
       <div class="flex flex-col gap-4">
         <div class="flex items-center justify-between">
           <CardTitle class="flex items-center gap-2 text-purple-800 dark:text-purple-100">
@@ -12,7 +12,7 @@
             variant="outline"
             size="sm"
             @click="fetchData"
-            class="h-8 px-3 text-xs border-purple-200 hover:bg-purple-100 dark:border-purple-700 dark:hover:bg-purple-800"
+            class="h-8 px-3 text-xs border-purple-200 hover:bg-purple-100 dark:border-purple-700 dark:hover:bg-purple-800 dark:text-purple-100"
           >
             <RefreshCw class="h-3 w-3 mr-2" :class="{ 'animate-spin': loading }" />
             Refresh
@@ -23,13 +23,13 @@
         <div class="flex flex-col sm:flex-row gap-4 items-end sm:items-center bg-white/50 dark:bg-black/20 p-3 rounded-lg backdrop-blur-sm">
             <!-- Years Filter -->
             <div class="flex-1 w-full sm:w-auto">
-                <label class="text-xs font-medium text-gray-500 mb-1 block">Pilih Tahun (Bandingkan)</label>
+                <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Pilih Tahun (Bandingkan)</label>
                 <div class="flex flex-wrap gap-2">
                     <label 
                         v-for="year in availableYears" 
                         :key="year" 
                         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm cursor-pointer transition-colors"
-                        :class="selectedYears.includes(year) ? 'bg-purple-600 border-purple-600 text-white shadow-sm' : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'"
+                        :class="selectedYears.includes(year) ? 'bg-purple-600 border-purple-600 text-white shadow-sm' : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200'"
                     >
                         <input 
                             type="checkbox" 
@@ -46,10 +46,10 @@
 
             <!-- Brand Filter -->
             <div class="w-full sm:w-48">
-                <label class="text-xs font-medium text-gray-500 mb-1 block">Brand</label>
+                <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Brand</label>
                 <select 
                     v-model="selectedBrand" 
-                    class="w-full h-9 rounded-md border border-gray-300 bg-white px-3 py-1 text-sm shadow-sm transition-colors focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 dark:border-gray-700 dark:bg-gray-800"
+                    class="w-full h-9 rounded-md border border-gray-300 bg-white px-3 py-1 text-sm shadow-sm transition-colors focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
                     @change="fetchData"
                 >
                     <option :value="null">Semua Brand</option>
@@ -83,8 +83,8 @@
 
       <!-- Charts Container -->
       <div v-else-if="hasData" class="space-y-8">
-        <div v-for="metric in metricConfigs" :key="metric.key" class="border rounded-lg p-4 bg-white dark:bg-gray-900 shadow-sm">
-            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-4 border-b pb-2">
+        <div v-for="metric in metricConfigs" :key="metric.key" class="border rounded-lg p-4 bg-white dark:bg-gray-800 dark:border-gray-700 shadow-sm">
+            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-4 border-b dark:border-gray-700 pb-2">
                 {{ metric.label }}
             </h3>
             <div class="h-72 w-full relative">
@@ -95,8 +95,8 @@
 
       <!-- Empty State -->
       <div v-else class="flex flex-col items-center justify-center py-12">
-        <div class="rounded-full bg-gray-100 dark:bg-gray-800 p-4 mb-4">
-          <BarChart3 class="h-8 w-8 text-gray-400" />
+        <div class="rounded-full bg-gray-100 dark:bg-gray-700 p-4 mb-4">
+          <BarChart3 class="h-8 w-8 text-gray-400 dark:text-gray-300" />
         </div>
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
           Belum Ada Data
@@ -183,6 +183,13 @@ const colors = [
 const handleYearChange = () => {
     fetchData();
 };
+
+const isDark = ref(false)
+let observer: MutationObserver | null = null
+
+const updateTheme = () => {
+  isDark.value = document.documentElement.classList.contains('dark')
+}
 
 watch(() => props.initialBrandId, (newVal) => {
     if (newVal !== undefined) {
@@ -299,6 +306,7 @@ const updateCharts = () => {
                         position: 'top',
                         align: 'end',
                         labels: {
+                            color: isDark.value ? '#d1d5db' : '#374151',
                             usePointStyle: true,
                             boxWidth: 8,
                             padding: 10,
@@ -309,10 +317,10 @@ const updateCharts = () => {
                         }
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        titleColor: '#1e293b',
-                        bodyColor: '#475569',
-                        borderColor: '#e2e8f0',
+                        backgroundColor: isDark.value ? '#1f2937' : 'rgba(255, 255, 255, 0.95)',
+                        titleColor: isDark.value ? '#f3f4f6' : '#1e293b',
+                        bodyColor: isDark.value ? '#f3f4f6' : '#475569',
+                        borderColor: isDark.value ? '#374151' : '#e2e8f0',
                         borderWidth: 1,
                         padding: 10,
                         boxPadding: 4,
@@ -338,9 +346,10 @@ const updateCharts = () => {
                     y: {
                         beginAtZero: true,
                         grid: {
-                            color: 'rgba(0, 0, 0, 0.05)',
+                            color: isDark.value ? '#374151' : 'rgba(0, 0, 0, 0.05)',
                         },
                         ticks: {
+                            color: isDark.value ? '#9ca3af' : '#6b7280',
                             font: {
                                 size: 10
                             },
@@ -358,9 +367,11 @@ const updateCharts = () => {
                     },
                     x: {
                         grid: {
-                            display: false
+                            display: false,
+                            color: isDark.value ? '#374151' : '#e5e7eb'
                         },
                         ticks: {
+                            color: isDark.value ? '#9ca3af' : '#6b7280',
                             font: {
                                 size: 11
                             }
@@ -372,11 +383,19 @@ const updateCharts = () => {
     });
 };
 
+watch(isDark, () => {
+  updateCharts()
+})
+
 onMounted(() => {
+    updateTheme()
+    observer = new MutationObserver(updateTheme)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
     fetchData();
 });
 
 onUnmounted(() => {
+    observer?.disconnect()
     Object.values(chartInstances.value).forEach(instance => {
         if (instance) instance.destroy();
     });

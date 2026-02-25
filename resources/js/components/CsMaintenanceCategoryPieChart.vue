@@ -1,5 +1,5 @@
 <template>
-  <Card class="w-full">
+  <Card class="w-full dark:bg-gray-800 dark:border-gray-700">
     <CardHeader class="pb-3">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -16,7 +16,7 @@
             variant="outline"
             size="sm"
             @click="$emit('refresh')"
-            class="h-7 px-2 text-xs border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800 sm:h-8 sm:px-3"
+            class="h-7 px-2 text-xs border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200 sm:h-8 sm:px-3"
             title="Refresh Data"
           >
             <RefreshCw class="h-3 w-3" />
@@ -219,6 +219,13 @@ const subtitleText = computed(() => {
   return `Distribusi jumlah per ${props.legendTitle.toLowerCase()} dalam ${periodLabel}`;
 });
 
+const isDark = ref(false)
+let observer: MutationObserver | null = null
+
+const updateTheme = () => {
+  isDark.value = document.documentElement.classList.contains('dark')
+}
+
 // Chart options
 const chartOptions = computed<ChartOptions<'pie'>>(() => ({
   responsive: true,
@@ -226,10 +233,10 @@ const chartOptions = computed<ChartOptions<'pie'>>(() => ({
   plugins: {
     legend: { display: false },
     tooltip: {
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      titleColor: '#ffffff',
-      bodyColor: '#ffffff',
-      borderColor: 'rgba(255, 255, 255, 0.1)',
+      backgroundColor: isDark.value ? '#1f2937' : 'rgba(0, 0, 0, 0.8)',
+      titleColor: isDark.value ? '#f3f4f6' : '#ffffff',
+      bodyColor: isDark.value ? '#f3f4f6' : '#ffffff',
+      borderColor: isDark.value ? '#374151' : 'rgba(255, 255, 255, 0.1)',
       borderWidth: 1,
       cornerRadius: 8,
       displayColors: true,
@@ -245,17 +252,21 @@ const chartOptions = computed<ChartOptions<'pie'>>(() => ({
   },
 }));
 
-// Chart management
-const createChart = async () => {
-  if (!chartCanvas.value || !chartData.value) return;
-
-  // Destroy existing chart instance and any globally registered chart on this canvas id
+const destroyChart = () => {
   try {
     if (chartInstance.value) {
       chartInstance.value.destroy();
       chartInstance.value = null;
     }
   } catch (_e) {}
+};
+
+// Chart management
+const createChart = async () => {
+  // Ensure previous chart is destroyed
+  destroyChart();
+  
+  if (!chartCanvas.value || !chartData.value) return;
 
   await nextTick();
 
@@ -282,27 +293,42 @@ const updateChart = async () => {
 
 // Watchers
 watch(() => props.data, async () => {
+  destroyChart();
   await bumpCanvas();
   await createChart();
 }, { deep: true });
 
+watch(isDark, async () => {
+  destroyChart();
+  await bumpCanvas();
+  await createChart();
+});
+
 watch(() => props.loading, async (newLoading) => {
   if (!newLoading) {
+    destroyChart();
     await bumpCanvas();
     await createChart();
   }
 });
 
+watch(isDark, async () => {
+  destroyChart()
+  await bumpCanvas()
+  await createChart()
+})
+
 // Lifecycle
 onMounted(async () => {
-  await bumpCanvas();
+  updateTheme()
+  observer = new MutationObserver(updateTheme)
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+  // No need to bump canvas on mount as it's fresh
   await createChart();
 });
 
 onUnmounted(() => {
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    chartInstance.value = null;
-  }
+  observer?.disconnect()
+  destroyChart();
 });
 </script>

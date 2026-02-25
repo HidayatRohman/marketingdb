@@ -1,5 +1,5 @@
 <template>
-  <Card class="w-full">
+  <Card class="w-full dark:bg-gray-800 dark:border-gray-700">
     <CardHeader class="pb-3">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -16,7 +16,7 @@
             variant="outline"
             size="sm"
             @click="$emit('refresh')"
-            class="h-7 px-2 text-xs border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800 sm:h-8 sm:px-3"
+            class="h-7 px-2 text-xs border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200 sm:h-8 sm:px-3"
             title="Refresh Data"
           >
             <RefreshCw class="h-3 w-3" />
@@ -144,16 +144,23 @@ const subtitleText = computed(() => {
   return `Total leads per bulan untuk ${yearLabel}${brandLabel}`;
 });
 
+const isDark = ref(false)
+let observer: MutationObserver | null = null
+
+const updateTheme = () => {
+  isDark.value = document.documentElement.classList.contains('dark')
+}
+
 const chartOptions = computed<ChartOptions<'bar'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: { display: false },
     tooltip: {
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      titleColor: '#ffffff',
-      bodyColor: '#ffffff',
-      borderColor: 'rgba(255, 255, 255, 0.1)',
+      backgroundColor: isDark.value ? '#1f2937' : 'rgba(0, 0, 0, 0.8)',
+      titleColor: isDark.value ? '#f3f4f6' : '#ffffff',
+      bodyColor: isDark.value ? '#f3f4f6' : '#ffffff',
+      borderColor: isDark.value ? '#374151' : 'rgba(255, 255, 255, 0.1)',
       borderWidth: 1,
       cornerRadius: 8,
       callbacks: {
@@ -164,14 +171,14 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
   },
   scales: {
     x: {
-      grid: { color: 'rgba(107, 114, 128, 0.1)' },
-      ticks: { color: '#6b7280', font: { size: 11 } },
+      grid: { color: isDark.value ? '#374151' : 'rgba(107, 114, 128, 0.1)' },
+      ticks: { color: isDark.value ? '#9ca3af' : '#6b7280', font: { size: 11 } },
     },
     y: {
       beginAtZero: true,
-      grid: { color: 'rgba(107, 114, 128, 0.1)' },
+      grid: { color: isDark.value ? '#374151' : 'rgba(107, 114, 128, 0.1)' },
       ticks: {
-        color: '#6b7280',
+        color: isDark.value ? '#9ca3af' : '#6b7280',
         font: { size: 11 },
         stepSize: 1,
         callback: (value) => `${Number(value).toLocaleString('id-ID')}`,
@@ -188,9 +195,10 @@ const destroyChart = () => {
 };
 
 const renderChart = async () => {
+  destroyChart();
   await nextTick();
   if (!chartCanvas.value || !chartData.value) return;
-  destroyChart();
+  
   chartInstance.value = new ChartJS(chartCanvas.value.getContext('2d') as CanvasRenderingContext2D, {
     type: 'bar',
     data: chartData.value,
@@ -198,17 +206,26 @@ const renderChart = async () => {
   });
 };
 
+watch(isDark, () => {
+  canvasKey.value++
+  renderChart()
+})
+
+onMounted(() => {
+  updateTheme()
+  observer = new MutationObserver(updateTheme)
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+  renderChart()
+})
+
+onUnmounted(() => {
+  observer?.disconnect()
+  destroyChart()
+})
+
 watch(() => props.data, () => {
   canvasKey.value++;
   renderChart();
-});
-
-onMounted(() => {
-  renderChart();
-});
-
-onUnmounted(() => {
-  destroyChart();
 });
 </script>
 

@@ -1,5 +1,5 @@
 <template>
-    <div class="chart-container">
+    <div class="chart-container dark:bg-gray-800 dark:text-white rounded-lg">
         <div v-if="error" class="error-message p-4 text-center text-red-500">
             {{ error }}
         </div>
@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { BarController, BarElement, CategoryScale, Chart, Legend, LinearScale, Title, Tooltip, type ChartConfiguration } from 'chart.js';
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
 // Register Chart.js components
 Chart.register(CategoryScale, LinearScale, BarElement, BarController, Title, Tooltip, Legend);
@@ -29,6 +29,12 @@ const props = defineProps<Props>();
 const chartRef = ref<HTMLCanvasElement | null>(null);
 const error = ref<string | null>(null);
 let chartInstance: Chart | null = null;
+const isDark = ref(false)
+let observer: MutationObserver | null = null
+
+const updateTheme = () => {
+    isDark.value = document.documentElement.classList.contains('dark')
+}
 
 const createChart = async () => {
     try {
@@ -103,7 +109,7 @@ const createChart = async () => {
                             size: 16,
                             weight: 'bold',
                         },
-                        color: 'rgb(55, 65, 81)', // gray-700
+                        color: isDark.value ? '#d1d5db' : 'rgb(55, 65, 81)', // gray-700
                         padding: {
                             top: 10,
                             bottom: 30,
@@ -113,10 +119,10 @@ const createChart = async () => {
                         display: false,
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#fff',
-                        bodyColor: '#fff',
-                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        backgroundColor: isDark.value ? '#1f2937' : 'rgba(0, 0, 0, 0.8)',
+                        titleColor: isDark.value ? '#f3f4f6' : '#fff',
+                        bodyColor: isDark.value ? '#f3f4f6' : '#fff',
+                        borderColor: isDark.value ? '#374151' : 'rgba(255, 255, 255, 0.1)',
                         borderWidth: 1,
                         cornerRadius: 8,
                         displayColors: false,
@@ -138,18 +144,18 @@ const createChart = async () => {
                         beginAtZero: true,
                         ticks: {
                             stepSize: 1,
-                            color: 'rgb(107, 114, 128)', // gray-500
+                            color: isDark.value ? '#9ca3af' : 'rgb(107, 114, 128)', // gray-500
                             font: {
                                 size: 12,
                             },
                         },
                         grid: {
-                            color: 'rgba(107, 114, 128, 0.1)',
+                            color: isDark.value ? '#374151' : 'rgba(107, 114, 128, 0.1)',
                         },
                     },
                     x: {
                         ticks: {
-                            color: 'rgb(107, 114, 128)', // gray-500
+                            color: isDark.value ? '#9ca3af' : 'rgb(107, 114, 128)', // gray-500
                             font: {
                                 size: 12,
                             },
@@ -175,9 +181,25 @@ const createChart = async () => {
         error.value = `Failed to create chart: ${err instanceof Error ? err.message : String(err)}`;
     }
 };
+
+watch(isDark, () => {
+    createChart()
+})
+
 onMounted(() => {
+    updateTheme()
+    observer = new MutationObserver(updateTheme)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
     createChart();
 });
+
+onUnmounted(() => {
+    observer?.disconnect()
+    if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+    }
+})
 
 watch(
     () => props.data,

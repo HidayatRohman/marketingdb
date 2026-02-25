@@ -1,5 +1,5 @@
 <template>
-  <Card class="border-0 shadow-md">
+  <Card class="border-0 shadow-md dark:bg-gray-800 dark:border dark:border-gray-700">
     <CardHeader class="pb-3 sm:pb-4">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex items-center gap-2 sm:gap-3">
@@ -417,6 +417,13 @@ const closeBrandFilter = () => {
   showBrandFilter.value = false;
 };
 
+const isDark = ref(false)
+let observer: MutationObserver | null = null
+
+const updateTheme = () => {
+  isDark.value = document.documentElement.classList.contains('dark')
+}
+
 const createChart = async () => {
   if (!chartCanvas.value || !chartData.value) return;
 
@@ -467,10 +474,10 @@ const createChart = async () => {
         drawTime: 'beforeDatasetsDraw'
       },
       tooltip: {
-        backgroundColor: 'rgba(17, 24, 39, 0.95)',
-        titleColor: '#f9fafb',
-        bodyColor: '#f9fafb',
-        borderColor: '#6366f1',
+        backgroundColor: isDark.value ? '#1f2937' : 'rgba(17, 24, 39, 0.95)',
+        titleColor: isDark.value ? '#f9fafb' : '#f9fafb',
+        bodyColor: isDark.value ? '#f9fafb' : '#f9fafb',
+        borderColor: isDark.value ? '#374151' : '#6366f1',
         borderWidth: 1,
         cornerRadius: 8,
         displayColors: true,
@@ -494,7 +501,7 @@ const createChart = async () => {
         title: {
           display: window.innerWidth >= 640, // Hide title on mobile
           text: 'Jam (24 Format)',
-          color: '#6b7280',
+          color: isDark.value ? '#9ca3af' : '#6b7280',
           font: {
             family: 'Inter',
             size: window.innerWidth >= 640 ? 12 : 10,
@@ -502,10 +509,10 @@ const createChart = async () => {
           }
         },
         grid: {
-          color: 'rgba(107, 114, 128, 0.1)',
+          color: isDark.value ? '#374151' : 'rgba(107, 114, 128, 0.1)',
         },
         ticks: {
-          color: '#6b7280',
+          color: isDark.value ? '#9ca3af' : '#6b7280',
           font: {
             family: 'Inter',
             size: window.innerWidth >= 640 ? 11 : 9,
@@ -521,7 +528,7 @@ const createChart = async () => {
         title: {
           display: window.innerWidth >= 640, // Hide title on mobile
           text: 'Jumlah Lead',
-          color: '#6b7280',
+          color: isDark.value ? '#9ca3af' : '#6b7280',
           font: {
             family: 'Inter',
             size: window.innerWidth >= 640 ? 12 : 10,
@@ -529,10 +536,10 @@ const createChart = async () => {
           }
         },
         grid: {
-          color: 'rgba(107, 114, 128, 0.1)',
+          color: isDark.value ? '#374151' : 'rgba(107, 114, 128, 0.1)',
         },
         ticks: {
-          color: '#6b7280',
+          color: isDark.value ? '#9ca3af' : '#6b7280',
           font: {
             family: 'Inter',
             size: window.innerWidth >= 640 ? 11 : 9,
@@ -560,7 +567,7 @@ const createChart = async () => {
 };
 
 // Watch for data or view mode changes
-watch([() => props.data, viewMode, selectedBrands], async () => {
+watch([() => props.data, viewMode, selectedBrands, isDark], async () => {
   await nextTick();
   createChart();
 }, { deep: true });
@@ -582,6 +589,9 @@ const handleResize = async () => {
 
 // Initialize chart on mount
 onMounted(async () => {
+  updateTheme()
+  observer = new MutationObserver(updateTheme)
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
   await nextTick();
   createChart();
   
@@ -594,6 +604,7 @@ onMounted(async () => {
 
 // Cleanup on unmount
 onUnmounted(() => {
+  observer?.disconnect()
   document.removeEventListener('click', handleClickOutside);
   window.removeEventListener('resize', handleResize);
   

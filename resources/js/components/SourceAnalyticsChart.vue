@@ -1,5 +1,5 @@
 <template>
-  <Card class="w-full">
+  <Card class="w-full dark:bg-gray-800 dark:border-gray-700">
   <CardHeader class="pb-3">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -49,7 +49,7 @@
             variant="outline"
             size="sm"
             @click="$emit('refresh')"
-            class="h-7 px-2 text-xs border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800 sm:h-8 sm:px-3"
+            class="h-7 px-2 text-xs border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200 sm:h-8 sm:px-3"
             title="Refresh Data"
           >
             <RefreshCw class="h-3 w-3" />
@@ -272,7 +272,7 @@ const chartData = computed(() => {
           label: 'Jumlah Transaksi',
           data: counts,
           backgroundColor: backgroundColors,
-          borderColor: '#ffffff',
+          borderColor: isDark.value ? '#1f2937' : '#ffffff',
           borderWidth: 1,
         },
       ],
@@ -328,130 +328,134 @@ const subtitleText = computed(() => {
   return `Distribusi jumlah transaksi per sumber dalam ${periodLabel}`;
 });
 
+const isDark = ref(false)
+let observer: MutationObserver | null = null
+
+const updateTheme = () => {
+  isDark.value = document.documentElement.classList.contains('dark')
+}
+
 // Chart options
-const chartOptions = computed<ChartOptions<'bar' | 'doughnut'>>(() => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: false,
-    },
-    tooltip: {
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      titleColor: '#ffffff',
-      bodyColor: '#ffffff',
-      borderColor: 'rgba(255, 255, 255, 0.1)',
-      borderWidth: 1,
-      cornerRadius: 8,
-      displayColors: true,
-      callbacks: {
-        title: (context) => {
-          return `Sumber: ${context[0].label || 'Unknown'}`;
-        },
-        label: (context) => {
-          return `Jumlah: ${context.parsed}`;
+const chartOptions = computed<any>(() => {
+  const options: any = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: isDark.value ? '#1f2937' : 'rgba(0, 0, 0, 0.8)',
+        titleColor: isDark.value ? '#f3f4f6' : '#ffffff',
+        bodyColor: isDark.value ? '#f3f4f6' : '#ffffff',
+        borderColor: isDark.value ? '#374151' : 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 1,
+        cornerRadius: 8,
+        displayColors: true,
+        callbacks: {
+          title: (context: any) => {
+            return `Sumber: ${context[0].label || 'Unknown'}`;
+          },
+          label: (context: any) => {
+            return `Jumlah: ${context.parsed}`;
+          },
         },
       },
     },
-  },
-  // Horizontal bars for readability
-  indexAxis: viewMode.value === 'bar' ? 'y' : undefined,
-  scales: viewMode.value === 'bar' ? {
-    x: {
-      beginAtZero: true,
-      grid: { color: 'rgba(107, 114, 128, 0.1)' },
-      ticks: { color: '#6b7280', font: { size: 11 } },
-    },
-    y: {
-      grid: { display: false },
-      ticks: { color: '#6b7280', font: { size: 11 } },
-    },
-  } : undefined,
-}));
+  };
+
+  if (viewMode.value === 'bar') {
+    options.indexAxis = 'y';
+    options.scales = {
+      x: {
+        beginAtZero: true,
+        grid: { color: isDark.value ? '#374151' : 'rgba(107, 114, 128, 0.1)' },
+        ticks: { color: isDark.value ? '#9ca3af' : '#6b7280', font: { size: 11 } },
+      },
+      y: {
+        grid: { display: false },
+        ticks: { color: isDark.value ? '#9ca3af' : '#6b7280', font: { size: 11 } },
+      },
+    };
+  }
+
+  return options;
+});
 
 // Chart management
+const destroyChart = () => {
+  if (chartInstance.value) {
+    chartInstance.value.destroy();
+    chartInstance.value = null;
+  }
+
+  // Also try to destroy by canvas ID to be safe
+  if (chartCanvas.value) {
+    const existing = ChartJS.getChart(chartCanvas.value as any);
+    if (existing) existing.destroy();
+  }
+  
+  const existingById = ChartJS.getChart(canvasId.value as any);
+  if (existingById) existingById.destroy();
+};
+
 const createChart = async () => {
   if (!chartCanvas.value || !chartData.value) return;
   if (isCreating.value) return;
   isCreating.value = true;
 
-  // Destroy existing chart
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    chartInstance.value = null;
-  }
-
-  // Ensure no lingering chart bound to the same canvas
-  const existing = ChartJS.getChart(chartCanvas.value);
-  if (existing) {
-    existing.destroy();
-  }
-  const existingById = ChartJS.getChart(canvasId.value as any);
-  if (existingById) {
-    existingById.destroy();
-  }
+  destroyChart();
 
   await nextTick();
 
   const ctx = chartCanvas.value.getContext('2d');
-  if (!ctx) return;
+  if (!ctx) { isCreating.value = false; return; }
 
-  chartInstance.value = new ChartJS(ctx, {
-    type: viewMode.value,
-    data: chartData.value as any,
-    options: chartOptions.value as any,
-  });
-  isCreating.value = false;
+  try {
+    if (viewMode.value === 'bar') {
+      chartInstance.value = new ChartJS(ctx, {
+        type: 'bar',
+        data: chartData.value as ChartData<'bar'>,
+        options: chartOptions.value,
+      });
+    } else {
+      chartInstance.value = new ChartJS(ctx, {
+        type: 'doughnut',
+        data: chartData.value as ChartData<'doughnut'>,
+        options: chartOptions.value,
+      });
+    }
+  } catch (err) {
+    console.error('Error creating chart:', err);
+  } finally {
+    isCreating.value = false;
+  }
 };
 
-const updateChart = async () => {
-  if (!chartInstance.value || !chartData.value) {
-    await createChart();
-    return;
-  }
+watch(isDark, () => {
+  canvasKey.value++
+  createChart()
+})
 
-  // Update chart type if changed
-  if (chartInstance.value.config.type !== viewMode.value) {
-    await createChart();
-    return;
-  }
-
-  // Update data
-  chartInstance.value.data = chartData.value as any;
-  chartInstance.value.options = chartOptions.value as any;
-  chartInstance.value.update('none');
-};
-
-// Watchers
-watch([() => props.data, viewMode], async () => {
-  if (props.data && props.data.length > 0) {
-    canvasKey.value++;
-    await nextTick();
-    await createChart();
-  }
-}, { deep: true });
-
-watch(() => props.loading, (newLoading) => {
-  if (!newLoading && props.data && props.data.length > 0) {
-    nextTick(() => createChart());
-  }
-});
-
-// Lifecycle
 onMounted(() => {
-  if (props.data && props.data.length > 0) {
-    nextTick(() => createChart());
-  }
+  updateTheme()
+  observer = new MutationObserver(updateTheme)
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+  createChart();
 });
 
 onUnmounted(() => {
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    chartInstance.value = null;
+  if (observer) {
+    observer.disconnect()
   }
-  const existing = ChartJS.getChart(chartCanvas.value as any);
-  if (existing) existing.destroy();
-  const existingById = ChartJS.getChart(canvasId.value as any);
-  if (existingById) existingById.destroy();
+  destroyChart();
+});
+
+watch(() => props.data, () => {
+  createChart();
+}, { deep: true });
+
+watch(viewMode, () => {
+  createChart();
 });
 </script>

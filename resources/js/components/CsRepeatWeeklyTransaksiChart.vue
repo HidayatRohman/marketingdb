@@ -1,14 +1,14 @@
 <template>
-  <Card class="border-0 shadow-md">
+  <Card class="border-0 shadow-md dark:bg-gray-800 dark:border-gray-700">
     <CardHeader class="pb-3">
-      <CardTitle>Transaksi Mingguan</CardTitle>
+      <CardTitle class="dark:text-gray-100">Transaksi Mingguan</CardTitle>
     </CardHeader>
     <CardContent>
-      <div v-if="loading" class="py-12 text-center text-sm text-muted-foreground">Memuat grafik...</div>
+      <div v-if="loading" class="py-12 text-center text-sm text-muted-foreground dark:text-gray-400">Memuat grafik...</div>
       <div v-else-if="chartData && chartData.datasets.length > 0" class="h-64">
         <canvas :key="canvasKey" ref="chartCanvas" :id="canvasId"></canvas>
       </div>
-      <div v-else class="py-8 text-center text-sm text-muted-foreground">Tidak ada data.</div>
+      <div v-else class="py-8 text-center text-sm text-muted-foreground dark:text-gray-400">Tidak ada data.</div>
     </CardContent>
   </Card>
 </template>
@@ -26,6 +26,13 @@ const chartCanvas = ref<HTMLCanvasElement>()
 const chartInstance = ref<ChartJS | null>(null)
 const canvasKey = ref(0)
 const canvasId = computed(() => `cs-repeat-weekly-transaksi-${canvasKey.value}`)
+
+const isDark = ref(false)
+let observer: MutationObserver | null = null
+
+const updateTheme = () => {
+  isDark.value = document.documentElement.classList.contains('dark')
+}
 
 const toLocalYMD = (d: Date) => {
   if (isNaN(d.getTime())) return ''
@@ -71,23 +78,73 @@ const chartData = computed<ChartData<'line'>>(() => {
   }
 })
 
-const options: ChartOptions<'line'> = {
+const options = computed<ChartOptions<'line'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
-  plugins: { legend: { display: true }, tooltip: { enabled: true } },
-  scales: { x: { display: true }, y: { display: true, beginAtZero: true } },
+  plugins: {
+    legend: {
+      display: true,
+      labels: { color: isDark.value ? '#d1d5db' : '#374151' }
+    },
+    tooltip: {
+      enabled: true,
+      backgroundColor: isDark.value ? '#1f2937' : '#ffffff',
+      titleColor: isDark.value ? '#f3f4f6' : '#111827',
+      bodyColor: isDark.value ? '#f3f4f6' : '#111827',
+      borderColor: isDark.value ? '#374151' : '#e5e7eb',
+      borderWidth: 1
+    }
+  },
+  scales: {
+    x: {
+      display: true,
+      grid: { color: isDark.value ? '#374151' : '#e5e7eb' },
+      ticks: { color: isDark.value ? '#9ca3af' : '#6b7280' }
+    },
+    y: {
+      display: true,
+      beginAtZero: true,
+      grid: { color: isDark.value ? '#374151' : '#e5e7eb' },
+      ticks: { color: isDark.value ? '#9ca3af' : '#6b7280' }
+    }
+  },
+}))
+
+const destroyChart = () => {
+  if (chartInstance.value) {
+    chartInstance.value.destroy()
+    chartInstance.value = null
+  }
 }
 
 const renderChart = async () => {
+  destroyChart()
   if (!chartCanvas.value) return
   await nextTick()
-  if (chartInstance.value) { chartInstance.value.destroy(); chartInstance.value = null }
-  chartInstance.value = new ChartJS(chartCanvas.value, { type: 'line', data: chartData.value, options })
+  if (!chartCanvas.value) return
+  chartInstance.value = new ChartJS(chartCanvas.value, { type: 'line', data: chartData.value, options: options.value })
 }
 
-watch(() => props.data, () => { canvasKey.value++; renderChart() })
-onMounted(renderChart)
-onUnmounted(() => { if (chartInstance.value) { chartInstance.value.destroy(); chartInstance.value = null } })
+watch(() => props.data, () => {
+  canvasKey.value++
+  renderChart()
+})
+
+watch(isDark, () => {
+  renderChart()
+})
+
+onMounted(() => {
+  updateTheme()
+  observer = new MutationObserver(updateTheme)
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+  renderChart()
+})
+
+onUnmounted(() => {
+  observer?.disconnect()
+  destroyChart()
+})
 </script>
 
 <style scoped></style>

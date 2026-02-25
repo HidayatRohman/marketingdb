@@ -42,8 +42,8 @@
           <div ref="pieRef" class="relative" style="width: 240px; height: 240px;"
                @mouseenter="onPieEnter" @mousemove="onPieMove" @mouseleave="onPieLeave">
             <div class="w-full h-full rounded-full" :style="pieStyle"></div>
-            <div class="absolute inset-0 m-auto rounded-full bg-white dark:bg-gray-900" style="width: 120px; height: 120px;"></div>
-            <div v-if="tooltip.visible" class="absolute z-10 px-2 py-1 text-xs rounded-md shadow-md bg-gray-900 text-white"
+            <div class="absolute inset-0 m-auto rounded-full bg-white dark:bg-gray-800" style="width: 120px; height: 120px;"></div>
+            <div v-if="tooltip.visible" class="absolute z-10 px-2 py-1 text-xs rounded-md shadow-md bg-gray-900 text-white dark:bg-gray-700"
                  :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }">
               <div class="font-medium">{{ tooltip.label }}</div>
               <div>Jumlah: {{ tooltip.count }}</div>
@@ -52,7 +52,7 @@
         </div>
 
         <!-- Legend & Stats -->
-        <div class="mt-3 grid grid-cols-1 gap-3 sm:mt-4 sm:gap-4 lg:grid-cols-2">
+        <div class="mt-4 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
           <!-- Age Legend -->
           <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
             <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
@@ -72,7 +72,7 @@
                 <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate flex-1">
                   {{ label || 'Unknown' }}
                 </span>
-                <Badge variant="secondary" class="text-xs flex-shrink-0">
+                <Badge variant="secondary" class="text-xs flex-shrink-0 dark:bg-gray-700 dark:text-gray-200">
                   {{ countsByLabel[label] || 0 }}
                 </Badge>
               </div>
@@ -92,7 +92,7 @@
                 class="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-gray-800 px-2 py-1"
               >
                 <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ item.label }}</span>
-                <Badge variant="secondary" class="text-xs">{{ item.count }}</Badge>
+                <Badge variant="secondary" class="text-xs dark:bg-gray-700 dark:text-gray-200">{{ item.count }}</Badge>
               </div>
             </div>
           </div>

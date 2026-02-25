@@ -1,5 +1,5 @@
 <template>
-  <Card class="w-full">
+  <Card class="w-full dark:bg-gray-800 dark:border-gray-700">
     <CardHeader class="pb-3">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -18,7 +18,7 @@
             variant="outline"
             size="sm"
             @click="$emit('refresh')"
-            class="h-7 px-2 text-xs border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800 sm:h-8 sm:px-3"
+            class="h-7 px-2 text-xs border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200 sm:h-8 sm:px-3"
             title="Refresh Data"
           >
             <RefreshCw class="h-3 w-3" />
@@ -312,6 +312,13 @@ const chartData = computed(() => {
   } as ChartData<'line'>;
 });
 
+const isDark = ref(false)
+let observer: MutationObserver | null = null
+
+const updateTheme = () => {
+  isDark.value = document.documentElement.classList.contains('dark')
+}
+
 // Chart options
 const chartOptions = computed<ChartOptions<'line'>>(() => ({
   responsive: true,
@@ -326,6 +333,7 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
       display: true,
       position: 'top',
       labels: {
+        color: isDark.value ? '#d1d5db' : '#374151',
         filter: (legendItem, data) => {
           const ds = (data?.datasets || [])[legendItem.datasetIndex as number] as any
           const text = String(legendItem.text || '')
@@ -334,10 +342,10 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
       }
     },
     tooltip: {
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      titleColor: '#ffffff',
-      bodyColor: '#ffffff',
-      borderColor: 'rgba(255, 255, 255, 0.1)',
+      backgroundColor: isDark.value ? '#1f2937' : 'rgba(0, 0, 0, 0.8)',
+      titleColor: isDark.value ? '#f3f4f6' : '#ffffff',
+      bodyColor: isDark.value ? '#f3f4f6' : '#ffffff',
+      borderColor: isDark.value ? '#374151' : 'rgba(255, 255, 255, 0.1)',
       borderWidth: 1,
       cornerRadius: 8,
       displayColors: true,
@@ -357,13 +365,13 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
   },
   scales: {
     x: {
-      grid: { display: false },
-      ticks: { color: '#6b7280', font: { size: 11 } },
+      grid: { display: false, color: isDark.value ? '#374151' : '#e5e7eb' },
+      ticks: { color: isDark.value ? '#9ca3af' : '#6b7280', font: { size: 11 } },
     },
     y: {
       beginAtZero: true,
-      grid: { color: 'rgba(107, 114, 128, 0.1)' },
-      ticks: { color: '#6b7280', font: { size: 11 } },
+      grid: { color: isDark.value ? '#374151' : 'rgba(107, 114, 128, 0.1)' },
+      ticks: { color: isDark.value ? '#9ca3af' : '#6b7280', font: { size: 11 } },
     },
   },
 }));
@@ -393,34 +401,45 @@ const monthTotals = computed(() => {
 });
 
 // Chart management
-const createChart = async () => {
-  if (!chartCanvas.value || !chartData.value) return;
-  if (isCreating.value) return;
-  isCreating.value = true;
-  
-  // Destroy existing chart
+const destroyChart = () => {
   if (chartInstance.value) {
     chartInstance.value.destroy();
     chartInstance.value = null;
   }
   
-  // Ensure no lingering chart bound to the same canvas
-  const existing = ChartJS.getChart(chartCanvas.value as any);
-  if (existing) existing.destroy();
+  // Also try to destroy by canvas ID to be safe
+  if (chartCanvas.value) {
+    const existing = ChartJS.getChart(chartCanvas.value as any);
+    if (existing) existing.destroy();
+  }
+  
   const existingById = ChartJS.getChart(canvasId.value as any);
   if (existingById) existingById.destroy();
+};
+
+const createChart = async () => {
+  if (!chartCanvas.value || !chartData.value) return;
+  if (isCreating.value) return;
+  isCreating.value = true;
+  
+  destroyChart();
   
   await nextTick();
   
   const ctx = chartCanvas.value.getContext('2d');
-  if (!ctx) return;
+  if (!ctx) { isCreating.value = false; return; }
   
-  chartInstance.value = new ChartJS(ctx, {
-    type: 'line',
-    data: chartData.value,
-    options: chartOptions.value,
-  });
-  isCreating.value = false;
+  try {
+    chartInstance.value = new ChartJS(ctx, {
+      type: 'line',
+      data: chartData.value,
+      options: chartOptions.value,
+    });
+  } catch (err) {
+    console.error('Error creating chart:', err);
+  } finally {
+    isCreating.value = false;
+  }
 };
 
 const updateChart = async () => {
@@ -453,20 +472,25 @@ watch(() => props.loading, async (newLoading) => {
   }
 });
 
+watch(isDark, async () => {
+  await bumpCanvas();
+  await createChart();
+});
+
 // Lifecycle
 onMounted(async () => {
+  updateTheme();
+  observer = new MutationObserver(updateTheme);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   await bumpCanvas();
   await createChart();
 });
 
 onUnmounted(() => {
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    chartInstance.value = null;
+  if (observer) {
+    observer.disconnect();
+    observer = null;
   }
-  const existing = ChartJS.getChart(chartCanvas.value as any);
-  if (existing) existing.destroy();
-  const existingById = ChartJS.getChart(canvasId.value as any);
-  if (existingById) existingById.destroy();
+  destroyChart();
 });
 </script>

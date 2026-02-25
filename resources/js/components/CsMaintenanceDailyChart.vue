@@ -1,12 +1,12 @@
 <template>
-  <Card class="w-full">
+  <Card class="w-full dark:bg-gray-800 dark:border-gray-700">
     <CardHeader class="pb-3">
       <div class="flex items-center justify-between">
         <div>
-          <CardTitle class="text-lg font-semibold">Grafik Interaksi Harian (CS Maintenance)</CardTitle>
-          <p class="text-sm text-muted-foreground">Jumlah entri per hari pada periode terpilih.</p>
+          <CardTitle class="text-lg font-semibold dark:text-gray-100">Grafik Interaksi Harian (CS Maintenance)</CardTitle>
+          <p class="text-sm text-muted-foreground dark:text-gray-400">Jumlah entri per hari pada periode terpilih.</p>
         </div>
-        <Button variant="outline" size="sm" @click="$emit('refresh')">Refresh</Button>
+        <Button variant="outline" size="sm" @click="$emit('refresh')" class="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Refresh</Button>
       </div>
     </CardHeader>
     <CardContent>
@@ -14,10 +14,10 @@
         <canvas :key="canvasKey" ref="chartCanvas"></canvas>
       </div>
       <div v-else class="flex flex-col items-center justify-center py-10">
-        <div class="rounded-full bg-gray-100 dark:bg-gray-800 p-3 mb-3">
-          <BarChart3 class="h-6 w-6 text-gray-400" />
+        <div class="rounded-full bg-gray-100 dark:bg-gray-700 p-3 mb-3">
+          <BarChart3 class="h-6 w-6 text-gray-400 dark:text-gray-300" />
         </div>
-        <p class="text-sm text-muted-foreground">Tidak ada data pada periode ini.</p>
+        <p class="text-sm text-muted-foreground dark:text-gray-400">Tidak ada data pada periode ini.</p>
       </div>
     </CardContent>
   </Card>
@@ -39,7 +39,15 @@ const chartCanvas = ref<HTMLCanvasElement>()
 const chartInstance = ref<ChartJS | null>(null)
 const canvasKey = ref(0)
 
+const isDark = ref(false)
+let observer: MutationObserver | null = null
+
+const updateTheme = () => {
+  isDark.value = document.documentElement.classList.contains('dark')
+}
+
 const chartData = computed<ChartData<'line'> | null>(() => {
+  // ... (keep logic)
   let rows: DailyRow[] = props.data || []
 
   // Fallback: jika kosong, bangun rentang tanggal dari props start/end dan isi nol
@@ -77,44 +85,105 @@ const chartData = computed<ChartData<'line'> | null>(() => {
   }
 })
 
-const options: ChartOptions<'line'> = {
+const options = computed<ChartOptions<'line'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
-    legend: { display: true },
-    tooltip: { enabled: true },
+    legend: {
+      display: true,
+      labels: {
+        color: isDark.value ? '#d1d5db' : '#374151'
+      }
+    },
+    tooltip: {
+      enabled: true,
+      backgroundColor: isDark.value ? '#1f2937' : '#ffffff',
+      titleColor: isDark.value ? '#f3f4f6' : '#111827',
+      bodyColor: isDark.value ? '#f3f4f6' : '#111827',
+      borderColor: isDark.value ? '#374151' : '#e5e7eb',
+      borderWidth: 1
+    },
   },
   scales: {
-    x: { display: true },
-    y: { display: true, beginAtZero: true },
+    x: {
+      display: true,
+      grid: {
+        color: isDark.value ? '#374151' : '#e5e7eb'
+      },
+      ticks: {
+        color: isDark.value ? '#9ca3af' : '#6b7280'
+      }
+    },
+    y: {
+      display: true,
+      beginAtZero: true,
+      grid: {
+        color: isDark.value ? '#374151' : '#e5e7eb'
+      },
+      ticks: {
+        color: isDark.value ? '#9ca3af' : '#6b7280'
+      }
+    },
   },
+}))
+
+const destroyChart = () => {
+  if (chartInstance.value) {
+    chartInstance.value.destroy()
+    chartInstance.value = null
+  }
+
+  // Also try to destroy by canvas ID to be safe
+  if (chartCanvas.value) {
+    const existing = ChartJS.getChart(chartCanvas.value as any)
+    if (existing) existing.destroy()
+  }
 }
 
 const renderChart = async () => {
-  if (!chartCanvas.value || !chartData.value) return
+  destroyChart()
+  
+  if (!chartData.value) return
+  
   await nextTick()
-  if (chartInstance.value) {
-    chartInstance.value.destroy()
-    chartInstance.value = null
+  
+  if (!chartCanvas.value) return
+
+  try {
+    chartInstance.value = new ChartJS(chartCanvas.value, {
+      type: 'line',
+      data: chartData.value,
+      options: options.value,
+    })
+  } catch (err) {
+    console.error('Error rendering chart:', err)
   }
-  chartInstance.value = new ChartJS(chartCanvas.value, {
-    type: 'line',
-    data: chartData.value,
-    options,
-  })
 }
 
-watch(() => props.data, () => {
+watch(isDark, async () => {
+  destroyChart()
   canvasKey.value++
+  await nextTick()
   renderChart()
 })
 
-onMounted(renderChart)
+watch(() => props.data, async () => {
+  destroyChart()
+  canvasKey.value++
+  await nextTick()
+  renderChart()
+})
+
+onMounted(() => {
+  updateTheme()
+  observer = new MutationObserver(updateTheme)
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+  renderChart()
+})
+
 onUnmounted(() => {
-  if (chartInstance.value) {
-    chartInstance.value.destroy()
-    chartInstance.value = null
-  }
+  observer?.disconnect()
+  destroyChart()
 })
 </script>
 

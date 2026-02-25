@@ -1,5 +1,5 @@
 <template>
-  <Card class="border-0 shadow-md">
+  <Card class="border-0 shadow-md dark:bg-gray-800 dark:border dark:border-gray-700">
     <CardHeader class="pb-2 bg-gray-50 dark:bg-gray-800/70 rounded-md px-3 py-2">
       <div class="flex items-center justify-between">
         <CardTitle class="text-lg font-semibold text-gray-900 dark:text-white">Analisa Daftar Peserta (12 Bulan)</CardTitle>
@@ -10,8 +10,8 @@
         <canvas :key="canvasKey" ref="chartCanvas" :id="canvasId"></canvas>
       </div>
       <div v-else class="flex flex-col items-center justify-center py-8 sm:py-12">
-        <div class="rounded-full bg-gray-100 dark:bg-gray-800 p-3 mb-3 sm:p-4 sm:mb-4">
-          <TrendingUp class="h-6 w-6 text-gray-400 sm:h-8 sm:w-8" />
+        <div class="rounded-full bg-gray-100 dark:bg-gray-700 p-3 mb-3 sm:p-4 sm:mb-4">
+          <TrendingUp class="h-6 w-6 text-gray-400 dark:text-gray-300 sm:h-8 sm:w-8" />
         </div>
         <h3 class="text-base font-medium text-gray-900 dark:text-white mb-2 sm:text-lg">
           Belum Ada Data Peserta
@@ -78,6 +78,13 @@ const canvasId = computed(() => `participants-monthly-chart-${canvasKey.value}`)
 
 const chartReady = computed(() => props.data && props.data.length > 0);
 
+const isDark = ref(false)
+let observer: MutationObserver | null = null
+
+const updateTheme = () => {
+  isDark.value = document.documentElement.classList.contains('dark')
+}
+
 const chartData = computed<ChartData<'line'>>(() => {
   const labels = (props.data || []).map(r => r.label);
   const values = (props.data || []).map(r => r.count);
@@ -112,10 +119,10 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
   plugins: {
     legend: { display: false },
     tooltip: {
-      backgroundColor: 'rgba(17, 24, 39, 0.95)',
-      titleColor: '#f9fafb',
-      bodyColor: '#f9fafb',
-      borderColor: '#10b981',
+      backgroundColor: isDark.value ? '#1f2937' : 'rgba(17, 24, 39, 0.95)',
+      titleColor: isDark.value ? '#f9fafb' : '#f9fafb',
+      bodyColor: isDark.value ? '#f9fafb' : '#f9fafb',
+      borderColor: isDark.value ? '#374151' : '#10b981',
       borderWidth: 1,
       cornerRadius: 8,
       displayColors: false,
@@ -126,8 +133,9 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
   },
   scales: {
     x: {
-      grid: { display: false },
+      grid: { display: false, color: isDark.value ? '#374151' : '#e5e7eb' },
       ticks: {
+        color: isDark.value ? '#9ca3af' : '#6b7280',
         maxTicksLimit: window.innerWidth >= 640 ? 12 : 6,
         callback: (v: any, i: number, ticks: any[]) => {
           // Kurangi kepadatan label di mobile
@@ -138,7 +146,9 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
     },
     y: {
       beginAtZero: true,
+      grid: { color: isDark.value ? '#374151' : '#e5e7eb' },
       ticks: {
+        color: isDark.value ? '#9ca3af' : '#6b7280',
         precision: 0,
         stepSize: 1,
       },
@@ -146,24 +156,28 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
   },
 }));
 
-const createChart = async () => {
-  if (!chartCanvas.value || !chartData.value) return;
-
+const destroyChart = () => {
   if (chartInstance.value) {
-    try {
-      chartInstance.value.stop();
-      chartInstance.value.destroy();
-    } catch (e) {}
+    chartInstance.value.destroy();
     chartInstance.value = null;
-    canvasKey.value += 1;
-    await nextTick();
   }
+};
 
-  if (chartCanvas.value && !chartCanvas.value.id) {
+const createChart = async () => {
+  if (!chartData.value) return;
+
+  destroyChart();
+  
+  canvasKey.value += 1;
+  await nextTick();
+
+  if (!chartCanvas.value) return;
+
+  if (!chartCanvas.value.id) {
     chartCanvas.value.id = canvasId.value;
   }
 
-  const ctx = chartCanvas.value?.getContext('2d');
+  const ctx = chartCanvas.value.getContext('2d');
   if (!ctx) return;
 
   chartInstance.value = new ChartJS(ctx, {
@@ -173,6 +187,10 @@ const createChart = async () => {
   });
 };
 
+watch(isDark, () => {
+  createChart()
+})
+
 watch(() => props.data, async () => {
   if (props.data && props.data.length > 0) {
     await nextTick();
@@ -181,17 +199,21 @@ watch(() => props.data, async () => {
 }, { deep: true });
 
 onMounted(() => {
-  if (props.data && props.data.length > 0) {
-    nextTick(() => createChart());
-  }
-});
+  updateTheme()
+  observer = new MutationObserver(updateTheme)
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  })
+  createChart()
+})
 
 onUnmounted(() => {
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    chartInstance.value = null;
+  if (observer) {
+    observer.disconnect()
   }
-});
+  destroyChart()
+})
 </script>
 
 <style scoped>

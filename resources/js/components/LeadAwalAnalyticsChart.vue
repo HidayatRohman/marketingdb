@@ -1,5 +1,5 @@
 <template>
-  <Card class="w-full">
+  <Card class="w-full dark:bg-gray-800 dark:border-gray-700">
     <CardHeader class="pb-3">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -16,7 +16,7 @@
             variant="outline"
             size="sm"
             @click="$emit('refresh')"
-            class="h-7 px-2 text-xs border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800 sm:h-8 sm:px-3"
+            class="h-7 px-2 text-xs border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200 sm:h-8 sm:px-3"
             title="Refresh Data"
           >
             <RefreshCw class="h-3 w-3" />
@@ -95,9 +95,9 @@
                   </span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <Badge variant="secondary" class="text-xs">{{ item.count }}</Badge>
-                  <span class="text-xs text-gray-500">{{ item.percentage.toFixed(1) }}%</span>
-              </div>
+                  <Badge variant="secondary" class="text-xs dark:bg-gray-700 dark:text-gray-200">{{ item.count }}</Badge>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">{{ item.percentage.toFixed(1) }}%</span>
+                </div>
               </div>
             </div>
           </div>
