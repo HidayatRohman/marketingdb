@@ -34,7 +34,7 @@ interface Props {
   items: { data: Item[]; current_page: number; last_page: number; per_page: number; total: number; prev_page_url: string | null; next_page_url: string | null }
   products: Array<{ id: number; nama: string }>
   allItems: Array<{ nama_pelanggan: string; no_tlp: string; bio_pelanggan?: string | null; tanggal?: string; transaksi: number }>
-  filters: { search?: string; product_id?: number | string; periode_start?: string; periode_end?: string }
+  filters: { search?: string; product_id?: number | string; provinsi?: string; periode_start?: string; periode_end?: string }
   permissions: { canCrud: boolean }
   charts: { dailyTransaksi: Array<{ date: string; total: number }>; dailyByProduct: Array<{ date: string; products: Record<string, number>; total: number }> }
   summary: { totalOmset: number; jumlahTransaksi: number }
@@ -44,6 +44,7 @@ const props = defineProps<Props>()
 const items = computed(() => props.items)
 const search = ref(props.filters.search || '')
 const selectedProduct = ref(props.filters.product_id || '')
+const selectedProvinsi = ref(props.filters.provinsi || '')
 const periodeStart = ref(props.filters.periode_start || '')
 const periodeEnd = ref(props.filters.periode_end || '')
 
@@ -71,12 +72,13 @@ const toYMD = (input?: string | null): string => {
   return local.toISOString().slice(0, 10)
 }
 
-watch([search, selectedProduct, periodeStart, periodeEnd], () => {
+watch([search, selectedProduct, selectedProvinsi, periodeStart, periodeEnd], () => {
   router.get(
     '/cs/repeats',
     {
       search: search.value || undefined,
       product_id: selectedProduct.value || undefined,
+      provinsi: selectedProvinsi.value || undefined,
       periode_start: periodeStart.value || undefined,
       periode_end: periodeEnd.value || undefined,
     },
@@ -281,7 +283,7 @@ const openWhatsApp = (phoneNumber: string, customerName: string) => {
       </div>
 
       <!-- Filter Bar (mobile-friendly) -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 rounded-lg border border-indigo-100 bg-white/70 p-3">
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 rounded-lg border border-indigo-100 bg-white/70 p-3">
         <!-- Cari -->
         <div class="col-span-2 sm:col-span-1">
           <div class="relative">
@@ -303,6 +305,13 @@ const openWhatsApp = (phoneNumber: string, customerName: string) => {
           <select v-model="selectedProduct" class="h-9 w-full rounded border px-2">
             <option value="">Semua Produk</option>
             <option v-for="p in props.products" :key="p.id" :value="p.id">{{ p.nama }}</option>
+          </select>
+        </div>
+        <!-- Provinsi -->
+        <div class="col-span-2 sm:col-span-1">
+          <select v-model="selectedProvinsi" class="h-9 w-full rounded border px-2">
+            <option value="">Semua Provinsi</option>
+            <option v-for="prov in indonesianProvinces" :key="prov" :value="prov">{{ prov }}</option>
           </select>
         </div>
       </div>

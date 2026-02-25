@@ -54,6 +54,9 @@ class CsRepeatController extends Controller
             if ($request->has('product_id') && $request->product_id) {
                 $query->where('product_id', $request->product_id);
             }
+            if ($request->has('provinsi') && $request->provinsi) {
+                $query->where('provinsi', $request->provinsi);
+            }
             // Apply period filter to list items
             $query->whereBetween('tanggal', [$periodeStart, $periodeEnd]);
             $items = $query->latest()->paginate(10)->withQueryString();
@@ -77,6 +80,9 @@ class CsRepeatController extends Controller
             }
             if ($request->has('product_id') && $request->product_id) {
                 $filterQuery->where('product_id', $request->product_id);
+            }
+            if ($request->has('provinsi') && $request->provinsi) {
+                $filterQuery->where('provinsi', $request->provinsi);
             }
             $filterQuery->whereBetween('tanggal', [$startDate, $endDate]);
 
@@ -153,6 +159,7 @@ class CsRepeatController extends Controller
             'filters' => [
                 'search' => $request->search,
                 'product_id' => $request->product_id,
+                'provinsi' => $request->provinsi,
                 'periode_start' => $periodeStart,
                 'periode_end' => $periodeEnd,
             ],
