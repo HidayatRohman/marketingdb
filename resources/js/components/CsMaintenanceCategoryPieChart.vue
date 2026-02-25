@@ -3,10 +3,10 @@
     <CardHeader class="pb-3">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <CardTitle class="text-lg font-semibold text-gray-900 dark:text-white">
+          <CardTitle class="text-lg font-semibold text-foreground dark:text-gray-100">
             {{ title }}
           </CardTitle>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p class="text-sm text-muted-foreground dark:text-gray-300 mt-1">
             {{ subtitleText }}
           </p>
         </div>
@@ -28,7 +28,7 @@
 
   <CardContent>
       <div v-if="loading" class="flex items-center justify-center py-12">
-        <div class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+        <div class="flex items-center gap-3 text-muted-foreground dark:text-gray-300">
           <div class="animate-spin rounded-full h-6 w-6 border-2 border-indigo-500 border-t-transparent"></div>
           <span class="text-sm">Memuat data analisa...</span>
         </div>
@@ -41,8 +41,8 @@
 
         <!-- Legend & Stats -->
         <div v-if="props.data && props.data.length > 0" class="mt-3 grid grid-cols-1 gap-3 sm:mt-4 sm:gap-4 lg:grid-cols-2">
-          <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+          <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800/50">
+            <h4 class="text-sm font-medium text-foreground dark:text-gray-100 mb-2 flex items-center gap-2">
               <Palette class="h-4 w-4" />
               {{ legendTitle }}
             </h4>
@@ -50,24 +50,24 @@
               <div
                 v-for="(label, index) in chartData.labels"
                 :key="index"
-                class="flex items-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-800 px-2 py-1"
+                class="flex items-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-800 px-2 py-1 border border-gray-100 dark:border-gray-700"
               >
                 <div
                   class="w-3 h-3 rounded-full flex-shrink-0"
                   :style="{ backgroundColor: backgroundColors[index] }"
                 ></div>
-                <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate flex-1">
+                <span class="text-xs font-medium text-gray-700 dark:text-gray-200 truncate flex-1">
                   {{ label || 'Unknown' }}
                 </span>
-                <Badge variant="secondary" class="text-xs flex-shrink-0">
+                <Badge variant="secondary" class="text-xs flex-shrink-0 dark:bg-gray-700 dark:text-gray-100">
                   {{ countsByLabel[label] || 0 }}
                 </Badge>
               </div>
             </div>
           </div>
 
-          <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+          <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800/50">
+            <h4 class="text-sm font-medium text-foreground dark:text-gray-100 mb-2 flex items-center gap-2">
               <Clock class="h-4 w-4" />
               Teratas
             </h4>
@@ -75,16 +75,16 @@
               <div
                 v-for="peak in topItems"
                 :key="peak.label"
-                class="flex items-center justify-between rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 px-2 py-1"
+                class="flex items-center justify-between rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40 px-2 py-1 border border-indigo-100 dark:border-indigo-900/50"
               >
-                <span class="text-xs font-medium text-indigo-900 dark:text-indigo-100">
+                <span class="text-xs font-medium text-indigo-900 dark:text-indigo-200">
                   {{ peak.label || 'Unknown' }}
                 </span>
                 <div class="flex items-center gap-1">
-                  <Badge variant="default" class="text-xs">
+                  <Badge variant="default" class="text-xs dark:bg-indigo-600 dark:text-white">
                     {{ peak.count }} data
                   </Badge>
-                  <TrendingUp class="h-3 w-3 text-indigo-500" />
+                  <TrendingUp class="h-3 w-3 text-indigo-500 dark:text-indigo-400" />
                 </div>
               </div>
             </div>
@@ -127,7 +127,7 @@ const props = withDefaults(defineProps<Props>(), {
   emptyMessage: '',
 });
 
-const emit = defineEmits<{ refresh: [] }>();
+defineEmits<{ refresh: [] }>();
 
 // Component state
 const chartCanvas = ref<HTMLCanvasElement>();
@@ -253,42 +253,47 @@ const chartOptions = computed<ChartOptions<'pie'>>(() => ({
 }));
 
 const destroyChart = () => {
-  try {
-    if (chartInstance.value) {
-      chartInstance.value.destroy();
-      chartInstance.value = null;
-    }
-  } catch (_e) {}
+  if (chartInstance.value) {
+    chartInstance.value.destroy();
+    chartInstance.value = null;
+  }
+  
+  // Also try to destroy by canvas ID to be safe
+  if (chartCanvas.value) {
+    const existing = Chart.getChart(chartCanvas.value as any);
+    if (existing) existing.destroy();
+  }
 };
 
 // Chart management
 const createChart = async () => {
-  // Ensure previous chart is destroyed
-  destroyChart();
-  
   if (!chartCanvas.value || !chartData.value) return;
 
+  // Wait for DOM updates first
   await nextTick();
+
+  // Double check canvas exists after tick
+  if (!chartCanvas.value) return;
+
+  // Ensure any existing chart on this canvas is destroyed immediately before creation
+  const existingChart = Chart.getChart(chartCanvas.value as any);
+  if (existingChart) {
+    existingChart.destroy();
+  }
+  
+  if (chartInstance.value) {
+    chartInstance.value.destroy();
+    chartInstance.value = null;
+  }
 
   const ctx = chartCanvas.value.getContext('2d');
   if (!ctx) return;
 
-  chartInstance.value = new Chart(ctx, {
+  chartInstance.value = new Chart(chartCanvas.value, {
     type: 'pie',
     data: chartData.value as any,
     options: chartOptions.value as any,
   });
-};
-
-const updateChart = async () => {
-  if (!chartData.value) return;
-  if (!chartInstance.value) {
-    await createChart();
-    return;
-  }
-  chartInstance.value.data = chartData.value as any;
-  chartInstance.value.options = chartOptions.value as any;
-  chartInstance.value.update('none');
 };
 
 // Watchers
@@ -311,12 +316,6 @@ watch(() => props.loading, async (newLoading) => {
     await createChart();
   }
 });
-
-watch(isDark, async () => {
-  destroyChart()
-  await bumpCanvas()
-  await createChart()
-})
 
 // Lifecycle
 onMounted(async () => {

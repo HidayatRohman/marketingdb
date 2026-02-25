@@ -792,7 +792,7 @@ const breadcrumbs = [
   <Head title="CS Maintenance" />
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="mx-6 mt-6 space-y-6">
-      <div class="relative overflow-hidden rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 p-4 text-indigo-700 sm:p-6">
+      <div class="relative overflow-hidden rounded-xl border border-indigo-100 dark:border-indigo-900 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-950 dark:via-sky-950 dark:to-cyan-950 p-4 text-indigo-700 dark:text-indigo-300 sm:p-6">
         <div class="relative z-10">
           <div class="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
             <div class="flex-1">
@@ -800,10 +800,10 @@ const breadcrumbs = [
                 <WrenchIcon class="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
                 Manajemen CS Maintenance
               </h1>
-              <p class="text-sm text-indigo-700/80">Kelola data CS Maintenance secara konsisten dan rapi.</p>
+              <p class="text-sm text-indigo-700/80 dark:text-indigo-300/80">Kelola data CS Maintenance secara konsisten dan rapi.</p>
             </div>
             <div class="flex items-center gap-2">
-              <Button as-child variant="secondary" class="bg-white/60 hover:bg-white/70 text-indigo-700">
+              <Button as-child variant="secondary" class="bg-white/60 hover:bg-white/70 dark:bg-gray-800/60 dark:hover:bg-gray-800/80 text-indigo-700 dark:text-indigo-300">
                 <a href="/cs/maintenances/create">Tambah</a>
               </Button>
             </div>
@@ -811,44 +811,44 @@ const breadcrumbs = [
         </div>
       </div>
   <Card>
-    <CardHeader class="border-b border-indigo-100/50 bg-gradient-to-br from-indigo-50 via-sky-50 to-cyan-50">
-      <CardTitle>Daftar Maintenance Mitra</CardTitle>
+    <CardHeader class="border-b border-indigo-100/50 dark:border-indigo-900/50 bg-gradient-to-br from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-950 dark:via-sky-950 dark:to-cyan-950">
+      <CardTitle class="dark:text-gray-100">Daftar Maintenance Mitra</CardTitle>
     </CardHeader>
     <CardContent>
         <div class="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between mb-4">
           <div class="flex gap-2 items-center">
-            <Input v-model="q" placeholder="Cari nama/kota/provinsi/kendala/solusi" class="w-64" />
-            <select v-model="productId" class="h-9 rounded border px-2">
+            <Input v-model="q" placeholder="Cari nama/kota/provinsi/kendala/solusi" class="w-64 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
+            <select v-model="productId" class="h-9 rounded border px-2 bg-background border-input dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
               <option value="">Semua Produk</option>
               <option v-for="p in props.products" :key="p.id" :value="p.id">{{ p.nama }}</option>
             </select>
           </div>
         </div>
-        <div v-if="repeatTableLoading" class="py-6 text-sm text-muted-foreground">Memuat data dari Repeat Order…</div>
+        <div v-if="repeatTableLoading" class="py-6 text-sm text-muted-foreground dark:text-gray-400">Memuat data dari Repeat Order…</div>
         <div v-else class="overflow-x-auto responsive-table">
         <table class="min-w-full text-sm">
             <thead>
-              <tr class="text-left border-b">
-                <th class="py-2 px-2 sticky left-0 z-30 bg-background min-w-[120px] sm:min-w-[200px] border-r border-border">
+              <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+                <th class="py-2 px-2 sticky left-0 z-30 bg-gray-50 dark:bg-gray-800 min-w-[120px] sm:min-w-[200px] border-r border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-semibold">
                   <span class="sm:hidden">Nama</span>
                   <span class="hidden sm:inline">Nama Pelanggan</span>
                 </th>
-                <th class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">No Tlp</th>
-                <th class="py-2 px-2">Bio Pelanggan</th>
-                <th class="py-2 px-2">Tanggal Join</th>
-                <th class="py-2 px-2">Produk</th>
-                <th class="py-2 px-2">Kota</th>
-                <th class="py-2 px-2">Provinsi</th>
-                <th class="py-2 px-2">Tanggal Maintenance</th>
-                <th class="py-2 px-2">Kendala</th>
-                <th class="py-2 px-2">Solusi</th>
-                <th class="py-2 px-2">Aksi</th>
+                <th class="py-2 px-2 min-w-[160px] sm:min-w-[240px] bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">No Tlp</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Bio Pelanggan</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Tanggal Join</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Produk</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Kota</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Provinsi</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Tanggal Maintenance</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Kendala</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Solusi</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="it in activeRows" :key="it.id" class="border-b">
-                <td class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-border">{{ it.nama_pelanggan }}</td>
-                <td class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">
+              <tr v-for="it in activeRows" :key="it.id" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                <td class="sticky left-0 z-20 bg-background dark:bg-gray-900 p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">{{ it.nama_pelanggan }}</td>
+                <td class="py-2 px-2 min-w-[160px] sm:min-w-[240px] text-gray-600 dark:text-gray-300">
                   <div class="flex items-center gap-2">
                     <div class="rounded bg-green-100 p-1 dark:bg-green-800">
                       <svg class="h-4 w-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
@@ -864,14 +864,14 @@ const breadcrumbs = [
                     </button>
                   </div>
                 </td>
-                <td class="py-2 px-2">{{ it.bio_pelanggan || '-' }}</td>
-                <td class="py-2 px-2">{{ formatDate(it.join_tanggal || '') }}</td>
-                <td class="py-2 px-2">{{ it.product?.nama || '-' }}</td>
-                <td class="py-2 px-2">{{ it.kota || '-' }}</td>
-                <td class="py-2 px-2">{{ it.provinsi || '-' }}</td>
-                <td class="py-2 px-2">{{ formatDate(it.maintenance_tanggal || '') }}</td>
-                <td class="py-2 px-2">{{ it.kendala || '-' }}</td>
-                <td class="py-2 px-2">{{ it.solusi || '-' }}</td>
+                <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.bio_pelanggan || '-' }}</td>
+                <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ formatDate(it.join_tanggal || '') }}</td>
+                <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.product?.nama || '-' }}</td>
+                <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.kota || '-' }}</td>
+                <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.provinsi || '-' }}</td>
+                <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ formatDate(it.maintenance_tanggal || '') }}</td>
+                <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.kendala || '-' }}</td>
+                <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.solusi || '-' }}</td>
                 <td class="py-2 px-2">
                   <div class="flex gap-2">
                     <Button variant="secondary" @click="openMitraView(it)">View</Button>
@@ -881,7 +881,7 @@ const breadcrumbs = [
                       @click="toggleMitraActive(it)"
                       :class="[
                         'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none',
-                        isInactive(it) ? 'bg-gray-300' : 'bg-blue-500'
+                        isInactive(it) ? 'bg-gray-300 dark:bg-gray-600' : 'bg-blue-500 dark:bg-blue-600'
                       ]"
                       aria-checked="false"
                       role="switch"
@@ -897,7 +897,7 @@ const breadcrumbs = [
                 </td>
               </tr>
               <tr v-if="activeRows.length === 0">
-                <td colspan="11" class="text-center py-6 text-muted-foreground">Tidak ada data Repeat untuk ditampilkan</td>
+                <td colspan="11" class="text-center py-6 text-muted-foreground dark:text-gray-400">Tidak ada data Repeat untuk ditampilkan</td>
               </tr>
             </tbody>
           </table>
@@ -905,30 +905,30 @@ const breadcrumbs = [
       </CardContent>
     </Card>
     <Card>
-      <CardHeader class="border-b border-red-100/50 bg-red-50">
-        <CardTitle>Daftar Mitra Tidak Aktif</CardTitle>
+      <CardHeader class="border-b border-red-100/50 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30">
+        <CardTitle class="dark:text-red-200">Daftar Mitra Tidak Aktif</CardTitle>
       </CardHeader>
       <CardContent>
         <div class="overflow-x-auto responsive-table">
           <table class="min-w-full text-sm">
             <thead>
-              <tr class="text-left border-b">
-                <th class="py-2 px-2 sticky left-0 z-30 bg-background min-w-[120px] sm:min-w-[200px] border-r border-border">Nama Pelanggan</th>
-                <th class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">No Tlp</th>
-                <th class="py-2 px-2">Tanggal Join</th>
-                <th class="py-2 px-2">Produk</th>
-                <th class="py-2 px-2">Kota</th>
-                <th class="py-2 px-2">Provinsi</th>
-                <th class="py-2 px-2">Tanggal Maintenance</th>
-                <th class="py-2 px-2">Kendala</th>
-                <th class="py-2 px-2">Solusi</th>
-                <th class="py-2 px-2">Aksi</th>
+              <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+                <th class="py-2 px-2 sticky left-0 z-30 bg-background dark:bg-gray-900 min-w-[120px] sm:min-w-[200px] border-r border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-semibold">Nama Pelanggan</th>
+                <th class="py-2 px-2 min-w-[160px] sm:min-w-[240px] text-gray-700 dark:text-gray-200 font-semibold">No Tlp</th>
+                <th class="py-2 px-2 text-gray-700 dark:text-gray-200 font-semibold">Tanggal Join</th>
+                <th class="py-2 px-2 text-gray-700 dark:text-gray-200 font-semibold">Produk</th>
+                <th class="py-2 px-2 text-gray-700 dark:text-gray-200 font-semibold">Kota</th>
+                <th class="py-2 px-2 text-gray-700 dark:text-gray-200 font-semibold">Provinsi</th>
+                <th class="py-2 px-2 text-gray-700 dark:text-gray-200 font-semibold">Tanggal Maintenance</th>
+                <th class="py-2 px-2 text-gray-700 dark:text-gray-200 font-semibold">Kendala</th>
+                <th class="py-2 px-2 text-gray-700 dark:text-gray-200 font-semibold">Solusi</th>
+                <th class="py-2 px-2 text-gray-700 dark:text-gray-200 font-semibold">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="it in inactiveRows" :key="mitraKey(it)" class="border-b bg-red-50">
-                <td class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-border">{{ it.nama_pelanggan }}</td>
-                <td class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">
+              <tr v-for="it in inactiveRows" :key="mitraKey(it)" class="border-b border-gray-200 dark:border-gray-700 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
+                <td class="sticky left-0 z-20 bg-background dark:bg-gray-900 p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">{{ it.nama_pelanggan }}</td>
+                <td class="py-2 px-2 min-w-[160px] sm:min-w-[240px] text-gray-600 dark:text-gray-300">
                   <div class="flex items-center gap-2">
                     <div class="rounded bg-green-100 p-1 dark:bg-green-800">
                       <svg class="h-4 w-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
@@ -944,13 +944,13 @@ const breadcrumbs = [
                     </button>
                   </div>
                 </td>
-                <td class="py-2 px-2">{{ formatDate(it.join_tanggal || '') }}</td>
-                <td class="py-2 px-2">{{ it.product?.nama || '-' }}</td>
-                <td class="py-2 px-2">{{ it.kota || '-' }}</td>
-                <td class="py-2 px-2">{{ it.provinsi || '-' }}</td>
-                <td class="py-2 px-2">{{ formatDate(it.maintenance_tanggal || '') }}</td>
-                <td class="py-2 px-2">{{ it.kendala || '-' }}</td>
-                <td class="py-2 px-2">{{ it.solusi || '-' }}</td>
+                <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ formatDate(it.join_tanggal || '') }}</td>
+                <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.product?.nama || '-' }}</td>
+                <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.kota || '-' }}</td>
+                <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.provinsi || '-' }}</td>
+                <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ formatDate(it.maintenance_tanggal || '') }}</td>
+                <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.kendala || '-' }}</td>
+                <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.solusi || '-' }}</td>
                 <td class="py-2 px-2">
                   <div class="flex gap-2">
                     <button
@@ -958,7 +958,7 @@ const breadcrumbs = [
                       @click="toggleMitraActive(it)"
                       :class="[
                         'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none',
-                        isInactive(it) ? 'bg-gray-300' : 'bg-blue-500'
+                        isInactive(it) ? 'bg-gray-300 dark:bg-gray-600' : 'bg-blue-500 dark:bg-blue-600'
                       ]"
                       aria-checked="false"
                       role="switch"
@@ -974,7 +974,7 @@ const breadcrumbs = [
                 </td>
               </tr>
               <tr v-if="inactiveRows.length === 0">
-                <td colspan="10" class="text-center py-6 text-muted-foreground">Tidak ada mitra tidak aktif</td>
+                <td colspan="10" class="text-center py-6 text-muted-foreground dark:text-gray-400">Tidak ada mitra tidak aktif</td>
               </tr>
             </tbody>
       </table>
@@ -984,13 +984,13 @@ const breadcrumbs = [
 
     <Card>
       <CardHeader>
-        <CardTitle>CS Maintenance</CardTitle>
+        <CardTitle class="dark:text-gray-100">CS Maintenance</CardTitle>
       </CardHeader>
       <CardContent>
         <div class="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between mb-4">
           <div class="flex gap-2 items-center">
-            <Input v-model="q" placeholder="Cari nama/chat/kota/provinsi/kendala/solusi" class="w-64" />
-            <select v-model="productId" class="h-9 rounded border px-2">
+            <Input v-model="q" placeholder="Cari nama/chat/kota/provinsi/kendala/solusi" class="w-64 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
+            <select v-model="productId" class="h-9 rounded border px-2 bg-background border-input dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
               <option value="">Semua Produk</option>
               <option v-for="p in props.products" :key="p.id" :value="p.id">{{ p.nama }}</option>
             </select>
@@ -1002,26 +1002,26 @@ const breadcrumbs = [
         <div class="overflow-x-auto responsive-table">
           <table class="min-w-full text-sm">
             <thead>
-              <tr class="text-left border-b">
-                <th class="py-2 px-2 sticky left-0 z-30 bg-background min-w-[120px] sm:min-w-[200px] border-r border-border">
+              <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+                <th class="py-2 px-2 sticky left-0 z-30 bg-gray-50 dark:bg-gray-800 min-w-[120px] sm:min-w-[200px] border-r border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-semibold">
                   <span class="sm:hidden">Nama</span>
                   <span class="hidden sm:inline">Nama Pelanggan</span>
                 </th>
-                <th class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">No Tlp</th>
-                <th class="py-2 px-2">Tanggal</th>
-                <th class="py-2 px-2">Produk</th>
-                <th class="py-2 px-2">Chat</th>
-                <th class="py-2 px-2">Kota</th>
-                <th class="py-2 px-2">Provinsi</th>
-                <th class="py-2 px-2">Kendala</th>
-                <th class="py-2 px-2">Solusi</th>
-                <th class="py-2 px-2">Aksi</th>
+                <th class="py-2 px-2 min-w-[160px] sm:min-w-[240px] bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">No Tlp</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Tanggal</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Produk</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Chat</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Kota</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Provinsi</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Kendala</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Solusi</th>
+                <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="it in props.items.data" :key="it.id" class="border-b">
-                <td class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-border">{{ it.nama_pelanggan }}</td>
-                <td class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">
+              <tr v-for="it in props.items.data" :key="it.id" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                <td class="sticky left-0 z-20 bg-background dark:bg-gray-900 p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">{{ it.nama_pelanggan }}</td>
+                <td class="py-2 px-2 min-w-[160px] sm:min-w-[240px] text-gray-600 dark:text-gray-300">
                   <div class="flex items-center gap-2">
                     <div class="rounded bg-green-100 p-1 dark:bg-green-800">
                       <svg class="h-4 w-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
@@ -1053,20 +1053,20 @@ const breadcrumbs = [
                 </td>
               </tr>
               <tr v-if="props.items.data.length === 0">
-                <td colspan="9" class="text-center py-6 text-muted-foreground">Tidak ada data</td>
+                <td colspan="9" class="text-center py-6 text-muted-foreground dark:text-gray-400">Tidak ada data</td>
               </tr>
             </tbody>
           </table>
         </div>
 
         <div class="mt-4 flex items-center justify-between">
-          <div class="text-sm text-muted-foreground">
+          <div class="text-sm text-muted-foreground dark:text-gray-400">
             Total {{ props.items.total }} data • Hal {{ props.items.current_page }}
           </div>
           <nav aria-label="Pagination" class="flex items-center gap-2">
             <button
               type="button"
-              class="inline-flex items-center rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="inline-flex items-center rounded-md border border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               :disabled="!prevUrl"
               @click="goTo(prevUrl)"
             >Prev</button>
@@ -1080,8 +1080,8 @@ const breadcrumbs = [
                 :class="[
                   'inline-flex items-center rounded-md border px-3 py-1.5 text-sm',
                   ln.active
-                    ? 'border-blue-200 bg-blue-50 text-blue-700 font-medium'
-                    : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100'
+                    ? 'border-blue-200 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-medium'
+                    : 'border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 ]"
               >{{ ln.label }}</button>
             </template>
@@ -1094,15 +1094,15 @@ const breadcrumbs = [
                 :class="[
                   'inline-flex items-center rounded-md border px-3 py-1.5 text-sm',
                   (props.items.current_page === p)
-                    ? 'border-blue-200 bg-blue-50 text-blue-700 font-medium'
-                    : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100'
+                    ? 'border-blue-200 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-medium'
+                    : 'border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 ]"
               >{{ p }}</button>
             </template>
 
             <button
               type="button"
-              class="inline-flex items-center rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="inline-flex items-center rounded-md border border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               :disabled="!nextUrl"
               @click="goTo(nextUrl)"
             >Next</button>
@@ -1114,17 +1114,17 @@ const breadcrumbs = [
     <!-- Report Grafik: ditempatkan di bawah CS Maintenance -->
     <Card>
       <CardHeader>
-        <CardTitle>Report Grafik (CS Maintenance)</CardTitle>
+        <CardTitle class="dark:text-gray-100">Report Grafik (CS Maintenance)</CardTitle>
       </CardHeader>
       <CardContent>
         <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between mb-4">
           <div class="flex items-center gap-2">
-            <Input type="date" v-model="startDate" class="w-40" />
-            <span class="text-sm text-muted-foreground">s/d</span>
-            <Input type="date" v-model="endDate" class="w-40" />
-            <Button variant="outline" @click="fetchDaily">Terapkan</Button>
+            <Input type="date" v-model="startDate" class="w-40 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
+            <span class="text-sm text-muted-foreground dark:text-gray-400">s/d</span>
+            <Input type="date" v-model="endDate" class="w-40 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
+            <Button variant="outline" @click="fetchDaily" class="dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800">Terapkan</Button>
           </div>
-          <div class="text-sm text-muted-foreground" v-if="chartLoading">Memuat grafik…</div>
+          <div class="text-sm text-muted-foreground dark:text-gray-400" v-if="chartLoading">Memuat grafik…</div>
         </div>
         <CsMaintenanceDailyChart :data="dailyData" :startDate="startDate" :endDate="endDate" @refresh="fetchDaily" />
   </CardContent>
@@ -1132,45 +1132,45 @@ const breadcrumbs = [
 
   <!-- Mitra Perhatian Maintenance dipindah tepat di bawah CS Maintenance dan di atas Report Grafik -->
   <Card class="mt-6">
-    <CardHeader class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-indigo-100/50 bg-gradient-to-br from-indigo-50 via-sky-50 to-cyan-50">
-      <CardTitle>Mitra Perhatian Maintenance</CardTitle>
+    <CardHeader class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-indigo-100/50 dark:border-indigo-900/50 bg-gradient-to-br from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-950/40 dark:via-sky-950/40 dark:to-cyan-950/40">
+      <CardTitle class="dark:text-gray-100">Mitra Perhatian Maintenance</CardTitle>
       <div class="flex w-full items-center gap-2 mt-1 sm:mt-0 sm:w-auto sm:justify-end">
         <div class="relative flex-1 sm:flex-none">
-          <Input v-model="q" placeholder="Cari nama/no tlp" class="w-full sm:w-64" />
+          <Input v-model="q" placeholder="Cari nama/no tlp" class="w-full sm:w-64 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
         </div>
-        <input type="date" v-model="repeatStartDate" class="h-9 rounded border px-2" title="Tanggal mulai" />
-        <input type="date" v-model="repeatEndDate" class="h-9 rounded border px-2" title="Tanggal selesai" />
-        <Input v-model="repeatMinTransaksi" placeholder="Min Rp" class="w-28" />
-        <Input v-model="repeatMaxTransaksi" placeholder="Max Rp" class="w-28" />
+        <input type="date" v-model="repeatStartDate" class="h-9 rounded border px-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" title="Tanggal mulai" />
+        <input type="date" v-model="repeatEndDate" class="h-9 rounded border px-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" title="Tanggal selesai" />
+        <Input v-model="repeatMinTransaksi" placeholder="Min Rp" class="w-28 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
+        <Input v-model="repeatMaxTransaksi" placeholder="Max Rp" class="w-28 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
       </div>
     </CardHeader>
     <CardContent class="pt-4">
       <div class="overflow-x-auto responsive-table">
         <table class="min-w-full text-sm">
           <thead>
-            <tr class="text-left border-b">
-              <th class="py-2 px-2 sticky left-0 z-30 bg-background min-w-[120px] sm:min-w-[200px] border-r border-border">
+            <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+              <th class="py-2 px-2 sticky left-0 z-30 bg-gray-50 dark:bg-gray-800 min-w-[120px] sm:min-w-[200px] border-r border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-semibold">
                 <span class="sm:hidden">Nama</span>
                 <span class="hidden sm:inline">Nama Pelanggan</span>
               </th>
-              <th class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">No Tlp</th>
-              <th class="py-2 px-2">Bio Pelanggan</th>
-              <th class="py-2 px-2">Tanggal</th>
-              <th class="py-2 px-2">Produk</th>
-              <th class="py-2 px-2">Kota</th>
-              <th class="py-2 px-2">Provinsi</th>
-              <th class="py-2 px-2">Transaksi</th>
-              <th class="py-2 px-2">Keterangan</th>
+              <th class="py-2 px-2 min-w-[160px] sm:min-w-[240px] bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">No Tlp</th>
+              <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Bio Pelanggan</th>
+              <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Tanggal</th>
+              <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Produk</th>
+              <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Kota</th>
+              <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Provinsi</th>
+              <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Transaksi</th>
+              <th class="py-2 px-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold">Keterangan</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="it in repeatFilteredItems" :key="it.id" class="border-b">
-              <td class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-border">{{ it.nama_pelanggan }}</td>
-              <td class="py-2 px-2 min-w-[160px] sm:min-w-[240px]">
+            <tr v-for="it in repeatFilteredItems" :key="it.id" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+              <td class="sticky left-0 z-20 bg-background dark:bg-gray-900 p-2 sm:p-3 font-medium text-xs sm:text-base min-w-[120px] sm:min-w-[200px] border-r border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">{{ it.nama_pelanggan }}</td>
+              <td class="py-2 px-2 min-w-[160px] sm:min-w-[240px] text-gray-600 dark:text-gray-300">
                 <div class="flex items-center gap-2">
                   <div class="rounded bg-green-100 p-1 dark:bg-green-800">
                     <svg class="h-4 w-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h..005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
                     </svg>
                   </div>
                   <button
@@ -1182,16 +1182,16 @@ const breadcrumbs = [
                   </button>
                 </div>
               </td>
-              <td class="py-2 px-2">{{ it.bio_pelanggan || '-' }}</td>
-              <td class="py-2 px-2">{{ formatDate(it.tanggal) }}</td>
-              <td class="py-2 px-2">{{ it.product?.nama || '-' }}</td>
-              <td class="py-2 px-2">{{ it.kota || '-' }}</td>
-              <td class="py-2 px-2">{{ it.provinsi || '-' }}</td>
-              <td class="py-2 px-2">{{ formatCurrency(it.transaksi || 0) }}</td>
-              <td class="py-2 px-2">{{ it.keterangan || '-' }}</td>
+              <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.bio_pelanggan || '-' }}</td>
+              <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ formatDate(it.tanggal) }}</td>
+              <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.product?.nama || '-' }}</td>
+              <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.kota || '-' }}</td>
+              <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.provinsi || '-' }}</td>
+              <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ formatCurrency(it.transaksi || 0) }}</td>
+              <td class="py-2 px-2 text-gray-600 dark:text-gray-300">{{ it.keterangan || '-' }}</td>
             </tr>
             <tr v-if="repeatItems.length === 0">
-              <td colspan="9" class="text-center py-6 text-muted-foreground">Tidak ada data</td>
+              <td colspan="9" class="text-center py-6 text-muted-foreground dark:text-gray-400">Tidak ada data</td>
             </tr>
           </tbody>
         </table>
@@ -1226,30 +1226,30 @@ const breadcrumbs = [
 
     <!-- Dialog View Detail CS Maintenance -->
     <Dialog :open="showView" @update:open="(v:boolean)=> showView = v">
-      <DialogScrollContent class="sm:max-w-md">
+      <DialogScrollContent class="sm:max-w-md dark:bg-gray-900 dark:border-gray-800">
         <DialogHeader class="bg-gradient-to-r from-indigo-600 via-sky-600 to-cyan-600 text-white rounded-t-md -mx-6 -mt-6 px-6 py-3">
           <DialogTitle>Detail CS Maintenance</DialogTitle>
         </DialogHeader>
-        <div v-if="viewItem" class="space-y-3 text-sm">
+        <div v-if="viewItem" class="space-y-3 text-sm text-gray-700 dark:text-gray-300">
           <div class="grid grid-cols-3 gap-2">
-            <div class="font-semibold text-black">Nama</div>
-            <div class="col-span-2 font-medium">{{ viewItem.nama_pelanggan }}</div>
+            <div class="font-semibold text-gray-900 dark:text-gray-100">Nama</div>
+            <div class="col-span-2 font-medium text-gray-800 dark:text-gray-200">{{ viewItem.nama_pelanggan }}</div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div class="font-semibold text-black">No Tlp</div>
+            <div class="font-semibold text-gray-900 dark:text-gray-100">No Tlp</div>
             <div class="col-span-2">{{ viewItem.no_tlp }}</div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div class="font-semibold text-black">Kota</div>
+            <div class="font-semibold text-gray-900 dark:text-gray-100">Kota</div>
             <div class="col-span-2">{{ viewItem.kota || '-' }}</div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div class="font-semibold text-black">Provinsi</div>
+            <div class="font-semibold text-gray-900 dark:text-gray-100">Provinsi</div>
             <div class="col-span-2">{{ viewItem.provinsi || '-' }}</div>
           </div>
 
           <div v-if="timelineEvents.length >= 1" class="mt-6">
-            <div class="text-sm font-semibold text-indigo-700 border border-indigo-100/50 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-900/40 dark:via-sky-900/30 dark:to-cyan-900/30 rounded-md px-3 py-2">Histori Maintenance</div>
+            <div class="text-sm font-semibold text-indigo-700 dark:text-indigo-300 border border-indigo-100/50 dark:border-indigo-900/50 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-900/40 dark:via-sky-900/30 dark:to-cyan-900/30 rounded-md px-3 py-2">Histori Maintenance</div>
             <div class="relative mt-3 pl-8 pr-2 max-h-64 overflow-y-auto">
               <div class="absolute left-3 top-0 h-full w-0.5 bg-indigo-200 dark:bg-indigo-800"></div>
               <div v-for="e in timelineEvents" :key="e.id" class="relative mb-4">
@@ -1257,8 +1257,8 @@ const breadcrumbs = [
                 <div class="grid grid-cols-[120px_1fr] gap-3">
                   <div class="text-indigo-700 dark:text-indigo-300 font-semibold">{{ formatDate(e.tanggal) }}</div>
                   <div class="col-span-2">
-                    <div class="text-xs"><span class="font-semibold text-black">Kendala:</span> <span class="text-gray-600 dark:text-gray-400">{{ e.kendala || '-' }}</span></div>
-                    <div class="text-xs"><span class="font-semibold text-black">Solusi:</span> <span class="text-gray-600 dark:text-gray-400">{{ e.solusi || '-' }}</span></div>
+                    <div class="text-xs"><span class="font-semibold text-gray-900 dark:text-gray-100">Kendala:</span> <span class="text-gray-600 dark:text-gray-400">{{ e.kendala || '-' }}</span></div>
+                    <div class="text-xs"><span class="font-semibold text-gray-900 dark:text-gray-100">Solusi:</span> <span class="text-gray-600 dark:text-gray-400">{{ e.solusi || '-' }}</span></div>
                   </div>
                 </div>
               </div>
@@ -1266,46 +1266,46 @@ const breadcrumbs = [
           </div>
         </div>
         <div class="flex justify-end gap-2 mt-4">
-          <Button variant="outline" @click="closeView">Tutup</Button>
-          <Button v-if="viewItem" @click="openEdit(viewItem as any)">Edit</Button>
-          <Button v-if="viewItem" variant="secondary" @click="openMaintenanceFromView(viewItem as any)">Maintenance</Button>
+          <Button variant="outline" @click="closeView" class="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700">Tutup</Button>
+          <Button v-if="viewItem" @click="openEdit(viewItem as any)" class="dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-700">Edit</Button>
+          <Button v-if="viewItem" variant="secondary" @click="openMaintenanceFromView(viewItem as any)" class="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">Maintenance</Button>
         </div>
       </DialogScrollContent>
     </Dialog>
 
     <!-- Dialog Edit CS Maintenance -->
     <Dialog :open="showEdit" @update:open="(v:boolean)=> showEdit = v">
-      <DialogScrollContent class="sm:max-w-xl">
+      <DialogScrollContent class="sm:max-w-xl dark:bg-gray-900 dark:border-gray-800">
         <DialogHeader>
-          <DialogTitle>Edit CS Maintenance</DialogTitle>
+          <DialogTitle class="dark:text-gray-100">Edit CS Maintenance</DialogTitle>
         </DialogHeader>
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium mb-1">Tanggal</label>
-            <Input v-model="editForm.tanggal" type="date" />
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">Tanggal</label>
+            <Input v-model="editForm.tanggal" type="date" class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
             <div v-if="editForm.errors.tanggal" class="text-sm text-red-600 mt-1">{{ editForm.errors.tanggal }}</div>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Nama Pelanggan</label>
-            <Input v-model="editForm.nama_pelanggan" />
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">Nama Pelanggan</label>
+            <Input v-model="editForm.nama_pelanggan" class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
             <div v-if="editForm.errors.nama_pelanggan" class="text-sm text-red-600 mt-1">{{ editForm.errors.nama_pelanggan }}</div>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">No Tlp</label>
-            <Input v-model="editForm.no_tlp" />
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">No Tlp</label>
+            <Input v-model="editForm.no_tlp" class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
             <div v-if="editForm.errors.no_tlp" class="text-sm text-red-600 mt-1">{{ editForm.errors.no_tlp }}</div>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Produk</label>
-            <select v-model="editForm.product_id" class="h-9 rounded border px-2 w-full">
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">Produk</label>
+            <select v-model="editForm.product_id" class="h-9 rounded border px-2 w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
               <option value="">-- Pilih Produk --</option>
               <option v-for="p in props.products" :key="p.id" :value="p.id">{{ p.nama }}</option>
             </select>
             <div v-if="editForm.errors.product_id" class="text-sm text-red-600 mt-1">{{ editForm.errors.product_id }}</div>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Chat</label>
-            <select v-model="editForm.chat" class="h-9 rounded border px-2 w-full">
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">Chat</label>
+            <select v-model="editForm.chat" class="h-9 rounded border px-2 w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
               <option value="">-- Pilih Status Chat --</option>
               <option value="Baru">Baru</option>
               <option value="Follow Up">Follow Up</option>
@@ -1316,29 +1316,29 @@ const breadcrumbs = [
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium mb-1">Kota</label>
-              <Input v-model="editForm.kota" />
+              <label class="block text-sm font-medium mb-1 dark:text-gray-200">Kota</label>
+              <Input v-model="editForm.kota" class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
               <div v-if="editForm.errors.kota" class="text-sm text-red-600 mt-1">{{ editForm.errors.kota }}</div>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Provinsi</label>
-              <select v-model="editForm.provinsi" class="h-9 rounded border px-2 w-full">
+              <label class="block text-sm font-medium mb-1 dark:text-gray-200">Provinsi</label>
+              <select v-model="editForm.provinsi" class="h-9 rounded border px-2 w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
                 <option v-for="province in indonesianProvinces" :key="province" :value="province">{{ province }}</option>
               </select>
               <div v-if="editForm.errors.provinsi" class="text-sm text-red-600 mt-1">{{ editForm.errors.provinsi }}</div>
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Kendala</label>
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">Kendala</label>
             <DropdownMenu :open="editKendalaOpen" @update:open="(v:boolean)=> editKendalaOpen = v">
               <DropdownMenuTrigger :as-child="true">
-                <button type="button" class="h-9 rounded border px-2 w-full flex items-center justify-between">
+                <button type="button" class="h-9 rounded border px-2 w-full flex items-center justify-between dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
                   <span class="truncate">{{ editForm.kendala || '-- Pilih Kendala --' }}</span>
                   <svg class="h-4 w-4 opacity-60" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.29a.75.75 0 01-.02-1.08z"/></svg>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent class="w-80">
-                <DropdownMenuItem @click="editForm.kendala = ''; editKendalaOpen = false">-- Pilih Kendala --</DropdownMenuItem>
+              <DropdownMenuContent class="w-80 dark:bg-gray-800 dark:border-gray-700">
+                <DropdownMenuItem @click="editForm.kendala = ''; editKendalaOpen = false" class="dark:text-gray-200 dark:hover:bg-gray-700">-- Pilih Kendala --</DropdownMenuItem>
                 <div class="px-2 py-1">
                   <Input
                     v-model="editKendalaSearch"
@@ -1347,29 +1347,30 @@ const breadcrumbs = [
                     @keyup.stop
                     @keypress.stop
                     @input.stop
+                    class="dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100"
                   />
                 </div>
                 <div class="max-h-48 overflow-y-auto">
-                  <DropdownMenuItem v-for="k in filteredKendalasEdit" :key="k" @click="editForm.kendala = k; editKendalaOpen = false">
+                  <DropdownMenuItem v-for="k in filteredKendalasEdit" :key="k" @click="editForm.kendala = k; editKendalaOpen = false" class="dark:text-gray-200 dark:hover:bg-gray-700">
                     {{ k }}
                   </DropdownMenuItem>
-                  <div v-if="filteredKendalasEdit.length === 0" class="px-3 py-2 text-sm text-gray-500">Tidak ada hasil</div>
+                  <div v-if="filteredKendalasEdit.length === 0" class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">Tidak ada hasil</div>
                 </div>
               </DropdownMenuContent>
             </DropdownMenu>
             <div v-if="editForm.errors.kendala" class="text-sm text-red-600 mt-1">{{ editForm.errors.kendala }}</div>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Solusi</label>
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">Solusi</label>
             <DropdownMenu :open="editSolusiOpen" @update:open="(v:boolean)=> editSolusiOpen = v">
               <DropdownMenuTrigger :as-child="true">
-                <button type="button" class="h-9 rounded border px-2 w-full flex items-center justify-between">
+                <button type="button" class="h-9 rounded border px-2 w-full flex items-center justify-between dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
                   <span class="truncate">{{ editForm.solusi || '-- Pilih Solusi --' }}</span>
                   <svg class="h-4 w-4 opacity-60" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.29a.75.75 0 01-.02-1.08z"/></svg>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent class="w-80">
-                <DropdownMenuItem @click="editForm.solusi = ''; editSolusiOpen = false">-- Pilih Solusi --</DropdownMenuItem>
+              <DropdownMenuContent class="w-80 dark:bg-gray-800 dark:border-gray-700">
+                <DropdownMenuItem @click="editForm.solusi = ''; editSolusiOpen = false" class="dark:text-gray-200 dark:hover:bg-gray-700">-- Pilih Solusi --</DropdownMenuItem>
                 <div class="px-2 py-1">
                   <Input
                     v-model="editSolusiSearch"
@@ -1378,21 +1379,22 @@ const breadcrumbs = [
                     @keyup.stop
                     @keypress.stop
                     @input.stop
+                    class="dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100"
                   />
                 </div>
                 <div class="max-h-48 overflow-y-auto">
-                  <DropdownMenuItem v-for="s in filteredSolusisEdit" :key="s" @click="editForm.solusi = s; editSolusiOpen = false">
+                  <DropdownMenuItem v-for="s in filteredSolusisEdit" :key="s" @click="editForm.solusi = s; editSolusiOpen = false" class="dark:text-gray-200 dark:hover:bg-gray-700">
                     {{ s }}
                   </DropdownMenuItem>
-                  <div v-if="filteredSolusisEdit.length === 0" class="px-3 py-2 text-sm text-gray-500">Tidak ada hasil</div>
+                  <div v-if="filteredSolusisEdit.length === 0" class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">Tidak ada hasil</div>
                 </div>
               </DropdownMenuContent>
             </DropdownMenu>
             <div v-if="editForm.errors.solusi" class="text-sm text-red-600 mt-1">{{ editForm.errors.solusi }}</div>
           </div>
           <div class="flex justify-end gap-2">
-            <Button variant="outline" @click="showEdit = false">Batal</Button>
-            <Button :disabled="editForm.processing" @click="submitEdit">Simpan</Button>
+            <Button variant="outline" @click="showEdit = false" class="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700">Batal</Button>
+            <Button :disabled="editForm.processing" @click="submitEdit" class="dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-700">Simpan</Button>
           </div>
         </div>
       </DialogScrollContent>
@@ -1400,37 +1402,37 @@ const breadcrumbs = [
 
     <!-- Dialog Tambah Maintenance -->
     <Dialog :open="showMaintenance" @update:open="(v:boolean)=> showMaintenance = v">
-      <DialogScrollContent class="sm:max-w-xl">
+      <DialogScrollContent class="sm:max-w-xl dark:bg-gray-900 dark:border-gray-800">
         <DialogHeader>
-          <DialogTitle>Tambah Histori Maintenance</DialogTitle>
+          <DialogTitle class="dark:text-gray-100">Tambah Histori Maintenance</DialogTitle>
         </DialogHeader>
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium mb-1">Tanggal</label>
-            <Input v-model="maintenanceForm.tanggal" type="date" />
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">Tanggal</label>
+            <Input v-model="maintenanceForm.tanggal" type="date" class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
             <div v-if="maintenanceForm.errors.tanggal" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.tanggal }}</div>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Nama Pelanggan</label>
-            <Input v-model="maintenanceForm.nama_pelanggan" />
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">Nama Pelanggan</label>
+            <Input v-model="maintenanceForm.nama_pelanggan" class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
             <div v-if="maintenanceForm.errors.nama_pelanggan" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.nama_pelanggan }}</div>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">No Tlp</label>
-            <Input v-model="maintenanceForm.no_tlp" />
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">No Tlp</label>
+            <Input v-model="maintenanceForm.no_tlp" class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
             <div v-if="maintenanceForm.errors.no_tlp" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.no_tlp }}</div>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Produk</label>
-            <select v-model="maintenanceForm.product_id" class="h-9 rounded border px-2 w-full">
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">Produk</label>
+            <select v-model="maintenanceForm.product_id" class="h-9 rounded border px-2 w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
               <option value="">-- Pilih Produk --</option>
               <option v-for="p in props.products" :key="p.id" :value="p.id">{{ p.nama }}</option>
             </select>
             <div v-if="maintenanceForm.errors.product_id" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.product_id }}</div>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Chat</label>
-            <select v-model="maintenanceForm.chat" class="h-9 rounded border px-2 w-full">
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">Chat</label>
+            <select v-model="maintenanceForm.chat" class="h-9 rounded border px-2 w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
               <option value="">-- Pilih Status Chat --</option>
               <option value="Baru">Baru</option>
               <option value="Follow Up">Follow Up</option>
@@ -1441,67 +1443,67 @@ const breadcrumbs = [
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium mb-1">Kota</label>
-              <Input v-model="maintenanceForm.kota" />
+              <label class="block text-sm font-medium mb-1 dark:text-gray-200">Kota</label>
+              <Input v-model="maintenanceForm.kota" class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
               <div v-if="maintenanceForm.errors.kota" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.kota }}</div>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Provinsi</label>
-              <select v-model="maintenanceForm.provinsi" class="h-9 rounded border px-2 w-full">
+              <label class="block text-sm font-medium mb-1 dark:text-gray-200">Provinsi</label>
+              <select v-model="maintenanceForm.provinsi" class="h-9 rounded border px-2 w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
                 <option v-for="province in indonesianProvinces" :key="province" :value="province">{{ province }}</option>
               </select>
               <div v-if="maintenanceForm.errors.provinsi" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.provinsi }}</div>
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Kendala</label>
-            <select v-model="maintenanceForm.kendala" class="h-9 rounded border px-2 w-full">
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">Kendala</label>
+            <select v-model="maintenanceForm.kendala" class="h-9 rounded border px-2 w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
               <option value="">-- Pilih Kendala --</option>
               <option v-for="k in kendalaOptions" :key="k" :value="k">{{ k }}</option>
             </select>
             <div v-if="maintenanceForm.errors.kendala" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.kendala }}</div>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Solusi</label>
-            <select v-model="maintenanceForm.solusi" class="h-9 rounded border px-2 w-full">
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">Solusi</label>
+            <select v-model="maintenanceForm.solusi" class="h-9 rounded border px-2 w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
               <option value="">-- Pilih Solusi --</option>
               <option v-for="s in solusiOptions" :key="s" :value="s">{{ s }}</option>
             </select>
             <div v-if="maintenanceForm.errors.solusi" class="text-sm text-red-600 mt-1">{{ maintenanceForm.errors.solusi }}</div>
           </div>
           <div class="flex justify-end gap-2">
-            <Button variant="outline" @click="showMaintenance = false">Batal</Button>
-            <Button :disabled="maintenanceForm.processing" @click="submitMaintenance">Simpan</Button>
+            <Button variant="outline" @click="showMaintenance = false" class="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700">Batal</Button>
+            <Button :disabled="maintenanceForm.processing" @click="submitMaintenance" class="dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-700">Simpan</Button>
           </div>
         </div>
       </DialogScrollContent>
     </Dialog>
     <!-- Modals: Mitra View & Edit (khusus kartu Daftar Maintenance Mitra) -->
     <Dialog :open="showMitraView" @update:open="(v:boolean)=> showMitraView = v">
-      <DialogScrollContent class="sm:max-w-md">
+      <DialogScrollContent class="sm:max-w-md dark:bg-gray-900 dark:border-gray-800">
         <DialogHeader class="bg-gradient-to-r from-indigo-600 via-sky-600 to-cyan-600 text-white rounded-t-md -mx-6 -mt-6 px-6 py-3">
-          <DialogTitle>Detail CS Maintenance</DialogTitle>
+          <DialogTitle class="text-white">Detail CS Maintenance</DialogTitle>
         </DialogHeader>
         <div v-if="mitraItem" class="space-y-3 text-sm">
           <div class="grid grid-cols-3 gap-2">
-            <div class="font-semibold text-black">Nama</div>
-            <div class="col-span-2 font-medium">{{ mitraItem.nama_pelanggan }}</div>
+            <div class="font-semibold text-black dark:text-gray-200">Nama</div>
+            <div class="col-span-2 font-medium dark:text-gray-300">{{ mitraItem.nama_pelanggan }}</div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div class="font-semibold text-black">No Tlp</div>
-            <div class="col-span-2">{{ mitraItem.no_tlp }}</div>
+            <div class="font-semibold text-black dark:text-gray-200">No Tlp</div>
+            <div class="col-span-2 dark:text-gray-300">{{ mitraItem.no_tlp }}</div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div class="font-semibold text-black">Kota</div>
-            <div class="col-span-2">{{ mitraItem.kota || '-' }}</div>
+            <div class="font-semibold text-black dark:text-gray-200">Kota</div>
+            <div class="col-span-2 dark:text-gray-300">{{ mitraItem.kota || '-' }}</div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div class="font-semibold text-black">Provinsi</div>
-            <div class="col-span-2">{{ mitraItem.provinsi || '-' }}</div>
+            <div class="font-semibold text-black dark:text-gray-200">Provinsi</div>
+            <div class="col-span-2 dark:text-gray-300">{{ mitraItem.provinsi || '-' }}</div>
           </div>
 
           <div v-if="mitraTimelineEvents.length >= 1" class="mt-6">
-            <div class="text-sm font-semibold text-indigo-700 border border-indigo-100/50 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-900/40 dark:via-sky-900/30 dark:to-cyan-900/30 rounded-md px-3 py-2">Histori Maintenance</div>
+            <div class="text-sm font-semibold text-indigo-700 dark:text-indigo-300 border border-indigo-100/50 dark:border-indigo-900/50 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-900/40 dark:via-sky-900/30 dark:to-cyan-900/30 rounded-md px-3 py-2">Histori Maintenance</div>
             <div class="relative mt-3 pl-8 pr-2 max-h-64 overflow-y-auto">
               <div class="absolute left-3 top-0 h-full w-0.5 bg-indigo-200 dark:bg-indigo-800"></div>
               <div v-for="e in mitraTimelineEvents" :key="e.id" class="relative mb-4">
@@ -1509,8 +1511,8 @@ const breadcrumbs = [
                 <div class="grid grid-cols-[120px_1fr] gap-3">
                   <div class="text-indigo-700 dark:text-indigo-300 font-semibold">{{ formatDate(e.tanggal) }}</div>
                   <div class="col-span-2">
-                    <div class="text-xs"><span class="font-semibold text-black">Kendala:</span> <span class="text-gray-600 dark:text-gray-400">{{ e.kendala || '-' }}</span></div>
-                    <div class="text-xs"><span class="font-semibold text-black">Solusi:</span> <span class="text-gray-600 dark:text-gray-400">{{ e.solusi || '-' }}</span></div>
+                    <div class="text-xs"><span class="font-semibold text-black dark:text-gray-200">Kendala:</span> <span class="text-gray-600 dark:text-gray-400">{{ e.kendala || '-' }}</span></div>
+                    <div class="text-xs"><span class="font-semibold text-black dark:text-gray-200">Solusi:</span> <span class="text-gray-600 dark:text-gray-400">{{ e.solusi || '-' }}</span></div>
                   </div>
                 </div>
               </div>
@@ -1518,8 +1520,8 @@ const breadcrumbs = [
           </div>
         </div>
         <div class="flex justify-end gap-2 mt-4">
-          <Button variant="outline" @click="showMitraView = false">Tutup</Button>
-          <Button v-if="mitraItem" @click="openMitraEdit(mitraItem as any)">Edit</Button>
+          <Button variant="outline" @click="showMitraView = false" class="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700">Tutup</Button>
+          <Button v-if="mitraItem" @click="openMitraEdit(mitraItem as any)" class="dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-700">Edit</Button>
           <Button v-if="mitraItem" variant="secondary" @click="openMaintenanceFromView({
             id: 0,
             nama_pelanggan: mitraItem!.nama_pelanggan,
@@ -1531,59 +1533,59 @@ const breadcrumbs = [
             provinsi: mitraItem!.provinsi || 'Unknown',
             kendala: '',
             solusi: ''
-          } as any)">Maintenance</Button>
+          } as any)" class="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">Maintenance</Button>
         </div>
       </DialogScrollContent>
     </Dialog>
 
     <Dialog :open="showMitraEdit" @update:open="(v:boolean)=> showMitraEdit = v">
-      <DialogScrollContent class="sm:max-w-lg">
+      <DialogScrollContent class="sm:max-w-lg dark:bg-gray-900 dark:border-gray-800">
         <DialogHeader>
-          <DialogTitle>Edit Kendala & Solusi (Mitra)</DialogTitle>
-          <DialogDescription>Hanya Kendala dan Solusi yang dapat diedit. Data lain bersifat readonly.</DialogDescription>
+          <DialogTitle class="dark:text-gray-100">Edit Kendala & Solusi (Mitra)</DialogTitle>
+          <DialogDescription class="dark:text-gray-400">Hanya Kendala dan Solusi yang dapat diedit. Data lain bersifat readonly.</DialogDescription>
         </DialogHeader>
         <div class="space-y-3">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block text-sm font-medium mb-1">Tanggal Maintenance</label>
-              <Input v-model="mitraEditForm.tanggal" type="date" />
+              <label class="block text-sm font-medium mb-1 dark:text-gray-200">Tanggal Maintenance</label>
+              <Input v-model="mitraEditForm.tanggal" type="date" class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
               <div v-if="mitraEditForm.errors.tanggal" class="text-sm text-red-600 mt-1">{{ mitraEditForm.errors.tanggal }}</div>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Nama Pelanggan</label>
-              <Input v-model="mitraEditForm.nama_pelanggan" readonly />
+              <label class="block text-sm font-medium mb-1 dark:text-gray-200">Nama Pelanggan</label>
+              <Input v-model="mitraEditForm.nama_pelanggan" readonly class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:bg-gray-900/50" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">No Tlp</label>
-              <Input v-model="mitraEditForm.no_tlp" readonly />
+              <label class="block text-sm font-medium mb-1 dark:text-gray-200">No Tlp</label>
+              <Input v-model="mitraEditForm.no_tlp" readonly class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:bg-gray-900/50" />
             </div>
             <div class="sm:col-span-2">
-              <label class="block text-sm font-medium mb-1">Bio Pelanggan</label>
-              <Input v-model="mitraEditForm.bio_pelanggan" readonly />
+              <label class="block text-sm font-medium mb-1 dark:text-gray-200">Bio Pelanggan</label>
+              <Input v-model="mitraEditForm.bio_pelanggan" readonly class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:bg-gray-900/50" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Produk</label>
-              <Input :model-value="mitraEditProductName" readonly />
+              <label class="block text-sm font-medium mb-1 dark:text-gray-200">Produk</label>
+              <Input :model-value="mitraEditProductName" readonly class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:bg-gray-900/50" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Kota</label>
-              <Input v-model="mitraEditForm.kota" readonly />
+              <label class="block text-sm font-medium mb-1 dark:text-gray-200">Kota</label>
+              <Input v-model="mitraEditForm.kota" readonly class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:bg-gray-900/50" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Provinsi</label>
-              <Input v-model="mitraEditForm.provinsi" readonly />
+              <label class="block text-sm font-medium mb-1 dark:text-gray-200">Provinsi</label>
+              <Input v-model="mitraEditForm.provinsi" readonly class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:bg-gray-900/50" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Kendala</label>
+              <label class="block text-sm font-medium mb-1 dark:text-gray-200">Kendala</label>
               <DropdownMenu :open="kendalaOpen" @update:open="(v:boolean)=> kendalaOpen = v">
                 <DropdownMenuTrigger :as-child="true">
-                  <button type="button" class="h-9 rounded border px-2 w-full flex items-center justify-between">
+                  <button type="button" class="h-9 rounded border px-2 w-full flex items-center justify-between dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
                     <span class="truncate">{{ mitraEditForm.kendala || '-- Pilih Kendala --' }}</span>
                     <svg class="h-4 w-4 opacity-60" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.29a.75.75 0 01-.02-1.08z"/></svg>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent class="w-80">
-                  <DropdownMenuItem @click="mitraEditForm.kendala = ''; kendalaOpen = false">-- Pilih Kendala --</DropdownMenuItem>
+                <DropdownMenuContent class="w-80 dark:bg-gray-800 dark:border-gray-700">
+                  <DropdownMenuItem @click="mitraEditForm.kendala = ''; kendalaOpen = false" class="dark:text-gray-200 dark:hover:bg-gray-700">-- Pilih Kendala --</DropdownMenuItem>
                   <div class="px-2 py-1">
                     <Input
                       v-model="mitraKendalaSearch"
@@ -1592,28 +1594,29 @@ const breadcrumbs = [
                       @keyup.stop
                       @keypress.stop
                       @input.stop
+                      class="dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100"
                     />
                   </div>
                   <div class="max-h-48 overflow-y-auto">
-                    <DropdownMenuItem v-for="k in filteredKendalasModal" :key="k" @click="mitraEditForm.kendala = k; kendalaOpen = false">
+                    <DropdownMenuItem v-for="k in filteredKendalasModal" :key="k" @click="mitraEditForm.kendala = k; kendalaOpen = false" class="dark:text-gray-200 dark:hover:bg-gray-700">
                       {{ k }}
                     </DropdownMenuItem>
-                    <div v-if="filteredKendalasModal.length === 0" class="px-3 py-2 text-sm text-gray-500">Tidak ada hasil</div>
+                    <div v-if="filteredKendalasModal.length === 0" class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">Tidak ada hasil</div>
                   </div>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Solusi</label>
+              <label class="block text-sm font-medium mb-1 dark:text-gray-200">Solusi</label>
               <DropdownMenu :open="solusiOpen" @update:open="(v:boolean)=> solusiOpen = v">
                 <DropdownMenuTrigger :as-child="true">
-                  <button type="button" class="h-9 rounded border px-2 w-full flex items-center justify-between">
+                  <button type="button" class="h-9 rounded border px-2 w-full flex items-center justify-between dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
                     <span class="truncate">{{ mitraEditForm.solusi || '-- Pilih Solusi --' }}</span>
                     <svg class="h-4 w-4 opacity-60" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.29a.75.75 0 01-.02-1.08z"/></svg>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent class="w-80">
-                  <DropdownMenuItem @click="mitraEditForm.solusi = ''; solusiOpen = false">-- Pilih Solusi --</DropdownMenuItem>
+                <DropdownMenuContent class="w-80 dark:bg-gray-800 dark:border-gray-700">
+                  <DropdownMenuItem @click="mitraEditForm.solusi = ''; solusiOpen = false" class="dark:text-gray-200 dark:hover:bg-gray-700">-- Pilih Solusi --</DropdownMenuItem>
                   <div class="px-2 py-1">
                     <Input
                       v-model="mitraSolusiSearch"
@@ -1622,21 +1625,22 @@ const breadcrumbs = [
                       @keyup.stop
                       @keypress.stop
                       @input.stop
+                      class="dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100"
                     />
                   </div>
                   <div class="max-h-48 overflow-y-auto">
-                    <DropdownMenuItem v-for="s in filteredSolusisModal" :key="s" @click="mitraEditForm.solusi = s; solusiOpen = false">
+                    <DropdownMenuItem v-for="s in filteredSolusisModal" :key="s" @click="mitraEditForm.solusi = s; solusiOpen = false" class="dark:text-gray-200 dark:hover:bg-gray-700">
                       {{ s }}
                     </DropdownMenuItem>
-                    <div v-if="filteredSolusisModal.length === 0" class="px-3 py-2 text-sm text-gray-500">Tidak ada hasil</div>
+                    <div v-if="filteredSolusisModal.length === 0" class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">Tidak ada hasil</div>
                   </div>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
           <div class="flex justify-end gap-2">
-            <Button variant="outline" @click="showMitraEdit = false">Batal</Button>
-            <Button :disabled="mitraEditForm.processing" @click="submitMitraEdit">Simpan</Button>
+            <Button variant="outline" @click="showMitraEdit = false" class="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700">Batal</Button>
+            <Button :disabled="mitraEditForm.processing" @click="submitMitraEdit" class="dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-700">Simpan</Button>
           </div>
         </div>
       </DialogScrollContent>

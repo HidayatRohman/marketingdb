@@ -113,79 +113,79 @@ const breadcrumbs = [
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="mx-6 mt-6 space-y-6">
     <Card>
-      <CardHeader class="border-b border-indigo-100/50 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50">
-        <CardTitle>Edit CS Maintenance</CardTitle>
+      <CardHeader class="border-b border-indigo-100/50 dark:border-indigo-900/50 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-950/50 dark:via-sky-950/50 dark:to-cyan-950/50">
+        <CardTitle class="dark:text-indigo-100">Edit CS Maintenance</CardTitle>
       </CardHeader>
       <CardContent class="space-y-4">
         <div>
-          <label class="block text-sm font-medium mb-1">Tanggal</label>
+          <label class="block text-sm font-medium mb-1 dark:text-gray-200">Tanggal</label>
           <Input v-model="form.tanggal" type="date" />
-          <div v-if="form.errors.tanggal" class="text-sm text-red-600 mt-1">{{ form.errors.tanggal }}</div>
+          <div v-if="form.errors.tanggal" class="text-sm text-red-600 dark:text-red-400 mt-1">{{ form.errors.tanggal }}</div>
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">Nama Pelanggan</label>
+          <label class="block text-sm font-medium mb-1 dark:text-gray-200">Nama Pelanggan</label>
           <Input v-model="form.nama_pelanggan" />
-          <div v-if="form.errors.nama_pelanggan" class="text-sm text-red-600 mt-1">{{ form.errors.nama_pelanggan }}</div>
+          <div v-if="form.errors.nama_pelanggan" class="text-sm text-red-600 dark:text-red-400 mt-1">{{ form.errors.nama_pelanggan }}</div>
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">No Tlp</label>
+          <label class="block text-sm font-medium mb-1 dark:text-gray-200">No Tlp</label>
           <Input v-model="form.no_tlp" />
-          <div v-if="form.errors.no_tlp" class="text-sm text-red-600 mt-1">{{ form.errors.no_tlp }}</div>
+          <div v-if="form.errors.no_tlp" class="text-sm text-red-600 dark:text-red-400 mt-1">{{ form.errors.no_tlp }}</div>
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">Produk</label>
-          <select v-model="form.product_id" class="h-9 rounded border px-2">
-            <option value="">-- Pilih Produk --</option>
-            <option v-for="p in props.products" :key="p.id" :value="p.id">{{ p.nama }}</option>
+          <label class="block text-sm font-medium mb-1 dark:text-gray-200">Produk</label>
+          <select v-model="form.product_id" class="h-9 rounded border px-2 w-full bg-background dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+            <option value="" class="dark:bg-gray-800">-- Pilih Produk --</option>
+            <option v-for="p in props.products" :key="p.id" :value="p.id" class="dark:bg-gray-800">{{ p.nama }}</option>
           </select>
-          <div v-if="form.errors.product_id" class="text-sm text-red-600 mt-1">{{ form.errors.product_id }}</div>
+          <div v-if="form.errors.product_id" class="text-sm text-red-600 dark:text-red-400 mt-1">{{ form.errors.product_id }}</div>
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">Chat</label>
-          <select v-model="form.chat" class="h-9 rounded border px-2 w-full">
-            <option value="">-- Pilih Status Chat --</option>
-            <option value="Baru">Baru</option>
-            <option value="Follow Up">Follow Up</option>
-            <option value="Follow Up 2">Follow Up 2</option>
-            <option value="Followup 3">Followup 3</option>
+          <label class="block text-sm font-medium mb-1 dark:text-gray-200">Chat</label>
+          <select v-model="form.chat" class="h-9 rounded border px-2 w-full bg-background dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+            <option value="" class="dark:bg-gray-800">-- Pilih Status Chat --</option>
+            <option value="Baru" class="dark:bg-gray-800">Baru</option>
+            <option value="Follow Up" class="dark:bg-gray-800">Follow Up</option>
+            <option value="Follow Up 2" class="dark:bg-gray-800">Follow Up 2</option>
+            <option value="Followup 3" class="dark:bg-gray-800">Followup 3</option>
           </select>
-          <div v-if="form.errors.chat" class="text-sm text-red-600 mt-1">{{ form.errors.chat }}</div>
+          <div v-if="form.errors.chat" class="text-sm text-red-600 dark:text-red-400 mt-1">{{ form.errors.chat }}</div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium mb-1">Kota</label>
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">Kota</label>
             <Input v-model="form.kota" />
-            <div v-if="form.errors.kota" class="text-sm text-red-600 mt-1">{{ form.errors.kota }}</div>
+            <div v-if="form.errors.kota" class="text-sm text-red-600 dark:text-red-400 mt-1">{{ form.errors.kota }}</div>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Provinsi</label>
-            <select v-model="form.provinsi" class="h-9 rounded border px-2 w-full">
-              <option v-for="province in indonesianProvinces" :key="province" :value="province">{{ province }}</option>
+            <label class="block text-sm font-medium mb-1 dark:text-gray-200">Provinsi</label>
+            <select v-model="form.provinsi" class="h-9 rounded border px-2 w-full bg-background dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+              <option v-for="province in indonesianProvinces" :key="province" :value="province" class="dark:bg-gray-800">{{ province }}</option>
             </select>
-            <div v-if="form.errors.provinsi" class="text-sm text-red-600 mt-1">{{ form.errors.provinsi }}</div>
+            <div v-if="form.errors.provinsi" class="text-sm text-red-600 dark:text-red-400 mt-1">{{ form.errors.provinsi }}</div>
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">Kendala</label>
-          <select v-model="form.kendala" class="h-9 rounded border px-2 w-full">
-            <option value="">-- Pilih Kendala --</option>
-            <option v-for="k in filteredKendalas" :key="k.id" :value="k.nama">{{ k.nama }}</option>
+          <label class="block text-sm font-medium mb-1 dark:text-gray-200">Kendala</label>
+          <select v-model="form.kendala" class="h-9 rounded border px-2 w-full bg-background dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+            <option value="" class="dark:bg-gray-800">-- Pilih Kendala --</option>
+            <option v-for="k in filteredKendalas" :key="k.id" :value="k.nama" class="dark:bg-gray-800">{{ k.nama }}</option>
           </select>
           <div class="mt-2">
             <Input v-model="kendalaSearch" placeholder="Cari kendala..." />
           </div>
-          <div v-if="form.errors.kendala" class="text-sm text-red-600 mt-1">{{ form.errors.kendala }}</div>
+          <div v-if="form.errors.kendala" class="text-sm text-red-600 dark:text-red-400 mt-1">{{ form.errors.kendala }}</div>
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">Solusi</label>
-          <select v-model="form.solusi" class="h-9 rounded border px-2 w-full">
-            <option value="">-- Pilih Solusi --</option>
-            <option v-for="s in filteredSolusis" :key="s.id" :value="s.nama">{{ s.nama }}</option>
+          <label class="block text-sm font-medium mb-1 dark:text-gray-200">Solusi</label>
+          <select v-model="form.solusi" class="h-9 rounded border px-2 w-full bg-background dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+            <option value="" class="dark:bg-gray-800">-- Pilih Solusi --</option>
+            <option v-for="s in filteredSolusis" :key="s.id" :value="s.nama" class="dark:bg-gray-800">{{ s.nama }}</option>
           </select>
           <div class="mt-2">
             <Input v-model="solusiSearch" placeholder="Cari solusi..." />
           </div>
-          <div v-if="form.errors.solusi" class="text-sm text-red-600 mt-1">{{ form.errors.solusi }}</div>
+          <div v-if="form.errors.solusi" class="text-sm text-red-600 dark:text-red-400 mt-1">{{ form.errors.solusi }}</div>
         </div>
         <div class="flex justify-end gap-2">
           <Button variant="outline" as-child>

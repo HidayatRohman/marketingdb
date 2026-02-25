@@ -4,7 +4,7 @@
       <div class="flex items-center justify-between">
         <div>
           <CardTitle class="text-lg font-semibold dark:text-gray-100">Grafik Interaksi Harian (CS Maintenance)</CardTitle>
-          <p class="text-sm text-muted-foreground dark:text-gray-400">Jumlah entri per hari pada periode terpilih.</p>
+          <p class="text-sm text-muted-foreground dark:text-gray-300">Jumlah entri per hari pada periode terpilih.</p>
         </div>
         <Button variant="outline" size="sm" @click="$emit('refresh')" class="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Refresh</Button>
       </div>
@@ -17,7 +17,7 @@
         <div class="rounded-full bg-gray-100 dark:bg-gray-700 p-3 mb-3">
           <BarChart3 class="h-6 w-6 text-gray-400 dark:text-gray-300" />
         </div>
-        <p class="text-sm text-muted-foreground dark:text-gray-400">Tidak ada data pada periode ini.</p>
+        <p class="text-sm text-muted-foreground dark:text-gray-300">Tidak ada data pada periode ini.</p>
       </div>
     </CardContent>
   </Card>
@@ -34,6 +34,8 @@ import { ChartOptions, ChartData } from 'chart.js'
 interface DailyRow { date: string; count: number }
 interface Props { data?: DailyRow[]; startDate?: string; endDate?: string }
 const props = defineProps<Props>()
+
+defineEmits(['refresh'])
 
 const chartCanvas = ref<HTMLCanvasElement>()
 const chartInstance = ref<ChartJS | null>(null)
@@ -92,7 +94,7 @@ const options = computed<ChartOptions<'line'>>(() => ({
     legend: {
       display: true,
       labels: {
-        color: isDark.value ? '#d1d5db' : '#374151'
+        color: isDark.value ? '#f3f4f6' : '#374151'
       }
     },
     tooltip: {
@@ -111,7 +113,7 @@ const options = computed<ChartOptions<'line'>>(() => ({
         color: isDark.value ? '#374151' : '#e5e7eb'
       },
       ticks: {
-        color: isDark.value ? '#9ca3af' : '#6b7280'
+        color: isDark.value ? '#f3f4f6' : '#6b7280'
       }
     },
     y: {
@@ -121,7 +123,7 @@ const options = computed<ChartOptions<'line'>>(() => ({
         color: isDark.value ? '#374151' : '#e5e7eb'
       },
       ticks: {
-        color: isDark.value ? '#9ca3af' : '#6b7280'
+        color: isDark.value ? '#f3f4f6' : '#6b7280'
       }
     },
   },
@@ -141,13 +143,22 @@ const destroyChart = () => {
 }
 
 const renderChart = async () => {
-  destroyChart()
-  
   if (!chartData.value) return
   
   await nextTick()
   
   if (!chartCanvas.value) return
+
+  // Ensure any existing chart on this canvas is destroyed immediately before creation
+  const existingChart = ChartJS.getChart(chartCanvas.value as any);
+  if (existingChart) {
+    existingChart.destroy();
+  }
+  
+  if (chartInstance.value) {
+    chartInstance.value.destroy();
+    chartInstance.value = null;
+  }
 
   try {
     chartInstance.value = new ChartJS(chartCanvas.value, {
