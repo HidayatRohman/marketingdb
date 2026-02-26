@@ -768,7 +768,17 @@ class TransaksiController extends Controller
 
         // Apply year filter (default: current year)
         $year = $request->get('year', now()->year);
-        $query->whereYear('tanggal_tf', $year);
+        $compare = $request->boolean('compare');
+        $years = [$year];
+        if ($compare) {
+            $years[] = $year - 1;
+        }
+
+        $query->where(function ($q) use ($years) {
+            foreach ($years as $y) {
+                $q->orWhereYear('tanggal_tf', $y);
+            }
+        });
 
         // Apply optional filters for marketing and brand
         $marketingId = $request->get('marketing');
@@ -785,21 +795,25 @@ class TransaksiController extends Controller
 
         if ($connection === 'sqlite') {
             $data = $query->selectRaw('
+                    strftime("%Y", tanggal_tf) as year,
                     strftime("%m", tanggal_tf) as month,
                     COUNT(*) as count,
                     COALESCE(SUM(nominal_masuk), 0) as total_nominal
                 ')
-                ->groupBy('month')
+                ->groupBy('year', 'month')
+                ->orderBy('year')
                 ->orderBy('month')
                 ->get();
         } else {
             // MySQL / MariaDB
             $data = $query->selectRaw('
+                    YEAR(tanggal_tf) as year,
                     MONTH(tanggal_tf) as month,
                     COUNT(*) as count,
                     COALESCE(SUM(nominal_masuk), 0) as total_nominal
                 ')
-                ->groupBy('month')
+                ->groupBy('year', 'month')
+                ->orderBy('year')
                 ->orderBy('month')
                 ->get();
         }
@@ -808,15 +822,29 @@ class TransaksiController extends Controller
         $monthlyData = [];
         for ($i = 1; $i <= 12; $i++) {
             $monthKey = $connection === 'sqlite' ? sprintf('%02d', $i) : $i;
-            $found = $data->first(function ($item) use ($monthKey, $connection) {
-                // Ensure loose comparison or type casting matches
-                return $connection === 'sqlite' ? $item->month == $monthKey : $item->month == $monthKey;
+            
+            // Current Year Data
+            $currentFound = $data->first(function ($item) use ($monthKey, $year, $connection) {
+                return ($connection === 'sqlite' ? $item->month == $monthKey : $item->month == $monthKey)
+                    && $item->year == $year;
             });
+
+            // Previous Year Data
+            $prevFound = null;
+            if ($compare) {
+                $prevYear = $year - 1;
+                $prevFound = $data->first(function ($item) use ($monthKey, $prevYear, $connection) {
+                    return ($connection === 'sqlite' ? $item->month == $monthKey : $item->month == $monthKey)
+                        && $item->year == $prevYear;
+                });
+            }
 
             $monthlyData[] = [
                 'month' => $i,
-                'count' => $found ? $found->count : 0,
-                'total_nominal' => $found ? (float)$found->total_nominal : 0,
+                'count' => $currentFound ? $currentFound->count : 0,
+                'total_nominal' => $currentFound ? (float)$currentFound->total_nominal : 0,
+                'count_prev' => $prevFound ? $prevFound->count : 0,
+                'total_nominal_prev' => $prevFound ? (float)$prevFound->total_nominal : 0,
             ];
         }
 
@@ -824,6 +852,7 @@ class TransaksiController extends Controller
             'data' => $monthlyData,
             'filters' => [
                 'year' => $year,
+                'compare' => $compare,
             ],
         ]);
     }

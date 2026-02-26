@@ -205,12 +205,14 @@ const leadAwalChartLoading = ref(false);
 const monthlyChartData = ref([]);
 const monthlyChartLoading = ref(false);
 const monthlyChartYear = ref(new Date().getFullYear());
+const monthlyChartCompare = ref(false);
 
 const fetchMonthlyChartData = async () => {
     monthlyChartLoading.value = true;
     try {
         const params = new URLSearchParams({
             year: String(monthlyChartYear.value),
+            compare: monthlyChartCompare.value ? '1' : '0',
         });
         
         // Add existing filters if relevant
@@ -233,7 +235,7 @@ const refreshMonthlyChart = () => {
     fetchMonthlyChartData();
 };
 
-watch([monthlyChartYear, selectedBrand], () => {
+watch([monthlyChartYear, selectedBrand, monthlyChartCompare], () => {
     fetchMonthlyChartData();
 });
 
@@ -1480,20 +1482,24 @@ const handleExport = async () => {
                 </CardContent>
             </Card>
 
-            <!-- Monthly Analytics Chart -->
-            <TransaksiMonthlyChart
-                :data="monthlyChartData"
-                :loading="monthlyChartLoading"
-                v-model:year="monthlyChartYear"
-                @refresh="refreshMonthlyChart"
-            />
-
-            <!-- Payment Status Chart -->
-            <PaymentStatusChart 
-                :data="chartData"
-                :loading="chartLoading"
-                @refresh="refreshChart"
-            />
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 gap-6">
+                <!-- Payment Status Chart -->
+                <PaymentStatusChart 
+                    :data="chartData" 
+                    :loading="chartLoading" 
+                    @refresh="refreshChart" 
+                />
+                
+                <!-- Monthly Analytics Chart -->
+                <TransaksiMonthlyChart
+                    v-model:year="monthlyChartYear"
+                    v-model:compare="monthlyChartCompare"
+                    :data="monthlyChartData"
+                    :loading="monthlyChartLoading"
+                    @refresh="refreshMonthlyChart"
+                />
+            </div>
 
             <!-- Source Analytics Chart -->
             <SourceAnalyticsChart
