@@ -69,20 +69,37 @@
         </div>
         
         <!-- Summary Cards -->
-        <div class="mt-3 grid grid-cols-1 gap-3 sm:mt-4 sm:gap-4 lg:grid-cols-2">
+        <div class="mt-3 grid grid-cols-1 gap-3 sm:mt-4 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
+           <!-- Tahun Ini -->
            <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
               <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
                  <TrendingUp class="h-4 w-4 text-indigo-500" />
-                 Total Transaksi Tahun Ini
+                 Total Transaksi {{ year }}
               </h4>
               <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalCount }}</p>
            </div>
            <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
               <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
                  <DollarSign class="h-4 w-4 text-green-500" />
-                 Total Omset Tahun Ini
+                 Total Omset {{ year }}
               </h4>
               <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(totalNominal) }}</p>
+           </div>
+           
+           <!-- Tahun Lalu (Jika Compare) -->
+           <div v-if="compare" class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-800/50">
+              <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                 <TrendingUp class="h-4 w-4 text-gray-500" />
+                 Total Transaksi {{ year - 1 }}
+              </h4>
+              <p class="text-2xl font-bold text-gray-700 dark:text-gray-300">{{ totalCountPrev }}</p>
+           </div>
+           <div v-if="compare" class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-800/50">
+              <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                 <DollarSign class="h-4 w-4 text-amber-500" />
+                 Total Omset {{ year - 1 }}
+              </h4>
+              <p class="text-2xl font-bold text-gray-700 dark:text-gray-300">{{ formatCurrency(totalNominalPrev) }}</p>
            </div>
         </div>
       </div>
@@ -189,6 +206,8 @@ const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep
 // Computed totals
 const totalCount = computed(() => props.data.reduce((sum, item) => sum + Number(item.count), 0));
 const totalNominal = computed(() => props.data.reduce((sum, item) => sum + Number(item.total_nominal), 0));
+const totalCountPrev = computed(() => props.data.reduce((sum, item) => sum + Number(item.count_prev || 0), 0));
+const totalNominalPrev = computed(() => props.data.reduce((sum, item) => sum + Number(item.total_nominal_prev || 0), 0));
 
 // Chart Data
 const chartData = computed<ChartData>(() => {
