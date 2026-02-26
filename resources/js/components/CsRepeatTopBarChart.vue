@@ -1,7 +1,7 @@
 <template>
   <Card class="border-0 shadow-md dark:bg-gray-800 dark:border-gray-700">
     <CardHeader class="pb-3">
-      <CardTitle class="dark:text-gray-100">Transaksi Bulanan</CardTitle>
+      <CardTitle class="dark:text-gray-100">{{ title }}</CardTitle>
     </CardHeader>
     <CardContent>
       <div v-if="loading" class="py-12 text-center text-sm text-muted-foreground dark:text-gray-400">Memuat grafik...</div>
@@ -19,13 +19,19 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import ChartJS from 'chart.js/auto'
 import { ChartData, ChartOptions } from 'chart.js'
 
-interface DailyRow { date: string; total: number }
-const props = defineProps<{ data?: DailyRow[]; loading?: boolean }>()
+interface TopRow { label: string; value: number }
+const props = defineProps<{ 
+  data?: TopRow[]; 
+  title: string;
+  loading?: boolean;
+  color?: string;
+  idPrefix: string;
+}>()
 
 const chartCanvas = ref<HTMLCanvasElement>()
 const chartInstance = ref<ChartJS | null>(null)
 const canvasKey = ref(0)
-const canvasId = computed(() => `cs-repeat-monthly-transaksi-${canvasKey.value}`)
+const canvasId = computed(() => `cs-repeat-top-${props.idPrefix}-${canvasKey.value}`)
 
 const isDark = ref(false)
 let observer: MutationObserver | null = null
@@ -34,49 +40,34 @@ const updateTheme = () => {
   isDark.value = document.documentElement.classList.contains('dark')
 }
 
-const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
-const monthLabel = (k: string) => {
-  const [y,m] = k.split('-')
-  const id = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][Number(m)-1]
-  return `${id} ${y}`
-}
-
-const chartData = computed<ChartData<'line'>>(() => {
+const chartData = computed<ChartData<'bar'>>(() => {
   if (!props.data || props.data.length === 0) return { labels: [], datasets: [] }
-  const groups: Record<string, number> = {}
-  for (const r of props.data) {
-    const d = new Date(r.date)
-    const k = monthKey(d)
-    groups[k] = (groups[k] || 0) + (r.total || 0)
-  }
-  const keys = Object.keys(groups).sort()
-  const labels = keys.map(monthLabel)
-  const data = keys.map(k => groups[k] || 0)
+  const labels = props.data.map(r => r.label)
+  const data = props.data.map(r => r.value)
+  const baseColor = props.color || '#6366f1'
+  
   return {
     labels,
     datasets: [
       {
-        label: 'Transaksi Bulanan',
+        label: props.title,
         data,
-        borderColor: '#10b981',
-        backgroundColor: '#10b98110',
-        borderWidth: 2,
-        tension: 0.3,
-        fill: false,
-        pointRadius: 3,
-        pointHoverRadius: 5,
+        borderColor: baseColor,
+        backgroundColor: baseColor + 'CC', // slightly transparent
+        borderWidth: 1,
+        borderRadius: 4,
       },
     ],
   }
 })
 
-const options = computed<ChartOptions<'line'>>(() => ({
+const options = computed<ChartOptions<'bar'>>(() => ({
+  indexAxis: 'y', // Horizontal bar chart
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      display: true,
-      labels: { color: isDark.value ? '#d1d5db' : '#374151' }
+      display: false, // Hide legend since there's only one dataset
     },
     tooltip: {
       enabled: true,
@@ -84,21 +75,43 @@ const options = computed<ChartOptions<'line'>>(() => ({
       titleColor: isDark.value ? '#f3f4f6' : '#111827',
       bodyColor: isDark.value ? '#f3f4f6' : '#111827',
       borderColor: isDark.value ? '#374151' : '#e5e7eb',
-      borderWidth: 1
-    }
+      borderWidth: 1,
+      callbacks: {
+        label: (context) => {
+           let label = context.dataset.label || '';
+           if (label) {
+               label += ': ';
+           }
+           if (context.parsed.x !== null) {
+               label += new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(context.parsed.x);
+           }
+           return label;
+        }
+      }
+    },
   },
   scales: {
     x: {
       display: true,
       grid: { color: isDark.value ? '#374151' : '#e5e7eb' },
-      ticks: { color: isDark.value ? '#9ca3af' : '#6b7280' }
+      ticks: { 
+          color: isDark.value ? '#9ca3af' : '#6b7280',
+          callback: (value) => {
+              if (typeof value === 'number') {
+                  // Shorten large numbers
+                  if (value >= 1000000000) return (value / 1000000000).toFixed(1) + 'M';
+                  if (value >= 1000000) return (value / 1000000).toFixed(1) + 'jt';
+                  if (value >= 1000) return (value / 1000).toFixed(0) + 'k';
+              }
+              return value;
+          }
+      }
     },
     y: {
       display: true,
-      beginAtZero: true,
-      grid: { color: isDark.value ? '#374151' : '#e5e7eb' },
+      grid: { display: false }, // Cleaner look for horizontal bars
       ticks: { color: isDark.value ? '#9ca3af' : '#6b7280' }
-    }
+    },
   },
 }))
 
@@ -118,36 +131,48 @@ const renderChart = async () => {
   await nextTick()
   if (!chartCanvas.value) return
 
+  const ctx = chartCanvas.value.getContext('2d')
+  if (!ctx) return
+
   // Ensure any existing chart on this canvas is destroyed immediately before creation
   const existingChart = ChartJS.getChart(chartCanvas.value)
   if (existingChart) {
     existingChart.destroy()
   }
 
-  chartInstance.value = new ChartJS(chartCanvas.value, { type: 'line', data: chartData.value, options: options.value })
+  chartInstance.value = new ChartJS(ctx, {
+    type: 'bar',
+    data: chartData.value,
+    options: options.value,
+  })
 }
 
-watch(() => props.data, () => {
-  canvasKey.value++
-  renderChart()
+watch([chartData, options], () => {
+    renderChart()
 })
 
 watch(isDark, () => {
-  renderChart()
+    renderChart()
 })
 
 onMounted(() => {
   updateTheme()
-  observer = new MutationObserver(updateTheme)
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
-  renderChart()
+  observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'class') {
+        updateTheme()
+      }
+    })
+  })
+  observer.observe(document.documentElement, { attributes: true })
+  
+  nextTick(() => {
+    renderChart()
+  })
 })
 
 onUnmounted(() => {
-  observer?.disconnect()
   destroyChart()
+  if (observer) observer.disconnect()
 })
 </script>
-
-<style scoped></style>
-

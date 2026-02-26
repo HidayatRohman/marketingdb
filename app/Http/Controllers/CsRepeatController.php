@@ -32,6 +32,8 @@ class CsRepeatController extends Controller
             $charts = [
                 'dailyTransaksi' => [],
                 'dailyByProduct' => [],
+                'topProducts' => [],
+                'topProvinces' => [],
             ];
             $summary = [
                 'totalOmset' => 0,
@@ -144,6 +146,36 @@ class CsRepeatController extends Controller
             $charts = [
                 'dailyTransaksi' => $dailyTransaksi,
                 'dailyByProduct' => $dailyByProduct,
+                'topProducts' => $filterQuery->clone()
+                    ->leftJoin('products', 'products.id', '=', 'cs_repeats.product_id')
+                    ->selectRaw('COALESCE(products.nama, "Tanpa Produk") as label, COALESCE(SUM(transaksi),0) as total')
+                    ->groupBy('label')
+                    ->orderByDesc('total')
+                    ->limit(5)
+                    ->get()
+                    ->map(fn($r) => ['label' => $r->label, 'value' => (int)$r->total]),
+                'topProvinces' => $filterQuery->clone()
+                    ->selectRaw('COALESCE(provinsi, "Unknown") as label, COALESCE(SUM(transaksi),0) as total')
+                    ->groupBy('label')
+                    ->orderByDesc('total')
+                    ->limit(5)
+                    ->get()
+                    ->map(fn($r) => ['label' => $r->label, 'value' => (int)$r->total]),
+                'topProductsCount' => $filterQuery->clone()
+                    ->leftJoin('products', 'products.id', '=', 'cs_repeats.product_id')
+                    ->selectRaw('COALESCE(products.nama, "Tanpa Produk") as label, COUNT(*) as total')
+                    ->groupBy('label')
+                    ->orderByDesc('total')
+                    ->limit(5)
+                    ->get()
+                    ->map(fn($r) => ['label' => $r->label, 'value' => (int)$r->total]),
+                'topProvincesCount' => $filterQuery->clone()
+                    ->selectRaw('COALESCE(provinsi, "Unknown") as label, COUNT(*) as total')
+                    ->groupBy('label')
+                    ->orderByDesc('total')
+                    ->limit(5)
+                    ->get()
+                    ->map(fn($r) => ['label' => $r->label, 'value' => (int)$r->total]),
             ];
 
             $allItems = $filterQuery->clone()->select('nama_pelanggan', 'no_tlp', 'bio_pelanggan', 'tanggal', 'transaksi')->get();

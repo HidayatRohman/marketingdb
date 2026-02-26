@@ -14,6 +14,8 @@ import CsRepeatMonthlyTransaksiChart from '@/components/CsRepeatMonthlyTransaksi
 import CsRepeatSummaryTransaksiChart from '@/components/CsRepeatSummaryTransaksiChart.vue'
 import CsRepeatDailyProductChart from '@/components/CsRepeatDailyProductChart.vue'
 import CsRepeatPartnerTransaksiChart from '@/components/CsRepeatPartnerTransaksiChart.vue'
+import CsRepeatTopBarChart from '@/components/CsRepeatTopBarChart.vue'
+import CsRepeatPieChart from '@/components/CsRepeatPieChart.vue'
 import { indonesianProvinces } from '@/lib/indonesianProvinces'
 
 interface Item {
@@ -36,7 +38,14 @@ interface Props {
   allItems: Array<{ nama_pelanggan: string; no_tlp: string; bio_pelanggan?: string | null; tanggal?: string; transaksi: number }>
   filters: { search?: string; product_id?: number | string; provinsi?: string; periode_start?: string; periode_end?: string }
   permissions: { canCrud: boolean }
-  charts: { dailyTransaksi: Array<{ date: string; total: number }>; dailyByProduct: Array<{ date: string; products: Record<string, number>; total: number }> }
+  charts: { 
+    dailyTransaksi: Array<{ date: string; total: number }>; 
+    dailyByProduct: Array<{ date: string; products: Record<string, number>; total: number }>;
+    topProducts?: Array<{ label: string; value: number }>;
+    topProvinces?: Array<{ label: string; value: number }>;
+    topProductsCount?: Array<{ label: string; value: number }>;
+    topProvincesCount?: Array<{ label: string; value: number }>;
+  }
   summary: { totalOmset: number; jumlahTransaksi: number }
 }
 
@@ -353,6 +362,44 @@ const openWhatsApp = (phoneNumber: string, customerName: string) => {
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <CsRepeatMonthlyTransaksiChart :data="props.charts?.dailyTransaksi" />
         <CsRepeatDailyProductChart :data="props.charts?.dailyByProduct" />
+      </div>
+
+
+
+      <!-- Top 5 Products & Provinces -->
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <CsRepeatTopBarChart 
+            title="Top 5 Produk (Omset)" 
+            :data="props.charts?.topProducts" 
+            id-prefix="products" 
+            color="#8b5cf6" 
+        />
+        <CsRepeatTopBarChart 
+            title="Top 5 Provinsi (Omset)" 
+            :data="props.charts?.topProvinces" 
+            id-prefix="provinces" 
+            color="#10b981" 
+        />
+      </div>
+
+      <!-- Top 5 Products & Provinces (Jumlah) - Pie Charts -->
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <CsRepeatPieChart 
+            title="Top 5 Produk (Jumlah)" 
+            legend-title="Produk"
+            :data="props.charts?.topProductsCount" 
+            id-prefix="products-count" 
+            :start-date="periodeStart"
+            :end-date="periodeEnd"
+        />
+        <CsRepeatPieChart 
+            title="Top 5 Provinsi (Jumlah)" 
+            legend-title="Provinsi"
+            :data="props.charts?.topProvincesCount" 
+            id-prefix="provinces-count" 
+            :start-date="periodeStart"
+            :end-date="periodeEnd"
+        />
       </div>
 
       <Card class="dark:border-gray-700 dark:bg-gray-800">

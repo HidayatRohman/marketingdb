@@ -113,6 +113,10 @@ const destroyChart = () => {
     chartInstance.value.destroy()
     chartInstance.value = null
   }
+  if (chartCanvas.value) {
+    const existing = ChartJS.getChart(chartCanvas.value)
+    if (existing) existing.destroy()
+  }
 }
 
 const renderChart = async () => {
@@ -120,6 +124,12 @@ const renderChart = async () => {
   await nextTick()
   if (!chartCanvas.value) return
   
+  // Ensure any existing chart on this canvas is destroyed immediately before creation
+  const existingChart = ChartJS.getChart(chartCanvas.value)
+  if (existingChart) {
+    existingChart.destroy()
+  }
+
   chartInstance.value = new ChartJS(chartCanvas.value, {
     type: 'line',
     data: chartData.value,
