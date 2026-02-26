@@ -754,4 +754,77 @@ class TransaksiController extends Controller
         return redirect()->route('transaksis.index')
             ->with('success', 'Transaksi berhasil dihapus.');
     }
+
+    /**
+     * Get monthly analytics data for chart
+     */
+    public function getMonthlyAnalytics(Request $request)
+    {
+        $user = auth()->user();
+        $query = Transaksi::query();
+
+        // Apply role-based filtering
+        $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply year filter (default: current year)
+        $year = $request->get('year', now()->year);
+        $query->whereYear('tanggal_tf', $year);
+
+        // Apply optional filters for marketing and brand
+        $marketingId = $request->get('marketing');
+        $brandId = $request->get('brand_id', $request->get('brand'));
+        if ($marketingId) {
+            $query->where('user_id', $marketingId);
+        }
+        if ($brandId) {
+            $query->where('lead_awal_brand_id', $brandId);
+        }
+
+        $driver = config('database.default');
+        $connection = config("database.connections.{$driver}.driver");
+
+        if ($connection === 'sqlite') {
+            $data = $query->selectRaw('
+                    strftime("%m", tanggal_tf) as month,
+                    COUNT(*) as count,
+                    COALESCE(SUM(nominal_masuk), 0) as total_nominal
+                ')
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get();
+        } else {
+            // MySQL / MariaDB
+            $data = $query->selectRaw('
+                    MONTH(tanggal_tf) as month,
+                    COUNT(*) as count,
+                    COALESCE(SUM(nominal_masuk), 0) as total_nominal
+                ')
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get();
+        }
+
+        // Fill missing months with 0
+        $monthlyData = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $monthKey = $connection === 'sqlite' ? sprintf('%02d', $i) : $i;
+            $found = $data->first(function ($item) use ($monthKey, $connection) {
+                // Ensure loose comparison or type casting matches
+                return $connection === 'sqlite' ? $item->month == $monthKey : $item->month == $monthKey;
+            });
+
+            $monthlyData[] = [
+                'month' => $i,
+                'count' => $found ? $found->count : 0,
+                'total_nominal' => $found ? (float)$found->total_nominal : 0,
+            ];
+        }
+
+        return response()->json([
+            'data' => $monthlyData,
+            'filters' => [
+                'year' => $year,
+            ],
+        ]);
+    }
 }

@@ -20,6 +20,7 @@ import { ref, computed, watch, onMounted, nextTick, watchEffect } from 'vue';
 import { debounce } from 'lodash';
 import { toLocalDateString } from '@/lib/utils';
 import PaymentStatusChart from '@/Components/PaymentStatusChart.vue';
+import TransaksiMonthlyChart from '@/Components/TransaksiMonthlyChart.vue';
 import SourceAnalyticsChart from '@/components/SourceAnalyticsChart.vue';
 import AgeAnalyticsChart from '@/components/AgeAnalyticsChart.vue';
 import LeadAwalAnalyticsChart from '@/components/LeadAwalAnalyticsChart.vue';
@@ -199,6 +200,42 @@ const ageChartData = ref([]);
 const ageChartLoading = ref(false);
 const leadAwalChartData = ref([]);
 const leadAwalChartLoading = ref(false);
+
+// Monthly Analytics Chart
+const monthlyChartData = ref([]);
+const monthlyChartLoading = ref(false);
+const monthlyChartYear = ref(new Date().getFullYear());
+
+const fetchMonthlyChartData = async () => {
+    monthlyChartLoading.value = true;
+    try {
+        const params = new URLSearchParams({
+            year: String(monthlyChartYear.value),
+        });
+        
+        // Add existing filters if relevant
+        if (selectedBrand.value) params.append('brand_id', selectedBrand.value);
+        // Note: Marketing filter is handled by backend automatically based on auth user
+        
+        const response = await fetch(`/transaksis/analytics/monthly?${params.toString()}`);
+        if (response.ok) {
+            const result = await response.json();
+            monthlyChartData.value = result.data;
+        }
+    } catch (error) {
+        console.error('Error fetching monthly chart data:', error);
+    } finally {
+        monthlyChartLoading.value = false;
+    }
+};
+
+const refreshMonthlyChart = () => {
+    fetchMonthlyChartData();
+};
+
+watch([monthlyChartYear, selectedBrand], () => {
+    fetchMonthlyChartData();
+});
 
 // Chart data interface
 interface PaymentStatusData {
@@ -537,6 +574,7 @@ onMounted(() => {
     recomputeJobChartData();
     fetchAgeChartData();
     fetchLeadAwalChartData();
+    fetchMonthlyChartData();
 });
 
 // Export XLSX
@@ -1441,6 +1479,14 @@ const handleExport = async () => {
                     </div>
                 </CardContent>
             </Card>
+
+            <!-- Monthly Analytics Chart -->
+            <TransaksiMonthlyChart
+                :data="monthlyChartData"
+                :loading="monthlyChartLoading"
+                v-model:year="monthlyChartYear"
+                @refresh="refreshMonthlyChart"
+            />
 
             <!-- Payment Status Chart -->
             <PaymentStatusChart 

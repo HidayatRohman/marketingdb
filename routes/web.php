@@ -286,6 +286,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Export XLSX - place before dynamic routes to avoid conflicts
         Route::get('transaksis/export', [TransaksiController::class, 'export'])->name('transaksis.export');
         Route::get('transaksis/analytics/payment-status', [TransaksiController::class, 'getPaymentStatusAnalytics'])->name('transaksis.analytics.payment-status');
+        Route::get('transaksis/analytics/monthly', [TransaksiController::class, 'getMonthlyAnalytics'])->name('transaksis.analytics.monthly');
         Route::get('transaksis/analytics/sumber', [TransaksiController::class, 'getSourceAnalytics'])->name('transaksis.analytics.sumber');
         Route::get('transaksis/analytics/pekerjaan', [TransaksiController::class, 'getPekerjaanAnalytics'])->name('transaksis.analytics.pekerjaan');
         Route::get('transaksis/analytics/usia', [TransaksiController::class, 'getAgeAnalytics'])->name('transaksis.analytics.usia');
