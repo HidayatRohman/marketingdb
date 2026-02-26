@@ -469,6 +469,57 @@ class TransaksiController extends Controller
     }
 
     /**
+     * Get province analytics data for chart
+     */
+    public function getProvinceAnalytics(Request $request)
+    {
+        $user = auth()->user();
+        $query = Transaksi::query();
+
+        // Apply role-based filtering
+        $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply date range filter only if provided (default: all time)
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        if ($startDate && $endDate) {
+            $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
+        } elseif ($startDate) {
+            $query->whereDate('tanggal_tf', '>=', $startDate);
+        } elseif ($endDate) {
+            $query->whereDate('tanggal_tf', '<=', $endDate);
+        }
+
+        // Apply optional filters for marketing and brand
+        $marketingId = $request->get('marketing');
+        $brandId = $request->get('brand_id', $request->get('brand'));
+        if ($marketingId) {
+            $query->where('user_id', $marketingId);
+        }
+        if ($brandId) {
+            $query->where('lead_awal_brand_id', $brandId);
+        }
+
+        // Group by provinsi string and aggregate counts and total nominal
+        $data = $query->selectRaw('
+                COALESCE(NULLIF(TRIM(provinsi), ""), "Unknown") as provinsi,
+                COUNT(*) as count,
+                COALESCE(SUM(nominal_masuk), 0) as total_nominal
+            ')
+            ->groupBy('provinsi')
+            ->orderByDesc('count')
+            ->get();
+
+        return response()->json([
+            'data' => $data,
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
+        ]);
+    }
+
+    /**
      * Get pekerjaan analytics data for chart
      */
     public function getPekerjaanAnalytics(Request $request)

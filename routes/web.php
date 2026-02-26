@@ -288,6 +288,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('transaksis/analytics/payment-status', [TransaksiController::class, 'getPaymentStatusAnalytics'])->name('transaksis.analytics.payment-status');
         Route::get('transaksis/analytics/monthly', [TransaksiController::class, 'getMonthlyAnalytics'])->name('transaksis.analytics.monthly');
         Route::get('transaksis/analytics/sumber', [TransaksiController::class, 'getSourceAnalytics'])->name('transaksis.analytics.sumber');
+        Route::get('transaksis/analytics/province', [TransaksiController::class, 'getProvinceAnalytics'])->name('transaksis.analytics.province');
         Route::get('transaksis/analytics/pekerjaan', [TransaksiController::class, 'getPekerjaanAnalytics'])->name('transaksis.analytics.pekerjaan');
         Route::get('transaksis/analytics/usia', [TransaksiController::class, 'getAgeAnalytics'])->name('transaksis.analytics.usia');
         Route::get('transaksis/analytics/lead-awal', [TransaksiController::class, 'getLeadAwalAnalytics'])->name('transaksis.analytics.lead-awal');

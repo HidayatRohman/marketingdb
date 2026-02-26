@@ -23,6 +23,7 @@ import PaymentStatusChart from '@/Components/PaymentStatusChart.vue';
 import TransaksiMonthlyChart from '@/Components/TransaksiMonthlyChart.vue';
 import SourceAnalyticsChart from '@/components/SourceAnalyticsChart.vue';
 import AgeAnalyticsChart from '@/components/AgeAnalyticsChart.vue';
+import ProvinceAnalyticsChart from '@/components/ProvinceAnalyticsChart.vue';
 import LeadAwalAnalyticsChart from '@/components/LeadAwalAnalyticsChart.vue';
 import PekerjaanAnalyticsChart from '@/components/PekerjaanAnalyticsChart.vue';
 
@@ -198,6 +199,8 @@ const jobChartData = ref([]);
 const jobChartLoading = ref(false);
 const ageChartData = ref([]);
 const ageChartLoading = ref(false);
+const provinceChartData = ref([]);
+const provinceChartLoading = ref(false);
 const leadAwalChartData = ref([]);
 const leadAwalChartLoading = ref(false);
 
@@ -385,6 +388,32 @@ const refreshAgeChart = () => {
     fetchAgeChartData();
 };
 
+// Province analytics chart functions
+const fetchProvinceChartData = async () => {
+    provinceChartLoading.value = true;
+    try {
+        const params = new URLSearchParams();
+        if (selectedBrand.value) params.append('brand_id', String(selectedBrand.value));
+        if (periodeStart.value) params.append('start_date', String(periodeStart.value));
+        if (periodeEnd.value) params.append('end_date', String(periodeEnd.value));
+        
+        const response = await fetch('/transaksis/analytics/province' + (params.toString() ? ('?' + params.toString()) : ''));
+
+        if (response.ok) {
+            const result = await response.json();
+            provinceChartData.value = result.data;
+        }
+    } catch (error) {
+        console.error('Error fetching province analytics data:', error);
+    } finally {
+        provinceChartLoading.value = false;
+    }
+};
+
+const refreshProvinceChart = () => {
+    fetchProvinceChartData();
+};
+
 // Lead Awal analytics chart functions
 const fetchLeadAwalChartData = async () => {
     leadAwalChartLoading.value = true;
@@ -413,6 +442,7 @@ watch([periodeStart, periodeEnd, selectedBrand], () => {
     fetchChartData();
     fetchSourceChartData();
     fetchAgeChartData();
+    fetchProvinceChartData();
     fetchLeadAwalChartData();
     // Recompute job chart based on current list; will update again when transaksis props reload
     recomputeJobChartData();
@@ -575,6 +605,7 @@ onMounted(() => {
     fetchSourceChartData();
     recomputeJobChartData();
     fetchAgeChartData();
+    fetchProvinceChartData();
     fetchLeadAwalChartData();
     fetchMonthlyChartData();
 });
@@ -1524,6 +1555,15 @@ const handleExport = async () => {
                 :data="ageChartData"
                 :loading="ageChartLoading"
                 @refresh="refreshAgeChart"
+            />
+
+            <!-- Province Analytics Chart -->
+            <ProvinceAnalyticsChart
+                :data="provinceChartData"
+                :loading="provinceChartLoading"
+                :start-date="periodeStart || undefined"
+                :end-date="periodeEnd || undefined"
+                @refresh="refreshProvinceChart"
             />
 
             <!-- Lead Awal Analytics Chart -->
