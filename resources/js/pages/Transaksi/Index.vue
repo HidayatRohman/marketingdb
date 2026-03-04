@@ -921,7 +921,7 @@ const handleExport = async () => {
                                             </select>
                                         </div>
 
-                                        <!-- Periode Filter (rapikan seperti di Iklan Budgets) -->
+                                        <!-- Periode Filter -->
                                         <div class="space-y-2 sm:col-span-2">
                                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                                 Periode
@@ -930,14 +930,14 @@ const handleExport = async () => {
                                                 <DatePicker
                                                     v-model="periodeStart"
                                                     placeholder="Tanggal Mulai"
-                                                    class="w-full sm:w-48"
+                                                    class="w-full sm:w-auto"
                                                     :max-date="periodeEnd || undefined"
                                                 />
                                                 <span class="text-sm text-muted-foreground hidden sm:inline">s/d</span>
                                                 <DatePicker
                                                     v-model="periodeEnd"
                                                     placeholder="Tanggal Akhir"
-                                                    class="w-full sm:w-48"
+                                                    class="w-full sm:w-auto"
                                                     :min-date="periodeStart || undefined"
                                                 />
                                             </div>

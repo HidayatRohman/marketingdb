@@ -6,25 +6,21 @@
       @keydown.enter.prevent="toggleCalendar"
       @keydown.space.prevent="toggleCalendar"
       tabindex="0"
-      class="group relative flex items-center justify-between cursor-pointer focus:outline-none transition-all duration-300 h-12 w-full rounded-lg border border-gray-300 bg-white px-4 text-base text-gray-800 shadow-sm hover:border-emerald-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+      class="group relative flex items-center justify-between cursor-pointer focus:outline-none transition-all duration-300 h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-800 shadow-sm hover:border-gray-400 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
       :class="{ 'ring-2 ring-emerald-200 focus:border-emerald-500': isOpen }"
     >
       <div class="flex items-center gap-2">
-        <div class="p-1 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm group-hover:shadow-md transition-all duration-300">
-          <Calendar class="h-4 w-4 text-white" />
-        </div>
+        <Calendar class="h-4 w-4 text-gray-500" />
         <span :class="modelValue ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-500 dark:text-gray-400'">
           {{ formattedDate || placeholder }}
         </span>
       </div>
-      <div class="p-1 rounded-md bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 transition-all duration-300">
-        <ChevronDown 
-          :class="[
-            'h-4 w-4 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all duration-300',
-            isOpen ? 'rotate-180' : ''
-          ]" 
-        />
-      </div>
+      <ChevronDown 
+        :class="[
+          'h-4 w-4 text-gray-400 transition-all duration-300',
+          isOpen ? 'rotate-180' : ''
+        ]" 
+      />
     </div>
 
     <!-- Calendar Dropdown -->
@@ -40,7 +36,7 @@
         <div
           v-if="isOpen"
           ref="dropdownRef"
-          class="fixed z-[9999] bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-800 dark:via-gray-750 dark:to-gray-800 border border-gray-200/60 dark:border-gray-600/60 rounded-2xl shadow-2xl backdrop-blur-sm p-6 w-[min(640px,95vw)] max-w-[95vw] max-h-[80vh] overflow-y-auto"
+          class="fixed z-[9999] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4 w-auto"
           :style="dropdownStyle"
         >
         <!-- Calendar Header -->
@@ -165,24 +161,15 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="flex items-center justify-between mt-6 pt-4 border-t border-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600">
+        <div class="flex items-center justify-end mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            @click="selectToday"
-            class="text-sm font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 px-4 py-2 rounded-xl"
+            @click="isOpen = false"
+            class="text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg px-4 py-2 rounded-md"
           >
-            Hari Ini
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            @click="clearDate"
-            class="text-sm font-medium bg-gradient-to-r from-gray-400 to-gray-500 text-white hover:from-gray-500 hover:to-gray-600 shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 px-4 py-2 rounded-xl"
-          >
-            Clear
+            Tutup
           </Button>
         </div>
         </div>
