@@ -54,8 +54,12 @@ const items = computed(() => props.items)
 const search = ref(props.filters.search || '')
 const selectedProduct = ref(props.filters.product_id || '')
 const selectedProvinsi = ref(props.filters.provinsi || '')
-const periodeStart = ref(props.filters.periode_start || '')
-const periodeEnd = ref(props.filters.periode_end || '')
+const today = new Date();
+const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+const periodeStart = ref(props.filters.periode_start || toYMD(firstDayOfMonth.toISOString()));
+const periodeEnd = ref(props.filters.periode_end || toYMD(lastDayOfMonth.toISOString()));
 
 // Ensure clicking the date field opens the native date picker
 const periodeStartRef = ref<HTMLInputElement | null>(null)
