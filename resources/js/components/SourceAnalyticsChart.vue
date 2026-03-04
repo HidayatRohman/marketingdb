@@ -400,31 +400,34 @@ const destroyChart = () => {
 };
 
 const createChart = async () => {
-  if (!chartCanvas.value || !chartData.value) return;
   if (isCreating.value) return;
-  isCreating.value = true;
-
-  destroyChart();
-
-  await nextTick();
-
-  const ctx = chartCanvas.value.getContext('2d');
-  if (!ctx) { isCreating.value = false; return; }
-
+  
   try {
-    if (viewMode.value === 'bar') {
-      chartInstance.value = new ChartJS(ctx, {
-        type: 'bar',
-        data: chartData.value as ChartData<'bar'>,
-        options: chartOptions.value,
-      });
-    } else {
-      chartInstance.value = new ChartJS(ctx, {
-        type: 'doughnut',
-        data: chartData.value as ChartData<'doughnut'>,
-        options: chartOptions.value,
-      });
+    if (!chartData.value) return;
+
+    // Wait for DOM update first
+    await nextTick();
+    
+    if (!chartCanvas.value) return;
+    
+    isCreating.value = true;
+
+    // Destroy any existing chart instance
+    destroyChart();
+
+    const ctx = chartCanvas.value.getContext('2d');
+    if (!ctx) { 
+      isCreating.value = false; 
+      return; 
     }
+
+    const config = {
+      type: viewMode.value === 'bar' ? 'bar' : 'doughnut',
+      data: chartData.value as any,
+      options: chartOptions.value,
+    };
+    
+    chartInstance.value = new ChartJS(ctx, config as any);
   } catch (err) {
     console.error('Error creating chart:', err);
   } finally {

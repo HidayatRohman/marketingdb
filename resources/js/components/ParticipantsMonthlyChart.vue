@@ -72,6 +72,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const chartCanvas = ref<HTMLCanvasElement>();
 const chartInstance = ref<ChartJS | null>(null);
+const isCreating = ref(false);
 
 const canvasKey = ref(0);
 const canvasId = computed(() => `participants-monthly-chart-${canvasKey.value}`);
@@ -161,30 +162,57 @@ const destroyChart = () => {
     chartInstance.value.destroy();
     chartInstance.value = null;
   }
+  
+  if (chartCanvas.value) {
+    const existing = ChartJS.getChart(chartCanvas.value as any);
+    if (existing) existing.destroy();
+  }
+  
+  const existingById = ChartJS.getChart(canvasId.value as any);
+  if (existingById) existingById.destroy();
 };
 
 const createChart = async () => {
+  if (isCreating.value) return;
+
   if (!chartData.value) return;
 
-  destroyChart();
-  
-  canvasKey.value += 1;
   await nextTick();
 
   if (!chartCanvas.value) return;
+  
+  isCreating.value = true;
+  destroyChart();
+  
+  canvasKey.value += 1;
+  await nextTick(); // Wait for key update to remount canvas if needed
+
+  if (!chartCanvas.value) {
+    isCreating.value = false;
+    return;
+  }
 
   if (!chartCanvas.value.id) {
     chartCanvas.value.id = canvasId.value;
   }
 
   const ctx = chartCanvas.value.getContext('2d');
-  if (!ctx) return;
+  if (!ctx) {
+    isCreating.value = false;
+    return;
+  }
 
-  chartInstance.value = new ChartJS(ctx, {
-    type: 'line',
-    data: chartData.value,
-    options: chartOptions.value,
-  });
+  try {
+    chartInstance.value = new ChartJS(ctx, {
+      type: 'line',
+      data: chartData.value,
+      options: chartOptions.value,
+    });
+  } catch (err) {
+    console.error('Error creating chart:', err);
+  } finally {
+    isCreating.value = false;
+  }
 };
 
 watch(isDark, () => {

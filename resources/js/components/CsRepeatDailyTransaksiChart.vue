@@ -26,6 +26,7 @@ const chartCanvas = ref<HTMLCanvasElement>()
 const chartInstance = ref<ChartJS | null>(null)
 const canvasKey = ref(0)
 const canvasId = computed(() => `cs-repeat-daily-transaksi-${canvasKey.value}`)
+const isCreating = ref(false)
 
 const isDark = ref(false)
 let observer: MutationObserver | null = null
@@ -100,24 +101,35 @@ const destroyChart = () => {
     const existing = ChartJS.getChart(chartCanvas.value)
     if (existing) existing.destroy()
   }
+  const existingById = ChartJS.getChart(canvasId.value)
+  if (existingById) existingById.destroy()
 }
 
 const renderChart = async () => {
-  destroyChart()
-  await nextTick()
-  if (!chartCanvas.value) return
-  
-  // Ensure any existing chart on this canvas is destroyed immediately before creation
-  const existingChart = ChartJS.getChart(chartCanvas.value)
-  if (existingChart) {
-    existingChart.destroy()
-  }
+  if (isCreating.value) return
+  isCreating.value = true
 
-  chartInstance.value = new ChartJS(chartCanvas.value, {
-    type: 'line',
-    data: chartData.value,
-    options: options.value,
-  })
+  try {
+    destroyChart()
+    await nextTick()
+    if (!chartCanvas.value) return
+    
+    // Ensure any existing chart on this canvas is destroyed immediately before creation
+    const existingChart = ChartJS.getChart(chartCanvas.value)
+    if (existingChart) {
+      existingChart.destroy()
+    }
+
+    chartInstance.value = new ChartJS(chartCanvas.value, {
+      type: 'line',
+      data: chartData.value,
+      options: options.value,
+    })
+  } catch (err) {
+    console.error('Error rendering chart:', err)
+  } finally {
+    isCreating.value = false
+  }
 }
 
 watch(() => props.data, () => {

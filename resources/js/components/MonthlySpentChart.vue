@@ -186,23 +186,46 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
   },
 }));
 
+const isCreating = ref(false);
+
 const destroyChart = () => {
   if (chartInstance.value) {
     chartInstance.value.destroy();
     chartInstance.value = null;
   }
+  if (chartCanvas.value) {
+    const existing = ChartJS.getChart(chartCanvas.value as any);
+    if (existing) existing.destroy();
+  }
+  const existingById = ChartJS.getChart(canvasId.value as any);
+  if (existingById) existingById.destroy();
 };
 
 const renderChart = async () => {
-  destroyChart();
-  await nextTick();
-  if (!chartCanvas.value || !chartData.value) return;
-  
-  chartInstance.value = new ChartJS(chartCanvas.value.getContext('2d') as CanvasRenderingContext2D, {
-    type: 'bar',
-    data: chartData.value,
-    options: chartOptions.value,
-  });
+  if (isCreating.value) return;
+  isCreating.value = true;
+
+  try {
+    destroyChart();
+    await nextTick();
+    if (!chartCanvas.value || !chartData.value) return;
+    
+    // Double check destruction on new canvas
+    const existingChart = ChartJS.getChart(chartCanvas.value as any);
+    if (existingChart) {
+      existingChart.destroy();
+    }
+
+    chartInstance.value = new ChartJS(chartCanvas.value.getContext('2d') as CanvasRenderingContext2D, {
+      type: 'bar',
+      data: chartData.value,
+      options: chartOptions.value,
+    });
+  } catch (err) {
+    console.error('Error rendering chart:', err);
+  } finally {
+    isCreating.value = false;
+  }
 };
 
 watch(isDark, () => {

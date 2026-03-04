@@ -40,6 +40,7 @@ defineEmits(['refresh'])
 const chartCanvas = ref<HTMLCanvasElement>()
 const chartInstance = ref<ChartJS | null>(null)
 const canvasKey = ref(0)
+const isCreating = ref(false)
 
 const isDark = ref(false)
 let observer: MutationObserver | null = null
@@ -143,24 +144,27 @@ const destroyChart = () => {
 }
 
 const renderChart = async () => {
-  if (!chartData.value) return
+  if (isCreating.value) return
   
-  await nextTick()
-  
-  if (!chartCanvas.value) return
-
-  // Ensure any existing chart on this canvas is destroyed immediately before creation
-  const existingChart = ChartJS.getChart(chartCanvas.value as any);
-  if (existingChart) {
-    existingChart.destroy();
-  }
-  
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    chartInstance.value = null;
-  }
-
   try {
+    if (!chartData.value) return
+    
+    // Wait for DOM update
+    await nextTick()
+    
+    if (!chartCanvas.value) return
+
+    isCreating.value = true
+
+    // Destroy any existing chart first
+    destroyChart()
+    
+    // Ensure any existing chart on this canvas is destroyed immediately before creation
+    const existingChart = ChartJS.getChart(chartCanvas.value as any);
+    if (existingChart) {
+      existingChart.destroy();
+    }
+    
     chartInstance.value = new ChartJS(chartCanvas.value, {
       type: 'line',
       data: chartData.value,
@@ -168,6 +172,8 @@ const renderChart = async () => {
     })
   } catch (err) {
     console.error('Error rendering chart:', err)
+  } finally {
+    isCreating.value = false
   }
 }
 

@@ -3,13 +3,13 @@
         <div v-if="error" class="error-message p-4 text-center text-red-500">
             {{ error }}
         </div>
-        <canvas v-else ref="chartRef" class="max-h-96"></canvas>
+        <canvas v-else :key="canvasKey" ref="chartRef" :id="canvasId" class="max-h-96"></canvas>
     </div>
 </template>
 
 <script setup lang="ts">
 import { BarController, BarElement, CategoryScale, Chart, Legend, LinearScale, Title, Tooltip, type ChartConfiguration } from 'chart.js';
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
 // Register Chart.js components
 Chart.register(CategoryScale, LinearScale, BarElement, BarController, Title, Tooltip, Legend);
@@ -38,13 +38,42 @@ let chartInstance: Chart | null = null;
 const isDark = ref(false)
 let observer: MutationObserver | null = null
 
+// Canvas management to avoid reuse issues
+const canvasKey = ref(0);
+const canvasId = computed(() => `marketing-performance-chart-${canvasKey.value}`);
+const bumpCanvas = async () => {
+    canvasKey.value++;
+    await nextTick();
+};
+
 const updateTheme = () => {
     isDark.value = document.documentElement.classList.contains('dark')
 }
 
+const isCreating = ref(false);
+
+const destroyChart = () => {
+    if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+    }
+
+    if (chartRef.value) {
+        const existing = Chart.getChart(chartRef.value);
+        if (existing) existing.destroy();
+    }
+
+    const existingById = Chart.getChart(canvasId.value);
+    if (existingById) existingById.destroy();
+};
+
 const createChart = async () => {
+    if (isCreating.value) return;
+
     try {
         error.value = null;
+
+        await nextTick();
 
         if (!chartRef.value) {
             console.warn('Chart canvas ref not available');
@@ -56,19 +85,16 @@ const createChart = async () => {
             return;
         }
 
+        isCreating.value = true;
         console.log('Creating marketing chart with data:', props.data);
 
         // Destroy existing chart
-        if (chartInstance) {
-            chartInstance.destroy();
-            chartInstance = null;
-        }
-
-        await nextTick();
+        destroyChart();
 
         const ctx = chartRef.value.getContext('2d');
         if (!ctx) {
             error.value = 'Could not get canvas context';
+            isCreating.value = false;
             return;
         }
 
@@ -182,32 +208,35 @@ const createChart = async () => {
     } catch (err) {
         console.error('Error creating marketing chart:', err);
         error.value = `Failed to create chart: ${err instanceof Error ? err.message : String(err)}`;
+    } finally {
+        isCreating.value = false;
     }
 };
 
-watch(isDark, () => {
-    createChart()
+watch(isDark, async () => {
+    destroyChart();
+    await bumpCanvas();
+    await createChart();
 })
 
-onMounted(() => {
+onMounted(async () => {
     updateTheme()
     observer = new MutationObserver(updateTheme)
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
-    createChart();
+    await createChart();
 });
 
 onUnmounted(() => {
     observer?.disconnect()
-    if (chartInstance) {
-        chartInstance.destroy();
-        chartInstance = null;
-    }
+    destroyChart();
 })
 
 watch(
     () => props.data,
-    () => {
-        createChart();
+    async () => {
+        destroyChart();
+        await bumpCanvas();
+        await createChart();
     },
     { deep: true },
 );

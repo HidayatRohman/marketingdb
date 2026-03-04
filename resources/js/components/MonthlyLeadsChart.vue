@@ -187,23 +187,50 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
   },
 }));
 
+const isCreating = ref(false);
+
 const destroyChart = () => {
   if (chartInstance.value) {
     chartInstance.value.destroy();
     chartInstance.value = null;
   }
+  
+  if (chartCanvas.value) {
+    const existing = ChartJS.getChart(chartCanvas.value as any);
+    if (existing) existing.destroy();
+  }
+  
+  const existingById = ChartJS.getChart(canvasId.value as any);
+  if (existingById) existingById.destroy();
 };
 
 const renderChart = async () => {
-  destroyChart();
+  if (isCreating.value) return;
+
   await nextTick();
+  
   if (!chartCanvas.value || !chartData.value) return;
   
-  chartInstance.value = new ChartJS(chartCanvas.value.getContext('2d') as CanvasRenderingContext2D, {
-    type: 'bar',
-    data: chartData.value,
-    options: chartOptions.value,
-  });
+  isCreating.value = true;
+  destroyChart();
+  
+  const ctx = chartCanvas.value.getContext('2d');
+  if (!ctx) {
+    isCreating.value = false;
+    return;
+  }
+  
+  try {
+    chartInstance.value = new ChartJS(ctx, {
+      type: 'bar',
+      data: chartData.value,
+      options: chartOptions.value,
+    });
+  } catch (err) {
+    console.error('Error creating chart:', err);
+  } finally {
+    isCreating.value = false;
+  }
 };
 
 watch(isDark, () => {

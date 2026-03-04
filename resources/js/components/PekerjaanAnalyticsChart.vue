@@ -381,18 +381,27 @@ const destroyChart = () => {
 };
 
 const createChart = async () => {
-  if (!chartCanvas.value || !chartData.value) return;
   if (isCreating.value) return;
-  isCreating.value = true;
-
-  destroyChart();
-
-  await nextTick();
-
-  const ctx = chartCanvas.value.getContext('2d');
-  if (!ctx) { isCreating.value = false; return; }
 
   try {
+    if (!chartData.value) return;
+
+    // Wait for DOM update
+    await nextTick();
+    
+    if (!chartCanvas.value) return;
+
+    isCreating.value = true;
+
+    // Destroy any existing chart instance
+    destroyChart();
+
+    const ctx = chartCanvas.value.getContext('2d');
+    if (!ctx) { 
+      isCreating.value = false; 
+      return; 
+    }
+
     if (viewMode.value === 'bar') {
       chartInstance.value = new ChartJS(ctx, {
         type: 'bar',
