@@ -216,15 +216,16 @@ const fetchData = async () => {
         });
         
         apiData.value = response.data;
-        // Use setTimeout to ensure DOM is fully updated and layout is stable
-        setTimeout(() => {
-            updateCharts();
-        }, 100);
     } catch (err) {
         console.error('Failed to fetch comparison data:', err);
         error.value = 'Gagal memuat data. Pastikan Anda terhubung ke internet atau coba refresh halaman.';
     } finally {
         loading.value = false;
+        // Ensure DOM is updated after loading is false
+        await nextTick();
+        if (!error.value) {
+            updateCharts();
+        }
     }
 };
 

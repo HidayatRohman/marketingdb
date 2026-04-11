@@ -3,7 +3,7 @@
         <div v-if="error" class="error-message p-4 text-center text-red-500">
             {{ error }}
         </div>
-        <canvas v-else ref="chartRef" class="max-h-96"></canvas>
+        <canvas v-else :key="canvasKey" ref="chartRef" :id="canvasId" class="max-h-96"></canvas>
     </div>
 </template>
 
@@ -35,6 +35,14 @@ const props = withDefaults(defineProps<Props>(), {
 const chartRef = ref<HTMLCanvasElement | null>(null);
 const error = ref<string | null>(null);
 let chartInstance: Chart | null = null;
+
+// Canvas management to avoid reuse issues
+const canvasKey = ref(0);
+const canvasId = computed(() => `brand-performance-chart-${canvasKey.value}`);
+const bumpCanvas = async () => {
+    canvasKey.value++;
+    await nextTick();
+};
 
 // Dark mode detection
 const isDark = ref(document.documentElement.classList.contains('dark'));
@@ -124,11 +132,18 @@ const destroyChart = () => {
         chartInstance.destroy();
         chartInstance = null;
     }
+    if (chartRef.value) {
+        const existing = Chart.getChart(chartRef.value);
+        if (existing) existing.destroy();
+    }
 };
 
 const createChart = async () => {
     try {
         error.value = null;
+
+        // Important: wait for DOM to be ready
+        await nextTick();
 
         if (!chartRef.value) {
             console.warn('Chart canvas ref not available');
@@ -140,10 +155,8 @@ const createChart = async () => {
             return;
         }
 
-        // Destroy existing chart
+        // Destroy existing chart before re-creating
         destroyChart();
-
-        await nextTick();
 
         const ctx = chartRef.value.getContext('2d');
         if (!ctx) {
@@ -207,14 +220,18 @@ onUnmounted(() => {
     destroyChart();
 });
 
-watch(isDark, () => {
-    createChart();
+watch(isDark, async () => {
+    destroyChart();
+    await bumpCanvas();
+    await createChart();
 });
 
 watch(
     () => props.data,
-    () => {
-        createChart();
+    async () => {
+        destroyChart();
+        await bumpCanvas();
+        await createChart();
     },
     { deep: true },
 );

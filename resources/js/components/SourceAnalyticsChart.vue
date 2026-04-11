@@ -400,46 +400,47 @@ const destroyChart = () => {
 };
 
 const createChart = async () => {
-  if (isCreating.value) return;
-  
-  try {
-    if (!chartData.value) return;
+  // Wait for DOM updates first
+  await nextTick();
 
-    // Wait for DOM update first
-    await nextTick();
-    
-    if (!chartCanvas.value) return;
-    
-    isCreating.value = true;
+  if (!chartCanvas.value || !chartData.value) return;
 
-    // Destroy any existing chart instance
-    destroyChart();
+  // Ensure any existing chart on this canvas is destroyed immediately before creation
+  destroyChart();
 
-    const ctx = chartCanvas.value.getContext('2d');
-    if (!ctx) { 
-      isCreating.value = false; 
-      return; 
-    }
+  const ctx = chartCanvas.value.getContext('2d');
+  if (!ctx) return;
 
-    const config = {
-      type: viewMode.value === 'bar' ? 'bar' : 'doughnut',
-      data: chartData.value as any,
-      options: chartOptions.value,
-    };
-    
-    chartInstance.value = new ChartJS(ctx, config as any);
-  } catch (err) {
-    console.error('Error creating chart:', err);
-  } finally {
-    isCreating.value = false;
-  }
+  chartInstance.value = new ChartJS(chartCanvas.value, {
+    type: viewMode.value === 'bar' ? 'bar' : 'doughnut',
+    data: chartData.value as any,
+    options: chartOptions.value as any,
+  });
 };
 
-watch(isDark, () => {
-  canvasKey.value++
-  createChart()
-})
+// Watchers
+watch(() => props.data, async () => {
+  canvasKey.value++;
+  await createChart();
+}, { deep: true });
 
+watch(viewMode, async () => {
+  canvasKey.value++;
+  await createChart();
+});
+
+watch(() => props.loading, async (newLoading) => {
+  if (!newLoading) {
+    canvasKey.value++;
+    await createChart();
+  }
+});
+
+watch(isDark, async () => {
+  await createChart();
+});
+
+// Lifecycle
 onMounted(() => {
   updateTheme()
   observer = new MutationObserver(updateTheme)
@@ -452,13 +453,5 @@ onUnmounted(() => {
     observer.disconnect()
   }
   destroyChart();
-});
-
-watch(() => props.data, () => {
-  createChart();
-}, { deep: true });
-
-watch(viewMode, () => {
-  createChart();
 });
 </script>

@@ -441,11 +441,20 @@ onUnmounted(() => {
   destroyChart();
 });
 
+watch(() => props.loading, (newLoading) => {
+  if (!newLoading) {
+    canvasKey.value++;
+    createChart();
+  }
+});
+
 watch(() => props.data, () => {
+  canvasKey.value++;
   createChart();
 }, { deep: true });
 
 watch(viewMode, () => {
+  canvasKey.value++;
   createChart();
 });
 </script>

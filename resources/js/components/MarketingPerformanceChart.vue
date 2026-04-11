@@ -73,6 +73,7 @@ const createChart = async () => {
     try {
         error.value = null;
 
+        // Important: wait for DOM to be ready
         await nextTick();
 
         if (!chartRef.value) {
@@ -88,7 +89,7 @@ const createChart = async () => {
         isCreating.value = true;
         console.log('Creating marketing chart with data:', props.data);
 
-        // Destroy existing chart
+        // Destroy existing chart before re-creating
         destroyChart();
 
         const ctx = chartRef.value.getContext('2d');

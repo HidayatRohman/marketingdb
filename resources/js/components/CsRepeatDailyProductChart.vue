@@ -120,14 +120,21 @@ const destroyChart = () => {
 }
 
 const renderChart = async () => {
-  destroyChart()
+  // Important: wait for DOM to be ready
   await nextTick()
-  if (!chartCanvas.value) return
   
-  // Ensure any existing chart on this canvas is destroyed immediately before creation
-  const existingChart = ChartJS.getChart(chartCanvas.value)
-  if (existingChart) {
-    existingChart.destroy()
+  if (!chartCanvas.value) {
+    console.warn('Chart canvas ref not available')
+    return
+  }
+
+  // Destroy existing chart before re-creating
+  destroyChart()
+
+  const ctx = chartCanvas.value.getContext('2d')
+  if (!ctx) {
+    console.error('Could not get canvas context')
+    return
   }
 
   chartInstance.value = new ChartJS(chartCanvas.value, {
@@ -140,6 +147,13 @@ const renderChart = async () => {
 watch(() => props.data, () => {
   canvasKey.value++
   renderChart()
+}, { deep: true })
+
+watch(() => props.loading, (newLoading) => {
+  if (!newLoading) {
+    canvasKey.value++
+    renderChart()
+  }
 })
 
 watch(isDark, () => {
