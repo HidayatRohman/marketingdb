@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -1496,6 +1496,9 @@ const getStatusIcon = (status: string) => {
                         <DialogTitle>
                             {{ editingTodo ? 'Edit Todo' : 'Tambah Todo Baru' }}
                         </DialogTitle>
+                        <DialogDescription class="sr-only">
+                            Silakan isi formulir di bawah ini untuk {{ editingTodo ? 'memperbarui' : 'membuat' }} item todo.
+                        </DialogDescription>
                     </DialogHeader>
 
                     <form @submit.prevent="submitForm" class="space-y-4">

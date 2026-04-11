@@ -202,6 +202,7 @@ class DashboardController extends Controller
                 'brand' => $selectedBrand,
             ],
             'permissions' => [
+                'role' => $currentUser->role,
                 'canCrud' => $currentUser->canCrud(),
                 'canOnlyView' => $currentUser->canOnlyView(),
                 'canOnlyViewOwn' => $currentUser->canOnlyViewOwn(),

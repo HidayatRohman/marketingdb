@@ -54,6 +54,7 @@ const mainNavItems = computed<NavItem[]>(() => {
     }
 
     // IKLAN - hanya untuk Admin & Super Admin (disembunyikan untuk Marketing)
+    // Brand Owner juga bisa lihat
     if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess) {
         items.push({
             title: 'Iklan',
@@ -62,22 +63,24 @@ const mainNavItems = computed<NavItem[]>(() => {
         });
     }
 
-    // Task Management - tampilkan untuk semua role termasuk CS
-    items.push({
-        title: 'Task Management',
-        href: '/task-management',
-        icon: Kanban,
-    });
+    // Task Management - tampilkan untuk semua role termasuk CS (kecuali Brand Owner)
+    if (permissions.value.role !== 'brand_owner') {
+        items.push({
+            title: 'Task Management',
+            href: '/task-management',
+            icon: Kanban,
+        });
 
-    // To Do List - tampilkan untuk semua role termasuk CS
-    items.push({
-        title: 'To Do List',
-        href: '/todos',
-        icon: Calendar,
-    });
+        // To Do List - tampilkan untuk semua role termasuk CS (kecuali Brand Owner)
+        items.push({
+            title: 'To Do List',
+            href: '/todos',
+            icon: Calendar,
+        });
+    }
 
     // Users - only Super Admin and Admin can access
-    if (permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess) {
+    if ((permissions.value.hasFullAccess || permissions.value.hasReadOnlyAccess) && permissions.value.role !== 'brand_owner') {
         items.push({
             title: 'Users',
             href: '/users',
@@ -144,7 +147,7 @@ const isSettingsOpen = computed(() =>
         <SidebarContent>
             <NavMain :items="mainNavItems" />
             <!-- Settings Group: menampung Brand, Label, Sumber, Pekerjaan, dan link Pengaturan -->
-            <SidebarGroup v-if="permissions.hasFullAccess || permissions.hasReadOnlyAccess" class="px-2 py-0 mt-2">
+            <SidebarGroup v-if="(permissions.hasFullAccess || permissions.hasReadOnlyAccess) && permissions.role !== 'brand_owner'" class="px-2 py-0 mt-2">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton as-child tooltip="Pengaturan">
@@ -200,7 +203,7 @@ const isSettingsOpen = computed(() =>
                 </SidebarMenuSub>
             </SidebarGroup>
             <!-- CS Menu Group: tampil untuk CS, Super Admin, Admin, dan Advertiser -->
-            <SidebarGroup v-if="permissions.hasFullAccess || permissions.hasReadOnlyAccess || permissions.role === 'cs'" class="px-2 py-0 mt-2">
+            <SidebarGroup v-if="(permissions.hasFullAccess || permissions.hasReadOnlyAccess || permissions.role === 'cs') && permissions.role !== 'brand_owner'" class="px-2 py-0 mt-2">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton as-child tooltip="CS">

@@ -10,7 +10,7 @@ trait HasRoleAccess
      */
     public function canCrud(): bool
     {
-        return !$this->isAdmin();
+        return !$this->isAdmin() && !$this->isBrandOwner();
     }
 
     /**
@@ -18,7 +18,7 @@ trait HasRoleAccess
      */
     public function canOnlyView(): bool
     {
-        return $this->isAdmin();
+        return $this->isAdmin() || $this->isBrandOwner();
     }
 
     /**
@@ -42,7 +42,7 @@ trait HasRoleAccess
      */
     public function hasReadOnlyAccess(): bool
     {
-        return $this->isAdmin();
+        return $this->isAdmin() || $this->isBrandOwner();
     }
 
     /**
@@ -58,7 +58,7 @@ trait HasRoleAccess
      */
     public function getAccessibleUserIds(): array
     {
-        if ($this->isSuperAdmin() || $this->isAdmin()) {
+        if ($this->isSuperAdmin() || $this->isAdmin() || $this->isBrandOwner()) {
             return [];
         }
 

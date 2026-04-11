@@ -210,6 +210,7 @@ interface SummaryReport {
 }
 
 interface Permissions {
+    role: string;
     canCrud: boolean;
     canOnlyView: boolean;
     canOnlyViewOwn: boolean;
@@ -337,6 +338,7 @@ const csRepeatDailyByProduct = ref<CsRepeatDailyProductRow[]>([]);
 const csRepeatLoading = ref({ summary: false, dailyTransaksi: false, dailyProduct: false });
 
 const fetchCsRepeatSummary = async () => {
+    if (props.permissions.role === 'brand_owner') return;
     csRepeatLoading.value.summary = true;
     try {
         const params = new URLSearchParams({
@@ -360,6 +362,7 @@ const fetchCsRepeatSummary = async () => {
 };
 
 const fetchCsRepeatDailyTransaksi = async () => {
+    if (props.permissions.role === 'brand_owner') return;
     csRepeatLoading.value.dailyTransaksi = true;
     try {
         const params = new URLSearchParams({
@@ -383,6 +386,7 @@ const fetchCsRepeatDailyTransaksi = async () => {
 };
 
 const fetchCsRepeatDailyByProduct = async () => {
+    if (props.permissions.role === 'brand_owner') return;
     csRepeatLoading.value.dailyProduct = true;
     try {
         const params = new URLSearchParams({
@@ -1328,7 +1332,7 @@ const ppnPercentage = computed(() => {
             </div>
 
             <!-- CS-only: CS Repeat Analytics outside Tabs -->
-            <div v-if="permissions.role === 'cs'">
+            <div v-if="props.permissions.role === 'cs' || props.permissions.role === 'super_admin' || props.permissions.role === 'admin' || props.permissions.role === 'advertiser'">
                 <Card class="border-0 shadow-lg">
                     <CardHeader class="relative overflow-hidden rounded-t-xl bg-gradient-to-r from-indigo-600 via-sky-600 to-cyan-600 text-white dark:from-indigo-700 dark:via-sky-700 dark:to-cyan-700">
                         <CardTitle class="flex items-center gap-2 text-white">
@@ -1792,7 +1796,7 @@ const ppnPercentage = computed(() => {
                     </Card>
 
                     <!-- CS Repeat Analytics Section -->
-                    <Card class="border-0 shadow-lg">
+                    <Card v-if="props.permissions.role !== 'brand_owner'" class="border-0 shadow-lg">
                         <CardHeader class="relative overflow-hidden rounded-t-xl bg-gradient-to-r from-indigo-600 via-sky-600 to-cyan-600 text-white dark:from-indigo-700 dark:via-sky-700 dark:to-cyan-700">
                             <CardTitle class="flex items-center gap-2 text-white">
                                 CS Repeat Analytics
@@ -2275,7 +2279,7 @@ const ppnPercentage = computed(() => {
 
 
             <!-- Statistics Cards -->
-            <div class="grid grid-cols-2 gap-6 lg:grid-cols-4">
+            <div v-if="permissions.role !== 'brand_owner'" class="grid grid-cols-2 gap-6 lg:grid-cols-4">
                 <Card class="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium text-blue-700 dark:text-blue-300">Total Users</CardTitle>
@@ -2346,7 +2350,7 @@ const ppnPercentage = computed(() => {
             </div>
 
             <!-- Quick Actions - Full Width -->
-            <Card class="border-0 shadow-lg">
+            <Card v-if="permissions.role !== 'brand_owner'" class="border-0 shadow-lg">
                 <CardHeader>
                     <CardTitle class="flex items-center text-xl">
                         <Activity class="mr-3 h-6 w-6 text-blue-500" />

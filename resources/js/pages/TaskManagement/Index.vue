@@ -2,7 +2,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -1131,6 +1131,9 @@ const openPreviewDialog = (task: Task) => {
                             <DialogTitle class="text-xl font-bold text-slate-900 dark:text-slate-100">
                                 {{ editingTask ? 'Edit Task' : 'Tambah Task Baru' }}
                             </DialogTitle>
+                            <DialogDescription class="sr-only">
+                                Silakan isi formulir di bawah ini untuk {{ editingTask ? 'memperbarui' : 'membuat' }} task.
+                            </DialogDescription>
                         </DialogHeader>
 
                         <form @submit.prevent="submitForm" class="space-y-6 pt-4">
@@ -1290,6 +1293,7 @@ const openPreviewDialog = (task: Task) => {
                     <DialogContent class="max-h-[90vh] max-w-2xl overflow-y-auto border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
                         <DialogHeader class="border-b border-slate-200 pb-4 dark:border-slate-700">
                             <DialogTitle class="text-xl font-bold text-slate-900 dark:text-slate-100">Preview Task</DialogTitle>
+                            <DialogDescription class="sr-only">Detail informasi dari task yang dipilih.</DialogDescription>
                         </DialogHeader>
                         <div v-if="selectedTask" class="space-y-4 pt-4">
                             <div>
@@ -1391,6 +1395,7 @@ const openPreviewDialog = (task: Task) => {
                     <DialogContent class="max-w-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
                         <DialogHeader class="border-b border-slate-200 pb-4 dark:border-slate-700">
                             <DialogTitle class="text-lg font-bold text-slate-900 dark:text-slate-100">Tambah Lampiran</DialogTitle>
+                            <DialogDescription class="sr-only">Unggah file lampiran untuk task ini.</DialogDescription>
                         </DialogHeader>
                         <div
                             class="mt-4 flex min-h-[200px] items-center justify-center rounded border-2 border-dashed border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-800"

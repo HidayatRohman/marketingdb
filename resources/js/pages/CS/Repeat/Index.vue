@@ -7,7 +7,7 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { Head, router, useForm } from '@inertiajs/vue3'
 import { Edit, Plus, Trash2, Search, Repeat as RepeatIcon, Eye } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogScrollContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogScrollContent } from '@/components/ui/dialog'
 import CsRepeatDailyTransaksiChart from '@/components/CsRepeatDailyTransaksiChart.vue'
 import CsRepeatWeeklyTransaksiChart from '@/components/CsRepeatWeeklyTransaksiChart.vue'
 import CsRepeatMonthlyTransaksiChart from '@/components/CsRepeatMonthlyTransaksiChart.vue'
@@ -506,6 +506,7 @@ const openWhatsApp = (phoneNumber: string, customerName: string) => {
       <DialogScrollContent class="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Tambah CS Repeat</DialogTitle>
+          <DialogDescription class="sr-only">Tambah data repeat order customer service.</DialogDescription>
         </DialogHeader>
         <div class="space-y-4">
         <div>
@@ -593,6 +594,7 @@ const openWhatsApp = (phoneNumber: string, customerName: string) => {
       <DialogScrollContent class="m-[20px] sm:m-0 sm:max-w-md">
         <DialogHeader class="border-b border-indigo-100/50 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 dark:from-indigo-900/40 dark:via-sky-900/30 dark:to-cyan-900/30 rounded-t-md sm:-mx-6 sm:-mt-6 px-4 sm:px-6 py-3">
           <DialogTitle class="text-indigo-700 dark:text-indigo-200">Detail Repeat Order</DialogTitle>
+          <DialogDescription class="sr-only">Detail informasi transaksi repeat order.</DialogDescription>
         </DialogHeader>
         <div v-if="viewItem" class="space-y-3 text-sm">
           <div class="grid grid-cols-3 gap-2">
@@ -650,6 +652,7 @@ const openWhatsApp = (phoneNumber: string, customerName: string) => {
       <DialogScrollContent class="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Edit CS Repeat</DialogTitle>
+          <DialogDescription class="sr-only">Edit data repeat order customer service.</DialogDescription>
         </DialogHeader>
         <div class="space-y-4">
           <div>

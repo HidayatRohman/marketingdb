@@ -97,6 +97,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is brand owner
+     */
+    public function isBrandOwner(): bool
+    {
+        return $this->hasRole('brand_owner');
+    }
+
+    /**
      * Get the mitras for the user (marketing).
      */
     public function mitras()
@@ -131,6 +139,7 @@ class User extends Authenticatable
             'marketing' => 'Marketing',
             'advertiser' => 'Advertiser',
             'cs' => 'CS',
+            'brand_owner' => 'Brand Owner',
             default => ucfirst($this->role),
         };
     }

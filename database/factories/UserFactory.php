@@ -72,4 +72,14 @@ class UserFactory extends Factory
             'role' => 'marketing',
         ]);
     }
+
+    /**
+     * Create a brand owner user.
+     */
+    public function brandOwner(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'brand_owner',
+        ]);
+    }
 }

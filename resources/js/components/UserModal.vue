@@ -11,7 +11,7 @@ interface User {
     id?: number;
     name: string;
     email: string;
-    role: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs';
+    role: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | 'brand_owner';
     password?: string;
 }
 
@@ -30,7 +30,7 @@ const emit = defineEmits<{
 const form = useForm({
     name: '',
     email: '',
-    role: 'marketing' as 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs',
+    role: 'marketing' as 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | 'brand_owner',
     password: '',
     password_confirmation: '',
 });
@@ -87,6 +87,7 @@ const roleLabels = {
     marketing: 'Marketing',
     advertiser: 'Advertiser',
     cs: 'CS',
+    brand_owner: 'Brand Owner',
 };
 
 const roleDescriptions = {
@@ -95,6 +96,7 @@ const roleDescriptions = {
     marketing: 'Akses terbatas untuk tim pemasaran',
     advertiser: 'Akses penuh ke semua menu dan dapat edit data',
     cs: 'Hanya bisa CRUD di menu CS Repeat, CS Maintenance, dan Produk',
+    brand_owner: 'Akses khusus hanya untuk melihat Dashboard, Mitra, Seminar, Transaksi, Iklan, dan Analisa Bisnis',
 };
 </script>
 
@@ -167,6 +169,7 @@ const roleDescriptions = {
                                         'bg-blue-100 text-blue-800': form.role === 'admin',
                                         'bg-green-100 text-green-800': form.role === 'marketing',
                                         'bg-orange-100 text-orange-800': form.role === 'advertiser',
+                                        'bg-purple-100 text-purple-800': form.role === 'brand_owner',
                                     }"
                                 >
                                     {{ roleLabels[form.role] }}
@@ -186,6 +189,7 @@ const roleDescriptions = {
                             <option value="super_admin">Super Admin</option>
                             <option value="advertiser">Advertiser</option>
                             <option value="cs">CS</option>
+                            <option value="brand_owner">Brand Owner</option>
                         </select>
                         <p v-if="form.errors.role" class="text-sm text-red-500">{{ form.errors.role }}</p>
                         <p v-if="mode !== 'view'" class="text-sm text-muted-foreground">{{ roleDescriptions[form.role] }}</p>

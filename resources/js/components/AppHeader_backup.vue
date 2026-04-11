@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
@@ -79,6 +79,7 @@ const rightNavItems: NavItem[] = [
                     </SheetTrigger>
                     <SheetContent side="right" class="w-[300px] p-6">
                         <SheetTitle class="sr-only">{{ siteTitle }} Navigation</SheetTitle>
+                        <SheetDescription class="sr-only">Mobile navigation menu for {{ siteTitle }}</SheetDescription>
                         <SheetHeader class="flex justify-start text-left mb-6">
                             <div class="flex items-center gap-2">
                                 <AppLogoIcon class="size-6 fill-current text-black dark:text-white" />

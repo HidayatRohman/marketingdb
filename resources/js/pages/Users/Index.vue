@@ -2,7 +2,14 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import { useForm, usePage, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { Badge } from '@/components/ui/badge';
@@ -13,14 +20,14 @@ interface User {
     id: number;
     name: string;
     email: string;
-    role: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs';
+    role: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | 'brand_owner';
 }
 
 interface PageProps {
     users: User[];
     filters: {
         search?: string;
-        role?: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | '';
+        role?: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | 'brand_owner' | '';
     };
 }
 
@@ -82,6 +89,7 @@ const roleLabels = {
     marketing: 'Marketing',
     advertiser: 'Advertiser',
     cs: 'CS',
+    brand_owner: 'Brand Owner',
 };
 // Breadcrumbs
 const breadcrumbs = [
@@ -117,6 +125,7 @@ const breadcrumbs = [
                             <option value="super_admin">Super Admin</option>
                             <option value="advertiser">Advertiser</option>
                             <option value="cs">CS</option>
+                            <option value="brand_owner">Brand Owner</option>
                         </select>
                         <Button variant="outline" class="w-full sm:w-auto gap-2" @click="applyFilters">
                             <Search class="h-4 w-4" />
@@ -148,6 +157,7 @@ const breadcrumbs = [
                                         'bg-green-100 text-green-800': user.role === 'marketing',
                                         'bg-orange-100 text-orange-800': user.role === 'advertiser',
                                         'bg-teal-100 text-teal-800': user.role === 'cs',
+                                        'bg-purple-100 text-purple-800': user.role === 'brand_owner',
                                     }"
                                 >
                                     {{ roleLabels[user.role] }}
@@ -166,14 +176,7 @@ const breadcrumbs = [
                 </table>
             </div>
 
-            <Dialog :open="openModal" @update:open="(val) => !val && closeModal()">
-                <DialogContent class="sm:max-w-[600px]">
-                    <DialogHeader>
-                        <DialogTitle>Pengguna</DialogTitle>
-                    </DialogHeader>
-                    <UserModal :open="openModal" :mode="modalMode" :user="selectedUser" @success="onSuccess" @close="closeModal" />
-                </DialogContent>
-            </Dialog>
+            <UserModal :open="openModal" :mode="modalMode" :user="selectedUser" @success="onSuccess" @close="closeModal" />
         </div>
     </AppLayout>
 </template>

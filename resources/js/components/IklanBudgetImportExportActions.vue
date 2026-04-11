@@ -58,6 +58,7 @@
             <DialogContent class="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>{{ progressModal.title }}</DialogTitle>
+                    <DialogDescription class="sr-only">Mohon tunggu sementara proses sedang berjalan.</DialogDescription>
                 </DialogHeader>
 
                 <div class="py-4">
@@ -80,6 +81,9 @@
                             {{ importResult?.success ? 'Import Berhasil' : 'Import Gagal' }}
                         </div>
                     </DialogTitle>
+                    <DialogDescription class="sr-only">
+                        {{ importResult?.success ? 'Data berhasil diimport.' : 'Terjadi kesalahan saat mengimport data.' }}
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div class="space-y-4 py-4">
@@ -161,7 +165,7 @@
 import { ref, defineProps, defineEmits } from 'vue'
 import Button from '@/components/ui/button/Button.vue'
 import { Download, FileSpreadsheet, Upload, CheckCircle, AlertCircle, AlertTriangle, XCircle } from 'lucide-vue-next'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import iklanBudgetsRoutes from '@/routes/iklan-budgets'
 
 interface ImportResult {

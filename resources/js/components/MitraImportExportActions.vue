@@ -58,6 +58,7 @@
             <DialogContent class="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>{{ progressModal.title }}</DialogTitle>
+                    <DialogDescription class="sr-only">Mohon tunggu sementara proses sedang berjalan.</DialogDescription>
                 </DialogHeader>
 
                 <div class="py-4">
@@ -80,6 +81,9 @@
                             {{ importResult?.success ? 'Import Berhasil' : 'Import Gagal' }}
                         </div>
                     </DialogTitle>
+                    <DialogDescription class="sr-only">
+                        {{ importResult?.success ? 'Data mitra berhasil diimport.' : 'Terjadi kesalahan saat mengimport data mitra.' }}
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div class="space-y-4 py-4">
@@ -159,7 +163,7 @@
 
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertCircle, AlertTriangle, CheckCircle, Download, FileSpreadsheet, Upload, XCircle } from 'lucide-vue-next';
 import { ref } from 'vue';
 
