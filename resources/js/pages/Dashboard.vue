@@ -1342,22 +1342,22 @@ const ppnPercentage = computed(() => {
                     <CardContent class="space-y-6">
                         <!-- Summary Cards -->
                         <div class="flex flex-nowrap gap-4 sm:grid sm:grid-cols-2">
-                            <Card class="border border-indigo-100 basis-[65%] sm:basis-auto sm:col-span-1">
-                                <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50">
-                                    <CardTitle class="text-sm sm:text-base">Total Omset</CardTitle>
+                            <Card class="border border-indigo-100 dark:border-indigo-800 basis-[65%] sm:basis-auto sm:col-span-1">
+                                <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/40 dark:to-blue-900/40">
+                                    <CardTitle class="text-sm sm:text-base text-indigo-700 dark:text-indigo-200">Total Omset</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div class="text-xl sm:text-2xl font-bold text-indigo-700">
+                                    <div class="text-xl sm:text-2xl font-bold text-indigo-700 dark:text-indigo-300">
                                         {{ new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(csRepeatSummary.totalOmset || 0) }}
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card class="border border-indigo-100 basis-[35%] sm:basis-auto sm:col-span-1">
-                                <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50">
-                                    <CardTitle class="text-sm sm:text-base">Jumlah Transaksi</CardTitle>
+                            <Card class="border border-indigo-100 dark:border-indigo-800 basis-[35%] sm:basis-auto sm:col-span-1">
+                                <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/40 dark:to-blue-900/40">
+                                    <CardTitle class="text-sm sm:text-base text-indigo-700 dark:text-indigo-200">Jumlah Transaksi</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div class="text-xl sm:text-2xl font-bold text-indigo-700">
+                                    <div class="text-xl sm:text-2xl font-bold text-indigo-700 dark:text-indigo-300">
                                         {{ new Intl.NumberFormat('id-ID').format(csRepeatSummary.jumlahTransaksi || 0) }}
                                     </div>
                                 </CardContent>
@@ -1805,22 +1805,22 @@ const ppnPercentage = computed(() => {
                         <CardContent class="space-y-6">
                             <!-- Summary Cards -->
                             <div class="flex flex-nowrap gap-4 sm:grid sm:grid-cols-2">
-                                <Card class="border border-indigo-100 basis-[65%] sm:basis-auto sm:col-span-1">
-                                    <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50">
-                                        <CardTitle class="text-sm sm:text-base">Total Omset</CardTitle>
+                                <Card class="border border-indigo-100 dark:border-indigo-800 basis-[65%] sm:basis-auto sm:col-span-1">
+                                    <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/40 dark:to-blue-900/40">
+                                        <CardTitle class="text-sm sm:text-base text-indigo-700 dark:text-indigo-200">Total Omset</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div class="text-xl sm:text-2xl font-bold text-indigo-700">
+                                        <div class="text-xl sm:text-2xl font-bold text-indigo-700 dark:text-indigo-300">
                                             {{ new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(csRepeatSummary.totalOmset || 0) }}
                                         </div>
                                     </CardContent>
                                 </Card>
-                                <Card class="border border-indigo-100 basis-[35%] sm:basis-auto sm:col-span-1">
-                                    <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50">
-                                        <CardTitle class="text-sm sm:text-base">Jumlah Transaksi</CardTitle>
+                                <Card class="border border-indigo-100 dark:border-indigo-800 basis-[35%] sm:basis-auto sm:col-span-1">
+                                    <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/40 dark:to-blue-900/40">
+                                        <CardTitle class="text-sm sm:text-base text-indigo-700 dark:text-indigo-200">Jumlah Transaksi</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div class="text-xl sm:text-2xl font-bold text-indigo-700">
+                                        <div class="text-xl sm:text-2xl font-bold text-indigo-700 dark:text-indigo-300">
                                             {{ new Intl.NumberFormat('id-ID').format(csRepeatSummary.jumlahTransaksi || 0) }}
                                         </div>
                                     </CardContent>

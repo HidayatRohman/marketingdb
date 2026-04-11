@@ -28,7 +28,19 @@ class StoreMitraRequest extends FormRequest
                 'string',
                 // Hanya angka, tanpa minimal, maksimal 15 digit
                 'regex:/^\d{1,15}$/',
-                'unique:mitras,no_telp',
+                function ($attribute, $value, $fail) {
+                    $cleanPhone = preg_replace('/[^0-9]/', '', $value);
+                    $searchStr = strlen($cleanPhone) > 9 ? substr($cleanPhone, -10) : $cleanPhone;
+
+                    $exists = \App\Models\Mitra::whereRaw(
+                        "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_telp, ' ', ''), '-', ''), '+', ''), '(', ''), ')', '') LIKE ?", 
+                        ["%{$searchStr}%"]
+                    )->exists();
+
+                    if ($exists) {
+                        $fail('Nomor telepon sudah terdaftar untuk mitra lain (termasuk kemiripan format). Silakan gunakan nomor lain.');
+                    }
+                },
             ],
             'tanggal_lead' => 'required|date',
             'user_id' => 'nullable|exists:users,id',
