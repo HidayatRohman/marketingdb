@@ -95,7 +95,7 @@ import type { ChartData, ChartOptions } from 'chart.js';
 
 interface ChartItem {
   label: string;
-  value: number; // Changed from count to value to match controller
+  value: number;
   warna?: string;
 }
 
@@ -116,14 +116,11 @@ const props = withDefaults(defineProps<Props>(), {
 // Component state
 const chartCanvas = ref<HTMLCanvasElement>();
 const chartInstance = ref<any>(null);
+const isCreating = ref(false);
 
 // Canvas management to avoid reuse issues
 const canvasKey = ref(0);
 const canvasId = computed(() => `cs-repeat-pie-${props.idPrefix}-${canvasKey.value}`);
-const bumpCanvas = async () => {
-  canvasKey.value++;
-  await nextTick();
-};
 
 const getColorForIndex = (index: number) => {
   const hues = [210, 260, 300, 180, 20, 45, 90, 120, 150, 200];
@@ -244,71 +241,63 @@ const destroyChart = () => {
     chartInstance.value.destroy();
     chartInstance.value = null;
   }
-  
   if (chartCanvas.value) {
     const existing = Chart.getChart(chartCanvas.value as any);
     if (existing) existing.destroy();
   }
+  const existingById = Chart.getChart(canvasId.value);
+  if (existingById) existingById.destroy();
 };
 
-// Chart management
-const createChart = async () => {
-  if (!chartCanvas.value || !chartData.value) return;
+const renderChart = async () => {
+  if (isCreating.value) return;
+  isCreating.value = true;
 
-  // Wait for DOM updates first
-  await nextTick();
+  try {
+    destroyChart();
+    await nextTick();
+    if (!chartCanvas.value) return;
 
-  // Double check canvas exists after tick
-  if (!chartCanvas.value) return;
+    // Ensure any existing chart on this canvas is destroyed immediately before creation
+    const existingChart = Chart.getChart(chartCanvas.value as any);
+    if (existingChart) {
+      existingChart.destroy();
+    }
 
-  // Ensure any existing chart on this canvas is destroyed immediately before creation
-  const existingChart = Chart.getChart(chartCanvas.value as any);
-  if (existingChart) {
-    existingChart.destroy();
+    chartInstance.value = new Chart(chartCanvas.value, {
+      type: 'pie',
+      data: chartData.value as any,
+      options: chartOptions.value as any,
+    });
+  } catch (err) {
+    console.error('Error rendering chart:', err);
+  } finally {
+    isCreating.value = false;
   }
-  
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    chartInstance.value = null;
-  }
-
-  const ctx = chartCanvas.value.getContext('2d');
-  if (!ctx) return;
-
-  chartInstance.value = new Chart(chartCanvas.value, {
-    type: 'pie',
-    data: chartData.value as any,
-    options: chartOptions.value as any,
-  });
 };
 
 // Watchers
-watch(() => props.data, async () => {
-  destroyChart();
-  await bumpCanvas();
-  await createChart();
-}, { deep: true });
-
-watch(isDark, async () => {
-  destroyChart();
-  await bumpCanvas();
-  await createChart();
+watch(() => props.data, () => {
+  canvasKey.value++;
+  renderChart();
 });
 
-watch(() => props.loading, async (newLoading) => {
+watch(isDark, () => {
+  renderChart();
+});
+
+watch(() => props.loading, (newLoading) => {
   if (!newLoading) {
-    destroyChart();
-    await bumpCanvas();
-    await createChart();
+    renderChart();
   }
 });
 
 // Lifecycle
-onMounted(async () => {
+onMounted(() => {
   updateTheme()
   observer = new MutationObserver(updateTheme)
   observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
-  await createChart();
+  renderChart();
 });
 
 onUnmounted(() => {
@@ -316,3 +305,5 @@ onUnmounted(() => {
   destroyChart();
 });
 </script>
+
+<style scoped></style>

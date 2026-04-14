@@ -183,6 +183,7 @@ const chartCanvas = ref<HTMLCanvasElement>()
 const chartInstance = ref<ChartJS | null>(null)
 const canvasKey = ref(0)
 const canvasId = computed(() => `cs-repeat-partner-transaksi-${canvasKey.value}`)
+const isCreating = ref(false)
 
 const selected = ref<AggRow | null>(null)
 const showChart = ref(false)
@@ -296,14 +297,39 @@ const destroyChart = () => {
     chartInstance.value.destroy()
     chartInstance.value = null
   }
+  if (chartCanvas.value) {
+    const existing = ChartJS.getChart(chartCanvas.value)
+    if (existing) existing.destroy()
+  }
+  const existingById = ChartJS.getChart(canvasId.value)
+  if (existingById) existingById.destroy()
 }
 
 const renderChart = async () => {
-  destroyChart()
-  if (!chartCanvas.value) return
-  await nextTick()
-  if (!chartCanvas.value) return
-  chartInstance.value = new ChartJS(chartCanvas.value, { type: 'line', data: chartData.value, options: options.value })
+  if (isCreating.value) return
+  isCreating.value = true
+
+  try {
+    destroyChart()
+    await nextTick()
+    if (!chartCanvas.value) return
+
+    // Ensure any existing chart on this canvas is destroyed immediately before creation
+    const existingChart = ChartJS.getChart(chartCanvas.value)
+    if (existingChart) {
+      existingChart.destroy()
+    }
+
+    chartInstance.value = new ChartJS(chartCanvas.value, {
+      type: 'line',
+      data: chartData.value,
+      options: options.value,
+    })
+  } catch (err) {
+    console.error('Error rendering chart:', err)
+  } finally {
+    isCreating.value = false
+  }
 }
 
 watch(isDark, () => {
@@ -334,8 +360,6 @@ onUnmounted(() => {
 const openChart = (row: AggRow) => {
   selected.value = row
   showChart.value = true
-  canvasKey.value++
-  renderChart()
 }
 
 watch(() => showChart.value, async (v) => {
