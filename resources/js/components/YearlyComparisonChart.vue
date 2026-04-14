@@ -245,16 +245,30 @@ const updateCharts = () => {
     if (!hasData.value) return;
 
     // Cleanup existing instances
-    Object.values(chartInstances.value).forEach(instance => {
-        if (instance) instance.destroy();
+    Object.keys(chartInstances.value).forEach(key => {
+        const instance = chartInstances.value[key];
+        if (instance) {
+            instance.destroy();
+            chartInstances.value[key] = null;
+        }
+        
+        // Also check by ref
+        const canvas = chartRefs.value[key];
+        if (canvas) {
+            const existing = ChartJS.getChart(canvas);
+            if (existing) existing.destroy();
+        }
     });
-    chartInstances.value = {};
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
 
     metricConfigs.forEach(metric => {
         const canvas = chartRefs.value[metric.key];
         if (!canvas) return;
+
+        // Double check destruction on this specific canvas
+        const existing = ChartJS.getChart(canvas);
+        if (existing) existing.destroy();
 
         const ctx = canvas.getContext('2d');
         if (!ctx) return;

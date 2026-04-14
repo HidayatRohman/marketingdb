@@ -193,30 +193,58 @@ const destroyChart = () => {
     chartInstance.value.destroy();
     chartInstance.value = null;
   }
+  
   if (chartCanvas.value) {
-    const existing = ChartJS.getChart(chartCanvas.value as any);
-    if (existing) existing.destroy();
+    const existing = ChartJS.getChart(chartCanvas.value);
+    if (existing) {
+      existing.destroy();
+    }
   }
-  const existingById = ChartJS.getChart(canvasId.value as any);
-  if (existingById) existingById.destroy();
+
+  // Fallback check by ID
+  try {
+    const el = document.getElementById(canvasId.value);
+    if (el) {
+      const existing = ChartJS.getChart(el as HTMLCanvasElement);
+      if (existing) {
+        existing.destroy();
+      }
+    }
+  } catch (e) {
+    // Ignore
+  }
 };
 
 const renderChart = async () => {
   if (isCreating.value) return;
+
+  if (!chartData.value || !chartData.value.labels?.length) return;
+
   isCreating.value = true;
 
   try {
+    // 1. Destroy existing chart
     destroyChart();
-    await nextTick();
-    if (!chartCanvas.value || !chartData.value) return;
     
-    // Double check destruction on new canvas
-    const existingChart = ChartJS.getChart(chartCanvas.value as any);
-    if (existingChart) {
-      existingChart.destroy();
+    // 2. Increment key to force fresh canvas
+    canvasKey.value += 1;
+    
+    // 3. Wait for Vue to remount the canvas
+    await nextTick();
+    await nextTick();
+
+    if (!chartCanvas.value) return;
+
+    const ctx = chartCanvas.value.getContext('2d');
+    if (!ctx) return;
+
+    // 4. One last check before creating
+    const existing = ChartJS.getChart(chartCanvas.value);
+    if (existing) {
+      existing.destroy();
     }
 
-    chartInstance.value = new ChartJS(chartCanvas.value.getContext('2d') as CanvasRenderingContext2D, {
+    chartInstance.value = new ChartJS(ctx, {
       type: 'bar',
       data: chartData.value,
       options: chartOptions.value,

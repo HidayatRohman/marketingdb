@@ -163,46 +163,57 @@ const destroyChart = () => {
     chartInstance.value = null;
   }
   
+  // Clean up any instances attached to the canvas element itself
   if (chartCanvas.value) {
-    const existing = ChartJS.getChart(chartCanvas.value as any);
-    if (existing) existing.destroy();
+    const existing = ChartJS.getChart(chartCanvas.value);
+    if (existing) {
+      existing.destroy();
+    }
   }
-  
-  const existingById = ChartJS.getChart(canvasId.value as any);
-  if (existingById) existingById.destroy();
+
+  // Final fallback: check by ID if possible
+  try {
+    const el = document.getElementById(canvasId.value);
+    if (el) {
+      const existing = ChartJS.getChart(el as HTMLCanvasElement);
+      if (existing) {
+        existing.destroy();
+      }
+    }
+  } catch (e) {
+    // Ignore errors in fallback
+  }
 };
 
 const createChart = async () => {
   if (isCreating.value) return;
 
-  if (!chartData.value) return;
+  if (!chartData.value || !chartData.value.labels?.length) return;
 
-  await nextTick();
-
-  if (!chartCanvas.value) return;
-  
   isCreating.value = true;
-  destroyChart();
   
-  canvasKey.value += 1;
-  await nextTick(); // Wait for key update to remount canvas if needed
-
-  if (!chartCanvas.value) {
-    isCreating.value = false;
-    return;
-  }
-
-  if (!chartCanvas.value.id) {
-    chartCanvas.value.id = canvasId.value;
-  }
-
-  const ctx = chartCanvas.value.getContext('2d');
-  if (!ctx) {
-    isCreating.value = false;
-    return;
-  }
-
   try {
+    // 1. Destroy existing chart
+    destroyChart();
+    
+    // 2. Increment key to force fresh canvas
+    canvasKey.value += 1;
+    
+    // 3. Wait for Vue to remount the canvas
+    await nextTick();
+    await nextTick();
+
+    if (!chartCanvas.value) return;
+
+    const ctx = chartCanvas.value.getContext('2d');
+    if (!ctx) return;
+
+    // 4. One last check before creating
+    const existing = ChartJS.getChart(chartCanvas.value);
+    if (existing) {
+      existing.destroy();
+    }
+
     chartInstance.value = new ChartJS(ctx, {
       type: 'line',
       data: chartData.value,

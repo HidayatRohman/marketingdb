@@ -381,27 +381,48 @@ const chartOptions = computed<ChartOptions>(() => {
   };
 });
 
-// Render Chart
-const renderChart = () => {
-  if (!chartCanvas.value) return;
-  
-  // Destroy existing chart with robust check
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    chartInstance.value = null;
-  }
-  
-  // Double check global registry
-  const existingChart = ChartJS.getChart(chartCanvas.value);
-  if (existingChart) {
-    existingChart.destroy();
-  }
+const isCreating = ref(false);
 
-  chartInstance.value = new ChartJS(chartCanvas.value, {
-    type: 'bar', // Base type
-    data: chartData.value,
-    options: chartOptions.value,
-  });
+// Render Chart
+const renderChart = async () => {
+  if (isCreating.value) return;
+  isCreating.value = true;
+
+  try {
+    // 1. Destroy existing chart
+    if (chartInstance.value) {
+      chartInstance.value.destroy();
+      chartInstance.value = null;
+    }
+    
+    // 2. Increment key to force fresh canvas
+    canvasKey.value += 1;
+    
+    // 3. Wait for Vue to remount the canvas
+    await nextTick();
+    await nextTick();
+
+    if (!chartCanvas.value) return;
+
+    // 4. One last check before creating
+    const existing = ChartJS.getChart(chartCanvas.value);
+    if (existing) {
+      existing.destroy();
+    }
+
+    const ctx = chartCanvas.value.getContext('2d');
+    if (!ctx) return;
+
+    chartInstance.value = new ChartJS(ctx, {
+      type: 'bar', // Base type
+      data: chartData.value,
+      options: chartOptions.value,
+    });
+  } catch (err) {
+    console.error('Error creating chart:', err);
+  } finally {
+    isCreating.value = false;
+  }
 };
 
 // Watchers
