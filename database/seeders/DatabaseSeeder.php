@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class, 
             MarketingSeeder::class,
             CSSeeder::class,
+            BrandOwnerSeeder::class,
         ]);
 
         // 2. Master data seeding (independent tables)

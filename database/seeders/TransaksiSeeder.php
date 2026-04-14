@@ -65,8 +65,6 @@ class TransaksiSeeder extends Seeder
 
             Transaksi::create([
                 'user_id' => $userId,
-                // Tetap isi mitra_id untuk kompatibilitas SQLite (kolom masih ada)
-                'mitra_id' => $mitra->id,
                 'nama_mitra' => $mitra->nama,
                 'tanggal_tf' => $tfDate->format('Y-m-d'),
                 'tanggal_lead_masuk' => $leadDate->format('Y-m-d'),
