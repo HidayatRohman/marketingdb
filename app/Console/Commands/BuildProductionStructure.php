@@ -109,13 +109,6 @@ class BuildProductionStructure extends Command
 
             File::copy($file->getPathname(), $destinationFile);
         }
-
-        // Copy .env.production as .env if it exists
-        $envProduction = base_path('.env.production');
-        if (File::exists($envProduction)) {
-            File::copy($envProduction, $destination.'/.env');
-        }
-        
     }
 
     private function copyPublicFiles(string $destination): void
