@@ -13,8 +13,9 @@ import {
 import { useForm, usePage, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Search, ShieldCheck, User, UserPlus } from 'lucide-vue-next';
+import { Mail, Search, ShieldCheck, Trash2, User, UserPlus } from 'lucide-vue-next';
 import UserModal from '@/components/UserModal.vue';
+import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue';
 
 interface User {
     id: number;
@@ -29,12 +30,23 @@ interface PageProps {
         search?: string;
         role?: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | 'brand_owner' | '';
     };
+    permissions?: {
+        canCrud?: boolean;
+        canOnlyView?: boolean;
+        canOnlyViewOwn?: boolean;
+    };
+    auth?: {
+        user?: { id: number };
+    };
 }
 
 const page = usePage<PageProps>();
 
 const search = ref(page.props.filters?.search || '');
 const roleFilter = ref<PageProps['filters']['role']>(page.props.filters?.role || '');
+
+const permissions = computed(() => page.props.permissions || {});
+const authUserId = computed<number | null>(() => page.props.auth?.user?.id ?? null);
 
 const users = computed<User[]>(() => {
   const u = page.props.users as any
@@ -45,6 +57,9 @@ const users = computed<User[]>(() => {
 const openModal = ref(false);
 const modalMode = ref<'create' | 'edit' | 'view'>('create');
 const selectedUser = ref<User | undefined>(undefined);
+
+const deleteModalOpen = ref(false);
+const deleteUserTarget = ref<User | undefined>(undefined);
 
 const showCreateModal = () => {
     selectedUser.value = undefined;
@@ -66,6 +81,15 @@ const showViewModal = (user: User) => {
 
 const closeModal = () => {
     openModal.value = false;
+};
+
+const showDeleteModal = (user: User) => {
+    deleteUserTarget.value = user;
+    deleteModalOpen.value = true;
+};
+
+const closeDeleteModal = () => {
+    deleteModalOpen.value = false;
 };
 
 const onSuccess = () => {
@@ -169,6 +193,16 @@ const breadcrumbs = [
                                         Detail
                                     </Button>
                                     <Button size="sm" @click="showEditModal(user)">Edit</Button>
+                                    <Button
+                                        v-if="permissions.canCrud && (!authUserId || user.id !== authUserId)"
+                                        variant="destructive"
+                                        size="sm"
+                                        class="gap-2"
+                                        @click="showDeleteModal(user)"
+                                    >
+                                        <Trash2 class="h-4 w-4" />
+                                        Hapus
+                                    </Button>
                                 </div>
                             </td>
                         </tr>
@@ -177,6 +211,7 @@ const breadcrumbs = [
             </div>
 
             <UserModal :open="openModal" :mode="modalMode" :user="selectedUser" @success="onSuccess" @close="closeModal" />
+            <DeleteConfirmModal :open="deleteModalOpen" :user="deleteUserTarget" @success="onSuccess" @close="closeDeleteModal" />
         </div>
     </AppLayout>
 </template>
