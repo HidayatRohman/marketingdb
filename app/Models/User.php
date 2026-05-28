@@ -23,6 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'brand_id',
     ];
 
     /**
@@ -110,6 +111,11 @@ class User extends Authenticatable
     public function mitras()
     {
         return $this->hasMany(Mitra::class);
+    }
+
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
     }
 
     /**

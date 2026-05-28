@@ -12,13 +12,20 @@ interface User {
     name: string;
     email: string;
     role: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | 'brand_owner';
+    brand_id?: number | null;
     password?: string;
+}
+
+interface BrandOption {
+    id: number;
+    nama: string;
 }
 
 interface Props {
     open: boolean;
     mode: 'create' | 'edit' | 'view';
     user?: User;
+    brands?: BrandOption[];
 }
 
 const props = defineProps<Props>();
@@ -31,6 +38,7 @@ const form = useForm({
     name: '',
     email: '',
     role: 'marketing' as 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | 'brand_owner',
+    brand_id: '' as '' | number,
     password: '',
     password_confirmation: '',
 });
@@ -43,6 +51,7 @@ watch(
             form.name = newUser.name || '';
             form.email = newUser.email || '';
             form.role = newUser.role || 'marketing';
+            form.brand_id = typeof newUser.brand_id === 'number' ? newUser.brand_id : '';
             form.password = '';
             form.password_confirmation = '';
         } else {
@@ -64,15 +73,20 @@ watch(
 );
 
 const submit = () => {
+    const transform = (data: any) => ({
+        ...data,
+        brand_id: data.role === 'brand_owner' && data.brand_id ? Number(data.brand_id) : null,
+    });
+
     if (props.mode === 'create') {
-        form.post('/users', {
+        form.transform(transform).post('/users', {
             onSuccess: () => {
                 emit('success');
                 emit('close');
             },
         });
     } else if (props.mode === 'edit' && props.user?.id) {
-        form.put(`/users/${props.user.id}`, {
+        form.transform(transform).put(`/users/${props.user.id}`, {
             onSuccess: () => {
                 emit('success');
                 emit('close');
@@ -193,6 +207,26 @@ const roleDescriptions = {
                         </select>
                         <p v-if="form.errors.role" class="text-sm text-red-500">{{ form.errors.role }}</p>
                         <p v-if="mode !== 'view'" class="text-sm text-muted-foreground">{{ roleDescriptions[form.role] }}</p>
+                    </div>
+
+                    <div v-if="form.role === 'brand_owner' && brands?.length" class="space-y-2">
+                        <Label for="brand_id">Brand</Label>
+                        <div v-if="mode === 'view'" class="rounded-lg bg-muted p-3">
+                            <span class="font-medium">
+                                {{ brands.find((b) => b.id === Number(form.brand_id))?.nama || '-' }}
+                            </span>
+                        </div>
+                        <select
+                            v-else
+                            id="brand_id"
+                            v-model="form.brand_id"
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                            :class="{ 'border-red-500': (form.errors as any).brand_id }"
+                        >
+                            <option value="">Pilih brand</option>
+                            <option v-for="b in brands" :key="b.id" :value="b.id">{{ b.nama }}</option>
+                        </select>
+                        <p v-if="(form.errors as any).brand_id" class="text-sm text-red-500">{{ (form.errors as any).brand_id }}</p>
                     </div>
 
                     <!-- Password Fields (only for create/edit) -->

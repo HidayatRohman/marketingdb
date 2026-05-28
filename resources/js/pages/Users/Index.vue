@@ -22,10 +22,12 @@ interface User {
     name: string;
     email: string;
     role: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | 'brand_owner';
+    brand_id?: number | null;
 }
 
 interface PageProps {
     users: User[];
+    brands?: Array<{ id: number; nama: string }>;
     filters: {
         search?: string;
         role?: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | 'brand_owner' | '';
@@ -53,6 +55,8 @@ const users = computed<User[]>(() => {
   const list = Array.isArray(u) ? u : (u?.data ?? [])
   return list.filter((item): item is User => !!item)
 })
+
+const brands = computed(() => page.props.brands || [])
 
 const openModal = ref(false);
 const modalMode = ref<'create' | 'edit' | 'view'>('create');
@@ -210,7 +214,7 @@ const breadcrumbs = [
                 </table>
             </div>
 
-            <UserModal :open="openModal" :mode="modalMode" :user="selectedUser" @success="onSuccess" @close="closeModal" />
+            <UserModal :open="openModal" :mode="modalMode" :user="selectedUser" :brands="brands" @success="onSuccess" @close="closeModal" />
             <DeleteConfirmModal :open="deleteModalOpen" :user="deleteUserTarget" @success="onSuccess" @close="closeDeleteModal" />
         </div>
     </AppLayout>
