@@ -23,7 +23,6 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'brand_id',
     ];
 
     /**
@@ -113,9 +112,9 @@ class User extends Authenticatable
         return $this->hasMany(Mitra::class);
     }
 
-    public function brand()
+    public function brands()
     {
-        return $this->belongsTo(Brand::class);
+        return $this->belongsToMany(Brand::class);
     }
 
     /**
@@ -139,7 +138,7 @@ class User extends Authenticatable
      */
     public function getRoleLabelAttribute(): string
     {
-        return match($this->role) {
+        return match ($this->role) {
             'super_admin' => 'Super Admin',
             'admin' => 'Admin',
             'marketing' => 'Marketing',

@@ -37,4 +37,9 @@ class Brand extends Model
     {
         return $this->hasMany(Mitra::class);
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class);
+    }
 }

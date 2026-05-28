@@ -19,6 +19,7 @@ class UserController extends Controller
         $currentUser = auth()->user();
         
         $users = User::query()
+            ->with(['brands:id,nama'])
             ->when($request->search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                       ->orWhere('email', 'like', "%{$search}%");
@@ -29,6 +30,10 @@ class UserController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10)
             ->withQueryString();
+
+        $users->getCollection()->each(function ($user) {
+            $user->brand_ids = $user->brands->pluck('id')->values();
+        });
 
         $brands = Brand::select('id', 'nama')
             ->orderBy('nama')
@@ -72,15 +77,17 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:super_admin,admin,marketing,advertiser,cs,brand_owner',
-            'brand_id' => 'nullable|integer|exists:brands,id',
+            'brand_ids' => 'nullable|array',
+            'brand_ids.*' => 'integer|exists:brands,id',
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
-        if (($validated['role'] ?? null) !== 'brand_owner') {
-            $validated['brand_id'] = null;
-        }
+        $brandIds = $validated['brand_ids'] ?? [];
+        unset($validated['brand_ids']);
 
-        User::create($validated);
+        $validated['password'] = Hash::make($validated['password']);
+
+        $user = User::create($validated);
+        $user->brands()->sync(($validated['role'] ?? null) === 'brand_owner' ? $brandIds : []);
 
         return redirect()->route('users.index')->with('success', 'User berhasil dibuat.');
     }
@@ -122,8 +129,12 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
             'role' => 'required|in:super_admin,admin,marketing,advertiser,cs,brand_owner',
-            'brand_id' => 'nullable|integer|exists:brands,id',
+            'brand_ids' => 'nullable|array',
+            'brand_ids.*' => 'integer|exists:brands,id',
         ]);
+
+        $brandIds = $validated['brand_ids'] ?? [];
+        unset($validated['brand_ids']);
 
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
@@ -131,11 +142,8 @@ class UserController extends Controller
             unset($validated['password']);
         }
 
-        if (($validated['role'] ?? null) !== 'brand_owner') {
-            $validated['brand_id'] = null;
-        }
-
         $user->update($validated);
+        $user->brands()->sync(($validated['role'] ?? null) === 'brand_owner' ? $brandIds : []);
 
         return redirect()->route('users.index')->with('success', 'User berhasil diupdate.');
     }

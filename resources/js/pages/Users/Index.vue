@@ -22,7 +22,7 @@ interface User {
     name: string;
     email: string;
     role: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | 'brand_owner';
-    brand_id?: number | null;
+    brand_ids?: number[];
 }
 
 interface PageProps {

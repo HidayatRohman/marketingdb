@@ -5,14 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/vue3';
 import { Loader2, Mail, Shield, User } from 'lucide-vue-next';
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 
 interface User {
     id?: number;
     name: string;
     email: string;
     role: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | 'brand_owner';
-    brand_id?: number | null;
+    brand_ids?: number[];
     password?: string;
 }
 
@@ -38,9 +38,21 @@ const form = useForm({
     name: '',
     email: '',
     role: 'marketing' as 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | 'brand_owner',
-    brand_id: '' as '' | number,
+    brand_ids: [] as number[],
     password: '',
     password_confirmation: '',
+});
+
+const brandError = computed(() => {
+    const errors = form.errors as any;
+    return errors.brand_ids || errors['brand_ids.0'] || '';
+});
+
+const selectedBrandNames = computed(() => {
+    const ids = form.brand_ids || [];
+    const list = props.brands || [];
+    const names = list.filter((b) => ids.includes(b.id)).map((b) => b.nama);
+    return names.length ? names.join(', ') : '-';
 });
 
 // Watch for user prop changes
@@ -51,7 +63,7 @@ watch(
             form.name = newUser.name || '';
             form.email = newUser.email || '';
             form.role = newUser.role || 'marketing';
-            form.brand_id = typeof newUser.brand_id === 'number' ? newUser.brand_id : '';
+            form.brand_ids = Array.isArray(newUser.brand_ids) ? newUser.brand_ids : [];
             form.password = '';
             form.password_confirmation = '';
         } else {
@@ -72,10 +84,19 @@ watch(
     },
 );
 
+watch(
+    () => form.role,
+    (role) => {
+        if (role !== 'brand_owner') {
+            form.brand_ids = [];
+        }
+    },
+);
+
 const submit = () => {
     const transform = (data: any) => ({
         ...data,
-        brand_id: data.role === 'brand_owner' && data.brand_id ? Number(data.brand_id) : null,
+        brand_ids: data.role === 'brand_owner' ? (Array.isArray(data.brand_ids) ? data.brand_ids.map((v: any) => Number(v)) : []) : [],
     });
 
     if (props.mode === 'create') {
@@ -210,23 +231,28 @@ const roleDescriptions = {
                     </div>
 
                     <div v-if="form.role === 'brand_owner' && brands?.length" class="space-y-2">
-                        <Label for="brand_id">Brand</Label>
+                        <Label for="brand_ids">Brand</Label>
                         <div v-if="mode === 'view'" class="rounded-lg bg-muted p-3">
-                            <span class="font-medium">
-                                {{ brands.find((b) => b.id === Number(form.brand_id))?.nama || '-' }}
-                            </span>
+                            <span class="font-medium">{{ selectedBrandNames }}</span>
                         </div>
-                        <select
+                        <div
                             v-else
-                            id="brand_id"
-                            v-model="form.brand_id"
-                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                            :class="{ 'border-red-500': (form.errors as any).brand_id }"
+                            class="w-full rounded-md border border-input bg-background p-3"
+                            :class="{ 'border-red-500': !!brandError }"
                         >
-                            <option value="">Pilih brand</option>
-                            <option v-for="b in brands" :key="b.id" :value="b.id">{{ b.nama }}</option>
-                        </select>
-                        <p v-if="(form.errors as any).brand_id" class="text-sm text-red-500">{{ (form.errors as any).brand_id }}</p>
+                            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 max-h-56 overflow-auto pr-1">
+                                <label v-for="b in brands" :key="b.id" class="flex items-center gap-2 rounded-md border px-2 py-1.5">
+                                    <input
+                                        type="checkbox"
+                                        :value="b.id"
+                                        v-model="form.brand_ids"
+                                        class="h-4 w-4 rounded border-input"
+                                    />
+                                    <span class="text-sm">{{ b.nama }}</span>
+                                </label>
+                            </div>
+                        </div>
+                        <p v-if="brandError" class="text-sm text-red-500">{{ brandError }}</p>
                     </div>
 
                     <!-- Password Fields (only for create/edit) -->
