@@ -44,6 +44,13 @@ class DatabaseSeeder extends Seeder
             TransaksiSeeder::class,
         ]);
 
+        if (app()->environment(['local', 'development'])) {
+            $this->command->info('🧩 Seeding Brand Owner demo data...');
+            $this->call([
+                BrandOwnerDemoDataSeeder::class,
+            ]);
+        }
+
         // 4. Task management data (depends on users)
         $this->command->info('📝 Seeding task management...');
         $this->call([
