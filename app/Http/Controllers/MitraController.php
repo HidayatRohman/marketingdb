@@ -27,6 +27,7 @@ class MitraController extends Controller
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
+        $query = $user->applyBrandOwnerFilter($query, 'brand_id');
 
         // Apply search filter
         if ($request->has('search') && $request->search) {
@@ -121,7 +122,11 @@ class MitraController extends Controller
             'user_id' => $user->id
         ]);
 
-        $brands = Brand::all();
+        if ($user->isBrandOwner()) {
+            $brands = $user->brands()->orderBy('nama')->get();
+        } else {
+            $brands = Brand::all();
+        }
         $labels = Label::all();
         
         // Get marketing users (users with role marketing) 
@@ -459,6 +464,7 @@ class MitraController extends Controller
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
+        $query = $user->applyBrandOwnerFilter($query, 'brand_id');
 
         // Apply the same filters as main index
         if ($request->has('periode_start') && $request->periode_start) {
@@ -517,7 +523,11 @@ class MitraController extends Controller
         }
 
         // Get all brands to ensure consistent structure
-        $brands = Brand::pluck('nama')->toArray();
+        if ($user->isBrandOwner()) {
+            $brands = $user->brands()->pluck('nama')->toArray();
+        } else {
+            $brands = Brand::pluck('nama')->toArray();
+        }
         foreach ($brands as $brandName) {
             for ($hour = 0; $hour < 24; $hour++) {
                 $hourlyData[$hour]['brands'][$brandName] = 0;

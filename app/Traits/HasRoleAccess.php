@@ -80,4 +80,15 @@ trait HasRoleAccess
 
         return $query;
     }
+
+    public function applyBrandOwnerFilter($query, string $brandIdColumn = 'brand_id')
+    {
+        if (!$this->isBrandOwner()) {
+            return $query;
+        }
+
+        $brandIds = $this->brands()->pluck('brands.id')->all();
+
+        return $query->whereIn($brandIdColumn, $brandIds);
+    }
 }

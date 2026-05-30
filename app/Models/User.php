@@ -53,7 +53,20 @@ class User extends Authenticatable
      */
     public function hasRole(string $role): bool
     {
-        return $this->role === $role;
+        $current = $this->normalizeRole((string) ($this->role ?? ''));
+        $target = $this->normalizeRole($role);
+
+        return $current === $target;
+    }
+
+    private function normalizeRole(string $role): string
+    {
+        $role = trim($role);
+        $role = strtolower($role);
+        $role = str_replace([' ', '-'], '_', $role);
+        $role = preg_replace('/_+/', '_', $role) ?? $role;
+
+        return $role;
     }
 
     /**

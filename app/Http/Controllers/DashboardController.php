@@ -165,9 +165,16 @@ class DashboardController extends Controller
                 ->select('id', 'name')
                 ->orderBy('name')
                 ->get();
-            $brands = Brand::select('id', 'nama')
-                ->orderBy('nama')
-                ->get();
+            if ($currentUser->isBrandOwner()) {
+                $brands = $currentUser->brands()
+                    ->select('brands.id', 'brands.nama')
+                    ->orderBy('nama')
+                    ->get();
+            } else {
+                $brands = Brand::select('id', 'nama')
+                    ->orderBy('nama')
+                    ->get();
+            }
         } else {
             // Marketing users only see themselves
             $marketingUsers = collect([
@@ -251,9 +258,16 @@ class DashboardController extends Controller
                 ->select('id', 'name')
                 ->orderBy('name')
                 ->get();
-            $brands = Brand::select('id', 'nama')
-                ->orderBy('nama')
-                ->get();
+            if ($currentUser->isBrandOwner()) {
+                $brands = $currentUser->brands()
+                    ->select('brands.id', 'brands.nama')
+                    ->orderBy('nama')
+                    ->get();
+            } else {
+                $brands = Brand::select('id', 'nama')
+                    ->orderBy('nama')
+                    ->get();
+            }
         } else {
             $marketingUsers = collect([
                 (object)['id' => $currentUser->id, 'name' => $currentUser->name]
