@@ -27,21 +27,23 @@ class TransaksiController extends Controller
 
         // Apply role-based filtering
         $baseQuery = $user->applyRoleFilter($baseQuery, 'user_id');
+        $baseQuery = $user->applyBrandOwnerFilter($baseQuery, 'paket_brand_id');
+        $baseQuery = $user->applyBrandOwnerFilter($baseQuery, 'lead_awal_brand_id');
 
         // Apply search filter
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $baseQuery->where(function ($q) use ($search) {
                 $q->where('nama_paket', 'like', "%{$search}%")
-                  ->orWhere('kabupaten', 'like', "%{$search}%")
-                  ->orWhere('provinsi', 'like', "%{$search}%")
-                  ->orWhere('no_wa', 'like', "%{$search}%")
-                  // Support searching by Nama Mitra
-                  ->orWhere('nama_mitra', 'like', "%{$search}%")
-                  // Support searching by Marketing (user name)
-                  ->orWhereHas('user', function ($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('kabupaten', 'like', "%{$search}%")
+                    ->orWhere('provinsi', 'like', "%{$search}%")
+                    ->orWhere('no_wa', 'like', "%{$search}%")
+                    // Support searching by Nama Mitra
+                    ->orWhere('nama_mitra', 'like', "%{$search}%")
+                    // Support searching by Marketing (user name)
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -82,7 +84,14 @@ class TransaksiController extends Controller
             ->sum('nominal_masuk');
 
         // Get data for filters
-        $brands = Brand::select('id', 'nama')->get();
+        if ($user->isBrandOwner()) {
+            $brands = $user->brands()
+                ->select('brands.id', 'brands.nama')
+                ->orderBy('nama')
+                ->get();
+        } else {
+            $brands = Brand::select('id', 'nama')->get();
+        }
         $sumbers = Sumber::select('id', 'nama', 'warna')->orderBy('nama')->get();
         $pekerjaans = Pekerjaan::select('id', 'nama', 'warna')->orderBy('nama')->get();
 
@@ -133,6 +142,8 @@ class TransaksiController extends Controller
 
             // Apply role-based filtering
             $query = $user->applyRoleFilter($query, 'user_id');
+            $query = $user->applyBrandOwnerFilter($query, 'paket_brand_id');
+            $query = $user->applyBrandOwnerFilter($query, 'lead_awal_brand_id');
 
             // Date filters: support both periode_* and start_date/end_date
             $startDate = $request->get('periode_start', $request->get('start_date'));
@@ -154,13 +165,13 @@ class TransaksiController extends Controller
                 $search = $request->search;
                 $query->where(function ($q) use ($search) {
                     $q->where('nama_paket', 'like', "%{$search}%")
-                      ->orWhere('kabupaten', 'like', "%{$search}%")
-                      ->orWhere('provinsi', 'like', "%{$search}%")
-                      ->orWhere('no_wa', 'like', "%{$search}%")
-                      ->orWhere('nama_mitra', 'like', "%{$search}%")
-                      ->orWhereHas('user', function ($userQuery) use ($search) {
-                          $userQuery->where('name', 'like', "%{$search}%");
-                      });
+                        ->orWhere('kabupaten', 'like', "%{$search}%")
+                        ->orWhere('provinsi', 'like', "%{$search}%")
+                        ->orWhere('no_wa', 'like', "%{$search}%")
+                        ->orWhere('nama_mitra', 'like', "%{$search}%")
+                        ->orWhereHas('user', function ($userQuery) use ($search) {
+                            $userQuery->where('name', 'like', "%{$search}%");
+                        });
                 });
             }
 
@@ -242,11 +253,13 @@ class TransaksiController extends Controller
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
+        $query = $user->applyBrandOwnerFilter($query, 'paket_brand_id');
+        $query = $user->applyBrandOwnerFilter($query, 'lead_awal_brand_id');
 
         // Apply date range filter (default to current month)
         $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->get('end_date', now()->endOfMonth()->format('Y-m-d'));
-        
+
         $query->whereBetween('tanggal_tf', [$startDate, $endDate]);
 
         // Apply optional filters for marketing and brand
@@ -329,6 +342,10 @@ class TransaksiController extends Controller
             'nama_paket' => 'required|string|max:255',
         ]);
 
+        if ($user->isBrandOwner()) {
+            abort(403);
+        }
+
         // Derive sumber string from sumber_id or fallback to provided sumber/Unknown
         $sumberString = 'Unknown';
         if (!empty($validated['sumber_id'])) {
@@ -402,7 +419,7 @@ class TransaksiController extends Controller
                 $mitra = Mitra::where('no_telp', $validated['no_wa'])
                     ->orWhere('no_telp', 'like', "%{$cleanPhone}%")
                     ->first();
-                
+
                 if ($mitra) {
                     $mitra->update(['label_id' => 8]);
                 }
@@ -427,6 +444,8 @@ class TransaksiController extends Controller
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
+        $query = $user->applyBrandOwnerFilter($query, 'paket_brand_id');
+        $query = $user->applyBrandOwnerFilter($query, 'lead_awal_brand_id');
 
         // Apply date range filter only if provided (default: all time)
         $startDate = $request->get('start_date');
@@ -478,6 +497,8 @@ class TransaksiController extends Controller
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
+        $query = $user->applyBrandOwnerFilter($query, 'paket_brand_id');
+        $query = $user->applyBrandOwnerFilter($query, 'lead_awal_brand_id');
 
         // Apply date range filter only if provided (default: all time)
         $startDate = $request->get('start_date');
@@ -529,6 +550,8 @@ class TransaksiController extends Controller
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
+        $query = $user->applyBrandOwnerFilter($query, 'paket_brand_id');
+        $query = $user->applyBrandOwnerFilter($query, 'lead_awal_brand_id');
 
         // Apply date range filter (default to current year)
         $startDate = $request->get('start_date', now()->startOfYear()->format('Y-m-d'));
@@ -576,6 +599,8 @@ class TransaksiController extends Controller
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
+        $query = $user->applyBrandOwnerFilter($query, 'paket_brand_id');
+        $query = $user->applyBrandOwnerFilter($query, 'lead_awal_brand_id');
 
         // Apply date range filter only if provided (default: all time)
         $startDate = $request->get('start_date');
@@ -635,6 +660,8 @@ class TransaksiController extends Controller
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
+        $query = $user->applyBrandOwnerFilter($query, 'paket_brand_id');
+        $query = $user->applyBrandOwnerFilter($query, 'lead_awal_brand_id');
 
         // Apply date range filter only if provided (default: all time)
         $startDate = $request->get('start_date');
@@ -683,10 +710,19 @@ class TransaksiController extends Controller
     public function show(Transaksi $transaksi)
     {
         $user = auth()->user();
-        
+
         // Check if user can access this transaksi
         if ($user->isMarketing() && $transaksi->user_id !== $user->id) {
             abort(403, 'Anda tidak memiliki izin untuk melihat data ini.');
+        }
+        if ($user->isBrandOwner()) {
+            $brandIds = $user->brands()->pluck('brands.id')->all();
+            if (
+                !in_array($transaksi->paket_brand_id, $brandIds, true) ||
+                !in_array($transaksi->lead_awal_brand_id, $brandIds, true)
+            ) {
+                abort(403, 'Anda tidak memiliki izin untuk melihat data ini.');
+            }
         }
 
         return Inertia::render('Transaksi/Show', [
@@ -709,6 +745,9 @@ class TransaksiController extends Controller
         // Marketing can only update own records
         if ($user->isMarketing() && $transaksi->user_id !== $user->id) {
             abort(403, 'Anda tidak memiliki izin untuk mengupdate data ini.');
+        }
+        if ($user->isBrandOwner()) {
+            abort(403);
         }
 
         $validated = $request->validate([
@@ -769,7 +808,7 @@ class TransaksiController extends Controller
                 $mitra = Mitra::where('no_telp', $validated['no_wa'])
                     ->orWhere('no_telp', 'like', "%{$cleanPhone}%")
                     ->first();
-                
+
                 if ($mitra) {
                     $mitra->update(['label_id' => 8]);
                 }
@@ -795,6 +834,9 @@ class TransaksiController extends Controller
         if ($user->isMarketing() && $transaksi->user_id !== $user->id) {
             abort(403, 'Anda tidak memiliki izin untuk menghapus data ini.');
         }
+        if ($user->isBrandOwner()) {
+            abort(403);
+        }
 
         $transaksi->delete();
 
@@ -816,6 +858,8 @@ class TransaksiController extends Controller
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
+        $query = $user->applyBrandOwnerFilter($query, 'paket_brand_id');
+        $query = $user->applyBrandOwnerFilter($query, 'lead_awal_brand_id');
 
         // Apply year filter (default: current year)
         $year = $request->get('year', now()->year);
@@ -873,7 +917,7 @@ class TransaksiController extends Controller
         $monthlyData = [];
         for ($i = 1; $i <= 12; $i++) {
             $monthKey = $connection === 'sqlite' ? sprintf('%02d', $i) : $i;
-            
+
             // Current Year Data
             $currentFound = $data->first(function ($item) use ($monthKey, $year, $connection) {
                 return ($connection === 'sqlite' ? $item->month == $monthKey : $item->month == $monthKey)
