@@ -13,6 +13,7 @@
 
         <!-- Template Download Button -->
         <Button
+            v-if="canImport"
             @click="handleTemplateDownload"
             :disabled="isDownloadingTemplate"
             class="w-full border border-green-600 bg-gradient-to-r from-green-500 to-green-600 px-3 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:from-green-600 hover:to-green-700 sm:w-auto lg:px-4"
