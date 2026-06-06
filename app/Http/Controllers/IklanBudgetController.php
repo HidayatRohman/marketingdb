@@ -20,6 +20,7 @@ class IklanBudgetController extends Controller
     {
         $currentUser = auth()->user();
         $query = IklanBudget::with('brand');
+        $query = $currentUser->applyBrandOwnerFilter($query, 'brand_id');
         
         // Set default periode ke bulan berjalan
         $startOfMonth = Carbon::now()->startOfMonth();
@@ -34,6 +35,12 @@ class IklanBudgetController extends Controller
         
         // Filter berdasarkan brand jika ada
         if ($request->filled('brand_id')) {
+            if ($currentUser->isBrandOwner()) {
+                $brandIds = $currentUser->brands()->pluck('brands.id')->all();
+                if (!in_array((int) $request->brand_id, $brandIds, true)) {
+                    abort(403);
+                }
+            }
             $query->where('brand_id', $request->brand_id);
         }
         
@@ -57,6 +64,7 @@ class IklanBudgetController extends Controller
         
         // Hitung total untuk periode aktif (global, terpisah dari data tabel)
         $totalQuery = IklanBudget::query()->inPeriod($activeStart, $activeEnd);
+        $totalQuery = $currentUser->applyBrandOwnerFilter($totalQuery, 'brand_id');
         
         // Filter berdasarkan brand untuk total juga
         if ($request->filled('brand_id')) {
@@ -102,6 +110,11 @@ class IklanBudgetController extends Controller
         ->leftJoin('iklan_budgets', 'brands.id', '=', 'iklan_budgets.brand_id')
         ->groupBy('brands.id', 'brands.nama');
 
+        if ($currentUser->isBrandOwner()) {
+            $brandIds = $currentUser->brands()->pluck('brands.id')->all();
+            $reportQuery->whereIn('brands.id', $brandIds);
+        }
+
         if (!empty($selectedBrand)) {
             $reportQuery->where('brands.id', $selectedBrand);
         }
@@ -128,7 +141,14 @@ class IklanBudgetController extends Controller
         })->values();
         
         // Get brands for select options
-        $brands = Brand::select('id', 'nama')->orderBy('nama')->get();
+        if ($currentUser->isBrandOwner()) {
+            $brands = $currentUser->brands()
+                ->select('brands.id', 'brands.nama')
+                ->orderBy('nama')
+                ->get();
+        } else {
+            $brands = Brand::select('id', 'nama')->orderBy('nama')->get();
+        }
         
         return Inertia::render('IklanBudget/Index', [
             'iklanBudgets' => $iklanBudgets,
@@ -155,6 +175,11 @@ class IklanBudgetController extends Controller
      */
     public function store(Request $request)
     {
+        $user = auth()->user();
+        if ($user && $user->isBrandOwner()) {
+            abort(403);
+        }
+
         $validator = Validator::make($request->all(), [
             'tanggal' => 'required|date',
             'brand_id' => 'required|exists:brands,id',
@@ -192,6 +217,11 @@ class IklanBudgetController extends Controller
      */
     public function update(Request $request, IklanBudget $iklanBudget)
     {
+        $user = auth()->user();
+        if ($user && $user->isBrandOwner()) {
+            abort(403);
+        }
+
         $validator = Validator::make($request->all(), [
             'tanggal' => 'required|date',
             'brand_id' => 'required|exists:brands,id',
@@ -230,6 +260,11 @@ class IklanBudgetController extends Controller
      */
     public function destroy(IklanBudget $iklanBudget)
     {
+        $user = auth()->user();
+        if ($user && $user->isBrandOwner()) {
+            abort(403);
+        }
+
         $iklanBudget->delete();
 
         return redirect()->route('iklan-budgets.index')
@@ -241,6 +276,11 @@ class IklanBudgetController extends Controller
      */
     public function bulkDestroy(Request $request)
     {
+        $user = auth()->user();
+        if ($user && $user->isBrandOwner()) {
+            abort(403);
+        }
+
         $ids = $request->input('ids', []);
 
         if (!is_array($ids) || empty($ids)) {
@@ -268,6 +308,11 @@ class IklanBudgetController extends Controller
      */
     public function generateMonthlyBudget(Request $request)
     {
+        $user = auth()->user();
+        if ($user && $user->isBrandOwner()) {
+            abort(403);
+        }
+
         $validator = Validator::make($request->all(), [
             'year' => 'required|integer|min:2020|max:2030',
             'month' => 'required|integer|min:1|max:12',
@@ -314,6 +359,7 @@ class IklanBudgetController extends Controller
      */
     public function monthlySpent(Request $request)
     {
+        $user = auth()->user();
         $year = (int) ($request->get('year', now()->year));
         $brandId = $request->get('brand_id');
 
@@ -321,7 +367,16 @@ class IklanBudgetController extends Controller
             $query = IklanBudget::query()->whereYear('tanggal', $year);
 
             if (!empty($brandId)) {
+                if ($user && $user->isBrandOwner()) {
+                    $brandIds = $user->brands()->pluck('brands.id')->all();
+                    if (!in_array((int) $brandId, $brandIds, true)) {
+                        abort(403);
+                    }
+                }
                 $query->where('brand_id', $brandId);
+            } elseif ($user && $user->isBrandOwner()) {
+                $brandIds = $user->brands()->pluck('brands.id')->all();
+                $query->whereIn('brand_id', $brandIds);
             }
 
             $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
@@ -376,6 +431,7 @@ class IklanBudgetController extends Controller
      */
     public function monthlyLeads(Request $request)
     {
+        $user = auth()->user();
         $year = (int) ($request->get('year', now()->year));
         $brandId = $request->get('brand_id');
 
@@ -383,7 +439,16 @@ class IklanBudgetController extends Controller
             $query = \App\Models\Mitra::query()->whereYear('tanggal_lead', $year);
 
             if (!empty($brandId)) {
+                if ($user && $user->isBrandOwner()) {
+                    $brandIds = $user->brands()->pluck('brands.id')->all();
+                    if (!in_array((int) $brandId, $brandIds, true)) {
+                        abort(403);
+                    }
+                }
                 $query->where('brand_id', $brandId);
+            } elseif ($user && $user->isBrandOwner()) {
+                $brandIds = $user->brands()->pluck('brands.id')->all();
+                $query->whereIn('brand_id', $brandIds);
             }
 
             $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
@@ -451,7 +516,14 @@ class IklanBudgetController extends Controller
             $activeEnd = $request->filled('end_date') ? Carbon::parse($request->end_date) : $endOfMonth;
 
             $query = IklanBudget::with('brand')->inPeriod($activeStart, $activeEnd);
+            $query = $user->applyBrandOwnerFilter($query, 'brand_id');
             if ($request->filled('brand_id')) {
+                if ($user->isBrandOwner()) {
+                    $brandIds = $user->brands()->pluck('brands.id')->all();
+                    if (!in_array((int) $request->brand_id, $brandIds, true)) {
+                        abort(403);
+                    }
+                }
                 $query->where('brand_id', $request->brand_id);
             }
 
@@ -499,6 +571,7 @@ class IklanBudgetController extends Controller
     public function downloadTemplate()
     {
         try {
+            $user = auth()->user();
             $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
             $sheet->setTitle('Template Import');
@@ -510,7 +583,11 @@ class IklanBudgetController extends Controller
 
             // Contoh data
             $sheet->setCellValue('A2', now()->format('Y-m-d'));
-            $sampleBrand = Brand::select('nama')->orderBy('nama')->first();
+            if ($user && $user->isBrandOwner()) {
+                $sampleBrand = $user->brands()->select('brands.nama')->orderBy('nama')->first();
+            } else {
+                $sampleBrand = Brand::select('nama')->orderBy('nama')->first();
+            }
             $sheet->setCellValue('B2', $sampleBrand ? $sampleBrand->nama : 'Contoh Brand');
             $sheet->setCellValue('C2', 100000);
 
@@ -540,6 +617,11 @@ class IklanBudgetController extends Controller
         ]);
 
         try {
+            $user = auth()->user();
+            if ($user && $user->isBrandOwner()) {
+                abort(403);
+            }
+
             DB::beginTransaction();
 
             $file = $request->file('file');
@@ -731,8 +813,16 @@ class IklanBudgetController extends Controller
 
     public function getYearlyComparison(Request $request)
     {
+        $user = auth()->user();
         $years = $request->input('years', [date('Y'), date('Y') - 1]);
         $brandId = $request->input('brand_id');
+        $brandIds = [];
+        if ($user && $user->isBrandOwner()) {
+            $brandIds = $user->brands()->pluck('brands.id')->all();
+            if ($brandId && !in_array((int) $brandId, $brandIds, true)) {
+                abort(403);
+            }
+        }
         
         $data = [];
         
@@ -746,6 +836,8 @@ class IklanBudgetController extends Controller
             $spentQuery = IklanBudget::whereYear('tanggal', $year);
             if ($brandId) {
                 $spentQuery->where('brand_id', $brandId);
+            } elseif (!empty($brandIds)) {
+                $spentQuery->whereIn('brand_id', $brandIds);
             }
             $spentRecords = $spentQuery->get(['tanggal', 'spent_amount']);
             
@@ -758,6 +850,8 @@ class IklanBudgetController extends Controller
             $leadsQuery = \App\Models\Mitra::whereYear('tanggal_lead', $year);
             if ($brandId) {
                 $leadsQuery->where('brand_id', $brandId);
+            } elseif (!empty($brandIds)) {
+                $leadsQuery->whereIn('brand_id', $brandIds);
             }
             $leadsRecords = $leadsQuery->get(['tanggal_lead']);
             
@@ -772,6 +866,8 @@ class IklanBudgetController extends Controller
             $omsetQuery = \App\Models\Transaksi::whereYear('tanggal_tf', $year);
             if ($brandId) {
                 $omsetQuery->where('lead_awal_brand_id', $brandId);
+            } elseif (!empty($brandIds)) {
+                $omsetQuery->whereIn('lead_awal_brand_id', $brandIds);
             }
             $omsetRecords = $omsetQuery->get(['tanggal_tf', 'nominal_masuk']);
             

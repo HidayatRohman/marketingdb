@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Brand;
+use App\Models\IklanBudget;
 use App\Models\Mitra;
 use App\Models\Sumber;
 use App\Models\Transaksi;
@@ -32,6 +33,7 @@ class BrandOwnerDemoDataSeeder extends Seeder
 
         $brandA = Brand::firstOrCreate(['nama' => 'BO Demo - Brand Alpha'], ['logo' => null]);
         $brandB = Brand::firstOrCreate(['nama' => 'BO Demo - Brand Beta'], ['logo' => null]);
+        $brandC = Brand::firstOrCreate(['nama' => 'BO Demo - Brand Gamma (Not Owned)'], ['logo' => null]);
 
         $brandOwner->brands()->syncWithoutDetaching([$brandA->id, $brandB->id]);
 
@@ -64,6 +66,13 @@ class BrandOwnerDemoDataSeeder extends Seeder
                 'brand_id' => $brandB->id,
                 'kota' => 'Medan',
                 'provinsi' => 'Sumatera Utara',
+            ],
+            [
+                'nama' => 'BO Demo Mitra X',
+                'no_telp' => '081234567899',
+                'brand_id' => $brandC->id,
+                'kota' => 'Denpasar',
+                'provinsi' => 'Bali',
             ],
         ];
 
@@ -111,7 +120,7 @@ class BrandOwnerDemoDataSeeder extends Seeder
             $source = $sources[($i - 1) % count($sources)];
             $status = $statuses[($i - 1) % count($statuses)];
             $amount = $amounts[($i - 1) % count($amounts)];
-            $brandPick = ($i % 2 === 0) ? $brandA : $brandB;
+            $brandPick = ($i % 3 === 0) ? $brandC : (($i % 2 === 0) ? $brandA : $brandB);
             $mitraPick = $mitras[($i - 1) % count($mitras)];
 
             $payload = [
@@ -144,6 +153,27 @@ class BrandOwnerDemoDataSeeder extends Seeder
             Transaksi::create($payload);
         }
 
-        $this->command?->info('✅ BrandOwnerDemoDataSeeder: Brand + Mitra + Transaksi demo untuk bo@marketingdb.com berhasil dibuat.');
+        $today = Carbon::now()->startOfDay();
+        for ($d = 0; $d < 14; $d++) {
+            $tanggal = $today->copy()->subDays($d)->format('Y-m-d');
+            $spentA = 100000 + ($d * 10000);
+            $spentB = 120000 + ($d * 8000);
+            $spentC = 90000 + ($d * 5000);
+
+            IklanBudget::updateOrCreate(
+                ['tanggal' => $tanggal, 'brand_id' => $brandA->id],
+                ['budget_amount' => 500000, 'spent_amount' => $spentA]
+            );
+            IklanBudget::updateOrCreate(
+                ['tanggal' => $tanggal, 'brand_id' => $brandB->id],
+                ['budget_amount' => 500000, 'spent_amount' => $spentB]
+            );
+            IklanBudget::updateOrCreate(
+                ['tanggal' => $tanggal, 'brand_id' => $brandC->id],
+                ['budget_amount' => 500000, 'spent_amount' => $spentC]
+            );
+        }
+
+        $this->command?->info('✅ BrandOwnerDemoDataSeeder: Brand + Mitra + Transaksi + IklanBudget demo untuk bo@marketingdb.com berhasil dibuat.');
     }
 }

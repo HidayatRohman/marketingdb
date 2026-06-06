@@ -176,6 +176,9 @@ class MitraController extends Controller
     public function create()
     {
         $user = auth()->user();
+        if ($user->isBrandOwner()) {
+            abort(403);
+        }
         
         return Inertia::render('Mitra/Create', [
             'permissions' => [
@@ -193,6 +196,9 @@ class MitraController extends Controller
     {
         $validated = $request->validated();
         $user = auth()->user();
+        if ($user->isBrandOwner()) {
+            abort(403);
+        }
         
         // For marketing role, always use current user ID
         if ($user->role === 'marketing') {
@@ -248,6 +254,9 @@ class MitraController extends Controller
     public function edit(Mitra $mitra)
     {
         $user = auth()->user();
+        if ($user->isBrandOwner()) {
+            abort(403);
+        }
         
         // Check if user can edit this mitra
         if ($user->isMarketing() && $mitra->user_id !== $user->id) {
@@ -270,6 +279,9 @@ class MitraController extends Controller
     public function update(UpdateMitraRequest $request, Mitra $mitra)
     {
         $user = auth()->user();
+        if ($user->isBrandOwner()) {
+            abort(403);
+        }
         
         // Check if user can update this mitra
         if ($user->isMarketing() && $mitra->user_id !== $user->id) {
@@ -377,6 +389,10 @@ class MitraController extends Controller
     {
         // Force JSON response for API calls
         $request->headers->set('Accept', 'application/json');
+        $user = auth()->user();
+        if ($user && $user->isBrandOwner()) {
+            abort(403);
+        }
         
         try {
             $request->validate([
@@ -439,6 +455,9 @@ class MitraController extends Controller
     public function destroy(Mitra $mitra)
     {
         $user = auth()->user();
+        if ($user->isBrandOwner()) {
+            abort(403);
+        }
         
         // Check if user can delete this mitra
         if ($user->isMarketing() && $mitra->user_id !== $user->id) {

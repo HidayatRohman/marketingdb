@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import HourlyLeadsChart from '@/components/HourlyLeadsChart.vue';
 import MitraDeleteModal from '@/components/MitraDeleteModal.vue';
 import MitraImportExportActions from '@/components/MitraImportExportActions.vue';
 import MitraModal from '@/components/MitraModal.vue';
-import HourlyLeadsChart from '@/components/HourlyLeadsChart.vue';
 import Badge from '@/components/ui/badge/Badge.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +17,7 @@ import TableRow from '@/components/ui/table/TableRow.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { Building2, Calendar, ChevronDown, ChevronUp, Clock, Edit, Eye, Filter, Plus, Search, Trash2, User, X } from 'lucide-vue-next';
-import { ref, computed, watch, onMounted, nextTick } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 interface Brand {
     id: number;
@@ -83,6 +83,11 @@ interface Props {
         name: string;
         role: string;
     };
+    permissions: {
+        canCrud: boolean;
+        canOnlyView: boolean;
+        canOnlyViewOwn: boolean;
+    };
     filters: {
         search?: string;
         chat?: string;
@@ -96,6 +101,14 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const canCrud = computed(() => !!props.permissions?.canCrud);
+const isBrandOwner = computed(() => {
+    const role = String(props.currentUser?.role ?? '')
+        .trim()
+        .toLowerCase()
+        .replace(/[\s-]+/g, '_');
+    return role === 'brand_owner';
+});
 
 const search = ref(props.filters.search || '');
 const chat = ref(props.filters.chat || '');
@@ -110,23 +123,27 @@ const perPage = ref(props.filters.per_page || 30);
 const mitrasData = computed(() => props.mitras);
 
 // Debug: Log props changes
-watch(() => props.mitras, (newMitras) => {
-    console.log('Props mitras updated:', {
-        total: newMitras.total,
-        count: newMitras.data.length,
-        first_item: newMitras.data[0],
-        filters: props.filters
-    });
-}, { deep: true });
+watch(
+    () => props.mitras,
+    (newMitras) => {
+        console.log('Props mitras updated:', {
+            total: newMitras.total,
+            count: newMitras.data.length,
+            first_item: newMitras.data[0],
+            filters: props.filters,
+        });
+    },
+    { deep: true },
+);
 
 // Force reactivity on mount
 onMounted(() => {
     console.log('Component mounted with data:', {
         total: props.mitras.total,
         count: props.mitras.data.length,
-        filters: props.filters
+        filters: props.filters,
     });
-    
+
     // Force reactivity update
     nextTick(() => {
         console.log('NextTick - ensuring reactivity');
@@ -288,7 +305,7 @@ watch([search, chat, label, user, brand, periodeStart, periodeEnd, perPage], () 
             periode_end: periodeEnd.value,
             per_page: perPage.value || 30,
         });
-        
+
         router.get(
             '/mitras',
             {
@@ -307,7 +324,7 @@ watch([search, chat, label, user, brand, periodeStart, periodeEnd, perPage], () 
                 onStart: () => {
                     console.log('Request started with filters:', {
                         periode_start: periodeStart.value,
-                        periode_end: periodeEnd.value
+                        periode_end: periodeEnd.value,
                     });
                 },
                 onSuccess: (page) => {
@@ -316,12 +333,12 @@ watch([search, chat, label, user, brand, periodeStart, periodeEnd, perPage], () 
                         mitras_count: page.props.mitras?.data?.length,
                         filters_received: page.props.filters,
                         first_mitra: page.props.mitras?.data?.[0],
-                        all_props: page.props
+                        all_props: page.props,
                     });
                 },
                 onError: (errors) => {
                     console.error('Request failed:', errors);
-                }
+                },
             },
         );
     }, 300);
@@ -329,6 +346,7 @@ watch([search, chat, label, user, brand, periodeStart, periodeEnd, perPage], () 
 
 // Modal functions
 const openCreateModal = () => {
+    if (!canCrud.value) return;
     mitraModal.value = {
         open: true,
         mode: 'create',
@@ -337,6 +355,7 @@ const openCreateModal = () => {
 };
 
 const openEditModal = (mitra: Mitra) => {
+    if (!canCrud.value) return;
     mitraModal.value = {
         open: true,
         mode: 'edit',
@@ -353,6 +372,7 @@ const openViewModal = (mitra: Mitra) => {
 };
 
 const openDeleteModal = (mitra: Mitra) => {
+    if (!canCrud.value) return;
     deleteModal.value = {
         open: true,
         mitra: { ...mitra },
@@ -390,8 +410,6 @@ const formatDate = (dateString: string) => {
         day: 'numeric',
     });
 };
-
-
 
 // Function to format phone number for WhatsApp
 const formatWhatsAppNumber = (phoneNumber: string) => {
@@ -460,17 +478,16 @@ const getFilterParams = () => {
 };
 
 // Update chart data when props change
-watch(() => props.hourlyAnalysis, (newHourlyAnalysis) => {
-    chartData.value = newHourlyAnalysis || [];
-}, { deep: true });
+watch(
+    () => props.hourlyAnalysis,
+    (newHourlyAnalysis) => {
+        chartData.value = newHourlyAnalysis || [];
+    },
+    { deep: true },
+);
 
 // Debug initial data on component mount
 onMounted(() => {
-    // Set default filter to 'this_month' if no period filter is present
-    if (!props.filters.periode_start && !props.filters.periode_end) {
-        setDatePreset('this_month');
-    }
-
     console.log('Component Mounted - Initial Data Debug:', {
         mitras_total: props.mitras.total,
         mitras_count: props.mitras.data?.length,
@@ -482,8 +499,8 @@ onMounted(() => {
             user: user.value,
             periode_start: periodeStart.value,
             periode_end: periodeEnd.value,
-            per_page: perPage.value
-        }
+            per_page: perPage.value,
+        },
     });
 });
 </script>
@@ -506,19 +523,24 @@ onMounted(() => {
                             </h1>
                             <p class="text-sm text-teal-100 sm:text-base lg:text-lg">Kelola mitra bisnis dengan mudah dan efisien</p>
                         </div>
-                        
+
                         <!-- Action Buttons - Responsive -->
-                        <div class="flex flex-col space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0 lg:flex-shrink-0">
+                        <div class="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3 lg:flex-shrink-0">
                             <!-- Import/Export Actions -->
                             <div class="order-1 sm:order-2">
-                                <MitraImportExportActions :filters="getFilterParams()" @import-success="handleImportSuccess" />
+                                <MitraImportExportActions
+                                    :filters="getFilterParams()"
+                                    :can-import="!isBrandOwner"
+                                    @import-success="handleImportSuccess"
+                                />
                             </div>
 
                             <!-- Add Mitra Button -->
                             <div class="order-2 sm:order-1">
                                 <Button
+                                    v-if="canCrud"
                                     @click="openCreateModal"
-                                    class="w-full border border-white/50 bg-gradient-to-r from-white to-gray-100 px-4 py-2 text-sm font-semibold text-teal-600 shadow-lg transition-all duration-200 hover:from-teal-50 hover:to-white dark:border-gray-700 dark:from-gray-800 dark:to-gray-900 dark:text-teal-400 dark:hover:from-gray-700 dark:hover:to-gray-800 sm:w-auto sm:text-base lg:text-base"
+                                    class="w-full border border-white/50 bg-gradient-to-r from-white to-gray-100 px-4 py-2 text-sm font-semibold text-teal-600 shadow-lg transition-all duration-200 hover:from-teal-50 hover:to-white sm:w-auto sm:text-base lg:text-base dark:border-gray-700 dark:from-gray-800 dark:to-gray-900 dark:text-teal-400 dark:hover:from-gray-700 dark:hover:to-gray-800"
                                 >
                                     <Plus class="mr-1 h-4 w-4 sm:mr-2" />
                                     <span class="sm:hidden">Tambah</span>
@@ -628,7 +650,6 @@ onMounted(() => {
             </div>
 
             <!-- Hourly Leads Analysis Chart -->
-            
 
             <!-- Search and Filter Bar -->
             <Card class="border-0 shadow-md">
@@ -639,11 +660,7 @@ onMounted(() => {
                         <div class="flex-1">
                             <div class="relative">
                                 <Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
-                                <Input 
-                                    v-model="search" 
-                                    placeholder="Cari nama, telepon, brand, lokasi..." 
-                                    class="h-9 pl-10 text-sm sm:h-10" 
-                                />
+                                <Input v-model="search" placeholder="Cari nama, telepon, brand, lokasi..." class="h-9 pl-10 text-sm sm:h-10" />
                             </div>
                         </div>
 
@@ -673,7 +690,7 @@ onMounted(() => {
                                 variant="ghost"
                                 size="sm"
                                 @click="clearFilters"
-                                class="h-9 w-9 border border-red-300 bg-gradient-to-r from-red-100 to-red-200 p-0 text-red-700 transition-all duration-200 hover:from-red-200 hover:to-red-300 dark:border-red-700 dark:from-red-900/50 dark:to-red-800/50 dark:text-red-300 dark:hover:from-red-800/60 dark:hover:to-red-700/60 sm:h-10 sm:w-auto sm:px-3"
+                                class="h-9 w-9 border border-red-300 bg-gradient-to-r from-red-100 to-red-200 p-0 text-red-700 transition-all duration-200 hover:from-red-200 hover:to-red-300 sm:h-10 sm:w-auto sm:px-3 dark:border-red-700 dark:from-red-900/50 dark:to-red-800/50 dark:text-red-300 dark:hover:from-red-800/60 dark:hover:to-red-700/60"
                                 title="Hapus Semua Filter"
                             >
                                 <X class="h-4 w-4" />
@@ -717,11 +734,7 @@ onMounted(() => {
                                     <Calendar class="h-4 w-4" />
                                     Dari Tanggal
                                 </label>
-                                <DatePicker
-                                    v-model="periodeStart"
-                                    placeholder="Pilih tanggal mulai"
-                                    :max-date="periodeEnd || undefined"
-                                />
+                                <DatePicker v-model="periodeStart" placeholder="Pilih tanggal mulai" :max-date="periodeEnd || undefined" />
                             </div>
 
                             <!-- Periode End -->
@@ -730,10 +743,7 @@ onMounted(() => {
                                     <Calendar class="h-4 w-4" />
                                     Sampai Tanggal
                                 </label>
-                                <DatePicker
-                                    v-model="periodeEnd"
-                                    placeholder="Pilih tanggal akhir"
-                                />
+                                <DatePicker v-model="periodeEnd" placeholder="Pilih tanggal akhir" />
                             </div>
 
                             <!-- Marketing Filter -->
@@ -833,7 +843,10 @@ onMounted(() => {
                             </div>
 
                             <!-- Active Filters Display -->
-                            <div v-if="hasActiveFilters" class="flex flex-col items-start gap-2 text-sm text-foreground/80 dark:text-foreground/90 sm:flex-row sm:items-center">
+                            <div
+                                v-if="hasActiveFilters"
+                                class="flex flex-col items-start gap-2 text-sm text-foreground/80 sm:flex-row sm:items-center dark:text-foreground/90"
+                            >
                                 <span class="font-medium">Filter aktif:</span>
                                 <div class="flex flex-wrap gap-1">
                                     <span v-if="search" class="rounded bg-primary/10 px-2 py-1 text-xs text-primary">Search</span>
@@ -860,11 +873,14 @@ onMounted(() => {
                 </CardHeader>
                 <CardContent class="p-0">
                     <div class="relative overflow-hidden">
-                        <div class="overflow-x-auto table-compact-mobile">
+                        <div class="table-compact-mobile overflow-x-auto">
                             <Table>
                                 <TableHeader>
                                     <TableRow class="border-b border-border hover:bg-transparent">
-                                        <TableHead class="sticky left-0 z-30 bg-background p-2 sm:p-3 font-semibold text-foreground text-sm sm:text-base min-w-[120px] sm:min-w-[180px] border-r border-border">Nama</TableHead>
+                                        <TableHead
+                                            class="sticky left-0 z-30 min-w-[120px] border-r border-border bg-background p-2 text-sm font-semibold text-foreground sm:min-w-[180px] sm:p-3 sm:text-base"
+                                            >Nama</TableHead
+                                        >
                                         <TableHead class="py-3 font-semibold text-foreground">Kontak</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Tanggal Lead</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Marketing</TableHead>
@@ -918,7 +934,9 @@ onMounted(() => {
 
                                     <!-- Data Rows -->
                                     <TableRow v-for="mitra in mitrasData.data" :key="mitra.id" class="transition-colors hover:bg-muted/30">
-                                        <TableCell class="sticky left-0 z-20 bg-background p-2 sm:p-3 font-medium text-sm sm:text-base min-w-[120px] sm:min-w-[180px] border-r border-border">
+                                        <TableCell
+                                            class="sticky left-0 z-20 min-w-[120px] border-r border-border bg-background p-2 text-sm font-medium sm:min-w-[180px] sm:p-3 sm:text-base"
+                                        >
                                             <div class="flex items-center gap-3">
                                                 <div
                                                     class="rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 p-2 dark:from-emerald-900/30 dark:to-teal-900/30"
@@ -997,10 +1015,12 @@ onMounted(() => {
                                             <span v-else class="text-sm text-muted-foreground">-</span>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge 
-                                                :class="mitra.webinar === 'Ikut' 
-                                                    ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700' 
-                                                    : 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700'"
+                                            <Badge
+                                                :class="
+                                                    mitra.webinar === 'Ikut'
+                                                        ? 'border-green-200 bg-green-100 text-green-700 hover:bg-green-200 dark:border-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                                        : 'border-red-200 bg-red-100 text-red-700 hover:bg-red-200 dark:border-red-700 dark:bg-red-900/30 dark:text-red-300'
+                                                "
                                                 variant="outline"
                                             >
                                                 {{ mitra.webinar }}
@@ -1017,6 +1037,7 @@ onMounted(() => {
                                                     <Eye class="h-4 w-4" />
                                                 </Button>
                                                 <Button
+                                                    v-if="canCrud"
                                                     variant="ghost"
                                                     size="sm"
                                                     @click="openEditModal(mitra)"
@@ -1025,6 +1046,7 @@ onMounted(() => {
                                                     <Edit class="h-4 w-4" />
                                                 </Button>
                                                 <Button
+                                                    v-if="canCrud"
                                                     variant="ghost"
                                                     size="sm"
                                                     @click="openDeleteModal(mitra)"
@@ -1043,10 +1065,10 @@ onMounted(() => {
                         <div class="mt-4 flex flex-col items-center justify-between gap-3 rounded-lg bg-muted/20 p-3 sm:flex-row">
                             <div class="text-sm text-foreground/80 dark:text-foreground/90">
                                 Menampilkan <span class="font-medium text-foreground">{{ mitrasData.data.length }}</span> dari
-                <span class="font-medium text-foreground">{{ mitrasData.total }}</span> mitra
-                        <span v-if="mitrasData.total > 0" class="text-foreground/70 dark:text-foreground/80">
-                            ({{ (mitrasData.current_page - 1) * mitrasData.per_page + 1 }} -
-                            {{ Math.min(mitrasData.current_page * mitrasData.per_page, mitrasData.total) }})
+                                <span class="font-medium text-foreground">{{ mitrasData.total }}</span> mitra
+                                <span v-if="mitrasData.total > 0" class="text-foreground/70 dark:text-foreground/80">
+                                    ({{ (mitrasData.current_page - 1) * mitrasData.per_page + 1 }} -
+                                    {{ Math.min(mitrasData.current_page * mitrasData.per_page, mitrasData.total) }})
                                 </span>
                             </div>
 

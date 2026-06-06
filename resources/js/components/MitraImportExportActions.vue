@@ -22,36 +22,36 @@
             <span class="sm:hidden">{{ isDownloadingTemplate ? 'Template...' : 'Template' }}</span>
         </Button>
 
-        <!-- Import Button with Tooltip -->
-        <div class="group relative w-full sm:w-auto">
-            <Button
-                @click="triggerFileInput"
-                :disabled="isImporting"
-                class="w-full border border-orange-600 bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:from-orange-600 hover:to-orange-700 lg:px-4"
-            >
-                <Upload class="mr-1 h-4 w-4 lg:mr-2" />
-                <span class="hidden sm:inline">{{ isImporting ? 'Mengimpor...' : 'Import XLSX' }}</span>
-                <span class="sm:hidden">{{ isImporting ? 'Import...' : 'Import' }}</span>
-            </Button>
+        <template v-if="canImport">
+            <!-- Import Button with Tooltip -->
+            <div class="group relative w-full sm:w-auto">
+                <Button
+                    @click="triggerFileInput"
+                    :disabled="isImporting"
+                    class="w-full border border-orange-600 bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:from-orange-600 hover:to-orange-700 lg:px-4"
+                >
+                    <Upload class="mr-1 h-4 w-4 lg:mr-2" />
+                    <span class="hidden sm:inline">{{ isImporting ? 'Mengimpor...' : 'Import XLSX' }}</span>
+                    <span class="sm:hidden">{{ isImporting ? 'Import...' : 'Import' }}</span>
+                </Button>
 
-            <!-- Tooltip - Only show on larger screens -->
-            <div
-                class="invisible absolute bottom-full left-1/2 z-50 mb-2 w-64 -translate-x-1/2 transform rounded-lg bg-gray-900 px-3 py-2 text-xs text-white opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100 hidden sm:block"
-            >
-                <div class="text-center">
-                    <div class="mb-1 font-semibold">Import Data Mitra</div>
-                    <div class="text-gray-300">
-                        Format: XLSX saja (Max: 10MB)<br />
-                        Download template terlebih dahulu
+                <div
+                    class="invisible absolute bottom-full left-1/2 z-50 mb-2 w-64 -translate-x-1/2 transform rounded-lg bg-gray-900 px-3 py-2 text-xs text-white opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100 hidden sm:block"
+                >
+                    <div class="text-center">
+                        <div class="mb-1 font-semibold">Import Data Mitra</div>
+                        <div class="text-gray-300">
+                            Format: XLSX saja (Max: 10MB)<br />
+                            Download template terlebih dahulu
+                        </div>
                     </div>
+                    <div class="absolute top-full left-1/2 -translate-x-1/2 transform border-4 border-transparent border-t-gray-900"></div>
                 </div>
-                <!-- Arrow -->
-                <div class="absolute top-full left-1/2 -translate-x-1/2 transform border-4 border-transparent border-t-gray-900"></div>
             </div>
-        </div>
 
-        <!-- Hidden File Input -->
-        <input ref="fileInput" type="file" accept=".xlsx,.xls" @change="handleFileSelect" class="hidden" />
+            <!-- Hidden File Input -->
+            <input ref="fileInput" type="file" accept=".xlsx,.xls" @change="handleFileSelect" class="hidden" />
+        </template>
 
         <!-- Progress Modal -->
         <Dialog :open="showProgressModal" @update:open="showProgressModal = $event">
@@ -165,7 +165,7 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertCircle, AlertTriangle, CheckCircle, Download, FileSpreadsheet, Upload, XCircle } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 interface ImportResult {
     success: boolean;
@@ -179,9 +179,11 @@ interface ImportResult {
 
 interface Props {
     filters?: Record<string, any>;
+    canImport?: boolean;
 }
 
 const props = defineProps<Props>();
+const canImport = computed(() => props.canImport !== false);
 const emit = defineEmits<{
     importSuccess: [];
 }>();
