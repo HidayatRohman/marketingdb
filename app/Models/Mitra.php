@@ -51,4 +51,12 @@ class Mitra extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Get the label history records for this mitra.
+     */
+    public function labelHistories()
+    {
+        return $this->hasMany(MitraLabelHistory::class)->orderBy('changed_at', 'desc');
+    }
 }

@@ -6,6 +6,7 @@ import MitraModal from '@/components/MitraModal.vue';
 import Badge from '@/components/ui/badge/Badge.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import DatePicker from '@/components/ui/datepicker/DatePicker.vue';
 import { Input } from '@/components/ui/input';
 import Table from '@/components/ui/table/Table.vue';
@@ -16,7 +17,7 @@ import TableHeader from '@/components/ui/table/TableHeader.vue';
 import TableRow from '@/components/ui/table/TableRow.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { Building2, Calendar, ChevronDown, ChevronUp, Clock, Edit, Eye, Filter, Plus, Search, Trash2, User, X } from 'lucide-vue-next';
+import { Building2, Calendar, ChevronDown, ChevronUp, Clock, Edit, Eye, Filter, History, Plus, Search, Trash2, User, X } from 'lucide-vue-next';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 interface Brand {
@@ -269,6 +270,32 @@ const deleteModal = ref({
     open: false,
     mitra: undefined as Mitra | undefined,
 });
+
+// Label History Modal
+const labelHistoryModal = ref({
+    open: false,
+    loading: false,
+    mitraId: null as number | null,
+    histories: [] as { id: number; old_label: string; old_label_color: string; new_label: string; new_label_color: string; changed_by: string; changed_at: string }[],
+});
+
+const openLabelHistory = async (mitraId: number) => {
+    labelHistoryModal.value.open = true;
+    labelHistoryModal.value.loading = true;
+    labelHistoryModal.value.mitraId = mitraId;
+    labelHistoryModal.value.histories = [];
+    try {
+        const response = await fetch(`/mitras/${mitraId}/label-history`);
+        if (response.ok) {
+            const result = await response.json();
+            labelHistoryModal.value.histories = result.data;
+        }
+    } catch (e) {
+        console.error('Error fetching label history:', e);
+    } finally {
+        labelHistoryModal.value.loading = false;
+    }
+};
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -1000,19 +1027,29 @@ onMounted(() => {
                                             <span class="text-sm text-gray-900 dark:text-gray-100">{{ mitra.kota }}, {{ mitra.provinsi }}</span>
                                         </TableCell>
                                         <TableCell>
-                                            <div
-                                                v-if="mitra.label"
-                                                class="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium"
-                                                :style="{
-                                                    backgroundColor: mitra.label.warna + '20',
-                                                    color: mitra.label.warna,
-                                                    border: `1px solid ${mitra.label.warna}40`,
-                                                }"
-                                            >
-                                                <div class="h-2 w-2 rounded-full" :style="{ backgroundColor: mitra.label.warna }"></div>
-                                                {{ mitra.label.nama }}
+                                            <div class="flex items-center gap-2">
+                                                <div
+                                                    v-if="mitra.label"
+                                                    class="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium"
+                                                    :style="{
+                                                        backgroundColor: mitra.label.warna + '20',
+                                                        color: mitra.label.warna,
+                                                        border: `1px solid ${mitra.label.warna}40`,
+                                                    }"
+                                                >
+                                                    <div class="h-2 w-2 rounded-full" :style="{ backgroundColor: mitra.label.warna }"></div>
+                                                    {{ mitra.label.nama }}
+                                                </div>
+                                                <span v-else class="text-sm text-muted-foreground">-</span>
+                                                <button
+                                                    type="button"
+                                                    @click.stop="openLabelHistory(mitra.id)"
+                                                    title="Lihat History Label"
+                                                    class="inline-flex items-center justify-center rounded-md p-1 text-gray-500 transition-colors hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-300"
+                                                >
+                                                    <History class="h-4 w-4" />
+                                                </button>
                                             </div>
-                                            <span v-else class="text-sm text-muted-foreground">-</span>
                                         </TableCell>
                                         <TableCell>
                                             <Badge
@@ -1161,5 +1198,90 @@ onMounted(() => {
         />
 
         <MitraDeleteModal :open="deleteModal.open" :mitra="deleteModal.mitra" @close="closeDeleteModal" @success="handleModalSuccess" />
+
+        <!-- Label History Modal -->
+        <Dialog :open="labelHistoryModal.open" @update:open="labelHistoryModal.open = false">
+            <DialogContent class="w-[500px] max-w-[90vw]">
+                <DialogHeader class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
+                    <DialogTitle class="text-xl font-bold flex items-center gap-2">
+                        <History class="h-5 w-5 text-amber-500" />
+                        History Label
+                    </DialogTitle>
+                    <DialogDescription class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        Riwayat perubahan label pada mitra ini.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <!-- Loading State -->
+                <div v-if="labelHistoryModal.loading" class="flex justify-center py-8">
+                    <svg class="animate-spin h-8 w-8 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                </div>
+
+                <!-- Empty State -->
+                <div v-else-if="labelHistoryModal.histories.length === 0" class="py-8 text-center">
+                    <div class="flex flex-col items-center space-y-2">
+                        <History class="h-10 w-10 text-gray-300" />
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Belum ada riwayat perubahan label.</p>
+                    </div>
+                </div>
+
+                <!-- History List -->
+                <div v-else class="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                    <div
+                        v-for="(history, index) in labelHistoryModal.histories"
+                        :key="history.id"
+                        class="rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+                    >
+                        <div class="flex items-start justify-between mb-2">
+                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                Perubahan #{{ labelHistoryModal.histories.length - index }}
+                            </span>
+                            <span class="text-xs text-gray-400 dark:text-gray-500">
+                                {{ history.changed_at }}
+                            </span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-red-600 dark:text-red-400 font-medium">Dari:</span>
+                                <span
+                                    v-if="history.old_label"
+                                    class="text-sm px-2 py-0.5 rounded"
+                                    :style="{
+                                        backgroundColor: (history.old_label_color || '#999999') + '20',
+                                        color: history.old_label_color || '#999999',
+                                    }"
+                                >
+                                    {{ history.old_label }}
+                                </span>
+                                <span v-else class="text-sm text-gray-500 dark:text-gray-400">(Tidak ada label)</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-green-600 dark:text-green-400 font-medium">Ke:</span>
+                                <span
+                                    v-if="history.new_label"
+                                    class="text-sm px-2 py-0.5 rounded"
+                                    :style="{
+                                        backgroundColor: (history.new_label_color || '#999999') + '20',
+                                        color: history.new_label_color || '#999999',
+                                    }"
+                                >
+                                    {{ history.new_label }}
+                                </span>
+                                <span v-else class="text-sm text-gray-500 dark:text-gray-400">(Tidak ada label)</span>
+                            </div>
+                            <div class="flex items-center gap-2 pt-1 border-t border-gray-100 dark:border-gray-700">
+                                <span class="text-xs text-gray-500 dark:text-gray-400">Diubah oleh:</span>
+                                <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                    {{ history.changed_by || '-' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>

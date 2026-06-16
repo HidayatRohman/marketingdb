@@ -79,6 +79,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Dynamic routes MUST be at the end to prevent conflicts
     Route::middleware('role.access:view')->group(function () {
+        Route::get('mitras/{mitra}/label-history', [MitraController::class, 'getLabelHistory'])->name('mitras.label-history');
         Route::get('mitras/{mitra}', [MitraController::class, 'show'])->name('mitras.show');
     });
     

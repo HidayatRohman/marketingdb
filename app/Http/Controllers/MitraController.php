@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Mitra;
 use App\Models\Brand;
 use App\Models\Label;
+use App\Models\MitraLabelHistory;
 use App\Http\Requests\StoreMitraRequest;
 use App\Http\Requests\UpdateMitraRequest;
 use App\Services\MitraExportService;
@@ -227,6 +228,36 @@ class MitraController extends Controller
     }
 
     /**
+     * Get label history for a specific mitra.
+     */
+    public function getLabelHistory(Mitra $mitra)
+    {
+        $user = auth()->user();
+
+        // Check if user can access this mitra
+        if ($user->isMarketing() && $mitra->user_id !== $user->id) {
+            abort(403, 'Anda tidak memiliki izin untuk melihat data ini.');
+        }
+
+        $histories = $mitra->labelHistories()
+            ->with(['oldLabel', 'newLabel', 'changedBy'])
+            ->get()
+            ->map(function ($history) {
+                return [
+                    'id' => $history->id,
+                    'old_label' => $history->oldLabel?->nama,
+                    'old_label_color' => $history->oldLabel?->warna,
+                    'new_label' => $history->newLabel?->nama,
+                    'new_label_color' => $history->newLabel?->warna,
+                    'changed_by' => $history->changedBy?->name,
+                    'changed_at' => $history->changed_at->format('d M Y H:i'),
+                ];
+            });
+
+        return response()->json(['data' => $histories]);
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(Mitra $mitra)
@@ -301,6 +332,18 @@ class MitraController extends Controller
         }
         if (empty($validated['provinsi'])) {
             $validated['provinsi'] = 'Unknown';
+        }
+
+        // Log label history if label_id changed
+        $oldLabelId = $mitra->label_id;
+        $newLabelId = $validated['label_id'] ?? null;
+        if ($oldLabelId != $newLabelId) {
+            MitraLabelHistory::create([
+                'mitra_id' => $mitra->id,
+                'old_label_id' => $oldLabelId,
+                'new_label_id' => $newLabelId,
+                'changed_by' => $user->id,
+            ]);
         }
 
         $mitra->update($validated);
