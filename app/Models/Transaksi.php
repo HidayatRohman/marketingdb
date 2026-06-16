@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Sumber;
 use App\Models\Pekerjaan;
-use App\Models\TransaksiLeadHistory;
 
 class Transaksi extends Model
 {
@@ -80,14 +79,6 @@ class Transaksi extends Model
     public function pekerjaan()
     {
         return $this->belongsTo(Pekerjaan::class, 'pekerjaan_id');
-    }
-
-    /**
-     * Get the lead history records for this transaksi.
-     */
-    public function leadHistories()
-    {
-        return $this->hasMany(TransaksiLeadHistory::class)->orderBy('changed_at', 'desc');
     }
 
 }

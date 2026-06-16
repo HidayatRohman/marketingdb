@@ -293,7 +293,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('transaksis/analytics/pekerjaan', [TransaksiController::class, 'getPekerjaanAnalytics'])->name('transaksis.analytics.pekerjaan');
         Route::get('transaksis/analytics/usia', [TransaksiController::class, 'getAgeAnalytics'])->name('transaksis.analytics.usia');
         Route::get('transaksis/analytics/lead-awal', [TransaksiController::class, 'getLeadAwalAnalytics'])->name('transaksis.analytics.lead-awal');
-        Route::get('transaksis/{transaksi}/lead-history', [TransaksiController::class, 'getLeadHistory'])->name('transaksis.lead-history');
         Route::get('transaksis/{transaksi}', [TransaksiController::class, 'show'])->name('transaksis.show');
     });
     

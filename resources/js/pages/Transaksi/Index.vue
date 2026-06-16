@@ -4,7 +4,6 @@ import TransaksiModal from '@/components/TransaksiModal.vue';
 import Badge from '@/components/ui/badge/Badge.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import DatePicker from '@/components/ui/datepicker/DatePicker.vue';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -16,7 +15,7 @@ import TableHeader from '@/components/ui/table/TableHeader.vue';
 import TableRow from '@/components/ui/table/TableRow.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { CreditCard, ChevronDown, ChevronUp, Edit, Eye, Filter, Plus, Search, Trash2, User, X, DollarSign, Phone, Download, History } from 'lucide-vue-next';
+import { CreditCard, ChevronDown, ChevronUp, Edit, Eye, Filter, Plus, Search, Trash2, User, X, DollarSign, Phone, Download } from 'lucide-vue-next';
 import { ref, computed, watch, onMounted, nextTick, watchEffect } from 'vue';
 import { debounce } from 'lodash';
 import { toLocalDateString } from '@/lib/utils';
@@ -190,32 +189,6 @@ const deleteModal = ref({
     open: false,
     transaksi: undefined as Transaksi | undefined,
 });
-
-// Lead History Modal
-const leadHistoryModal = ref({
-    open: false,
-    loading: false,
-    transaksiId: null as number | null,
-    histories: [] as { id: number; old_lead: string; new_lead: string; changed_by: string; changed_at: string }[],
-});
-
-const openLeadHistory = async (transaksiId: number) => {
-    leadHistoryModal.value.open = true;
-    leadHistoryModal.value.loading = true;
-    leadHistoryModal.value.transaksiId = transaksiId;
-    leadHistoryModal.value.histories = [];
-    try {
-        const response = await fetch(`/transaksis/${transaksiId}/lead-history`);
-        if (response.ok) {
-            const result = await response.json();
-            leadHistoryModal.value.histories = result.data;
-        }
-    } catch (e) {
-        console.error('Error fetching lead history:', e);
-    } finally {
-        leadHistoryModal.value.loading = false;
-    }
-};
 
 // Chart states
 const chartData = ref([]);
@@ -1203,17 +1176,7 @@ const handleExport = async () => {
                                     </TableCell>
                                     <!-- Lead Awal -->
                                     <TableCell class="py-3 px-3 font-medium text-foreground">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-sm">{{ transaksi.lead_awal_brand?.nama || '-' }}</span>
-                                            <button
-                                                type="button"
-                                                @click.stop="openLeadHistory(transaksi.id)"
-                                                title="Lihat History Lead"
-                                                class="inline-flex items-center justify-center rounded-md p-1 text-gray-500 transition-colors hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-300"
-                                            >
-                                                <History class="h-4 w-4" />
-                                            </button>
-                                        </div>
+                                        <span class="text-sm">{{ transaksi.lead_awal_brand?.nama || '-' }}</span>
                                     </TableCell>
                                     <!-- Nama Paket -->
                                     <TableCell class="py-3 px-3 font-medium text-foreground">
@@ -1632,75 +1595,6 @@ const handleExport = async () => {
             @close="closeDeleteModal"
             @success="handleModalSuccess"
         />
-
-        <!-- Lead History Modal -->
-        <Dialog :open="leadHistoryModal.open" @update:open="leadHistoryModal.open = false">
-            <DialogContent class="w-[500px] max-w-[90vw]">
-                <DialogHeader class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
-                    <DialogTitle class="text-xl font-bold flex items-center gap-2">
-                        <History class="h-5 w-5 text-amber-500" />
-                        History Lead Awal
-                    </DialogTitle>
-                    <DialogDescription class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        Riwayat perubahan lead awal pada transaksi ini.
-                    </DialogDescription>
-                </DialogHeader>
-
-                <!-- Loading State -->
-                <div v-if="leadHistoryModal.loading" class="flex justify-center py-8">
-                    <svg class="animate-spin h-8 w-8 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                </div>
-
-                <!-- Empty State -->
-                <div v-else-if="leadHistoryModal.histories.length === 0" class="py-8 text-center">
-                    <div class="flex flex-col items-center space-y-2">
-                        <History class="h-10 w-10 text-gray-300" />
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Belum ada riwayat perubahan lead.</p>
-                    </div>
-                </div>
-
-                <!-- History List -->
-                <div v-else class="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-                    <div
-                        v-for="(history, index) in leadHistoryModal.histories"
-                        :key="history.id"
-                        class="rounded-lg border border-gray-200 dark:border-gray-700 p-4"
-                    >
-                        <div class="flex items-start justify-between mb-2">
-                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-                                Perubahan #{{ leadHistoryModal.histories.length - index }}
-                            </span>
-                            <span class="text-xs text-gray-400 dark:text-gray-500">
-                                {{ history.changed_at }}
-                            </span>
-                        </div>
-                        <div class="space-y-2">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs text-red-600 dark:text-red-400 font-medium">Dari:</span>
-                                <span class="text-sm text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded">
-                                    {{ history.old_lead || '-' }}
-                                </span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs text-green-600 dark:text-green-400 font-medium">Ke:</span>
-                                <span class="text-sm text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">
-                                    {{ history.new_lead || '-' }}
-                                </span>
-                            </div>
-                            <div class="flex items-center gap-2 pt-1 border-t border-gray-100 dark:border-gray-700">
-                                <span class="text-xs text-gray-500 dark:text-gray-400">Diubah oleh:</span>
-                                <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                    {{ history.changed_by || '-' }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </DialogContent>
-        </Dialog>
     </AppLayout>
 </template>
 

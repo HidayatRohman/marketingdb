@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Transaksi;
 
 use App\Models\Brand;
-use App\Models\TransaksiLeadHistory;
 use App\Models\Sumber;
 use App\Models\Pekerjaan;
 use App\Models\Mitra;
@@ -706,43 +705,6 @@ class TransaksiController extends Controller
     }
 
     /**
-     * Get lead history for a specific transaksi.
-     */
-    public function getLeadHistory(Transaksi $transaksi)
-    {
-        $user = auth()->user();
-
-        // Check if user can access this transaksi
-        if ($user->isMarketing() && $transaksi->user_id !== $user->id) {
-            abort(403, 'Anda tidak memiliki izin untuk melihat data ini.');
-        }
-        if ($user->isBrandOwner()) {
-            $brandIds = $user->brands()->pluck('brands.id')->all();
-            if (
-                !in_array($transaksi->paket_brand_id, $brandIds, true) ||
-                !in_array($transaksi->lead_awal_brand_id, $brandIds, true)
-            ) {
-                abort(403, 'Anda tidak memiliki izin untuk melihat data ini.');
-            }
-        }
-
-        $histories = $transaksi->leadHistories()
-            ->with(['oldLeadBrand', 'newLeadBrand', 'changedBy'])
-            ->get()
-            ->map(function ($history) {
-                return [
-                    'id' => $history->id,
-                    'old_lead' => $history->oldLeadBrand?->nama,
-                    'new_lead' => $history->newLeadBrand?->nama,
-                    'changed_by' => $history->changedBy?->name,
-                    'changed_at' => $history->changed_at->format('d M Y H:i'),
-                ];
-            });
-
-        return response()->json(['data' => $histories]);
-    }
-
-    /**
      * Display the specified resource.
      */
     public function show(Transaksi $transaksi)
@@ -815,18 +777,6 @@ class TransaksiController extends Controller
             $sumberString = $ref ? $ref->nama : 'Unknown';
         } elseif (!empty($validated['sumber'])) {
             $sumberString = $validated['sumber'];
-        }
-
-        // Log lead history if lead_awal_brand_id changed
-        $oldLeadId = $transaksi->lead_awal_brand_id;
-        $newLeadId = $validated['lead_awal_brand_id'];
-        if ($oldLeadId != $newLeadId) {
-            TransaksiLeadHistory::create([
-                'transaksi_id' => $transaksi->id,
-                'old_lead_brand_id' => $oldLeadId,
-                'new_lead_brand_id' => $newLeadId,
-                'changed_by' => $user->id,
-            ]);
         }
 
         $transaksi->update([
