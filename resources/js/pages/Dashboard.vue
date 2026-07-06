@@ -807,7 +807,7 @@ const ppnPercentage = computed(() => {
                                     <div>
                                         <p class="text-sm font-medium text-blue-700 dark:text-blue-300">Total Spent</p>
                                         <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                                            Rp {{ summaryReport.reduce((sum, item) => sum + item.spent, 0).toLocaleString('id-ID') }}
+                                            Rp {{ summaryReport.reduce((sum, item) => sum + item.spent, 0).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}
                                         </p>
                                     </div>
                                 </div>
@@ -823,7 +823,7 @@ const ppnPercentage = computed(() => {
                                     <div>
                                         <p class="text-sm font-medium text-red-700 dark:text-red-300">Total Spent+PPN ({{ ppnPercentage }}%)</p>
                                         <p class="text-2xl font-bold text-red-900 dark:text-red-100">
-                                            Rp {{ summaryReport.reduce((sum, item) => sum + item.spent_with_tax, 0).toLocaleString('id-ID') }}
+                                            Rp {{ summaryReport.reduce((sum, item) => sum + item.spent_with_tax, 0).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}
                                         </p>
                                     </div>
                                 </div>
@@ -839,7 +839,7 @@ const ppnPercentage = computed(() => {
                                     <div>
                                         <p class="text-sm font-medium text-green-700 dark:text-green-300">Total Omset</p>
                                         <p class="text-2xl font-bold text-green-900 dark:text-green-100">
-                                            Rp {{ summaryReport.reduce((sum, item) => sum + item.omset, 0).toLocaleString('id-ID') }}
+                                            Rp {{ summaryReport.reduce((sum, item) => sum + item.omset, 0).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}
                                         </p>
                                     </div>
                                 </div>
@@ -860,7 +860,7 @@ const ppnPercentage = computed(() => {
                                                 (() => {
                                                     const totalSpent = summaryReport.reduce((sum, item) => sum + item.spent, 0)
                                                     const totalClosing = summaryReport.reduce((sum, item) => sum + item.closing, 0)
-                                                    return totalClosing > 0 ? Math.round(totalSpent / totalClosing).toLocaleString('id-ID') : '0'
+                                                    return totalClosing > 0 ? Math.round(totalSpent / totalClosing).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '0'
                                                 })()
                                             }}
                                         </p>
@@ -868,6 +868,7 @@ const ppnPercentage = computed(() => {
                                 </div>
                             </CardContent>
                         </Card>
+
                     </div>
 
                     <!-- Grid 2: empat kartu dalam 2 kolom (50% : 50%) -->
@@ -904,7 +905,7 @@ const ppnPercentage = computed(() => {
                                     <div>
                                         <p class="text-xs sm:text-sm font-medium text-purple-700 dark:text-purple-300">Total Leads</p>
                                         <p class="text-lg sm:text-2xl font-bold leading-tight text-purple-900 dark:text-purple-100">
-                                            {{ summaryReport.reduce((sum, item) => sum + item.real_lead, 0).toLocaleString('id-ID') }}
+                                            {{ summaryReport.reduce((sum, item) => sum + item.real_lead, 0).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}
                                         </p>
                                     </div>
                                 </div>
@@ -920,7 +921,7 @@ const ppnPercentage = computed(() => {
                                     <div>
                                         <p class="text-xs sm:text-sm font-medium text-orange-700 dark:text-orange-300">Total Closing</p>
                                         <p class="text-lg sm:text-2xl font-bold leading-tight text-orange-900 dark:text-orange-100">
-                                            {{ summaryReport.reduce((sum, item) => sum + item.closing, 0).toLocaleString('id-ID') }}
+                                            {{ summaryReport.reduce((sum, item) => sum + item.closing, 0).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}
                                         </p>
                                     </div>
                                 </div>
@@ -941,7 +942,7 @@ const ppnPercentage = computed(() => {
                                                 (() => {
                                                     const totalSpent = summaryReport.reduce((sum, item) => sum + item.spent, 0)
                                                     const totalLead = summaryReport.reduce((sum, item) => sum + item.real_lead, 0)
-                                                    return totalLead > 0 ? Math.round(totalSpent / totalLead).toLocaleString('id-ID') : '0'
+                                                    return totalLead > 0 ? Math.round(totalSpent / totalLead).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '0'
                                                 })()
                                             }}
                                         </p>
@@ -969,15 +970,15 @@ const ppnPercentage = computed(() => {
                             <tbody>
                                 <tr v-for="item in summaryReport" :key="item.brand" class="border-b hover:bg-muted/50">
                                     <td class="p-2 sm:p-3 text-xs sm:text-sm font-medium text-blue-600 sticky left-0 z-20 bg-background min-w-[140px] sm:min-w-[180px] border-r border-border">{{ item.brand }}</td>
-                                    <td class="p-3 text-right text-red-600">Rp {{ item.spent.toLocaleString('id-ID') }}</td>
-                                    <td class="p-3 text-right text-red-600">Rp {{ item.spent_with_tax.toLocaleString('id-ID') }}</td>
+                                    <td class="p-3 text-right text-red-600">Rp {{ item.spent.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</td>
+                                    <td class="p-3 text-right text-red-600">Rp {{ item.spent_with_tax.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</td>
                                     <td class="p-3 text-right">{{ item.real_lead }}</td>
                                     <td class="p-3 text-right text-orange-600">
-                                        <span v-if="item.real_lead > 0">Rp {{ item.cost_per_lead.toLocaleString('id-ID') }}</span>
+                                        <span v-if="item.real_lead > 0">Rp {{ item.cost_per_lead.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</span>
                                         <span v-else class="text-red-500">#DIV/0!</span>
                                     </td>
                                     <td class="p-3 text-right text-purple-600">{{ item.closing }}</td>
-                                    <td class="p-3 text-right text-green-600">Rp {{ item.omset.toLocaleString('id-ID') }}</td>
+                                    <td class="p-3 text-right text-green-600">Rp {{ item.omset.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</td>
                                     <td class="p-3 text-right" :class="item.roas >= 1 ? 'text-green-600 font-semibold' : 'text-red-500'">
                                         {{ item.roas.toFixed(2) }}
                                     </td>
