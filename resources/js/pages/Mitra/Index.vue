@@ -50,6 +50,7 @@ interface Mitra {
     label_id: number | null;
     label: Label | null;
     chat: 'masuk' | 'followup' | 'followup_2' | 'followup_3';
+    progress_lead: string | null;
     kota: string;
     provinsi: string;
     komentar: string | null;
@@ -872,6 +873,7 @@ onMounted(() => {
                                         <TableHead class="py-3 font-semibold text-foreground">Chat</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Lokasi</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Label</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Progress Lead</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Webinar</TableHead>
                                         <TableHead class="w-[120px] py-3 text-center font-semibold text-foreground">Aksi</TableHead>
                                     </TableRow>
@@ -879,7 +881,7 @@ onMounted(() => {
                                 <TableBody>
                                     <!-- Empty State -->
                                     <TableRow v-if="mitrasData.data.length === 0" class="hover:bg-transparent">
-                                        <TableCell colspan="10" class="py-8 text-center">
+                                        <TableCell colspan="11" class="py-8 text-center">
                                             <div class="flex justify-center">
                                                 <div class="mx-auto max-w-md">
                                                     <Card
@@ -994,6 +996,12 @@ onMounted(() => {
                                                 <div class="h-2 w-2 rounded-full" :style="{ backgroundColor: mitra.label.warna }"></div>
                                                 {{ mitra.label.nama }}
                                             </div>
+                                            <span v-else class="text-sm text-muted-foreground">-</span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span v-if="mitra.progress_lead" class="inline-flex items-center rounded-full bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700 ring-1 ring-orange-600/20 dark:bg-orange-900/20 dark:text-orange-300 dark:ring-orange-400/30">
+                                                {{ mitra.progress_lead }}
+                                            </span>
                                             <span v-else class="text-sm text-muted-foreground">-</span>
                                         </TableCell>
                                         <TableCell>

@@ -34,6 +34,7 @@ class MitraController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
                   ->orWhere('no_telp', 'like', "%{$search}%")
+                  ->orWhere('progress_lead', 'like', "%{$search}%")
                   ->orWhere('kota', 'like', "%{$search}%")
                   ->orWhere('provinsi', 'like', "%{$search}%")
                   ->orWhereHas('brand', function ($brandQuery) use ($search) {

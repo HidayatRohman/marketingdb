@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
 import { useForm } from '@inertiajs/vue3';
-import { Building2, Calendar, FileText, Loader2, MapPin, MessageSquare, Package, Phone, Tag, User } from 'lucide-vue-next';
+import { Building2, Calendar, FileText, Loader2, MapPin, MessageSquare, Package, Phone, Tag, TrendingUp, User } from 'lucide-vue-next';
 import { watch, computed } from 'vue';
 
 interface Brand {
@@ -40,6 +40,7 @@ interface Mitra {
     user_id: number | null;
     user?: User | null;
     chat: 'masuk' | 'followup' | 'followup_2' | 'followup_3';
+    progress_lead: string | null;
     kota: string;
     provinsi: string;
     komentar: string | null;
@@ -117,6 +118,7 @@ const form = useForm({
     label_id: null as number | null,
     user_id: null as number | null,
     chat: 'masuk' as 'masuk' | 'followup' | 'followup_2' | 'followup_3',
+    progress_lead: '',
     kota: 'Unknown',
     provinsi: 'Unknown',
     komentar: '',
@@ -151,6 +153,7 @@ watch(
                 form.user_id = newMitra.user_id || null;
             }
             form.chat = newMitra.chat || 'masuk';
+            form.progress_lead = newMitra.progress_lead || '';
             form.kota = newMitra.kota || 'Unknown';
             form.provinsi = newMitra.provinsi || 'Unknown';
             form.komentar = newMitra.komentar || '';
@@ -480,6 +483,27 @@ const selectedBrand = computed(() => {
                         </select>
                         <p v-if="form.errors.chat" class="text-sm text-destructive">
                             {{ form.errors.chat }}
+                        </p>
+                    </div>
+
+                    <!-- Progress Lead -->
+                    <div class="space-y-2">
+                        <Label for="progress_lead" class="flex items-center gap-2">
+                            <TrendingUp class="h-3 w-3" />
+                            Progress Lead
+                        </Label>
+                        <div class="relative">
+                            <TrendingUp class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                id="progress_lead"
+                                v-model="form.progress_lead"
+                                :disabled="mode === 'view'"
+                                placeholder="Contoh: Sudah tanya harga, Sudah dikirim proposal..."
+                                :class="[{ 'border-destructive': form.errors.progress_lead }, 'pl-9']"
+                            />
+                        </div>
+                        <p v-if="form.errors.progress_lead" class="text-sm text-destructive">
+                            {{ form.errors.progress_lead }}
                         </p>
                     </div>
                 </div>

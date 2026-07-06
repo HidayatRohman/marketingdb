@@ -17,6 +17,7 @@ class Mitra extends Model
         'brand_id',
         'label_id',
         'chat',
+        'progress_lead',
         'kota',
         'provinsi',
         'komentar',

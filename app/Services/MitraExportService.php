@@ -130,6 +130,7 @@ class MitraExportService
         $query->where(function ($q) use ($search) {
             $q->where('nama', 'like', "%{$search}%")
               ->orWhere('no_telp', 'like', "%{$search}%")
+              ->orWhere('progress_lead', 'like', "%{$search}%")
               ->orWhere('kota', 'like', "%{$search}%")
               ->orWhere('provinsi', 'like', "%{$search}%")
               ->orWhereHas('brand', function ($brandQuery) use ($search) {
@@ -229,13 +230,14 @@ class MitraExportService
             $sheet->setCellValue('E' . $row, $mitra->brand->nama ?? '');
             $sheet->setCellValue('F' . $row, $mitra->label->nama ?? '');
             $sheet->setCellValue('G' . $row, $this->formatChatStatus($mitra->chat));
-            $sheet->setCellValue('H' . $row, $mitra->kota ?? '');
-            $sheet->setCellValue('I' . $row, $mitra->provinsi ?? '');
-            $sheet->setCellValue('J' . $row, $mitra->user->name ?? '');
-            $sheet->setCellValue('K' . $row, $mitra->webinar ?? 'Tidak');
-            $sheet->setCellValue('L' . $row, $mitra->komentar ?? '');
-            $sheet->setCellValue('M' . $row, $mitra->created_at->format('Y-m-d H:i:s'));
-            $sheet->setCellValue('N' . $row, $mitra->updated_at->format('Y-m-d H:i:s'));
+            $sheet->setCellValue('H' . $row, $mitra->progress_lead ?? '');
+            $sheet->setCellValue('I' . $row, $mitra->kota ?? '');
+            $sheet->setCellValue('J' . $row, $mitra->provinsi ?? '');
+            $sheet->setCellValue('K' . $row, $mitra->user->name ?? '');
+            $sheet->setCellValue('L' . $row, $mitra->webinar ?? 'Tidak');
+            $sheet->setCellValue('M' . $row, $mitra->komentar ?? '');
+            $sheet->setCellValue('N' . $row, $mitra->created_at->format('Y-m-d H:i:s'));
+            $sheet->setCellValue('O' . $row, $mitra->updated_at->format('Y-m-d H:i:s'));
             
             $row++;
         }

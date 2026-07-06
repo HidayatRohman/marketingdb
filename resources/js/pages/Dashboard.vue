@@ -141,6 +141,7 @@ interface RecentActivity {
     no_telp: string;
     tanggal_lead: string;
     chat: 'masuk' | 'followup';
+    progress_lead: string | null;
     brand: { nama: string };
     label: { nama: string; warna: string } | null;
     user: { name: string } | null;
@@ -1536,6 +1537,9 @@ const ppnPercentage = computed(() => {
                                             <p class="font-medium">{{ activity.nama }}</p>
                                             <p class="text-sm text-muted-foreground">
                                                 {{ activity.brand.nama }} • {{ activity.user?.name || 'No Marketing' }}
+                                            </p>
+                                            <p v-if="activity.progress_lead" class="mt-0.5 text-xs text-orange-600 dark:text-orange-400">
+                                                {{ activity.progress_lead }}
                                             </p>
                                         </div>
                                     </div>

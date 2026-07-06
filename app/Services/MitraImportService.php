@@ -21,7 +21,7 @@ class MitraImportService
 {
     private const REQUIRED_FIELDS = ['nama', 'no_telp', 'tanggal_lead'];
     private const MAX_BATCH_SIZE = 100;
-    
+
     public function import(UploadedFile $file): array
     {
         try {
@@ -243,10 +243,11 @@ class MitraImportService
             'brand_nama' => trim($row[4] ?? ''),
             'label_nama' => trim($row[5] ?? ''),
             'chat_status' => trim($row[6] ?? ''),
-            'kota' => trim($row[7] ?? ''),
-            'provinsi' => trim($row[8] ?? ''),
-            'webinar' => trim($row[10] ?? ''),
-            'komentar' => trim($row[11] ?? ''),
+            'progress_lead' => trim($row[7] ?? ''),
+            'kota' => trim($row[8] ?? ''),
+            'provinsi' => trim($row[9] ?? ''),
+            'webinar' => trim($row[11] ?? ''),
+            'komentar' => trim($row[12] ?? ''),
         ];
     }
     
@@ -366,6 +367,7 @@ class MitraImportService
             'brand_id' => $processed['data']['brand_id'],
             'label_id' => $processed['data']['label_id'],
             'chat' => $processed['data']['chat'],
+            'progress_lead' => $data['progress_lead'] ?: null,
             'kota' => $data['kota'] ?: null,
             'provinsi' => $data['provinsi'] ?: null,
             'webinar' => $webinar,
@@ -420,12 +422,13 @@ class MitraImportService
             'E1' => 'Brand',
             'F1' => 'Label',
             'G1' => 'Status Chat',
-            'H1' => 'Kota',
-            'I1' => 'Provinsi',
-            'J1' => 'Webinar',
-            'K1' => 'Komentar',
-            'L1' => 'Created (Auto)',
-            'M1' => 'Updated (Auto)'
+            'H1' => 'Progress Lead',
+            'I1' => 'Kota',
+            'J1' => 'Provinsi',
+            'K1' => 'Webinar',
+            'L1' => 'Komentar',
+            'M1' => 'Created (Auto)',
+            'N1' => 'Updated (Auto)'
         ];
 
         foreach ($headers as $cell => $value) {
@@ -474,7 +477,7 @@ class MitraImportService
             ]
         ];
         
-        $sheet->getStyle('A1:M1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:N1')->applyFromArray($headerStyle);
         $sheet->getRowDimension(1)->setRowHeight(25);
     }
     
@@ -492,8 +495,9 @@ class MitraImportService
             'I2' => '(Opsional)',
             'J2' => '(Opsional)',
             'K2' => '(Opsional)',
-            'L2' => '(Otomatis)',
-            'M2' => '(Otomatis)'
+            'L2' => '(Opsional)',
+            'M2' => '(Otomatis)',
+            'N2' => '(Otomatis)'
         ];
 
         foreach ($requirements as $cell => $value) {
@@ -511,15 +515,15 @@ class MitraImportService
             ]
         ];
         
-        $sheet->getStyle('A2:M2')->applyFromArray($reqStyle);
+        $sheet->getStyle('A2:N2')->applyFromArray($reqStyle);
     }
     
     private function addSampleData(Worksheet $sheet): void
     {
         $sampleData = [
-            ['', 'John Doe', '081234567890', '2024-01-15', 'Brand A', 'Hot Lead', 'Masuk', 'Jakarta', 'DKI Jakarta', 'Ikut', 'Tertarik dengan produk premium', '', ''],
-            ['', 'Jane Smith', '087654321098', '2024-01-16', 'Brand B', 'Warm Lead', 'Follow Up', 'Surabaya', 'Jawa Timur', 'Tidak', 'Perlu follow up dalam 3 hari', '', ''],
-            ['', 'Ahmad Rahman', '082111222333', '2024-01-17', 'Brand C', 'Cold Lead', 'Masuk', 'Bandung', 'Jawa Barat', 'Ikut', 'Inquiry produk via WhatsApp', '', '']
+            ['', 'John Doe', '081234567890', '2024-01-15', 'Brand A', 'Hot Lead', 'Masuk', 'Sudah tanya harga', 'Jakarta', 'DKI Jakarta', 'Ikut', 'Tertarik dengan produk premium', '', ''],
+            ['', 'Jane Smith', '087654321098', '2024-01-16', 'Brand B', 'Warm Lead', 'Follow Up', 'Sudah dikirim proposal', 'Surabaya', 'Jawa Timur', 'Tidak', 'Perlu follow up dalam 3 hari', '', ''],
+            ['', 'Ahmad Rahman', '082111222333', '2024-01-17', 'Brand C', 'Cold Lead', 'Masuk', 'Sedang mempertimbangkan', 'Bandung', 'Jawa Barat', 'Ikut', 'Inquiry produk via WhatsApp', '', ''],
         ];
 
         $row = 3;
@@ -539,16 +543,16 @@ class MitraImportService
                 'startColor' => ['rgb' => 'F0FDF4'] // Green-50
             ]
         ];
-        $sheet->getStyle('A3:M5')->applyFromArray($sampleStyle);
+        $sheet->getStyle('A3:N5')->applyFromArray($sampleStyle);
     }
     
     private function setTemplateColumnWidths(Worksheet $sheet): void
     {
         $widths = [
             'A' => 8,   'B' => 18,  'C' => 15,  'D' => 14,
-            'E' => 12,  'F' => 12,  'G' => 12,  'H' => 12,
-            'I' => 15,  'J' => 10,  'K' => 25,  'L' => 15,
-            'M' => 15
+            'E' => 12,  'F' => 12,  'G' => 12,  'H' => 25,
+            'I' => 12,  'J' => 15,  'K' => 10,  'L' => 25,
+            'M' => 15,  'N' => 15
         ];
 
         foreach ($widths as $column => $width) {
@@ -579,6 +583,7 @@ class MitraImportService
             ['• Brand: Akan dibuat otomatis jika belum ada'],
             ['• Label: Harus sudah ada di sistem, jika tidak akan diabaikan'],
             ['• Status Chat: "Masuk" atau "Follow Up" (default: Masuk)'],
+            ['• Progress Lead: Status progress lead (contoh: Sudah tanya harga, Sudah dikirim proposal)'],
             ['• Kota & Provinsi: Boleh kosong'],
             ['• Komentar: Catatan tambahan'],
             [''],
