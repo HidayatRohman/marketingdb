@@ -21,7 +21,11 @@ class SiteSetting extends Model
      */
     public static function get($key, $default = null)
     {
-        $setting = self::where('key', $key)->first();
+        try {
+            $setting = self::where('key', $key)->first();
+        } catch (\Throwable) {
+            return $default;
+        }
         
         if (!$setting) {
             return $default;
