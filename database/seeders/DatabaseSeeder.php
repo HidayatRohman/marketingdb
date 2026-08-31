@@ -35,6 +35,11 @@ class DatabaseSeeder extends Seeder
             PekerjaanSeeder::class,
         ]);
 
+        // 2b. Brand Owner seeding (must be after BrandSeeder)
+        $this->call([
+            BrandOwnerSeeder::class,
+        ]);
+
         // 3. Main business data (depends on users, brands, labels)
         $this->command->info('🤝 Seeding business data...');
         $this->call([

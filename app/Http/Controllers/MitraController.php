@@ -28,6 +28,9 @@ class MitraController extends Controller
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
 
+        // Apply brand-based filtering for brand_owner
+        $query = $user->applyBrandFilter($query, 'brand_id');
+
         // Apply search filter
         if ($request->has('search') && $request->search) {
             $search = $request->search;
@@ -123,6 +126,10 @@ class MitraController extends Controller
         ]);
 
         $brands = Brand::all();
+        // Brand owner only sees their own brand
+        if ($user->isBrandOwner() && $user->brand_id) {
+            $brands = $brands->where('id', $user->brand_id)->values();
+        }
         $labels = Label::all();
         
         // Get marketing users (users with role marketing) 
@@ -162,6 +169,7 @@ class MitraController extends Controller
                 'canCrud' => $user->canCrud(),
                 'canOnlyView' => $user->canOnlyView(),
                 'canOnlyViewOwn' => $user->canOnlyViewOwn(),
+                'canOnlyViewOwnBrand' => $user->canOnlyViewOwnBrand(),
             ],
         ]);
     }
@@ -228,6 +236,11 @@ class MitraController extends Controller
             abort(403, 'Anda tidak memiliki izin untuk melihat data ini.');
         }
 
+        // Brand owner can only view mitras from their brand
+        if ($user->isBrandOwner() && $user->brand_id && $mitra->brand_id !== $user->brand_id) {
+            abort(403, 'Anda tidak memiliki izin untuk melihat data brand lain.');
+        }
+
         return Inertia::render('Mitra/Show', [
             'mitra' => $mitra->load(['brand', 'label', 'user']),
             'permissions' => [
@@ -250,6 +263,11 @@ class MitraController extends Controller
             abort(403, 'Anda tidak memiliki izin untuk mengedit data ini.');
         }
 
+        // Brand owner cannot edit (read-only)
+        if ($user->isBrandOwner()) {
+            abort(403, 'Brand Owner hanya dapat melihat data, tidak dapat mengedit.');
+        }
+
         return Inertia::render('Mitra/Edit', [
             'mitra' => $mitra->load(['brand', 'label']),
             'permissions' => [
@@ -270,6 +288,11 @@ class MitraController extends Controller
         // Check if user can update this mitra
         if ($user->isMarketing() && $mitra->user_id !== $user->id) {
             abort(403, 'Anda tidak memiliki izin untuk mengupdate data ini.');
+        }
+
+        // Brand owner cannot update (read-only)
+        if ($user->isBrandOwner()) {
+            abort(403, 'Brand Owner hanya dapat melihat data, tidak dapat mengedit.');
         }
 
         $validated = $request->validated();
@@ -441,6 +464,11 @@ class MitraController extends Controller
             abort(403, 'Anda tidak memiliki izin untuk menghapus data ini.');
         }
 
+        // Brand owner cannot delete (read-only)
+        if ($user->isBrandOwner()) {
+            abort(403, 'Brand Owner hanya dapat melihat data, tidak dapat menghapus.');
+        }
+
         $mitra->delete();
 
         if (request()->expectsJson()) {
@@ -460,6 +488,9 @@ class MitraController extends Controller
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply brand-based filtering for brand_owner
+        $query = $user->applyBrandFilter($query, 'brand_id');
 
         // Apply the same filters as main index
         if ($request->has('periode_start') && $request->periode_start) {
@@ -518,7 +549,11 @@ class MitraController extends Controller
         }
 
         // Get all brands to ensure consistent structure
-        $brands = Brand::pluck('nama')->toArray();
+        $brandsQuery = Brand::query();
+        if ($user->isBrandOwner() && $user->brand_id) {
+            $brandsQuery->where('id', $user->brand_id);
+        }
+        $brands = $brandsQuery->pluck('nama')->toArray();
         foreach ($brands as $brandName) {
             for ($hour = 0; $hour < 24; $hour++) {
                 $hourlyData[$hour]['brands'][$brandName] = 0;

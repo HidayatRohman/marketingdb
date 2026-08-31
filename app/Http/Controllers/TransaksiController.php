@@ -28,6 +28,14 @@ class TransaksiController extends Controller
         // Apply role-based filtering
         $baseQuery = $user->applyRoleFilter($baseQuery, 'user_id');
 
+        // Apply brand-based filtering for brand_owner (filter by both paket and lead awal brand)
+        if ($user->isBrandOwner() && $user->brand_id) {
+            $baseQuery->where(function ($q) use ($user) {
+                $q->where('paket_brand_id', $user->brand_id)
+                  ->orWhere('lead_awal_brand_id', $user->brand_id);
+            });
+        }
+
         // Apply search filter
         if ($request->has('search') && $request->search) {
             $search = $request->search;
@@ -133,6 +141,14 @@ class TransaksiController extends Controller
 
             // Apply role-based filtering
             $query = $user->applyRoleFilter($query, 'user_id');
+
+            // Apply brand-based filtering for brand_owner
+            if ($user->isBrandOwner() && $user->brand_id) {
+                $query->where(function ($q) use ($user) {
+                    $q->where('paket_brand_id', $user->brand_id)
+                      ->orWhere('lead_awal_brand_id', $user->brand_id);
+                });
+            }
 
             // Date filters: support both periode_* and start_date/end_date
             $startDate = $request->get('periode_start', $request->get('start_date'));
@@ -242,6 +258,14 @@ class TransaksiController extends Controller
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply brand-based filtering for brand_owner
+        if ($user->isBrandOwner() && $user->brand_id) {
+            $query->where(function ($q) use ($user) {
+                $q->where('paket_brand_id', $user->brand_id)
+                  ->orWhere('lead_awal_brand_id', $user->brand_id);
+            });
+        }
 
         // Apply date range filter (default to current month)
         $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
@@ -428,6 +452,14 @@ class TransaksiController extends Controller
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
 
+        // Apply brand-based filtering for brand_owner
+        if ($user->isBrandOwner() && $user->brand_id) {
+            $query->where(function ($q) use ($user) {
+                $q->where('paket_brand_id', $user->brand_id)
+                  ->orWhere('lead_awal_brand_id', $user->brand_id);
+            });
+        }
+
         // Apply date range filter only if provided (default: all time)
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
@@ -478,6 +510,14 @@ class TransaksiController extends Controller
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply brand-based filtering for brand_owner
+        if ($user->isBrandOwner() && $user->brand_id) {
+            $query->where(function ($q) use ($user) {
+                $q->where('paket_brand_id', $user->brand_id)
+                  ->orWhere('lead_awal_brand_id', $user->brand_id);
+            });
+        }
 
         // Apply date range filter only if provided (default: all time)
         $startDate = $request->get('start_date');
@@ -530,6 +570,14 @@ class TransaksiController extends Controller
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
 
+        // Apply brand-based filtering for brand_owner
+        if ($user->isBrandOwner() && $user->brand_id) {
+            $query->where(function ($q) use ($user) {
+                $q->where('paket_brand_id', $user->brand_id)
+                  ->orWhere('lead_awal_brand_id', $user->brand_id);
+            });
+        }
+
         // Apply date range filter (default to current year)
         $startDate = $request->get('start_date', now()->startOfYear()->format('Y-m-d'));
         $endDate = $request->get('end_date', now()->endOfYear()->format('Y-m-d'));
@@ -576,6 +624,14 @@ class TransaksiController extends Controller
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply brand-based filtering for brand_owner
+        if ($user->isBrandOwner() && $user->brand_id) {
+            $query->where(function ($q) use ($user) {
+                $q->where('paket_brand_id', $user->brand_id)
+                  ->orWhere('lead_awal_brand_id', $user->brand_id);
+            });
+        }
 
         // Apply date range filter only if provided (default: all time)
         $startDate = $request->get('start_date');
@@ -636,6 +692,14 @@ class TransaksiController extends Controller
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
 
+        // Apply brand-based filtering for brand_owner
+        if ($user->isBrandOwner() && $user->brand_id) {
+            $query->where(function ($q) use ($user) {
+                $q->where('paket_brand_id', $user->brand_id)
+                  ->orWhere('lead_awal_brand_id', $user->brand_id);
+            });
+        }
+
         // Apply date range filter only if provided (default: all time)
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
@@ -687,6 +751,13 @@ class TransaksiController extends Controller
         // Check if user can access this transaksi
         if ($user->isMarketing() && $transaksi->user_id !== $user->id) {
             abort(403, 'Anda tidak memiliki izin untuk melihat data ini.');
+        }
+
+        // Brand owner can only view transaksi from their brand
+        if ($user->isBrandOwner() && $user->brand_id) {
+            if ($transaksi->paket_brand_id !== $user->brand_id && $transaksi->lead_awal_brand_id !== $user->brand_id) {
+                abort(403, 'Anda tidak memiliki izin untuk melihat data brand lain.');
+            }
         }
 
         return Inertia::render('Transaksi/Show', [
@@ -816,6 +887,14 @@ class TransaksiController extends Controller
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
+
+        // Apply brand-based filtering for brand_owner
+        if ($user->isBrandOwner() && $user->brand_id) {
+            $query->where(function ($q) use ($user) {
+                $q->where('paket_brand_id', $user->brand_id)
+                  ->orWhere('lead_awal_brand_id', $user->brand_id);
+            });
+        }
 
         // Apply year filter (default: current year)
         $year = $request->get('year', now()->year);

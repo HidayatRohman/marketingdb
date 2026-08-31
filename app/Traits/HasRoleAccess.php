@@ -54,6 +54,14 @@ trait HasRoleAccess
     }
 
     /**
+     * Check if user can only view own brand data
+     */
+    public function canOnlyViewOwnBrand(): bool
+    {
+        return $this->isBrandOwner();
+    }
+
+    /**
      * Get accessible user IDs for marketing users
      */
     public function getAccessibleUserIds(): array
@@ -76,6 +84,19 @@ trait HasRoleAccess
     {
         if ($this->isMarketing()) {
             return $query->where($userIdColumn, $this->id);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Apply brand-based data filtering for brand_owner
+     * Brand owner can only see data from their assigned brand
+     */
+    public function applyBrandFilter($query, string $brandColumn = 'brand_id')
+    {
+        if ($this->isBrandOwner() && $this->brand_id) {
+            return $query->where($brandColumn, $this->brand_id);
         }
 
         return $query;

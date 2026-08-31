@@ -23,6 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'brand_id',
     ];
 
     /**
@@ -102,6 +103,14 @@ class User extends Authenticatable
     public function isBrandOwner(): bool
     {
         return $this->hasRole('brand_owner');
+    }
+
+    /**
+     * Get the brand that the user (brand owner) owns.
+     */
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
     }
 
     /**

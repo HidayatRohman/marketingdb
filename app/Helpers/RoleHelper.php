@@ -13,6 +13,7 @@ class RoleHelper
             'canCrud' => $user->canCrud(),
             'canOnlyView' => $user->canOnlyView(),
             'canOnlyViewOwn' => $user->canOnlyViewOwn(),
+            'canOnlyViewOwnBrand' => $user->canOnlyViewOwnBrand(),
             'hasFullAccess' => $user->hasFullAccess(),
             'hasReadOnlyAccess' => $user->hasReadOnlyAccess(),
             'hasLimitedAccess' => $user->hasLimitedAccess(),
@@ -163,6 +164,10 @@ class RoleHelper
             return 'all';
         }
         
+        if ($user->isBrandOwner()) {
+            return 'own_brand';
+        }
+
         if ($user->hasReadOnlyAccess()) {
             return 'readonly_all';
         }

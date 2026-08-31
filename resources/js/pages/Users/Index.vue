@@ -25,6 +25,7 @@ interface User {
 
 interface PageProps {
     users: User[];
+    brands: { id: number; nama: string }[];
     filters: {
         search?: string;
         role?: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | 'brand_owner' | '';
@@ -176,7 +177,7 @@ const breadcrumbs = [
                 </table>
             </div>
 
-            <UserModal :open="openModal" :mode="modalMode" :user="selectedUser" @success="onSuccess" @close="closeModal" />
+            <UserModal :open="openModal" :mode="modalMode" :user="selectedUser" :brands="page.props.brands" @success="onSuccess" @close="closeModal" />
         </div>
     </AppLayout>
 </template>

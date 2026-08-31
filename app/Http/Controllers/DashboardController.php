@@ -22,7 +22,7 @@ class DashboardController extends Controller
         if ($currentUser && $currentUser->role === 'cs') {
             return redirect()->route('cs-repeats.index');
         }
-        
+
         // Validate date inputs
         $request->validate([
             'start_date' => 'nullable|date',
@@ -36,7 +36,7 @@ class DashboardController extends Controller
         $endDate = $request->get('end_date');
         $selectedMarketing = $request->get('marketing');
         $selectedBrand = $request->get('brand');
-        
+
         // Set default to current month if no dates provided
         if (!$startDate && !$endDate) {
             $startDate = now()->startOfMonth()->format('Y-m-d');
@@ -59,6 +59,11 @@ class DashboardController extends Controller
             ];
 
             $mitraQuery = Mitra::query();
+
+            // Brand owner can only see their brand's data
+            if ($currentUser->isBrandOwner() && $currentUser->brand_id) {
+                $mitraQuery->where('brand_id', $currentUser->brand_id);
+            }
         } else {
             // Marketing can only see their own statistics
             $userStats = [
@@ -94,7 +99,7 @@ class DashboardController extends Controller
                 Carbon::now()->endOfWeek()
             ])->count(),
             'this_month' => (clone $mitraQuery)->whereMonth('tanggal_lead', Carbon::now()->month)
-                           ->whereYear('tanggal_lead', Carbon::now()->year)->count(),
+                ->whereYear('tanggal_lead', Carbon::now()->year)->count(),
         ];
 
         if ($currentUser->hasFullAccess() || $currentUser->hasReadOnlyAccess()) {
@@ -134,7 +139,11 @@ class DashboardController extends Controller
         if ($currentUser->hasLimitedAccess()) {
             $recentActivitiesQuery->where('user_id', $currentUser->id);
         }
-        
+        // Brand owner can only see their brand's data
+        if ($currentUser->isBrandOwner() && $currentUser->brand_id) {
+            $recentActivitiesQuery->where('brand_id', $currentUser->brand_id);
+        }
+
         // Apply filters to recent activities
         if ($startDate && $endDate) {
             $recentActivitiesQuery->whereBetween('tanggal_lead', [$startDate, $endDate]);
@@ -145,7 +154,7 @@ class DashboardController extends Controller
         if ($selectedBrand) {
             $recentActivitiesQuery->where('brand_id', $selectedBrand);
         }
-        
+
         $recentActivities = $recentActivitiesQuery->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
@@ -159,15 +168,18 @@ class DashboardController extends Controller
         // Get data for filter dropdowns
         $marketingUsers = [];
         $brands = [];
-        
+
         if ($currentUser->hasFullAccess() || $currentUser->hasReadOnlyAccess()) {
             $marketingUsers = User::where('role', 'marketing')
                 ->select('id', 'name')
                 ->orderBy('name')
                 ->get();
-            $brands = Brand::select('id', 'nama')
-                ->orderBy('nama')
-                ->get();
+            $brandsQuery = Brand::select('id', 'nama')->orderBy('nama');
+            // Brand owner only sees their own brand
+            if ($currentUser->isBrandOwner() && $currentUser->brand_id) {
+                $brandsQuery->where('id', $currentUser->brand_id);
+            }
+            $brands = $brandsQuery->get();
         } else {
             // Marketing users only see themselves
             $marketingUsers = collect([
@@ -291,51 +303,66 @@ class DashboardController extends Controller
         $endDate = $request ? $request->get('end_date') : null;
         $selectedMarketing = $request ? $request->get('marketing') : null;
         $selectedBrand = $request ? $request->get('brand') : null;
-        
+
         $query = User::where('role', 'marketing');
-        
+
         if ($currentUser->hasLimitedAccess()) {
             $query->where('id', $currentUser->id);
         }
-        
+
         if ($selectedMarketing) {
             $query->where('id', $selectedMarketing);
         }
 
+        // Brand owner: only show marketing users who have mitras in their brand
+        $brandOwnerBrandId = ($currentUser->isBrandOwner() && $currentUser->brand_id) ? $currentUser->brand_id : null;
+
         return $query->withCount([
-                'mitras as total_leads' => function ($query) use ($startDate, $endDate, $selectedBrand) {
-                    if ($startDate && $endDate) {
-                        $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
-                    }
-                    if ($selectedBrand) {
-                        $query->where('brand_id', $selectedBrand);
-                    }
-                },
-                'mitras as today_leads' => function ($query) use ($selectedBrand) {
-                    $query->whereDate('tanggal_lead', Carbon::today());
-                    if ($selectedBrand) {
-                        $query->where('brand_id', $selectedBrand);
-                    }
-                },
-                'mitras as masuk_leads' => function ($query) use ($startDate, $endDate, $selectedBrand) {
-                    $query->where('chat', 'masuk');
-                    if ($startDate && $endDate) {
-                        $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
-                    }
-                    if ($selectedBrand) {
-                        $query->where('brand_id', $selectedBrand);
-                    }
-                },
-                'mitras as followup_leads' => function ($query) use ($startDate, $endDate, $selectedBrand) {
-                    $query->where('chat', 'followup');
-                    if ($startDate && $endDate) {
-                        $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
-                    }
-                    if ($selectedBrand) {
-                        $query->where('brand_id', $selectedBrand);
-                    }
+            'mitras as total_leads' => function ($query) use ($startDate, $endDate, $selectedBrand, $brandOwnerBrandId) {
+                if ($startDate && $endDate) {
+                    $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
                 }
-            ])
+                if ($selectedBrand) {
+                    $query->where('brand_id', $selectedBrand);
+                }
+                if ($brandOwnerBrandId) {
+                    $query->where('brand_id', $brandOwnerBrandId);
+                }
+            },
+            'mitras as today_leads' => function ($query) use ($selectedBrand, $brandOwnerBrandId) {
+                $query->whereDate('tanggal_lead', Carbon::today());
+                if ($selectedBrand) {
+                    $query->where('brand_id', $selectedBrand);
+                }
+                if ($brandOwnerBrandId) {
+                    $query->where('brand_id', $brandOwnerBrandId);
+                }
+            },
+            'mitras as masuk_leads' => function ($query) use ($startDate, $endDate, $selectedBrand, $brandOwnerBrandId) {
+                $query->where('chat', 'masuk');
+                if ($startDate && $endDate) {
+                    $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
+                }
+                if ($selectedBrand) {
+                    $query->where('brand_id', $selectedBrand);
+                }
+                if ($brandOwnerBrandId) {
+                    $query->where('brand_id', $brandOwnerBrandId);
+                }
+            },
+            'mitras as followup_leads' => function ($query) use ($startDate, $endDate, $selectedBrand, $brandOwnerBrandId) {
+                $query->where('chat', 'followup');
+                if ($startDate && $endDate) {
+                    $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
+                }
+                if ($selectedBrand) {
+                    $query->where('brand_id', $selectedBrand);
+                }
+                if ($brandOwnerBrandId) {
+                    $query->where('brand_id', $brandOwnerBrandId);
+                }
+            }
+        ])
             ->get()
             ->map(function ($user) {
                 return [
@@ -345,7 +372,7 @@ class DashboardController extends Controller
                     'today_leads' => $user->today_leads,
                     'masuk_leads' => $user->masuk_leads,
                     'followup_leads' => $user->followup_leads,
-                    'conversion_rate' => $user->total_leads > 0 ? 
+                    'conversion_rate' => $user->total_leads > 0 ?
                         round(($user->followup_leads / $user->total_leads) * 100, 2) : 0,
                 ];
             });
@@ -357,24 +384,36 @@ class DashboardController extends Controller
         $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
 
         $query = User::where('role', 'marketing');
-        
+
         if ($currentUser->hasLimitedAccess()) {
             $query->where('id', $currentUser->id);
         }
 
+        // Brand owner: only show marketing users who have mitras in their brand
+        $brandOwnerBrandId = ($currentUser->isBrandOwner() && $currentUser->brand_id) ? $currentUser->brand_id : null;
+
         return $query->withCount([
-                'mitras as period_total' => function ($query) use ($startDate, $endDate) {
-                    $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
-                },
-                'mitras as period_masuk' => function ($query) use ($startDate, $endDate) {
-                    $query->whereBetween('tanggal_lead', [$startDate, $endDate])
-                          ->where('chat', 'masuk');
-                },
-                'mitras as period_followup' => function ($query) use ($startDate, $endDate) {
-                    $query->whereBetween('tanggal_lead', [$startDate, $endDate])
-                          ->where('chat', 'followup');
+            'mitras as period_total' => function ($query) use ($startDate, $endDate, $brandOwnerBrandId) {
+                $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
+                if ($brandOwnerBrandId) {
+                    $query->where('brand_id', $brandOwnerBrandId);
                 }
-            ])
+            },
+            'mitras as period_masuk' => function ($query) use ($startDate, $endDate, $brandOwnerBrandId) {
+                $query->whereBetween('tanggal_lead', [$startDate, $endDate])
+                    ->where('chat', 'masuk');
+                if ($brandOwnerBrandId) {
+                    $query->where('brand_id', $brandOwnerBrandId);
+                }
+            },
+            'mitras as period_followup' => function ($query) use ($startDate, $endDate, $brandOwnerBrandId) {
+                $query->whereBetween('tanggal_lead', [$startDate, $endDate])
+                    ->where('chat', 'followup');
+                if ($brandOwnerBrandId) {
+                    $query->where('brand_id', $brandOwnerBrandId);
+                }
+            }
+        ])
             ->get()
             ->map(function ($user) {
                 return [
@@ -383,7 +422,7 @@ class DashboardController extends Controller
                     'period_total' => $user->period_total,
                     'period_masuk' => $user->period_masuk,
                     'period_followup' => $user->period_followup,
-                    'period_conversion_rate' => $user->period_total > 0 ? 
+                    'period_conversion_rate' => $user->period_total > 0 ?
                         round(($user->period_followup / $user->period_total) * 100, 2) : 0,
                 ];
             });
@@ -395,12 +434,16 @@ class DashboardController extends Controller
         $endDate = $request ? $request->get('end_date') : null;
         $selectedMarketing = $request ? $request->get('marketing') : null;
         $selectedBrand = $request ? $request->get('brand') : null;
-        
+
         $mitraQuery = Mitra::query();
         if ($currentUser->hasLimitedAccess()) {
             $mitraQuery->where('user_id', $currentUser->id);
         }
-        
+        // Brand owner can only see their brand's data
+        if ($currentUser->isBrandOwner() && $currentUser->brand_id) {
+            $mitraQuery->where('brand_id', $currentUser->brand_id);
+        }
+
         // Apply filters to get total count
         if ($startDate && $endDate) {
             $mitraQuery->whereBetween('tanggal_lead', [$startDate, $endDate]);
@@ -411,25 +454,29 @@ class DashboardController extends Controller
         if ($selectedBrand) {
             $mitraQuery->where('brand_id', $selectedBrand);
         }
-        
+
         $totalMitras = $mitraQuery->count();
-        
+
         $labelQuery = Label::query();
-        
+
         return $labelQuery->withCount(['mitras' => function ($query) use ($currentUser, $startDate, $endDate, $selectedMarketing, $selectedBrand) {
-                if ($currentUser->hasLimitedAccess()) {
-                    $query->where('user_id', $currentUser->id);
-                }
-                if ($startDate && $endDate) {
-                    $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
-                }
-                if ($selectedMarketing) {
-                    $query->where('user_id', $selectedMarketing);
-                }
-                if ($selectedBrand) {
-                    $query->where('brand_id', $selectedBrand);
-                }
-            }])
+            if ($currentUser->hasLimitedAccess()) {
+                $query->where('user_id', $currentUser->id);
+            }
+            // Brand owner can only see their brand's data
+            if ($currentUser->isBrandOwner() && $currentUser->brand_id) {
+                $query->where('brand_id', $currentUser->brand_id);
+            }
+            if ($startDate && $endDate) {
+                $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
+            }
+            if ($selectedMarketing) {
+                $query->where('user_id', $selectedMarketing);
+            }
+            if ($selectedBrand) {
+                $query->where('brand_id', $selectedBrand);
+            }
+        }])
             ->get()
             ->map(function ($label) use ($totalMitras) {
                 return [
@@ -437,7 +484,7 @@ class DashboardController extends Controller
                     'nama' => $label->nama,
                     'warna' => $label->warna,
                     'count' => $label->mitras_count,
-                    'percentage' => $totalMitras > 0 ? 
+                    'percentage' => $totalMitras > 0 ?
                         round(($label->mitras_count / $totalMitras) * 100, 2) : 0,
                 ];
             })
@@ -451,12 +498,16 @@ class DashboardController extends Controller
         $endDate = $request ? $request->get('end_date') : null;
         $selectedMarketing = $request ? $request->get('marketing') : null;
         $selectedBrand = $request ? $request->get('brand') : null;
-        
+
         $mitraQuery = Mitra::query();
         if ($currentUser->hasLimitedAccess()) {
             $mitraQuery->where('user_id', $currentUser->id);
         }
-        
+        // Brand owner can only see their brand's data
+        if ($currentUser->isBrandOwner() && $currentUser->brand_id) {
+            $mitraQuery->where('brand_id', $currentUser->brand_id);
+        }
+
         // Apply filters
         if ($startDate && $endDate) {
             $mitraQuery->whereBetween('tanggal_lead', [$startDate, $endDate]);
@@ -467,13 +518,13 @@ class DashboardController extends Controller
         if ($selectedBrand) {
             $mitraQuery->where('brand_id', $selectedBrand);
         }
-        
+
         $totalLeads = $mitraQuery->count();
-        
+
         // Get closing label ID
         $closingLabel = \App\Models\Label::where('nama', 'Closing')->first();
         $closedLeads = $closingLabel ? (clone $mitraQuery)->where('label_id', $closingLabel->id)->count() : 0;
-        
+
         $openLeads = (clone $mitraQuery)->where('chat', 'masuk')->count();
 
         $marketingQuery = User::where('role', 'marketing');
@@ -484,36 +535,45 @@ class DashboardController extends Controller
             $marketingQuery->where('id', $selectedMarketing);
         }
 
+        // Brand owner: filter by brand in mitra subqueries
+        $brandOwnerBrandId = ($currentUser->isBrandOwner() && $currentUser->brand_id) ? $currentUser->brand_id : null;
+
         return [
             'total_leads' => $totalLeads,
             'closed_leads' => $closedLeads,
             'open_leads' => $openLeads,
             'closing_rate' => $totalLeads > 0 ? round(($closedLeads / $totalLeads) * 100, 2) : 0,
             'by_marketing' => $marketingQuery->withCount([
-                    'mitras as total' => function ($query) use ($startDate, $endDate, $selectedBrand) {
-                        if ($startDate && $endDate) {
-                            $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
-                        }
-                        if ($selectedBrand) {
-                            $query->where('brand_id', $selectedBrand);
-                        }
-                    },
-                    'mitras as closed' => function ($query) use ($startDate, $endDate, $selectedBrand) {
-                        // Get closing label ID
-                        $closingLabel = \App\Models\Label::where('nama', 'Closing')->first();
-                        if ($closingLabel) {
-                            $query->where('label_id', $closingLabel->id);
-                        } else {
-                            $query->whereRaw('1 = 0'); // No results if closing label doesn't exist
-                        }
-                        if ($startDate && $endDate) {
-                            $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
-                        }
-                        if ($selectedBrand) {
-                            $query->where('brand_id', $selectedBrand);
-                        }
+                'mitras as total' => function ($query) use ($startDate, $endDate, $selectedBrand, $brandOwnerBrandId) {
+                    if ($startDate && $endDate) {
+                        $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
                     }
-                ])
+                    if ($selectedBrand) {
+                        $query->where('brand_id', $selectedBrand);
+                    }
+                    if ($brandOwnerBrandId) {
+                        $query->where('brand_id', $brandOwnerBrandId);
+                    }
+                },
+                'mitras as closed' => function ($query) use ($startDate, $endDate, $selectedBrand, $brandOwnerBrandId) {
+                    // Get closing label ID
+                    $closingLabel = \App\Models\Label::where('nama', 'Closing')->first();
+                    if ($closingLabel) {
+                        $query->where('label_id', $closingLabel->id);
+                    } else {
+                        $query->whereRaw('1 = 0'); // No results if closing label doesn't exist
+                    }
+                    if ($startDate && $endDate) {
+                        $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
+                    }
+                    if ($selectedBrand) {
+                        $query->where('brand_id', $selectedBrand);
+                    }
+                    if ($brandOwnerBrandId) {
+                        $query->where('brand_id', $brandOwnerBrandId);
+                    }
+                }
+            ])
                 ->get()
                 ->map(function ($user) {
                     return [
@@ -534,21 +594,25 @@ class DashboardController extends Controller
         $endDate = $request ? $request->get('end_date') : null;
         $selectedMarketing = $request ? $request->get('marketing') : null;
         $selectedBrand = $request ? $request->get('brand') : null;
-        
+
         $thirtyDaysAgo = Carbon::now()->subDays(30);
-        
+
         $query = Mitra::select(
-                DB::raw('DATE(tanggal_lead) as date'),
-                DB::raw('COUNT(*) as total'),
-                DB::raw('SUM(CASE WHEN chat = "masuk" THEN 1 ELSE 0 END) as masuk'),
-                DB::raw('SUM(CASE WHEN chat = "followup" THEN 1 ELSE 0 END) as followup')
-            )
+            DB::raw('DATE(tanggal_lead) as date'),
+            DB::raw('COUNT(*) as total'),
+            DB::raw('SUM(CASE WHEN chat = "masuk" THEN 1 ELSE 0 END) as masuk'),
+            DB::raw('SUM(CASE WHEN chat = "followup" THEN 1 ELSE 0 END) as followup')
+        )
             ->where('tanggal_lead', '>=', $thirtyDaysAgo);
-            
+
         if ($currentUser->hasLimitedAccess()) {
             $query->where('user_id', $currentUser->id);
         }
-        
+        // Brand owner can only see their brand's data
+        if ($currentUser->isBrandOwner() && $currentUser->brand_id) {
+            $query->where('brand_id', $currentUser->brand_id);
+        }
+
         // Apply filters
         if ($startDate && $endDate) {
             $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
@@ -559,7 +623,7 @@ class DashboardController extends Controller
         if ($selectedBrand) {
             $query->where('brand_id', $selectedBrand);
         }
-            
+
         return $query->groupBy('date')
             ->orderBy('date')
             ->get()
@@ -580,35 +644,44 @@ class DashboardController extends Controller
         $endDate = $request ? $request->get('end_date') : null;
         $selectedMarketing = $request ? $request->get('marketing') : null;
         $selectedBrand = $request ? $request->get('brand') : null;
-        
+
         $query = User::where('role', 'marketing');
-        
+
         if ($currentUser->hasLimitedAccess()) {
             $query->where('id', $currentUser->id);
         }
         if ($selectedMarketing) {
             $query->where('id', $selectedMarketing);
         }
-        
+
+        // Brand owner: filter by brand in mitra subqueries
+        $brandOwnerBrandId = ($currentUser->isBrandOwner() && $currentUser->brand_id) ? $currentUser->brand_id : null;
+
         return $query
-            ->whereHas('mitras', function ($mitraQuery) use ($startDate, $endDate, $selectedBrand) {
+            ->whereHas('mitras', function ($mitraQuery) use ($startDate, $endDate, $selectedBrand, $brandOwnerBrandId) {
                 if ($startDate && $endDate) {
                     $mitraQuery->whereBetween('tanggal_lead', [$startDate, $endDate]);
                 }
                 if ($selectedBrand) {
                     $mitraQuery->where('brand_id', $selectedBrand);
                 }
+                if ($brandOwnerBrandId) {
+                    $mitraQuery->where('brand_id', $brandOwnerBrandId);
+                }
             })
             ->withCount([
-                'mitras as total_leads' => function ($query) use ($startDate, $endDate, $selectedBrand) {
+                'mitras as total_leads' => function ($query) use ($startDate, $endDate, $selectedBrand, $brandOwnerBrandId) {
                     if ($startDate && $endDate) {
                         $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
                     }
                     if ($selectedBrand) {
                         $query->where('brand_id', $selectedBrand);
                     }
+                    if ($brandOwnerBrandId) {
+                        $query->where('brand_id', $brandOwnerBrandId);
+                    }
                 },
-                'mitras as closed_leads' => function ($query) use ($startDate, $endDate, $selectedBrand) {
+                'mitras as closed_leads' => function ($query) use ($startDate, $endDate, $selectedBrand, $brandOwnerBrandId) {
                     // Get closing label ID
                     $closingLabel = \App\Models\Label::where('nama', 'Closing')->first();
                     if ($closingLabel) {
@@ -622,6 +695,9 @@ class DashboardController extends Controller
                     if ($selectedBrand) {
                         $query->where('brand_id', $selectedBrand);
                     }
+                    if ($brandOwnerBrandId) {
+                        $query->where('brand_id', $brandOwnerBrandId);
+                    }
                 }
             ])
             ->get()
@@ -632,7 +708,7 @@ class DashboardController extends Controller
                     'email' => $user->email,
                     'total_leads' => $user->total_leads,
                     'closed_leads' => $user->closed_leads,
-                    'closing_rate' => $user->total_leads > 0 ? 
+                    'closing_rate' => $user->total_leads > 0 ?
                         round(($user->closed_leads / $user->total_leads) * 100, 2) : 0,
                 ];
             })
@@ -647,54 +723,66 @@ class DashboardController extends Controller
         $endDate = $request ? $request->get('end_date') : null;
         $selectedMarketing = $request ? $request->get('marketing') : null;
         $selectedBrand = $request ? $request->get('brand') : null;
-        
+
         $query = Brand::whereHas('mitras', function ($mitraQuery) use ($currentUser, $startDate, $endDate, $selectedMarketing) {
-                if ($currentUser->hasLimitedAccess()) {
-                    $mitraQuery->where('user_id', $currentUser->id);
-                }
-                if ($startDate && $endDate) {
-                    $mitraQuery->whereBetween('tanggal_lead', [$startDate, $endDate]);
-                }
-                if ($selectedMarketing) {
-                    $mitraQuery->where('user_id', $selectedMarketing);
-                }
-            });
-            
+            if ($currentUser->hasLimitedAccess()) {
+                $mitraQuery->where('user_id', $currentUser->id);
+            }
+            // Brand owner can only see their brand's data
+            if ($currentUser->isBrandOwner() && $currentUser->brand_id) {
+                $mitraQuery->where('brand_id', $currentUser->brand_id);
+            }
+            if ($startDate && $endDate) {
+                $mitraQuery->whereBetween('tanggal_lead', [$startDate, $endDate]);
+            }
+            if ($selectedMarketing) {
+                $mitraQuery->where('user_id', $selectedMarketing);
+            }
+        });
+
         if ($selectedBrand) {
             $query->where('id', $selectedBrand);
         }
-            
+
         return $query->withCount([
-                'mitras as total_leads' => function ($query) use ($currentUser, $startDate, $endDate, $selectedMarketing) {
-                    if ($currentUser->hasLimitedAccess()) {
-                        $query->where('user_id', $currentUser->id);
-                    }
-                    if ($startDate && $endDate) {
-                        $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
-                    }
-                    if ($selectedMarketing) {
-                        $query->where('user_id', $selectedMarketing);
-                    }
-                },
-                'mitras as closed_leads' => function ($query) use ($currentUser, $startDate, $endDate, $selectedMarketing) {
-                    // Get closing label ID
-                    $closingLabel = \App\Models\Label::where('nama', 'Closing')->first();
-                    if ($closingLabel) {
-                        $query->where('label_id', $closingLabel->id);
-                    } else {
-                        $query->whereRaw('1 = 0'); // No results if closing label doesn't exist
-                    }
-                    if ($currentUser->hasLimitedAccess()) {
-                        $query->where('user_id', $currentUser->id);
-                    }
-                    if ($startDate && $endDate) {
-                        $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
-                    }
-                    if ($selectedMarketing) {
-                        $query->where('user_id', $selectedMarketing);
-                    }
+            'mitras as total_leads' => function ($query) use ($currentUser, $startDate, $endDate, $selectedMarketing) {
+                if ($currentUser->hasLimitedAccess()) {
+                    $query->where('user_id', $currentUser->id);
                 }
-            ])
+                // Brand owner can only see their brand's data
+                if ($currentUser->isBrandOwner() && $currentUser->brand_id) {
+                    $query->where('brand_id', $currentUser->brand_id);
+                }
+                if ($startDate && $endDate) {
+                    $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
+                }
+                if ($selectedMarketing) {
+                    $query->where('user_id', $selectedMarketing);
+                }
+            },
+            'mitras as closed_leads' => function ($query) use ($currentUser, $startDate, $endDate, $selectedMarketing) {
+                // Get closing label ID
+                $closingLabel = \App\Models\Label::where('nama', 'Closing')->first();
+                if ($closingLabel) {
+                    $query->where('label_id', $closingLabel->id);
+                } else {
+                    $query->whereRaw('1 = 0'); // No results if closing label doesn't exist
+                }
+                if ($currentUser->hasLimitedAccess()) {
+                    $query->where('user_id', $currentUser->id);
+                }
+                // Brand owner can only see their brand's data
+                if ($currentUser->isBrandOwner() && $currentUser->brand_id) {
+                    $query->where('brand_id', $currentUser->brand_id);
+                }
+                if ($startDate && $endDate) {
+                    $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
+                }
+                if ($selectedMarketing) {
+                    $query->where('user_id', $selectedMarketing);
+                }
+            }
+        ])
             ->get()
             ->map(function ($brand) {
                 return [
@@ -703,7 +791,7 @@ class DashboardController extends Controller
                     'logo_url' => $brand->logo_url,
                     'total_leads' => $brand->total_leads,
                     'closed_leads' => $brand->closed_leads,
-                    'closing_rate' => $brand->total_leads > 0 ? 
+                    'closing_rate' => $brand->total_leads > 0 ?
                         round(($brand->closed_leads / $brand->total_leads) * 100, 2) : 0,
                 ];
             })
@@ -715,12 +803,12 @@ class DashboardController extends Controller
     {
         // Base query for tasks
         $baseQuery = TodoList::query();
-        
+
         if ($currentUser->hasLimitedAccess()) {
             // Marketing users can only see their own tasks and tasks assigned to them
             $baseQuery->where(function ($query) use ($currentUser) {
                 $query->where('user_id', $currentUser->id)
-                      ->orWhere('assigned_to', $currentUser->id);
+                    ->orWhere('assigned_to', $currentUser->id);
             });
         }
 
@@ -731,12 +819,12 @@ class DashboardController extends Controller
             'in_progress' => (clone $baseQuery)->where('status', 'in_progress')->count(),
             'completed' => (clone $baseQuery)->where('status', 'completed')->count(),
             'overdue' => (clone $baseQuery)->where('status', '!=', 'completed')
-                        ->where('due_date', '<', Carbon::today())->count(),
+                ->where('due_date', '<', Carbon::today())->count(),
         ];
 
         // Task statistics per marketing user - using the same logic as TaskManagementController
         $marketingQuery = User::where('role', 'marketing');
-        
+
         if ($currentUser->hasLimitedAccess()) {
             $marketingQuery->where('id', $currentUser->id);
         }
@@ -744,19 +832,19 @@ class DashboardController extends Controller
         $marketingStats = $marketingQuery->get()->map(function ($user) use ($currentUser) {
             // Build base query for this specific user with role-based access
             $userTasksQuery = TodoList::query();
-            
+
             if ($currentUser->hasLimitedAccess()) {
                 // If current user has limited access, apply the same restrictions
                 $userTasksQuery->where(function ($query) use ($currentUser) {
                     $query->where('user_id', $currentUser->id)
-                          ->orWhere('assigned_to', $currentUser->id);
+                        ->orWhere('assigned_to', $currentUser->id);
                 });
             }
-            
+
             // Apply user filter - tasks where user is creator OR assigned to
             $userTasksQuery->where(function ($query) use ($user) {
                 $query->where('user_id', $user->id)
-                      ->orWhere('assigned_to', $user->id);
+                    ->orWhere('assigned_to', $user->id);
             });
 
             // Get counts using the same logic as TaskManagementController
@@ -765,22 +853,22 @@ class DashboardController extends Controller
             $inProgressTasks = (clone $userTasksQuery)->where('status', 'in_progress')->count();
             $completedTasks = (clone $userTasksQuery)->where('status', 'completed')->count();
             $overdueTasks = (clone $userTasksQuery)->where('status', '!=', 'completed')
-                                                   ->where('due_date', '<', Carbon::today())->count();
+                ->where('due_date', '<', Carbon::today())->count();
 
             // Also get separate counts for created vs assigned for reference
             $createdTotal = TodoList::where('user_id', $user->id)->count();
             $createdPending = TodoList::where('user_id', $user->id)->where('status', 'pending')->count();
             $createdInProgress = TodoList::where('user_id', $user->id)->where('status', 'in_progress')->count();
             $createdCompleted = TodoList::where('user_id', $user->id)->where('status', 'completed')->count();
-            
+
             $assignedTotal = TodoList::where('assigned_to', $user->id)->count();
             $assignedPending = TodoList::where('assigned_to', $user->id)->where('status', 'pending')->count();
             $assignedInProgress = TodoList::where('assigned_to', $user->id)->where('status', 'in_progress')->count();
             $assignedCompleted = TodoList::where('assigned_to', $user->id)->where('status', 'completed')->count();
             $assignedOverdue = TodoList::where('assigned_to', $user->id)
-                                      ->where('status', '!=', 'completed')
-                                      ->where('due_date', '<', Carbon::today())->count();
-            
+                ->where('status', '!=', 'completed')
+                ->where('due_date', '<', Carbon::today())->count();
+
             return [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -818,7 +906,7 @@ class DashboardController extends Controller
         $endDate = $request && $request->get('end_date') ? $request->get('end_date') : Carbon::now()->endOfMonth()->format('Y-m-d');
         $selectedMarketing = $request ? $request->get('marketing') : null;
         $selectedBrand = $request ? $request->get('brand') : null;
-        
+
         // Ensure dates are not empty
         if (empty($startDate)) {
             $startDate = Carbon::now()->startOfMonth()->format('Y-m-d');
@@ -830,7 +918,9 @@ class DashboardController extends Controller
         // Build marketing filter condition for subqueries
         $marketingFilter = $selectedMarketing ? ' AND user_id = ' . $selectedMarketing : '';
         $userAccessFilter = $currentUser->hasLimitedAccess() ? ' AND user_id = ' . $currentUser->id : '';
-        
+        // Brand owner can only see their brand's data
+        $brandOwnerFilter = ($currentUser->isBrandOwner() && $currentUser->brand_id) ? ' AND brand_id = ' . $currentUser->brand_id : '';
+
         $query = Brand::select([
             'brands.id as brand_id',
             'brands.nama as brand_name',
@@ -843,6 +933,7 @@ class DashboardController extends Controller
                 AND mitras.tanggal_lead BETWEEN "' . $startDate . '" AND "' . $endDate . '"
                 ' . $marketingFilter . '
                 ' . $userAccessFilter . '
+                ' . $brandOwnerFilter . '
             ) as real_lead'),
             DB::raw('(
                 SELECT COUNT(*) 
@@ -852,6 +943,7 @@ class DashboardController extends Controller
                 AND transaksis.status_pembayaran = "Dp / TJ"
                 ' . $marketingFilter . '
                 ' . $userAccessFilter . '
+                ' . $brandOwnerFilter . '
             ) as closing'),
             DB::raw('(
                 SELECT COALESCE(SUM(transaksis.nominal_masuk), 0) 
@@ -860,9 +952,10 @@ class DashboardController extends Controller
                 AND transaksis.tanggal_tf BETWEEN "' . $startDate . '" AND "' . $endDate . '"
                 ' . $marketingFilter . '
                 ' . $userAccessFilter . '
+                ' . $brandOwnerFilter . '
             ) as omset')
         ])
-        ->leftJoin('iklan_budgets', 'brands.id', '=', 'iklan_budgets.brand_id');
+            ->leftJoin('iklan_budgets', 'brands.id', '=', 'iklan_budgets.brand_id');
 
         // Apply brand filter
         if ($selectedBrand) {
@@ -876,7 +969,7 @@ class DashboardController extends Controller
         return $results->map(function ($item) {
             $costPerLead = $item->real_lead > 0 ? $item->spent / $item->real_lead : 0;
             $roas = $item->spent_with_tax > 0 ? $item->omset / $item->spent_with_tax : 0;
-            
+
             return [
                 'brand' => $item->brand_name,
                 'spent' => (float) $item->spent,

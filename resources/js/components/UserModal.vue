@@ -13,12 +13,19 @@ interface User {
     email: string;
     role: 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | 'brand_owner';
     password?: string;
+    brand_id?: number | null;
+}
+
+interface Brand {
+    id: number;
+    nama: string;
 }
 
 interface Props {
     open: boolean;
     mode: 'create' | 'edit' | 'view';
     user?: User;
+    brands?: Brand[];
 }
 
 const props = defineProps<Props>();
@@ -31,6 +38,7 @@ const form = useForm({
     name: '',
     email: '',
     role: 'marketing' as 'super_admin' | 'admin' | 'marketing' | 'advertiser' | 'cs' | 'brand_owner',
+    brand_id: null as number | null,
     password: '',
     password_confirmation: '',
 });
@@ -43,6 +51,7 @@ watch(
             form.name = newUser.name || '';
             form.email = newUser.email || '';
             form.role = newUser.role || 'marketing';
+            form.brand_id = newUser.brand_id || null;
             form.password = '';
             form.password_confirmation = '';
         } else {
@@ -193,6 +202,33 @@ const roleDescriptions = {
                         </select>
                         <p v-if="form.errors.role" class="text-sm text-red-500">{{ form.errors.role }}</p>
                         <p v-if="mode !== 'view'" class="text-sm text-muted-foreground">{{ roleDescriptions[form.role] }}</p>
+                    </div>
+
+                    <!-- Brand Field (only for brand_owner role) -->
+                    <div v-if="form.role === 'brand_owner' && brands && brands.length > 0" class="space-y-2">
+                        <Label for="brand_id" class="flex items-center gap-2">
+                            <Shield class="h-4 w-4" />
+                            Brand
+                        </Label>
+                        <div v-if="mode === 'view'" class="rounded-lg bg-muted p-3">
+                            <span class="font-medium">
+                                {{ brands.find(b => b.id === form.brand_id)?.nama || 'Belum ditentukan' }}
+                            </span>
+                        </div>
+                        <select
+                            v-else
+                            id="brand_id"
+                            v-model="form.brand_id"
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                            :class="{ 'border-red-500': form.errors.brand_id }"
+                        >
+                            <option :value="null">Pilih Brand</option>
+                            <option v-for="brand in brands" :key="brand.id" :value="brand.id">
+                                {{ brand.nama }}
+                            </option>
+                        </select>
+                        <p v-if="form.errors.brand_id" class="text-sm text-red-500">{{ form.errors.brand_id }}</p>
+                        <p v-if="mode !== 'view'" class="text-sm text-muted-foreground">Brand Owner hanya dapat melihat data dari brand yang dipilih</p>
                     </div>
 
                     <!-- Password Fields (only for create/edit) -->

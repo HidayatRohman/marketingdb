@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Brand;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
@@ -31,6 +32,7 @@ class UserController extends Controller
 
         return Inertia::render('Users/Index', [
             'users' => $users,
+            'brands' => Brand::select('id', 'nama')->orderBy('nama')->get(),
             'filters' => $request->only(['search', 'role']),
             'permissions' => [
                 'canCrud' => $currentUser->canCrud(),
@@ -66,9 +68,15 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:super_admin,admin,marketing,advertiser,cs,brand_owner',
+            'brand_id' => 'nullable|exists:brands,id',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+
+        // Clear brand_id if role is not brand_owner
+        if ($validated['role'] !== 'brand_owner') {
+            $validated['brand_id'] = null;
+        }
 
         User::create($validated);
 
@@ -112,12 +120,18 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
             'role' => 'required|in:super_admin,admin,marketing,advertiser,cs,brand_owner',
+            'brand_id' => 'nullable|exists:brands,id',
         ]);
 
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']);
+        }
+
+        // Clear brand_id if role is not brand_owner
+        if ($validated['role'] !== 'brand_owner') {
+            $validated['brand_id'] = null;
         }
 
         $user->update($validated);
