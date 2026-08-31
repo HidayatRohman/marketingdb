@@ -49,7 +49,8 @@ class SeminarController extends Controller
         // Ambil peserta dari Mitra yang webinar = 'Ikut'
         $participantsQuery = Mitra::query()
             ->with(['brand:id,nama', 'label:id,nama,warna', 'user:id,name'])
-            ->where('webinar', 'Ikut')
+            ->where('webinar', 'Ikut');
+        $participantsQuery = $user->applyBrandOwnerFilter($participantsQuery, 'brand_id')
             ->orderByDesc('tanggal_lead');
 
         // Batasi marketing melihat data sendiri jika role terbatas
@@ -82,9 +83,11 @@ class SeminarController extends Controller
             $yearMonthExpr = 'YEAR(tanggal_lead) as year, MONTH(tanggal_lead) as month';
         }
 
-        $monthlyCountsRaw = Mitra::query()
+        $monthlyQuery = Mitra::query()
             ->selectRaw($yearMonthExpr . ', COUNT(*) as total')
-            ->where('webinar', 'Ikut')
+            ->where('webinar', 'Ikut');
+        $monthlyQuery = $user->applyBrandOwnerFilter($monthlyQuery, 'brand_id');
+        $monthlyCountsRaw = $monthlyQuery
             ->when($user->isMarketing() && $user->hasLimitedAccess(), function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             })
@@ -246,6 +249,8 @@ class SeminarController extends Controller
         $query = Mitra::query()
             ->with(['brand:id,nama', 'label:id,nama,warna', 'user:id,name'])
             ->where('webinar', 'Ikut');
+
+        $query = $user->applyBrandOwnerFilter($query, 'brand_id');
 
         if ($user->isMarketing() && $user->hasLimitedAccess()) {
             $query->where('user_id', $user->id);

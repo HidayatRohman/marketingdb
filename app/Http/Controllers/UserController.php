@@ -19,7 +19,16 @@ class UserController extends Controller
         $currentUser = auth()->user();
         
         $users = User::query()
-            ->with(['brands:id,nama'])
+            ->when($currentUser->isBrandOwner(), function ($query) use ($currentUser) {
+                $query->where(function ($query) use ($currentUser) {
+                    $query->whereKey($currentUser->id)
+                        ->orWhereHas('brands', fn ($brandQuery) => $brandQuery->whereIn('brands.id', $currentUser->brands()->pluck('brands.id')));
+                });
+            })
+            ->with(['brands' => function ($query) use ($currentUser) {
+                $query->select('brands.id', 'brands.nama')
+                    ->when($currentUser->isBrandOwner(), fn ($query) => $query->whereIn('brands.id', $currentUser->brands()->pluck('brands.id')));
+            }])
             ->when($request->search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                       ->orWhere('email', 'like', "%{$search}%");
@@ -35,9 +44,9 @@ class UserController extends Controller
             $user->brand_ids = $user->brands->pluck('id')->values();
         });
 
-        $brands = Brand::select('id', 'nama')
-            ->orderBy('nama')
-            ->get();
+        $brands = $currentUser->isBrandOwner()
+            ? $currentUser->brands()->select('brands.id', 'brands.nama')->orderBy('nama')->get()
+            : Brand::select('id', 'nama')->orderBy('nama')->get();
 
         return Inertia::render('Users/Index', [
             'users' => $users,
@@ -97,9 +106,19 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        $this->authorizeBrandOwner($user);
+
         return Inertia::render('Users/Show', [
             'user' => $user,
         ]);
+    }
+
+    private function authorizeBrandOwner(User $user): void
+    {
+        $currentUser = auth()->user();
+        if ($currentUser->isBrandOwner() && $user->id !== $currentUser->id && !$user->brands()->whereIn('brands.id', $currentUser->brands()->pluck('brands.id'))->exists()) {
+            abort(403);
+        }
     }
 
     /**

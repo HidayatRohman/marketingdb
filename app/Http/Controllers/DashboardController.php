@@ -208,7 +208,8 @@ class DashboardController extends Controller
             $marketingUsers = collect([
                 (object)['id' => $currentUser->id, 'name' => $currentUser->name]
             ]);
-            $brands = Brand::select('id', 'nama')
+            $brands = Brand::whereHas('mitras', fn ($query) => $query->where('user_id', $currentUser->id))
+                ->select('id', 'nama')
                 ->orderBy('nama')
                 ->get();
         }
@@ -307,9 +308,9 @@ class DashboardController extends Controller
             $marketingUsers = collect([
                 (object)['id' => $currentUser->id, 'name' => $currentUser->name]
             ]);
-            $brands = Brand::select('id', 'nama')
-                ->orderBy('nama')
-                ->get();
+            $brands = $currentUser->isBrandOwner()
+                ? $currentUser->brands()->select('brands.id', 'brands.nama')->orderBy('nama')->get()
+                : Brand::select('id', 'nama')->orderBy('nama')->get();
         }
 
         return Inertia::render('AnalisaBisnis/Index', [

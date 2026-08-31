@@ -97,6 +97,7 @@ class MitraExportService
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
+        $query = $user->applyBrandOwnerFilter($query, 'brand_id');
 
         // Apply search filter
         if ($request->filled('search')) {

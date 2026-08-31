@@ -235,6 +235,9 @@ class MitraController extends Controller
         $user = auth()->user();
 
         // Check if user can access this mitra
+        if ($user->isBrandOwner() && !$user->brands()->whereKey($mitra->brand_id)->exists()) {
+            abort(403, 'Anda tidak memiliki izin untuk melihat data ini.');
+        }
         if ($user->isMarketing() && $mitra->user_id !== $user->id) {
             abort(403, 'Anda tidak memiliki izin untuk melihat data ini.');
         }
@@ -265,6 +268,9 @@ class MitraController extends Controller
         $user = auth()->user();
         
         // Check if user can access this mitra
+        if ($user->isBrandOwner() && !$user->brands()->whereKey($mitra->brand_id)->exists()) {
+            abort(403, 'Anda tidak memiliki izin untuk melihat data ini.');
+        }
         if ($user->isMarketing() && $mitra->user_id !== $user->id) {
             abort(403, 'Anda tidak memiliki izin untuk melihat data ini.');
         }
@@ -614,6 +620,7 @@ class MitraController extends Controller
      */
     public function searchByPhone(Request $request)
     {
+        $user = auth()->user();
         $phone = $request->query('phone');
         
         if (!$phone) {
@@ -628,12 +635,15 @@ class MitraController extends Controller
 
         // Use raw SQL to clean the database column before comparing to handle formatted numbers
         // e.g. "0857-5555-5555" in DB vs "085755555555" in search
-        $mitra = Mitra::whereRaw(
+        $query = Mitra::whereRaw(
             "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_telp, ' ', ''), '-', ''), '+', ''), '(', ''), ')', '') LIKE ?", 
             ["%{$searchStr}%"]
-        )
-            ->select('id', 'nama', 'no_telp')
-            ->first();
+        );
+        $query = $user->applyBrandOwnerFilter($query, 'brand_id');
+        if ($user->isMarketing()) {
+            $query->where('user_id', $user->id);
+        }
+        $mitra = $query->select('id', 'nama', 'no_telp')->first();
 
         if ($mitra) {
             return response()->json([

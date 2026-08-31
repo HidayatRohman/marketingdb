@@ -16,6 +16,18 @@ class BrandController extends Controller
     {
         $currentUser = auth()->user();
         $query = Brand::query();
+        $brandIds = $currentUser->isBrandOwner()
+            ? $currentUser->brands()->pluck('brands.id')->all()
+            : [];
+
+        if ($currentUser->isBrandOwner()) {
+            $query->whereIn('id', $brandIds);
+        }
+
+        $selectedBrand = $request->get('selected_brand');
+        if ($selectedBrand && $currentUser->isBrandOwner() && !in_array((int) $selectedBrand, $brandIds, true)) {
+            abort(403);
+        }
 
         // Apply search filter
         if ($request->has('search') && $request->search) {
@@ -92,6 +104,8 @@ class BrandController extends Controller
      */
     public function show(Brand $brand)
     {
+        $this->authorizeBrandOwner($brand);
+
         return Inertia::render('Brand/Show', [
             'brand' => $brand,
         ]);
@@ -102,6 +116,8 @@ class BrandController extends Controller
      */
     public function edit(Brand $brand)
     {
+        $this->authorizeBrandOwner($brand);
+
         return Inertia::render('Brand/Edit', [
             'brand' => $brand,
         ]);
@@ -112,6 +128,8 @@ class BrandController extends Controller
      */
     public function update(Request $request, Brand $brand)
     {
+        $this->authorizeBrandOwner($brand);
+
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -144,6 +162,8 @@ class BrandController extends Controller
      */
     public function destroy(Brand $brand)
     {
+        $this->authorizeBrandOwner($brand);
+
         // Delete logo file if exists
         if ($brand->logo && \Storage::disk('public')->exists($brand->logo)) {
             \Storage::disk('public')->delete($brand->logo);
@@ -162,9 +182,18 @@ class BrandController extends Controller
     /**
      * Get province analytics by brand for chart visualization
      */
+    private function authorizeBrandOwner(Brand $brand): void
+    {
+        $user = auth()->user();
+        if ($user->isBrandOwner() && !$user->brands()->whereKey($brand->id)->exists()) {
+            abort(403);
+        }
+    }
+
     private function getProvinceAnalytics($currentUser, $selectedBrandId = null)
     {
         $query = \App\Models\Mitra::query();
+        $query = $currentUser->applyBrandOwnerFilter($query, 'brand_id');
         
         // Apply role-based filtering
         if ($currentUser->hasLimitedAccess()) {
