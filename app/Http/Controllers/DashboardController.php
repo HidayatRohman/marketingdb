@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Mitra;
 use App\Models\Brand;
 use App\Models\Label;
+use App\Models\Sumber;
 use App\Models\TodoList;
 use App\Models\IklanBudget;
 use Illuminate\Http\Request;
@@ -142,6 +143,9 @@ class DashboardController extends Controller
         // Label Distribution
         $labelDistribution = $this->getLabelDistribution($currentUser, $request);
 
+        // Sumber Distribution
+        $sumberDistribution = $this->getSumberDistribution($currentUser, $request);
+
         // Closing Rate Analysis
         $closingAnalysis = $this->getClosingAnalysis($currentUser, $request);
 
@@ -222,6 +226,7 @@ class DashboardController extends Controller
             'chatAnalytics' => $chatAnalytics,
             'periodAnalytics' => $periodAnalytics,
             'labelDistribution' => $labelDistribution,
+            'sumberDistribution' => $sumberDistribution,
             'closingAnalysis' => $closingAnalysis,
             'dailyTrends' => $dailyTrends,
             'topMarketing' => $topMarketing,
@@ -529,6 +534,69 @@ class DashboardController extends Controller
                     'count' => $label->mitras_count,
                     'percentage' => $totalMitras > 0 ? 
                         round(($label->mitras_count / $totalMitras) * 100, 2) : 0,
+                ];
+            })
+            ->sortByDesc('count')
+            ->values();
+    }
+
+    private function getSumberDistribution($currentUser, $request = null)
+    {
+        $startDate = $request ? $request->get('start_date') : null;
+        $endDate = $request ? $request->get('end_date') : null;
+        $selectedMarketing = $request ? $request->get('marketing') : null;
+        $selectedBrand = $request ? $request->get('brand') : null;
+        $brandIds = $currentUser->isBrandOwner() ? $currentUser->brands()->pluck('brands.id')->all() : [];
+        
+        $mitraQuery = Mitra::query();
+        if ($currentUser->hasLimitedAccess()) {
+            $mitraQuery->where('user_id', $currentUser->id);
+        }
+        if (!empty($brandIds)) {
+            $mitraQuery->whereIn('brand_id', $brandIds);
+        }
+        
+        // Apply filters to get total count
+        if ($startDate && $endDate) {
+            $mitraQuery->whereBetween('tanggal_lead', [$startDate, $endDate]);
+        }
+        if ($selectedMarketing) {
+            $mitraQuery->where('user_id', $selectedMarketing);
+        }
+        if ($selectedBrand) {
+            $mitraQuery->where('brand_id', $selectedBrand);
+        }
+        
+        $totalMitras = $mitraQuery->count();
+        
+        $sumberQuery = Sumber::query();
+        
+        return $sumberQuery->withCount(['mitras' => function ($query) use ($currentUser, $startDate, $endDate, $selectedMarketing, $selectedBrand, $brandIds) {
+                if ($currentUser->hasLimitedAccess()) {
+                    $query->where('user_id', $currentUser->id);
+                }
+                if (!empty($brandIds)) {
+                    $query->whereIn('brand_id', $brandIds);
+                }
+                if ($startDate && $endDate) {
+                    $query->whereBetween('tanggal_lead', [$startDate, $endDate]);
+                }
+                if ($selectedMarketing) {
+                    $query->where('user_id', $selectedMarketing);
+                }
+                if ($selectedBrand) {
+                    $query->where('brand_id', $selectedBrand);
+                }
+            }])
+            ->get()
+            ->map(function ($sumber) use ($totalMitras) {
+                return [
+                    'id' => $sumber->id,
+                    'nama' => $sumber->nama,
+                    'warna' => $sumber->warna,
+                    'count' => $sumber->mitras_count,
+                    'percentage' => $totalMitras > 0 ? 
+                        round(($sumber->mitras_count / $totalMitras) * 100, 2) : 0,
                 ];
             })
             ->sortByDesc('count')
