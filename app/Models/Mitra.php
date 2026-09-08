@@ -16,6 +16,7 @@ class Mitra extends Model
         'user_id',
         'brand_id',
         'label_id',
+        'sumber_id',
         'chat',
         'kota',
         'provinsi',
@@ -42,6 +43,14 @@ class Mitra extends Model
     public function label()
     {
         return $this->belongsTo(Label::class);
+    }
+
+    /**
+     * Get the sumber that belongs to the mitra.
+     */
+    public function sumber()
+    {
+        return $this->belongsTo(Sumber::class);
     }
 
     /**

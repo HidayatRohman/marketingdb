@@ -22,6 +22,12 @@ interface Label {
     warna: string;
 }
 
+interface Sumber {
+    id: number;
+    nama: string;
+    warna: string;
+}
+
 interface User {
     id: number;
     name: string;
@@ -37,6 +43,8 @@ interface Mitra {
     brand?: Brand;
     label_id: number | null;
     label?: Label | null;
+    sumber_id: number | null;
+    sumber?: Sumber | null;
     user_id: number | null;
     user?: User | null;
     chat: 'masuk' | 'followup' | 'followup_2' | 'followup_3';
@@ -52,6 +60,7 @@ interface Props {
     mitra?: Mitra;
     brands: Brand[];
     labels: Label[];
+    sumbers: Sumber[];
     marketingUsers: User[];
     currentUser: {
         id: number;
@@ -61,6 +70,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+console.log('MitraModal props:', { brands: props.brands?.length, labels: props.labels?.length, sumbers: props.sumbers?.length, sumbers: props.sumbers });
 const emit = defineEmits<{
     close: [];
     success: [];
@@ -115,6 +125,7 @@ const form = useForm({
     tanggal_lead: new Date().toISOString().split('T')[0], // Default to today
     brand_id: null as number | null,
     label_id: null as number | null,
+    sumber_id: null as number | null,
     user_id: null as number | null,
     chat: 'masuk' as 'masuk' | 'followup' | 'followup_2' | 'followup_3',
     kota: 'Unknown',
@@ -144,6 +155,7 @@ watch(
             }
             form.brand_id = newMitra.brand_id || null;
             form.label_id = newMitra.label_id || null;
+            form.sumber_id = newMitra.sumber_id || null;
             // For marketing role, always use current user ID
             if (props.currentUser.role === 'marketing') {
                 form.user_id = props.currentUser.id;
@@ -547,26 +559,50 @@ const selectedBrand = computed(() => {
                         Informasi Tambahan
                     </h3>
 
-                    <div class="space-y-2">
-                        <Label for="label_id" class="flex items-center gap-2">
-                            <Tag class="h-3 w-3" />
-                            Label (Opsional)
-                        </Label>
-                        <select
-                            id="label_id"
-                            v-model="form.label_id"
-                            :disabled="mode === 'view'"
-                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
-                            :class="{ 'border-destructive': form.errors.label_id }"
-                        >
-                            <option value="" class="bg-background text-foreground">Pilih label</option>
-                            <option v-for="label in labels" :key="label.id" :value="label.id" class="bg-background text-foreground">
-                                {{ label.nama }}
-                            </option>
-                        </select>
-                        <p v-if="form.errors.label_id" class="text-sm text-destructive">
-                            {{ form.errors.label_id }}
-                        </p>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div class="space-y-2">
+                            <Label for="label_id" class="flex items-center gap-2">
+                                <Tag class="h-3 w-3" />
+                                Label (Opsional)
+                            </Label>
+                            <select
+                                id="label_id"
+                                v-model="form.label_id"
+                                :disabled="mode === 'view'"
+                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
+                                :class="{ 'border-destructive': form.errors.label_id }"
+                            >
+                                <option value="" class="bg-background text-foreground">Pilih label</option>
+                                <option v-for="label in labels" :key="label.id" :value="label.id" class="bg-background text-foreground">
+                                    {{ label.nama }}
+                                </option>
+                            </select>
+                            <p v-if="form.errors.label_id" class="text-sm text-destructive">
+                                {{ form.errors.label_id }}
+                            </p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="sumber_id" class="flex items-center gap-2">
+                                <Tag class="h-3 w-3" />
+                                Sumber (Opsional)
+                            </Label>
+                            <select
+                                id="sumber_id"
+                                v-model="form.sumber_id"
+                                :disabled="mode === 'view'"
+                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
+                                :class="{ 'border-destructive': form.errors.sumber_id }"
+                            >
+                                <option value="" class="bg-background text-foreground">Pilih sumber</option>
+                                <option v-for="sumber in sumbers" :key="sumber.id" :value="sumber.id" class="bg-background text-foreground">
+                                    {{ sumber.nama }}
+                                </option>
+                            </select>
+                            <p v-if="form.errors.sumber_id" class="text-sm text-destructive">
+                                {{ form.errors.sumber_id }}
+                            </p>
+                        </div>
                     </div>
 
                     <div class="space-y-2">

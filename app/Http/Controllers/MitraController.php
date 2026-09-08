@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Mitra;
 use App\Models\Brand;
 use App\Models\Label;
+use App\Models\Sumber;
 use App\Models\MitraLabelHistory;
 use App\Http\Requests\StoreMitraRequest;
 use App\Http\Requests\UpdateMitraRequest;
@@ -24,7 +25,7 @@ class MitraController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Mitra::with(['brand', 'label', 'user']);
+        $query = Mitra::with(['brand', 'label', 'sumber', 'user']);
 
         // Apply role-based filtering
         $query = $user->applyRoleFilter($query, 'user_id');
@@ -129,6 +130,7 @@ class MitraController extends Controller
             $brands = Brand::all();
         }
         $labels = Label::all();
+        $sumbers = Sumber::orderBy('nama')->get();
         
         // Get marketing users (users with role marketing) 
         $marketingUsers = collect();
@@ -146,6 +148,7 @@ class MitraController extends Controller
             'mitras' => $mitras,
             'brands' => $brands,
             'labels' => $labels,
+            'sumbers' => $sumbers,
             'users' => $marketingUsers,
             'hourlyAnalysis' => $hourlyAnalysis,
             'currentUser' => [
@@ -276,7 +279,7 @@ class MitraController extends Controller
         }
 
         return Inertia::render('Mitra/Show', [
-            'mitra' => $mitra->load(['brand', 'label', 'user']),
+            'mitra' => $mitra->load(['brand', 'label', 'sumber', 'user']),
             'permissions' => [
                 'canCrud' => $user->canCrud(),
                 'canOnlyView' => $user->canOnlyView(),
@@ -301,7 +304,7 @@ class MitraController extends Controller
         }
 
         return Inertia::render('Mitra/Edit', [
-            'mitra' => $mitra->load(['brand', 'label']),
+            'mitra' => $mitra->load(['brand', 'label', 'sumber']),
             'permissions' => [
                 'canCrud' => $user->canCrud(),
                 'canOnlyView' => $user->canOnlyView(),

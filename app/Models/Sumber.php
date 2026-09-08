@@ -21,4 +21,12 @@ class Sumber extends Model
     {
         return $this->hasMany(Transaksi::class);
     }
+
+    /**
+     * Get the mitras that belong to this sumber.
+     */
+    public function mitras()
+    {
+        return $this->hasMany(Mitra::class);
+    }
 }

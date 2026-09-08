@@ -33,6 +33,12 @@ interface Label {
     warna: string;
 }
 
+interface Sumber {
+    id: number;
+    nama: string;
+    warna: string;
+}
+
 interface User {
     id: number;
     name: string;
@@ -50,6 +56,8 @@ interface Mitra {
     user: User | null;
     label_id: number | null;
     label: Label | null;
+    sumber_id: number | null;
+    sumber: Sumber | null;
     chat: 'masuk' | 'followup' | 'followup_2' | 'followup_3';
     kota: string;
     provinsi: string;
@@ -77,6 +85,7 @@ interface Props {
     };
     brands: Brand[];
     labels: Label[];
+    sumbers: Sumber[];
     users: User[];
     hourlyAnalysis: HourlyAnalysisData[];
     currentUser: {
@@ -915,6 +924,7 @@ onMounted(() => {
                                         <TableHead class="py-3 font-semibold text-foreground">Chat</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Lokasi</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Label</TableHead>
+                                        <TableHead class="py-3 font-semibold text-foreground">Sumber</TableHead>
                                         <TableHead class="py-3 font-semibold text-foreground">Webinar</TableHead>
                                         <TableHead class="w-[120px] py-3 text-center font-semibold text-foreground">Aksi</TableHead>
                                     </TableRow>
@@ -922,7 +932,7 @@ onMounted(() => {
                                 <TableBody>
                                     <!-- Empty State -->
                                     <TableRow v-if="mitrasData.data.length === 0" class="hover:bg-transparent">
-                                        <TableCell colspan="10" class="py-8 text-center">
+                                        <TableCell colspan="11" class="py-8 text-center">
                                             <div class="flex justify-center">
                                                 <div class="mx-auto max-w-md">
                                                     <Card
@@ -1050,6 +1060,21 @@ onMounted(() => {
                                                     <History class="h-4 w-4" />
                                                 </button>
                                             </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div
+                                                v-if="mitra.sumber"
+                                                class="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium"
+                                                :style="{
+                                                    backgroundColor: mitra.sumber.warna + '20',
+                                                    color: mitra.sumber.warna,
+                                                    border: `1px solid ${mitra.sumber.warna}40`,
+                                                }"
+                                            >
+                                                <div class="h-2 w-2 rounded-full" :style="{ backgroundColor: mitra.sumber.warna }"></div>
+                                                {{ mitra.sumber.nama }}
+                                            </div>
+                                            <span v-else class="text-sm text-muted-foreground">-</span>
                                         </TableCell>
                                         <TableCell>
                                             <Badge
@@ -1191,6 +1216,7 @@ onMounted(() => {
             :mitra="mitraModal.mitra"
             :brands="brands"
             :labels="labels"
+            :sumbers="sumbers"
             :marketing-users="users"
             :current-user="currentUser"
             @close="closeMitraModal"

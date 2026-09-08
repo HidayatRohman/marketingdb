@@ -34,6 +34,7 @@ class StoreMitraRequest extends FormRequest
             'user_id' => 'nullable|exists:users,id',
             'brand_id' => 'required|exists:brands,id',
             'label_id' => 'nullable|exists:labels,id',
+            'sumber_id' => 'nullable|exists:sumbers,id',
             'chat' => 'required|in:masuk,followup,followup_2,followup_3',
             'kota' => 'nullable|string|max:255',
             'provinsi' => 'nullable|string|max:255',
@@ -66,6 +67,8 @@ class StoreMitraRequest extends FormRequest
             'brand_id.exists' => 'Brand yang dipilih tidak valid.',
             
             'label_id.exists' => 'Label yang dipilih tidak valid.',
+            
+            'sumber_id.exists' => 'Sumber yang dipilih tidak valid.',
             
             'chat.required' => 'Status chat wajib dipilih.',
             'chat.in' => 'Status chat harus berupa "masuk" atau "followup".',
