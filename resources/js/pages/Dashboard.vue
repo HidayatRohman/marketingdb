@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import BrandPerformanceChart from '@/components/BrandPerformanceChart.vue';
-import MarketingPerformanceChart from '@/components/MarketingPerformanceChart.vue';
-import CsRepeatDailyTransaksiChart from '@/components/CsRepeatDailyTransaksiChart.vue';
 import CsRepeatDailyProductChart from '@/components/CsRepeatDailyProductChart.vue';
+import CsRepeatDailyTransaksiChart from '@/components/CsRepeatDailyTransaksiChart.vue';
+import MarketingPerformanceChart from '@/components/MarketingPerformanceChart.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/datepicker';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress/index';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs/index';
-import { DatePicker } from '@/components/ui/datepicker';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { toLocalDateString } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
@@ -27,6 +27,7 @@ import {
     CheckCircle,
     ChevronDown,
     Clock,
+    DollarSign,
     Eye,
     Filter,
     MessageSquare,
@@ -43,10 +44,8 @@ import {
     Users,
     X,
     Zap,
-    DollarSign,
 } from 'lucide-vue-next';
-import { computed, onMounted, onUnmounted, ref, Teleport, watch } from 'vue';
-import { toLocalDateString } from '@/lib/utils';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 interface UserStats {
     total: number;
@@ -91,6 +90,14 @@ interface LabelDistribution {
     percentage: number;
 }
 
+interface SumberDistribution {
+    id: number;
+    nama: string;
+    warna: string;
+    count: number;
+    percentage: number;
+}
+
 interface ClosingAnalysis {
     total_leads: number;
     closed_leads: number;
@@ -122,9 +129,19 @@ interface TopMarketing {
 }
 
 // CS Repeat analytics types
-interface CsRepeatDailyRow { date: string; total: number }
-interface CsRepeatDailyProductRow { date: string; products: Record<string, number>; total: number }
-interface CsRepeatSummary { totalOmset: number; jumlahTransaksi: number }
+interface CsRepeatDailyRow {
+    date: string;
+    total: number;
+}
+interface CsRepeatDailyProductRow {
+    date: string;
+    products: Record<string, number>;
+    total: number;
+}
+interface CsRepeatSummary {
+    totalOmset: number;
+    jumlahTransaksi: number;
+}
 
 interface BrandPerformance {
     id: number;
@@ -228,6 +245,7 @@ interface Props {
     chatAnalytics: ChatAnalytic[];
     periodAnalytics: ChatAnalytic[];
     labelDistribution: LabelDistribution[];
+    sumberDistribution: SumberDistribution[];
     closingAnalysis: ClosingAnalysis;
     dailyTrends: DailyTrend[];
     topMarketing: TopMarketing[];
@@ -258,7 +276,7 @@ const selectedDateRange = ref('this_month');
 const nowForFilter = new Date();
 const defaultMonth = String(nowForFilter.getMonth() + 1).padStart(2, '0');
 const defaultYear = String(nowForFilter.getFullYear());
-const selectedMonth = ref((props.filters as any)?.month || defaultMonth)
+const selectedMonth = ref((props.filters as any)?.month || defaultMonth);
 const selectedYear = ref((props.filters as any)?.year || defaultYear);
 const refreshing = ref(false);
 const showMarketingDropdown = ref(false);
@@ -316,9 +334,7 @@ const conversionClosings = computed(() => {
 });
 
 const totalConversionRate = computed(() => {
-    return conversionLeads.value > 0
-        ? Math.round((conversionClosings.value / conversionLeads.value) * 100)
-        : 0;
+    return conversionLeads.value > 0 ? Math.round((conversionClosings.value / conversionLeads.value) * 100) : 0;
 });
 
 const growthIndicators = computed(() => {
@@ -352,7 +368,7 @@ const fetchCsRepeatSummary = async () => {
         if (res.ok) {
             const json = await res.json();
             // Expecting { data: { totalOmset: number, jumlahTransaksi: number } }
-            csRepeatSummary.value = (json.data || { totalOmset: 0, jumlahTransaksi: 0 });
+            csRepeatSummary.value = json.data || { totalOmset: 0, jumlahTransaksi: 0 };
         }
     } catch (e) {
         console.error('Gagal memuat summary CS Repeat:', e);
@@ -429,7 +445,7 @@ watch([startDate, endDate, selectedBrand, selectedMarketing], () => {
 const refreshData = () => {
     refreshing.value = true;
     router.reload({
-        only: ['chatAnalytics', 'periodAnalytics', 'dailyTrends', 'closingAnalysis', 'recentActivities'],
+        only: ['chatAnalytics', 'periodAnalytics', 'labelDistribution', 'sumberDistribution', 'dailyTrends', 'closingAnalysis', 'recentActivities'],
         onFinish: () => {
             refreshing.value = false;
         },
@@ -609,7 +625,7 @@ const handleMouseMove = (event: MouseEvent) => {
 const updateTooltipPosition = (event: MouseEvent) => {
     tooltipPosition.value = {
         x: event.clientX + 10,
-        y: event.clientY - 10
+        y: event.clientY - 10,
     };
 };
 
@@ -634,16 +650,16 @@ const handleProgressMouseMove = (event: MouseEvent) => {
 // Filter by month and year function
 const filterByMonthYear = () => {
     const params: any = {};
-    
+
     if (selectedMonth.value || selectedYear.value) {
         const year = selectedYear.value ? parseInt(selectedYear.value) : new Date().getFullYear();
         const month = selectedMonth.value ? parseInt(selectedMonth.value) : null;
-        
+
         if (month) {
             // Filter by specific month and year
             const startOfMonth = `${year}-${selectedMonth.value.padStart(2, '0')}-01`;
             const endOfMonth = toLocalDateString(new Date(year, month, 0));
-            
+
             params.start_date = startOfMonth;
             params.end_date = endOfMonth;
         } else if (selectedYear.value) {
@@ -652,15 +668,15 @@ const filterByMonthYear = () => {
             params.end_date = `${year}-12-31`;
         }
     }
-    
+
     if (selectedMarketing.value !== 'all') {
         params.marketing = selectedMarketing.value;
     }
-    
+
     if (selectedBrand.value !== 'all') {
         params.brand = selectedBrand.value;
     }
-    
+
     router.get('/dashboard', params, {
         preserveState: true,
         replace: true,
@@ -741,7 +757,10 @@ const ppnPercentage = computed(() => {
             </div>
 
             <!-- Report Budget Vs Omset -->
-            <Card v-if="permissions.hasFullAccess || permissions.hasReadOnlyAccess || permissions.hasLimitedAccess" class="mb-6 border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:from-gray-800/30 dark:to-gray-700/30 shadow-lg">
+            <Card
+                v-if="permissions.hasFullAccess || permissions.hasReadOnlyAccess || permissions.hasLimitedAccess"
+                class="mb-6 border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 shadow-lg transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:from-gray-800/30 dark:to-gray-700/30"
+            >
                 <CardHeader>
                     <CardTitle class="flex items-center gap-2">
                         <BarChart3 class="h-6 w-6" />
@@ -754,14 +773,14 @@ const ppnPercentage = computed(() => {
                 </CardHeader>
                 <CardContent class="p-6">
                     <!-- Filter Section -->
-                    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                            <label for="month-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Bulan:</label>
-                            <select 
-                                id="month-filter" 
-                                v-model="selectedMonth" 
+                    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:gap-4">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                            <label for="month-filter" class="text-sm font-medium whitespace-nowrap text-gray-700 dark:text-gray-300">Bulan:</label>
+                            <select
+                                id="month-filter"
+                                v-model="selectedMonth"
                                 @change="filterByMonthYear"
-                                class="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 sm:w-auto dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                             >
                                 <option value="">Semua Bulan</option>
                                 <option value="01">Januari</option>
@@ -778,13 +797,13 @@ const ppnPercentage = computed(() => {
                                 <option value="12">Desember</option>
                             </select>
                         </div>
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                            <label for="year-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Tahun:</label>
-                            <select 
-                                id="year-filter" 
-                                v-model="selectedYear" 
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                            <label for="year-filter" class="text-sm font-medium whitespace-nowrap text-gray-700 dark:text-gray-300">Tahun:</label>
+                            <select
+                                id="year-filter"
+                                v-model="selectedYear"
                                 @change="filterByMonthYear"
-                                class="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 sm:w-auto dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                             >
                                 <option value="">Semua Tahun</option>
                                 <option value="2023">2023</option>
@@ -797,7 +816,7 @@ const ppnPercentage = computed(() => {
 
                     <!-- Summary Statistics Cards -->
                     <!-- Grid 1: ringkas utama (tetap responsif) -->
-                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+                    <div class="mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <Card class="relative bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
                             <CardContent class="p-6">
                                 <div class="absolute top-3 right-3 text-blue-500/60">
@@ -858,9 +877,9 @@ const ppnPercentage = computed(() => {
                                         <p class="text-2xl font-bold text-indigo-900 dark:text-indigo-100">
                                             {{
                                                 (() => {
-                                                    const totalSpent = summaryReport.reduce((sum, item) => sum + item.spent, 0)
-                                                    const totalClosing = summaryReport.reduce((sum, item) => sum + item.closing, 0)
-                                                    return totalClosing > 0 ? Math.round(totalSpent / totalClosing).toLocaleString('id-ID') : '0'
+                                                    const totalSpent = summaryReport.reduce((sum, item) => sum + item.spent, 0);
+                                                    const totalClosing = summaryReport.reduce((sum, item) => sum + item.closing, 0);
+                                                    return totalClosing > 0 ? Math.round(totalSpent / totalClosing).toLocaleString('id-ID') : '0';
                                                 })()
                                             }}
                                         </p>
@@ -871,7 +890,7 @@ const ppnPercentage = computed(() => {
                     </div>
 
                     <!-- Grid 2: empat kartu dalam 2 kolom (50% : 50%) -->
-                    <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="mb-6 grid grid-cols-2 gap-4">
                         <!-- ROAS Keseluruhan (baru) -->
                         <Card class="relative bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900">
                             <CardContent class="p-6">
@@ -880,13 +899,13 @@ const ppnPercentage = computed(() => {
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-xs sm:text-sm font-medium text-emerald-700 dark:text-emerald-300">ROAS Keseluruhan</p>
-                                        <p class="text-lg sm:text-2xl font-bold leading-tight text-emerald-900 dark:text-emerald-100">
+                                        <p class="text-xs font-medium text-emerald-700 sm:text-sm dark:text-emerald-300">ROAS Keseluruhan</p>
+                                        <p class="text-lg leading-tight font-bold text-emerald-900 sm:text-2xl dark:text-emerald-100">
                                             {{
                                                 (() => {
-                                                    const totalSpentWithTax = summaryReport.reduce((sum, item) => sum + item.spent_with_tax, 0)
-                                                    const totalOmset = summaryReport.reduce((sum, item) => sum + item.omset, 0)
-                                                    return totalSpentWithTax > 0 ? (totalOmset / totalSpentWithTax).toFixed(2) + 'x' : '0.00x'
+                                                    const totalSpentWithTax = summaryReport.reduce((sum, item) => sum + item.spent_with_tax, 0);
+                                                    const totalOmset = summaryReport.reduce((sum, item) => sum + item.omset, 0);
+                                                    return totalSpentWithTax > 0 ? (totalOmset / totalSpentWithTax).toFixed(2) + 'x' : '0.00x';
                                                 })()
                                             }}
                                         </p>
@@ -902,8 +921,8 @@ const ppnPercentage = computed(() => {
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-xs sm:text-sm font-medium text-purple-700 dark:text-purple-300">Total Leads</p>
-                                        <p class="text-lg sm:text-2xl font-bold leading-tight text-purple-900 dark:text-purple-100">
+                                        <p class="text-xs font-medium text-purple-700 sm:text-sm dark:text-purple-300">Total Leads</p>
+                                        <p class="text-lg leading-tight font-bold text-purple-900 sm:text-2xl dark:text-purple-100">
                                             {{ summaryReport.reduce((sum, item) => sum + item.real_lead, 0).toLocaleString('id-ID') }}
                                         </p>
                                     </div>
@@ -918,8 +937,8 @@ const ppnPercentage = computed(() => {
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-xs sm:text-sm font-medium text-orange-700 dark:text-orange-300">Total Closing</p>
-                                        <p class="text-lg sm:text-2xl font-bold leading-tight text-orange-900 dark:text-orange-100">
+                                        <p class="text-xs font-medium text-orange-700 sm:text-sm dark:text-orange-300">Total Closing</p>
+                                        <p class="text-lg leading-tight font-bold text-orange-900 sm:text-2xl dark:text-orange-100">
                                             {{ summaryReport.reduce((sum, item) => sum + item.closing, 0).toLocaleString('id-ID') }}
                                         </p>
                                     </div>
@@ -935,13 +954,13 @@ const ppnPercentage = computed(() => {
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-xs sm:text-sm font-medium text-teal-700 dark:text-teal-300">Cost Per Lead</p>
-                                        <p class="text-lg sm:text-2xl font-bold leading-tight text-teal-900 dark:text-teal-100">
+                                        <p class="text-xs font-medium text-teal-700 sm:text-sm dark:text-teal-300">Cost Per Lead</p>
+                                        <p class="text-lg leading-tight font-bold text-teal-900 sm:text-2xl dark:text-teal-100">
                                             {{
                                                 (() => {
-                                                    const totalSpent = summaryReport.reduce((sum, item) => sum + item.spent, 0)
-                                                    const totalLead = summaryReport.reduce((sum, item) => sum + item.real_lead, 0)
-                                                    return totalLead > 0 ? Math.round(totalSpent / totalLead).toLocaleString('id-ID') : '0'
+                                                    const totalSpent = summaryReport.reduce((sum, item) => sum + item.spent, 0);
+                                                    const totalLead = summaryReport.reduce((sum, item) => sum + item.real_lead, 0);
+                                                    return totalLead > 0 ? Math.round(totalSpent / totalLead).toLocaleString('id-ID') : '0';
                                                 })()
                                             }}
                                         </p>
@@ -956,19 +975,27 @@ const ppnPercentage = computed(() => {
                         <table class="w-full border-collapse text-xs sm:text-sm">
                             <thead>
                                 <tr class="border-b">
-                                    <th class="text-left p-2 sm:p-3 font-semibold sticky left-0 z-30 bg-background min-w-[140px] sm:min-w-[180px] border-r border-border">Brand</th>
-                                    <th class="text-right p-3 font-semibold">Spent</th>
-                                    <th class="text-right p-3 font-semibold">Spent+PPN ({{ ppnPercentage }}%)</th>
-                                    <th class="text-right p-3 font-semibold">Real Lead</th>
-                                    <th class="text-right p-3 font-semibold">Cost/Lead</th>
-                                    <th class="text-right p-3 font-semibold">Closing</th>
-                                    <th class="text-right p-3 font-semibold">Omset</th>
-                                    <th class="text-right p-3 font-semibold">ROAS</th>
+                                    <th
+                                        class="sticky left-0 z-30 min-w-[140px] border-r border-border bg-background p-2 text-left font-semibold sm:min-w-[180px] sm:p-3"
+                                    >
+                                        Brand
+                                    </th>
+                                    <th class="p-3 text-right font-semibold">Spent</th>
+                                    <th class="p-3 text-right font-semibold">Spent+PPN ({{ ppnPercentage }}%)</th>
+                                    <th class="p-3 text-right font-semibold">Real Lead</th>
+                                    <th class="p-3 text-right font-semibold">Cost/Lead</th>
+                                    <th class="p-3 text-right font-semibold">Closing</th>
+                                    <th class="p-3 text-right font-semibold">Omset</th>
+                                    <th class="p-3 text-right font-semibold">ROAS</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-for="item in summaryReport" :key="item.brand" class="border-b hover:bg-muted/50">
-                                    <td class="p-2 sm:p-3 text-xs sm:text-sm font-medium text-blue-600 sticky left-0 z-20 bg-background min-w-[140px] sm:min-w-[180px] border-r border-border">{{ item.brand }}</td>
+                                    <td
+                                        class="sticky left-0 z-20 min-w-[140px] border-r border-border bg-background p-2 text-xs font-medium text-blue-600 sm:min-w-[180px] sm:p-3 sm:text-sm"
+                                    >
+                                        {{ item.brand }}
+                                    </td>
                                     <td class="p-3 text-right text-red-600">Rp {{ item.spent.toLocaleString('id-ID') }}</td>
                                     <td class="p-3 text-right text-red-600">Rp {{ item.spent_with_tax.toLocaleString('id-ID') }}</td>
                                     <td class="p-3 text-right">{{ item.real_lead }}</td>
@@ -978,7 +1005,7 @@ const ppnPercentage = computed(() => {
                                     </td>
                                     <td class="p-3 text-right text-purple-600">{{ item.closing }}</td>
                                     <td class="p-3 text-right text-green-600">Rp {{ item.omset.toLocaleString('id-ID') }}</td>
-                                    <td class="p-3 text-right" :class="item.roas >= 1 ? 'text-green-600 font-semibold' : 'text-red-500'">
+                                    <td class="p-3 text-right" :class="item.roas >= 1 ? 'font-semibold text-green-600' : 'text-red-500'">
                                         {{ item.roas.toFixed(2) }}
                                     </td>
                                 </tr>
@@ -996,7 +1023,7 @@ const ppnPercentage = computed(() => {
             <!-- Main KPI Cards -->
             <div class="stats-grid stats-grid-mobile-2">
                 <!-- Total Leads -->
-                <Card class="relative stats-card stats-card-blue stats-card-mobile">
+                <Card class="stats-card stats-card-blue stats-card-mobile relative">
                     <CardContent class="stats-card-content">
                         <!-- Icon ala ROAS: kecil, transparan, di pojok kanan atas -->
                         <div class="absolute top-3 right-3 text-blue-500/60">
@@ -1013,7 +1040,7 @@ const ppnPercentage = computed(() => {
                 </Card>
 
                 <!-- Conversion Rate -->
-                <Card class="relative stats-card stats-card-green stats-card-mobile">
+                <Card class="stats-card stats-card-green stats-card-mobile relative">
                     <CardContent class="stats-card-content">
                         <!-- Icon ala ROAS: kecil, transparan, di pojok kanan atas -->
                         <div class="absolute top-3 right-3 text-green-500/60">
@@ -1036,7 +1063,7 @@ const ppnPercentage = computed(() => {
                 </Card>
 
                 <!-- Active Chats -->
-                <Card class="relative stats-card stats-card-orange stats-card-mobile">
+                <Card class="stats-card stats-card-orange stats-card-mobile relative">
                     <CardContent class="stats-card-content">
                         <!-- Icon ala ROAS: kecil, transparan, di pojok kanan atas -->
                         <div class="absolute top-3 right-3 text-orange-500/60">
@@ -1053,7 +1080,7 @@ const ppnPercentage = computed(() => {
                 </Card>
 
                 <!-- Follow Ups -->
-                <Card class="relative stats-card stats-card-purple stats-card-mobile">
+                <Card class="stats-card stats-card-purple stats-card-mobile relative">
                     <CardContent class="stats-card-content">
                         <!-- Icon ala ROAS: kecil, transparan, di pojok kanan atas -->
                         <div class="absolute top-3 right-3 text-purple-500/60">
@@ -1160,21 +1187,13 @@ const ppnPercentage = computed(() => {
                                         <!-- Custom Start Date -->
                                         <div class="form-group">
                                             <Label class="form-label"> Tanggal Mulai: </Label>
-                                            <DatePicker
-                                                v-model="startDate"
-                                                placeholder="Pilih tanggal mulai"
-                                                :max-date="endDate || undefined"
-                                            />
+                                            <DatePicker v-model="startDate" placeholder="Pilih tanggal mulai" :max-date="endDate || undefined" />
                                         </div>
 
                                         <!-- Custom End Date -->
                                         <div class="form-group">
                                             <Label class="form-label"> Tanggal Akhir: </Label>
-                                            <DatePicker
-                                                v-model="endDate"
-                                                placeholder="Pilih tanggal akhir"
-                                                :min-date="startDate || undefined"
-                                            />
+                                            <DatePicker v-model="endDate" placeholder="Pilih tanggal akhir" :min-date="startDate || undefined" />
                                         </div>
 
                                         <!-- Marketing Filter Dropdown -->
@@ -1332,32 +1351,46 @@ const ppnPercentage = computed(() => {
             </div>
 
             <!-- CS-only: CS Repeat Analytics outside Tabs -->
-            <div v-if="props.permissions.role === 'cs' || props.permissions.role === 'super_admin' || props.permissions.role === 'admin' || props.permissions.role === 'advertiser'">
+            <div
+                v-if="
+                    props.permissions.role === 'cs' ||
+                    props.permissions.role === 'super_admin' ||
+                    props.permissions.role === 'admin' ||
+                    props.permissions.role === 'advertiser'
+                "
+            >
                 <Card class="border-0 shadow-lg">
-                    <CardHeader class="relative overflow-hidden rounded-t-xl bg-gradient-to-r from-indigo-600 via-sky-600 to-cyan-600 text-white dark:from-indigo-700 dark:via-sky-700 dark:to-cyan-700">
-                        <CardTitle class="flex items-center gap-2 text-white">
-                            CS Repeat Analytics
-                        </CardTitle>
+                    <CardHeader
+                        class="relative overflow-hidden rounded-t-xl bg-gradient-to-r from-indigo-600 via-sky-600 to-cyan-600 text-white dark:from-indigo-700 dark:via-sky-700 dark:to-cyan-700"
+                    >
+                        <CardTitle class="flex items-center gap-2 text-white"> CS Repeat Analytics </CardTitle>
                     </CardHeader>
                     <CardContent class="space-y-6">
                         <!-- Summary Cards -->
                         <div class="flex flex-nowrap gap-4 sm:grid sm:grid-cols-2">
-                            <Card class="border border-indigo-100 basis-[65%] sm:basis-auto sm:col-span-1">
-                                <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50">
+                            <Card class="basis-[65%] border border-indigo-100 sm:col-span-1 sm:basis-auto">
+                                <CardHeader class="bg-gradient-to-r from-indigo-50 to-blue-50 pb-2">
                                     <CardTitle class="text-sm sm:text-base">Total Omset</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div class="text-xl sm:text-2xl font-bold text-indigo-700">
-                                        {{ new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(csRepeatSummary.totalOmset || 0) }}
+                                    <div class="text-xl font-bold text-indigo-700 sm:text-2xl">
+                                        {{
+                                            new Intl.NumberFormat('id-ID', {
+                                                style: 'currency',
+                                                currency: 'IDR',
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 0,
+                                            }).format(csRepeatSummary.totalOmset || 0)
+                                        }}
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card class="border border-indigo-100 basis-[35%] sm:basis-auto sm:col-span-1">
-                                <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50">
+                            <Card class="basis-[35%] border border-indigo-100 sm:col-span-1 sm:basis-auto">
+                                <CardHeader class="bg-gradient-to-r from-indigo-50 to-blue-50 pb-2">
                                     <CardTitle class="text-sm sm:text-base">Jumlah Transaksi</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div class="text-xl sm:text-2xl font-bold text-indigo-700">
+                                    <div class="text-xl font-bold text-indigo-700 sm:text-2xl">
                                         {{ new Intl.NumberFormat('id-ID').format(csRepeatSummary.jumlahTransaksi || 0) }}
                                     </div>
                                 </CardContent>
@@ -1376,28 +1409,31 @@ const ppnPercentage = computed(() => {
             <!-- Tabs for Different Analytics Views -->
             <Tabs v-if="permissions.role !== 'cs'" default-value="overview" class="w-full">
                 <div class="w-full overflow-x-auto pb-2">
-                    <TabsList class="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground min-w-max">
-                        <TabsTrigger value="overview" class="text-xs md:text-sm whitespace-nowrap px-3 py-2 min-w-[80px] md:min-w-[100px]">
+                    <TabsList class="inline-flex h-10 min-w-max items-center justify-start rounded-md bg-muted p-1 text-muted-foreground">
+                        <TabsTrigger value="overview" class="min-w-[80px] px-3 py-2 text-xs whitespace-nowrap md:min-w-[100px] md:text-sm">
                             <span class="hidden sm:inline">Overview</span>
                             <span class="sm:hidden">Overview</span>
                         </TabsTrigger>
-                        <TabsTrigger value="marketing" class="text-xs md:text-sm whitespace-nowrap px-3 py-2 min-w-[80px] md:min-w-[120px]">
+                        <TabsTrigger value="marketing" class="min-w-[80px] px-3 py-2 text-xs whitespace-nowrap md:min-w-[120px] md:text-sm">
                             <span class="hidden sm:inline">Per Marketing</span>
                             <span class="sm:hidden">Marketing</span>
                         </TabsTrigger>
-                        <TabsTrigger value="brands" class="text-xs md:text-sm whitespace-nowrap px-3 py-2 min-w-[80px] md:min-w-[100px]">
+                        <TabsTrigger value="brands" class="min-w-[80px] px-3 py-2 text-xs whitespace-nowrap md:min-w-[100px] md:text-sm">
                             <span class="hidden sm:inline">Per Brand</span>
                             <span class="sm:hidden">Brands</span>
                         </TabsTrigger>
-                        <TabsTrigger value="labels" class="text-xs md:text-sm whitespace-nowrap px-3 py-2 min-w-[80px] md:min-w-[120px]">
+                        <TabsTrigger value="labels" class="min-w-[80px] px-3 py-2 text-xs whitespace-nowrap md:min-w-[120px] md:text-sm">
                             <span class="hidden sm:inline">Label Analysis</span>
                             <span class="sm:hidden">Labels</span>
                         </TabsTrigger>
-                        <TabsTrigger value="trends" class="text-xs md:text-sm whitespace-nowrap px-3 py-2 min-w-[80px] md:min-w-[100px]">
+                        <TabsTrigger value="sumber" class="min-w-[80px] px-3 py-2 text-xs whitespace-nowrap md:min-w-[120px] md:text-sm">
+                            <span class="hidden sm:inline">Sumber Analysis</span>
+                            <span class="sm:hidden">Sumber</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="trends" class="min-w-[80px] px-3 py-2 text-xs whitespace-nowrap md:min-w-[100px] md:text-sm">
                             <span class="hidden sm:inline">Trends</span>
                             <span class="sm:hidden">Trends</span>
                         </TabsTrigger>
-
                     </TabsList>
                 </div>
 
@@ -1560,7 +1596,10 @@ const ppnPercentage = computed(() => {
                     </Card>
 
                     <!-- Task Management Report -->
-                    <Card v-if="permissions.role !== 'cs'" class="border-0 bg-gradient-to-br from-indigo-50 to-purple-50 shadow-xl dark:from-indigo-950/50 dark:to-purple-950/50">
+                    <Card
+                        v-if="permissions.role !== 'cs'"
+                        class="border-0 bg-gradient-to-br from-indigo-50 to-purple-50 shadow-xl dark:from-indigo-950/50 dark:to-purple-950/50"
+                    >
                         <CardHeader class="pb-3 sm:pb-4">
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <CardTitle class="flex items-center gap-3 text-lg font-bold sm:text-xl">
@@ -1718,33 +1757,41 @@ const ppnPercentage = computed(() => {
                                                             <User class="h-4 w-4 text-white" />
                                                         </div>
                                                         <div>
-                                                            <p class="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">{{ marketing.name }}</p>
+                                                            <p class="text-xs font-medium text-gray-900 sm:text-sm dark:text-white">
+                                                                {{ marketing.name }}
+                                                            </p>
                                                             <p class="text-xs text-gray-500 dark:text-gray-400">{{ marketing.email }}</p>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td class="p-3 text-center">
-                                                    <Badge class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 text-xs sm:text-sm">
+                                                    <Badge
+                                                        class="bg-yellow-100 text-xs text-yellow-800 sm:text-sm dark:bg-yellow-900 dark:text-yellow-200"
+                                                    >
                                                         {{ marketing.pending_tasks }}
                                                     </Badge>
                                                 </td>
                                                 <td class="p-3 text-center">
-                                                    <Badge class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs sm:text-sm">
+                                                    <Badge class="bg-blue-100 text-xs text-blue-800 sm:text-sm dark:bg-blue-900 dark:text-blue-200">
                                                         {{ marketing.in_progress_tasks }}
                                                     </Badge>
                                                 </td>
                                                 <td class="p-3 text-center">
-                                                    <Badge class="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs sm:text-sm">
+                                                    <Badge
+                                                        class="bg-green-100 text-xs text-green-800 sm:text-sm dark:bg-green-900 dark:text-green-200"
+                                                    >
                                                         {{ marketing.completed_tasks }}
                                                     </Badge>
                                                 </td>
                                                 <td class="p-3 text-center">
-                                                    <Badge class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 text-xs sm:text-sm">
+                                                    <Badge class="bg-red-100 text-xs text-red-800 sm:text-sm dark:bg-red-900 dark:text-red-200">
                                                         {{ marketing.overdue_tasks }}
                                                     </Badge>
                                                 </td>
                                                 <td class="p-3 text-center">
-                                                    <Badge class="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 text-xs sm:text-sm">
+                                                    <Badge
+                                                        class="bg-indigo-100 text-xs text-indigo-800 sm:text-sm dark:bg-indigo-900 dark:text-indigo-200"
+                                                    >
                                                         {{ marketing.total_tasks }}
                                                     </Badge>
                                                 </td>
@@ -1770,7 +1817,7 @@ const ppnPercentage = computed(() => {
                                 <div
                                     class="mt-4 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 p-4 dark:from-indigo-900/20 dark:to-purple-900/20"
                                 >
-                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm">
+                                    <div class="flex flex-col gap-3 text-xs sm:flex-row sm:items-center sm:justify-between sm:text-sm">
                                         <div class="flex items-center gap-2">
                                             <Award class="h-5 w-5 text-purple-600" />
                                             <span class="font-semibold text-gray-900 dark:text-white">Total Keseluruhan:</span>
@@ -1797,30 +1844,37 @@ const ppnPercentage = computed(() => {
 
                     <!-- CS Repeat Analytics Section -->
                     <Card v-if="props.permissions.role !== 'brand_owner'" class="border-0 shadow-lg">
-                        <CardHeader class="relative overflow-hidden rounded-t-xl bg-gradient-to-r from-indigo-600 via-sky-600 to-cyan-600 text-white dark:from-indigo-700 dark:via-sky-700 dark:to-cyan-700">
-                            <CardTitle class="flex items-center gap-2 text-white">
-                                CS Repeat Analytics
-                            </CardTitle>
+                        <CardHeader
+                            class="relative overflow-hidden rounded-t-xl bg-gradient-to-r from-indigo-600 via-sky-600 to-cyan-600 text-white dark:from-indigo-700 dark:via-sky-700 dark:to-cyan-700"
+                        >
+                            <CardTitle class="flex items-center gap-2 text-white"> CS Repeat Analytics </CardTitle>
                         </CardHeader>
                         <CardContent class="space-y-6">
                             <!-- Summary Cards -->
                             <div class="flex flex-nowrap gap-4 sm:grid sm:grid-cols-2">
-                                <Card class="border border-indigo-100 basis-[65%] sm:basis-auto sm:col-span-1">
-                                    <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50">
+                                <Card class="basis-[65%] border border-indigo-100 sm:col-span-1 sm:basis-auto">
+                                    <CardHeader class="bg-gradient-to-r from-indigo-50 to-blue-50 pb-2">
                                         <CardTitle class="text-sm sm:text-base">Total Omset</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div class="text-xl sm:text-2xl font-bold text-indigo-700">
-                                            {{ new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(csRepeatSummary.totalOmset || 0) }}
+                                        <div class="text-xl font-bold text-indigo-700 sm:text-2xl">
+                                            {{
+                                                new Intl.NumberFormat('id-ID', {
+                                                    style: 'currency',
+                                                    currency: 'IDR',
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 0,
+                                                }).format(csRepeatSummary.totalOmset || 0)
+                                            }}
                                         </div>
                                     </CardContent>
                                 </Card>
-                                <Card class="border border-indigo-100 basis-[35%] sm:basis-auto sm:col-span-1">
-                                    <CardHeader class="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50">
+                                <Card class="basis-[35%] border border-indigo-100 sm:col-span-1 sm:basis-auto">
+                                    <CardHeader class="bg-gradient-to-r from-indigo-50 to-blue-50 pb-2">
                                         <CardTitle class="text-sm sm:text-base">Jumlah Transaksi</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div class="text-xl sm:text-2xl font-bold text-indigo-700">
+                                        <div class="text-xl font-bold text-indigo-700 sm:text-2xl">
                                             {{ new Intl.NumberFormat('id-ID').format(csRepeatSummary.jumlahTransaksi || 0) }}
                                         </div>
                                     </CardContent>
@@ -1858,7 +1912,7 @@ const ppnPercentage = computed(() => {
                                                     :fill="label.warna"
                                                     :stroke="label.warna"
                                                     stroke-width="2"
-                                                    class="cursor-pointer drop-shadow-sm transition-all duration-200 hover:brightness-110 hover:scale-105"
+                                                    class="cursor-pointer drop-shadow-sm transition-all duration-200 hover:scale-105 hover:brightness-110"
                                                     @mouseenter="handleMouseEnter(label, $event)"
                                                     @mouseleave="handleMouseLeave"
                                                     @mousemove="handleMouseMove($event)"
@@ -1872,7 +1926,7 @@ const ppnPercentage = computed(() => {
                                                 <p class="text-sm text-muted-foreground">Total Labels</p>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Custom Tooltip -->
                                         <Teleport to="body">
                                             <div
@@ -1880,7 +1934,7 @@ const ppnPercentage = computed(() => {
                                                 class="pointer-events-none fixed z-50 rounded-lg bg-gray-900 px-3 py-2 text-sm text-white shadow-lg dark:bg-gray-100 dark:text-gray-900"
                                                 :style="{
                                                     left: tooltipPosition.x + 'px',
-                                                    top: tooltipPosition.y + 'px'
+                                                    top: tooltipPosition.y + 'px',
                                                 }"
                                             >
                                                 <div class="font-semibold">{{ hoveredLabel.nama }}</div>
@@ -1892,7 +1946,7 @@ const ppnPercentage = computed(() => {
                                                 </div>
                                             </div>
                                         </Teleport>
-                                        
+
                                         <!-- Progress Bar Tooltip -->
                                         <Teleport to="body">
                                             <div
@@ -1900,7 +1954,7 @@ const ppnPercentage = computed(() => {
                                                 class="pointer-events-none fixed z-50 rounded-lg bg-gray-900 px-3 py-2 text-sm text-white shadow-lg dark:bg-gray-100 dark:text-gray-900"
                                                 :style="{
                                                     left: tooltipPosition.x + 'px',
-                                                    top: tooltipPosition.y + 'px'
+                                                    top: tooltipPosition.y + 'px',
                                                 }"
                                             >
                                                 <div class="font-semibold">{{ hoveredProgressLabel.nama }}</div>
@@ -1911,12 +1965,15 @@ const ppnPercentage = computed(() => {
                                                     Persentase: <span class="font-medium">{{ hoveredProgressLabel.percentage }}%</span>
                                                 </div>
                                                 <div class="text-xs opacity-90">
-                                                    Dari Total: <span class="font-medium">{{ labelDistribution.reduce((sum, item) => sum + item.count, 0) }}</span>
+                                                    Dari Total:
+                                                    <span class="font-medium">{{
+                                                        labelDistribution.reduce((sum, item) => sum + item.count, 0)
+                                                    }}</span>
                                                 </div>
                                             </div>
                                         </Teleport>
                                     </div>
-                                    
+
                                     <!-- No Data Message -->
                                     <div v-else class="flex h-64 flex-col items-center justify-center text-muted-foreground">
                                         <PieChart class="mb-4 h-16 w-16 opacity-50" />
@@ -1963,7 +2020,7 @@ const ppnPercentage = computed(() => {
                                             </div>
                                             <span class="text-sm font-bold">{{ label.count }} leads</span>
                                         </div>
-                                        <div 
+                                        <div
                                             class="cursor-pointer"
                                             @mouseenter="handleProgressMouseEnter(label, $event)"
                                             @mouseleave="handleProgressMouseLeave"
@@ -1974,7 +2031,7 @@ const ppnPercentage = computed(() => {
                                         <p class="mt-1 text-xs text-muted-foreground">{{ label.percentage }}% dari total leads</p>
                                     </div>
                                 </div>
-                                
+
                                 <!-- No Data Message for Label Statistics -->
                                 <div v-else class="flex h-32 flex-col items-center justify-center text-muted-foreground">
                                     <Tag class="mb-2 h-8 w-8 opacity-50" />
@@ -1991,6 +2048,89 @@ const ppnPercentage = computed(() => {
                                         <div>
                                             <p class="text-muted-foreground">Most Used</p>
                                             <p class="font-bold">{{ labelDistribution[0]?.nama || 'N/A' }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+
+                <!-- Sumber Tab -->
+                <TabsContent value="sumber" class="space-y-6">
+                    <div class="grid gap-6 md:grid-cols-2">
+                        <!-- Sumber Distribution -->
+                        <Card class="border-0 shadow-lg">
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <PieChart class="h-5 w-5" />
+                                    Distribusi Sumber
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div class="space-y-4">
+                                    <div v-if="sumberDistribution.length > 0" class="space-y-2">
+                                        <div
+                                            v-for="sumber in sumberDistribution"
+                                            :key="sumber.id"
+                                            class="flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-muted/50"
+                                        >
+                                            <div class="flex items-center gap-3">
+                                                <div class="h-4 w-4 rounded-full" :style="{ backgroundColor: sumber.warna }"></div>
+                                                <span class="font-medium">{{ sumber.nama }}</span>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="font-bold">{{ sumber.count }}</span>
+                                                <span class="ml-1 text-sm text-muted-foreground">({{ sumber.percentage }}%)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-else class="flex h-64 flex-col items-center justify-center text-muted-foreground">
+                                        <PieChart class="mb-4 h-16 w-16 opacity-50" />
+                                        <p class="text-lg font-medium">Tidak ada data sumber</p>
+                                        <p class="text-sm">Data distribusi sumber akan muncul di sini</p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Sumber Statistics -->
+                        <Card class="border-0 shadow-lg">
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <Tag class="h-5 w-5" />
+                                    Sumber Statistics
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent class="space-y-4">
+                                <div v-if="sumberDistribution.length > 0" class="grid gap-4">
+                                    <div v-for="sumber in sumberDistribution.slice(0, 5)" :key="sumber.id" class="rounded-lg border p-4">
+                                        <div class="mb-2 flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <div class="h-3 w-3 rounded-full" :style="{ backgroundColor: sumber.warna }"></div>
+                                                <span class="font-medium">{{ sumber.nama }}</span>
+                                            </div>
+                                            <span class="text-sm font-bold">{{ sumber.count }} leads</span>
+                                        </div>
+                                        <Progress :value="sumber.percentage" class="h-2" />
+                                        <p class="mt-1 text-xs text-muted-foreground">{{ sumber.percentage }}% dari total leads</p>
+                                    </div>
+                                </div>
+                                <div v-else class="flex h-32 flex-col items-center justify-center text-muted-foreground">
+                                    <Tag class="mb-2 h-8 w-8 opacity-50" />
+                                    <p class="text-sm">Tidak ada data statistik sumber</p>
+                                </div>
+
+                                <div v-if="sumberDistribution.length > 0" class="mt-4 rounded-lg bg-muted/50 p-4">
+                                    <h4 class="mb-2 font-medium">Summary</h4>
+                                    <div class="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p class="text-muted-foreground">Total Sumber</p>
+                                            <p class="font-bold">{{ sumberDistribution.length }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-muted-foreground">Most Used</p>
+                                            <p class="font-bold">{{ sumberDistribution[0]?.nama || 'N/A' }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -2273,10 +2413,7 @@ const ppnPercentage = computed(() => {
                 </TabsContent>
 
                 <!-- Summary Report Tab -->
-
             </Tabs>
-
-
 
             <!-- Statistics Cards -->
             <div v-if="permissions.role !== 'brand_owner'" class="grid grid-cols-2 gap-6 lg:grid-cols-4">
